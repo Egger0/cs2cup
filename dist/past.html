@@ -111,11 +111,25 @@
       <span><span id="brandName">锋线电竞社</span><small id="brandEn">Frontline Esports · CS2</small></span>
     </a>
     <nav class="nav">
-      <a href="index.html#register">报名</a><a href="index.html#teams">参赛战队</a><a href="index.html#bracket">对阵赛程</a><a href="past.html" class="here">往届赛事</a>
+      <a href="index.html#register">报名</a><a href="index.html#teams">参赛战队</a><a href="index.html#bracket">对阵赛程</a><a href="index.html#rules">赛制规则</a><a href="index.html#faq">须知</a><a href="past.html" class="here">往届赛事</a>
     </nav>
     <a href="index.html#register" class="btn btn-ghost">← 返回报名</a>
   </div>
 </header>
+
+<script>
+/* 防闪烁:用上次缓存的社名/logo 立即渲染页头,云端数据到达后再更新 */
+(function(){try{
+  var b=JSON.parse(localStorage.getItem("cs2cup_brand")||"null"); if(!b) return;
+  var nm=document.getElementById("brandName"); if(nm&&b.clubName) nm.textContent=b.clubName;
+  var en=document.getElementById("brandEn"); if(en&&b.brandEn) en.textContent=b.brandEn;
+  var mk=document.getElementById("brandMark");
+  if(mk){
+    if(b.logoUrl){ mk.textContent=""; var im=new Image(); im.alt=""; im.src=b.logoUrl; mk.appendChild(im); mk.classList.add("has-img"); }
+    else if(b.brandMark){ mk.textContent=b.brandMark; }
+  }
+}catch(e){}})();
+</script>
 
 <main>
   <section class="arch-hero">
@@ -177,6 +191,10 @@
     logoUrl:"", brandMark:"FX"
   };
   var CFG=Object.assign({},DEF), MODE="demo";
+  // 读取上次缓存的品牌作为初始值,避免加载中/离线回退成默认社名(防页头闪烁)
+  try{ var _bc=JSON.parse(localStorage.getItem("cs2cup_brand")||"null");
+    if(_bc){ ["clubName","brandEn","logoUrl","brandMark"].forEach(function(k){ if(_bc[k]!=null&&_bc[k]!=="") CFG[k]=_bc[k]; }); }
+  }catch(e){}
 
   // 演示模式下的占位样例(无真实图片,渐变色块展示排版)
   var demoGallery=[
@@ -213,7 +231,10 @@
     ["clubName","school","title","contactQQ","contactWechat","logoUrl"].forEach(function(k){
       if(ev[k]!=null && String(ev[k]).trim()!=="") CFG[k]=ev[k];
     });
+    saveBrandCache();
   }
+  function saveBrandCache(){ try{ localStorage.setItem("cs2cup_brand",
+    JSON.stringify({clubName:CFG.clubName, brandEn:CFG.brandEn, logoUrl:CFG.logoUrl, brandMark:CFG.brandMark})); }catch(e){} }
 
   function groupByEdition(photos){
     var order=[], map={};

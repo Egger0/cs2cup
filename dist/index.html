@@ -217,6 +217,20 @@
   </div>
 </header>
 
+<script>
+/* 防闪烁:用上次缓存的社名/logo 立即渲染页头,云端数据到达后再更新 */
+(function(){try{
+  var b=JSON.parse(localStorage.getItem("cs2cup_brand")||"null"); if(!b) return;
+  var nm=document.getElementById("brandName"); if(nm&&b.clubName) nm.textContent=b.clubName;
+  var en=document.getElementById("brandEn"); if(en&&b.brandEn) en.textContent=b.brandEn;
+  var mk=document.getElementById("brandMark");
+  if(mk){
+    if(b.logoUrl){ mk.textContent=""; var im=new Image(); im.alt=""; im.src=b.logoUrl; mk.appendChild(im); mk.classList.add("has-img"); }
+    else if(b.brandMark){ mk.textContent=b.brandMark; }
+  }
+}catch(e){}})();
+</script>
+
 <section class="hero" id="top">
   <div class="radar" aria-hidden="true"></div>
   <div class="wrap hero-grid">
@@ -431,6 +445,10 @@
   ];
 
   var CFG=Object.assign({},DEF);
+  // 读取上次缓存的品牌作为初始值,避免加载中/离线回退成默认社名(防页头闪烁)
+  try{ var _bc=JSON.parse(localStorage.getItem("cs2cup_brand")||"null");
+    if(_bc){ ["clubName","brandEn","logoUrl","brandMark"].forEach(function(k){ if(_bc[k]!=null&&_bc[k]!=="") CFG[k]=_bc[k]; }); }
+  }catch(e){}
   var CAP=DEF.teamCap, MODE="demo", teams=[], NEXT=null, BASE=null;
   var LKEY="cs2cup.demo.v2";
 
@@ -635,7 +653,10 @@
     var fq=parseFaq(ev.faqText); if(fq) CFG.faq=fq;
     if(ev.mapPool){ var m=String(ev.mapPool).split(/[,,]/).map(function(s){return s.trim();}).filter(Boolean); if(m.length) CFG.maps=m; }
     if(ev.startDate){ var d=new Date(ev.startDate); if(!isNaN(d.getTime())) CFG.startDate=d; }
+    saveBrandCache();
   }
+  function saveBrandCache(){ try{ localStorage.setItem("cs2cup_brand",
+    JSON.stringify({clubName:CFG.clubName, brandEn:CFG.brandEn, logoUrl:CFG.logoUrl, brandMark:CFG.brandMark})); }catch(e){} }
 
   // ---------- boot ----------
   function useDemo(){ MODE="demo"; var saved=loadDemo();
