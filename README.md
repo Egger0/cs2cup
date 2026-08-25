@@ -1,6 +1,6 @@
 # CS2 校园杯 · 赛事网站
 
-大学电竞社 CS2（Counter-Strike 2）校园杯的官方网站，含公开报名页、往届赛事相册、后台管理平台。数据通过腾讯云 CloudBase（PostgreSQL）全网共享。
+宁波理工学院电竞社 CS2（Counter-Strike 2）校园杯的官方网站，含公开报名页、往届赛事相册、后台管理平台。数据通过腾讯云 CloudBase（PostgreSQL）全网共享。
 
 ## 文件
 
