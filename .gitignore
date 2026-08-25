@@ -1,0 +1,13 @@
+# Claude Code 内部目录
+.claude/
+
+# 无关/草稿目录
+egger/
+
+# 旧版单文件(已被 index.html + admin.html 取代)
+cs2-cup.html
+
+# 系统垃圾文件
+.DS_Store
+Thumbs.db
+*.log
