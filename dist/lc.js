@@ -104,11 +104,36 @@
 
   // ---- 往届赛事相册(gallery 表)----
   // 每张照片一行,业务字段在 data 里:{ url, caption, edition, sort }
+  // 届次文本 → 可排序的赛事时间(年*100+月,用于「时间越近越靠前」)。
+  // 支持 "2025 秋季赛" / "2022第二届" / "2025-03" 等写法;解析不到年份返回 0(排到最后)。
+  LC.editionTime = function (ed) {
+    var s = String(ed || "");
+    var m = s.match(/(19|20)\d{2}[-\/年](\d{1,2})/);
+    var year = 0, mon = 0;
+    if (m) {
+      year = parseInt(m[0].slice(0, 4), 10);
+      mon = Math.min(12, Math.max(1, parseInt(m[2], 10)));
+    } else {
+      var y = s.match(/(19|20)\d{2}/);
+      if (y) {
+        year = parseInt(y[0], 10);
+        if (/春|spring/i.test(s)) mon = 3;
+        else if (/夏|summer/i.test(s)) mon = 6;
+        else if (/秋|autumn|fall/i.test(s)) mon = 9;
+        else if (/冬|winter/i.test(s)) mon = 12;
+      }
+    }
+    return year * 100 + mon;
+  };
   LC.listGallery = function () {
     return Promise.resolve(rdb.from("gallery").select("*")).then(function (res) {
       var d = rows(res).map(LC.plainPhoto);
-      // 默认按 sort 倒序(新上传的在前);页面再按「届次」分组展示
-      d.sort(function (a, b) { return (b.sort || 0) - (a.sort || 0); });
+      // 先按「赛事时间」倒序(时间越近越靠前),同一赛事内再按 sort 倒序(新上传的在前)。
+      d.sort(function (a, b) {
+        var ea = LC.editionTime(a.edition), eb = LC.editionTime(b.edition);
+        if (ea !== eb) return eb - ea;
+        return (b.sort || 0) - (a.sort || 0);
+      });
       return d;
     });
   };
