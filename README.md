@@ -19,8 +19,9 @@
 
 - 构建框架：其他 / 静态
 - 安装命令、构建命令：留空
-- 输出目录：`./`
+- 输出目录：`dist`（网站文件都在 `dist/` 目录里）
 - 部署路径：`/nbtcscup`
+- 部署命令：`tcb hosting deploy ./dist /nbtcscup -e <环境ID>`
 
 ## 安全说明
 
