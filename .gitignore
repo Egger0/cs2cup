@@ -7,6 +7,10 @@ egger/
 # 旧版单文件(已被 index.html + admin.html 取代)
 cs2-cup.html
 
+# 本地文档(仅供参考,不需要发布到线上网站)
+SETUP-教程.md
+数据库初始化.sql
+
 # 系统垃圾文件
 .DS_Store
 Thumbs.db
