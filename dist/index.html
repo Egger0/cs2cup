@@ -459,7 +459,7 @@
   var ROUNDS=[{name:"16 强",matches:8,day:0,step:90},{name:"八强",matches:4,day:7,step:120},{name:"半决赛",matches:2,day:8,step:150},{name:"总决赛",matches:1,day:9,step:0}];
   function matchTime(ri,mi){ var r=ROUNDS[ri]; var d=new Date(BASE.getTime()); d.setDate(d.getDate()+r.day); return addMin(d, mi*r.step); }
   var PAIRS=[[1,16],[8,9],[5,12],[4,13],[3,14],[6,11],[7,10],[2,15]];
-  function teamBySeed(s){ for(var i=0;i<teams.length;i++){ if(teams[i].seed===s) return teams[i]; } return null; }
+  function teamBySeed(s){ for(var i=0;i<teams.length;i++){ if(Number(teams[i].seed)===Number(s)) return teams[i]; } return null; }
   function computeNext(){
     var now=Date.now(), firstFuture=null, firstPlayable=null;
     for(var mi=0;mi<8;mi++){ var t=matchTime(0,mi); if(t.getTime()<=now) continue;
@@ -513,9 +513,16 @@
     // faq (须知):填了 faqText 用自定义,否则保留页面默认(含自动填入的截止时间)
     if(CFG.faq&&CFG.faq.length){
       var faqEl=$("faqList");
-      if(faqEl){ faqEl.innerHTML=CFG.faq.map(function(f){
-        return '<details><summary>'+esc(f.q)+'</summary><div class="body">'+esc(f.a)+'</div></details>';
-      }).join(""); }
+      if(faqEl){
+        var items=CFG.faq.map(function(f){
+          return '<details><summary>'+esc(f.q)+'</summary><div class="body">'+esc(f.a)+'</div></details>';
+        });
+        var dlD=CFG.regDeadline?new Date(CFG.regDeadline):null;
+        if(dlD&&!isNaN(dlD.getTime())){
+          items.push('<details><summary>报名截止到什么时候?</summary><div class="body">报名截止:'+fmt(dlD)+'(名额满 '+CAP+' 队亦提前截止,先到先得)。</div></details>');
+        }
+        faqEl.innerHTML=items.join("");
+      }
     }
     // deadline / status
     if(CFG.regDeadline){
@@ -651,7 +658,7 @@
     if(ev.regDeadline) CFG.regDeadline=ev.regDeadline;
     var r=parseRules(ev.rulesText); if(r) CFG.rules=r;
     var fq=parseFaq(ev.faqText); if(fq) CFG.faq=fq;
-    if(ev.mapPool){ var m=String(ev.mapPool).split(/[,,]/).map(function(s){return s.trim();}).filter(Boolean); if(m.length) CFG.maps=m; }
+    if(ev.mapPool){ var m=String(ev.mapPool).split(",").map(function(s){return s.trim();}).filter(Boolean); if(m.length) CFG.maps=m; }
     if(ev.startDate){ var d=new Date(ev.startDate); if(!isNaN(d.getTime())) CFG.startDate=d; }
     saveBrandCache();
   }

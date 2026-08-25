@@ -296,7 +296,7 @@
     Promise.resolve(LC.ensureAuth()).catch(function(){})
       .then(function(){ return LC.getEvent(); })
       .then(function(ev){ applyEvent(ev); }).catch(function(){})
-      .then(function(){ applyBrand(); return LC.listGallery(); })
+      .then(function(){ return LC.listGallery(); })
       .then(function(list){ MODE="cloud"; applyBrand(); renderGallery(list||[]); })
       .catch(function(err){
         MODE="demo"; applyBrand();
