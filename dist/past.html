@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="boot">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Teko:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
 <style>
+  html.boot body{visibility:hidden}
   :root{
     --bg:#0A0E16;--bg-2:#0D131F;--surface:#121A28;--surface-2:#17212F;
     --line:rgba(255,255,255,.08);--line-strong:rgba(255,255,255,.16);
@@ -175,6 +176,25 @@
   <div class="cap" id="lbCap"></div>
 </div>
 
+<script>
+/* 防闪烁:用上次缓存的赛事配置立即渲染页脚品牌,云端数据到达后再更新 */
+(function(){var c=null;try{c=JSON.parse(localStorage.getItem("cs2cup_state")||"null");}catch(e){}
+window.__CS2CUP_STATE=c;
+try{
+  var $=function(id){return document.getElementById(id);};
+  if(c){
+    if(c.clubName){var bn=$("brandName");if(bn)bn.textContent=c.clubName;
+      document.title="往届赛事 · "+(c.clubName||"CS2 校园杯");}
+    if(c.brandEn){var be=$("brandEn");if(be)be.textContent=c.brandEn;}
+    if(c.logoUrl){var mk=$("brandMark");if(mk){mk.textContent="";var im=new Image();im.alt="";im.src=c.logoUrl;mk.appendChild(im);mk.classList.add("has-img");}}
+    if(c.contactQQ){var qq=$("footQQ");if(qq)qq.textContent=c.contactQQ;}
+    if(c.contactWechat){var wx=$("footWechat");if(wx)wx.textContent=c.contactWechat;}
+    if(c.school&&c.clubName){var fs2=$("footSchool");if(fs2)fs2.textContent="本赛事由 "+c.school+c.clubName+"主办";}
+    if(c.title){var fc=$("footCopy");if(fc)fc.textContent="© "+(new Date().getFullYear())+" "+(c.clubName||"")+" · "+c.title;}
+  }
+}catch(e){}
+var r=document.documentElement;if(r)r.classList.remove("boot");})();
+</script>
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/3.8.2/cloudbase.full.js"></script>
 <script src="config.js"></script>
 <script src="lc.js"></script>
@@ -231,10 +251,12 @@
     ["clubName","school","title","contactQQ","contactWechat","logoUrl"].forEach(function(k){
       if(ev[k]!=null && String(ev[k]).trim()!=="") CFG[k]=ev[k];
     });
-    saveBrandCache();
+    saveState(ev);
   }
-  function saveBrandCache(){ try{ localStorage.setItem("cs2cup_brand",
-    JSON.stringify({clubName:CFG.clubName, brandEn:CFG.brandEn, logoUrl:CFG.logoUrl, brandMark:CFG.brandMark})); }catch(e){} }
+  // 缓存:cs2cup_brand 供页头防闪烁脚本;cs2cup_state 保存完整赛事配置,下次刷新首屏直接渲染
+  function saveState(ev){ try{ localStorage.setItem("cs2cup_brand",
+    JSON.stringify({clubName:CFG.clubName, brandEn:CFG.brandEn, logoUrl:CFG.logoUrl, brandMark:CFG.brandMark}));
+    if(ev) localStorage.setItem("cs2cup_state", JSON.stringify(ev)); }catch(e){} }
 
   function groupByEdition(photos){
     var order=[], map={};
@@ -292,6 +314,9 @@
   function showBanner(msg){ $("bannerMsg").textContent=msg; $("banner").hidden=false; }
 
   // boot
+  // 用上次缓存的赛事配置立即合并(避免刷新闪回默认),云端数据到达后再更新
+  var _st = window.__CS2CUP_STATE;
+  if(_st){ try{ applyEvent(_st); }catch(e){} }
   if(window.LC && LC.ready){
     Promise.resolve(LC.ensureAuth()).catch(function(){})
       .then(function(){ return LC.getEvent(); })

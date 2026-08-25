@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="boot">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Teko:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
 <style>
+  html.boot body{visibility:hidden}
   :root{
     --bg:#0A0E16;--bg-2:#0D131F;--surface:#121A28;--surface-2:#17212F;
     --line:rgba(255,255,255,.08);--line-strong:rgba(255,255,255,.16);
@@ -411,6 +412,31 @@
   <span class="tk">✔ 报名已提交</span><span class="td" id="toastMsg">战队已入库</span>
 </div>
 
+<script>
+/* 防闪烁:用上次缓存的赛事配置立即渲染首屏(hero/统计/页脚等),云端数据到达后再更新 */
+(function(){var c=null;try{c=JSON.parse(localStorage.getItem("cs2cup_state")||"null");}catch(e){}
+window.__CS2CUP_STATE=c;
+try{
+  var $=function(id){return document.getElementById(id);};
+  if(c){
+    if(c.clubName){var bn=$("brandName");if(bn)bn.textContent=c.clubName;
+      document.title=(c.clubName?c.clubName+" · ":"")+(c.title||"CS2 校园杯");}
+    if(c.brandEn){var be=$("brandEn");if(be)be.textContent=c.brandEn;}
+    if(c.logoUrl){var mk=$("brandMark");if(mk){mk.textContent="";var im=new Image();im.alt="";im.src=c.logoUrl;mk.appendChild(im);mk.classList.add("has-img");}}
+    if(c.heroTop){var tp=$("heroTop");if(tp)tp.textContent=c.heroTop;}
+    if(c.heroBottom){var hb=$("heroBottom");if(hb)hb.textContent=c.heroBottom;}
+    if(c.eyebrow){var eb=$("heroEyebrow");if(eb)eb.textContent=c.eyebrow;}
+    if(c.lede){var ld=$("heroLede");if(ld)ld.textContent=c.lede;}
+    var cap=parseInt(c.teamCap,10);if(cap>0){var sc=$("statCap"),so=$("slotOf");if(sc)sc.textContent=cap;if(so)so.textContent=cap;}
+    if(c.contactQQ){var qq=$("footQQ");if(qq)qq.textContent=c.contactQQ;}
+    if(c.contactWechat){var wx=$("footWechat");if(wx)wx.textContent=c.contactWechat;}
+    if(c.school&&c.clubName){var fs2=$("footSchool");if(fs2)fs2.textContent="本赛事由 "+c.school+c.clubName+"主办";}
+    if(c.title){var fc=$("footCopy");if(fc)fc.textContent="© "+(new Date().getFullYear())+" "+(c.clubName||"")+" · "+c.title;}
+    if(c.regDeadline){var dl=new Date(c.regDeadline);if(!isNaN(dl.getTime())&&dl.getTime()<Date.now()){var st=$("statusTxt");if(st)st.textContent="报名已截止";}}
+  }
+}catch(e){}
+var r=document.documentElement;if(r)r.classList.remove("boot");})();
+</script>
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/3.8.2/cloudbase.full.js"></script>
 <script src="config.js"></script>
 <script src="lc.js"></script>
@@ -660,10 +686,12 @@
     var fq=parseFaq(ev.faqText); if(fq) CFG.faq=fq;
     if(ev.mapPool){ var m=String(ev.mapPool).split(",").map(function(s){return s.trim();}).filter(Boolean); if(m.length) CFG.maps=m; }
     if(ev.startDate){ var d=new Date(ev.startDate); if(!isNaN(d.getTime())) CFG.startDate=d; }
-    saveBrandCache();
+    saveState(ev);
   }
-  function saveBrandCache(){ try{ localStorage.setItem("cs2cup_brand",
-    JSON.stringify({clubName:CFG.clubName, brandEn:CFG.brandEn, logoUrl:CFG.logoUrl, brandMark:CFG.brandMark})); }catch(e){} }
+  // 缓存:cs2cup_brand 供页头防闪烁脚本;cs2cup_state 保存完整赛事配置,下次刷新首屏直接渲染
+  function saveState(ev){ try{ localStorage.setItem("cs2cup_brand",
+    JSON.stringify({clubName:CFG.clubName, brandEn:CFG.brandEn, logoUrl:CFG.logoUrl, brandMark:CFG.brandMark}));
+    if(ev) localStorage.setItem("cs2cup_state", JSON.stringify(ev)); }catch(e){} }
 
   // ---------- boot ----------
   function useDemo(){ MODE="demo"; var saved=loadDemo();
@@ -671,15 +699,18 @@
   }
   function finish(){ BASE=CFG.startDate||upcomingSaturdayNoon(); renderAll(); tick(); setInterval(tick,1000); }
 
+  // 用上次缓存的赛事配置立即渲染(避免刷新闪回默认),云端数据到达后再更新
+  var _st = window.__CS2CUP_STATE;
+  if(_st){ try{ applyEvent(_st); }catch(e){} }
   if(window.LC && LC.ready){
+    finish();
     Promise.resolve(LC.ensureAuth()).catch(function(){})
       .then(function(){ return LC.getEvent(); })
       .then(function(ev){ applyEvent(ev); })
       .catch(function(){})
       .then(function(){ return LC.listTeams(); })
-      .then(function(list){ MODE="cloud"; teams=list||[]; })
-      .catch(function(){ useDemo(); })
-      .then(finish);
+      .then(function(list){ MODE="cloud"; teams=list||[]; renderAll(); })
+      .catch(function(){ useDemo(); renderAll(); });
   }else{
     useDemo(); finish();
   }
