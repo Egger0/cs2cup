@@ -200,8 +200,12 @@
           <div class="field"><label for="contactWechat">负责人微信</label><input id="contactWechat" placeholder="微信号" maxlength="30" /></div>
         </div>
         <div class="field">
-          <label for="rulesText">赛制规则 <span class="hint">每行一条,格式「标题|说明」,留空则用默认</span></label>
-          <textarea id="rulesText" rows="6" placeholder="单败淘汰|每轮 BO3,总决赛 BO5&#10;地图|现役七图,赛前 Ban/Pick&#10;资格|本校在校生,每人限报一队"></textarea>
+          <label for="rulesText">赛制规则 <span class="hint">每行一条:「小标签|标题|说明」(小标签选填),留空则用默认</span></label>
+          <textarea id="rulesText" rows="6" placeholder="赛制|单败淘汰|每轮 BO3,总决赛 BO5&#10;地图|现役七图|赛前 Ban/Pick 定图&#10;资格|在校学生|每人限报一队,凭学生证参赛"></textarea>
+        </div>
+        <div class="field">
+          <label for="faqText">须知 / 常见问题 <span class="hint">每行一条:「问题|答案」,留空则用默认</span></label>
+          <textarea id="faqText" rows="6" placeholder="报名截止到什么时候?|名额满即截止,先到先得。&#10;凑不齐五人可以报名吗?|可以先占位,开赛前补齐首发即可。&#10;比赛在哪里进行?|线下电竞教室,具体时间地点另行通知。"></textarea>
         </div>
         <div class="field"><label for="mapPool">地图池 <span class="hint">逗号分隔,选填</span></label>
           <input id="mapPool" placeholder="Mirage,Inferno,Nuke,Overpass,Ancient,Anubis,Dust II" /></div>
@@ -284,7 +288,7 @@
   }
 
   // ---------- event ----------
-  var EV_FIELDS=["clubName","school","title","heroTop","heroBottom","eyebrow","lede","teamCap","contactQQ","contactWechat","rulesText","mapPool"];
+  var EV_FIELDS=["clubName","school","title","heroTop","heroBottom","eyebrow","lede","teamCap","contactQQ","contactWechat","rulesText","faqText","mapPool"];
   var currentEventId=null;
 
   function toLocalInput(d){ if(!d) return ""; var p=function(n){return(n<10?"0":"")+n;};

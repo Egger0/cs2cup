@@ -363,7 +363,7 @@
 <section class="section" id="faq">
   <div class="wrap">
     <div class="section-head reveal"><span class="eyebrow">05 · 报名须知</span><h2>常见问题</h2></div>
-    <div class="faq reveal">
+    <div class="faq reveal" id="faqList">
       <details><summary>报名截止到什么时候?</summary><div class="body" id="faqDeadline">名额满即截止,先到先得。上方「剩余席位」实时显示还剩多少空位。</div></details>
       <details><summary>凑不齐五个人可以报名吗?</summary><div class="body">可以先报名占位,首发 5 人昵称在开赛前补齐即可。缺人也能在社群里找队友组队。</div></details>
       <details><summary>提交后信息能修改吗?</summary><div class="body">如需改动请联系赛事负责人,我们会在编排前更新。</div></details>
@@ -492,11 +492,18 @@
       var ens=$("mapsEl").querySelectorAll(".map .en");
       for(var i=0;i<ens.length&&i<CFG.maps.length;i++){ ens[i].textContent=CFG.maps[i]; }
     }
+    // faq (须知):填了 faqText 用自定义,否则保留页面默认(含自动填入的截止时间)
+    if(CFG.faq&&CFG.faq.length){
+      var faqEl=$("faqList");
+      if(faqEl){ faqEl.innerHTML=CFG.faq.map(function(f){
+        return '<details><summary>'+esc(f.q)+'</summary><div class="body">'+esc(f.a)+'</div></details>';
+      }).join(""); }
+    }
     // deadline / status
     if(CFG.regDeadline){
       var dl=new Date(CFG.regDeadline);
       if(!isNaN(dl.getTime())){
-        $("faqDeadline").textContent="报名截止:"+fmt(dl)+"(名额满 "+CAP+" 队亦提前截止,先到先得)。";
+        var fd=$("faqDeadline"); if(fd) fd.textContent="报名截止:"+fmt(dl)+"(名额满 "+CAP+" 队亦提前截止,先到先得)。";
         if(dl.getTime()<Date.now()){ var st=$("statusTxt"); if(st) st.textContent="报名已截止"; }
       }
     }
@@ -604,7 +611,17 @@
   function parseRules(text){
     if(!text) return null;
     var out=text.split(/\r?\n/).map(function(line){ line=line.trim(); if(!line) return null;
-      var parts=line.split("|"); return { t:(parts[0]||"").trim(), d:(parts[1]||"").trim() }; }).filter(function(x){return x&&x.t;});
+      var parts=line.split("|").map(function(s){return s.trim();});
+      // 三段=「小标签|标题|说明」;两段=「标题|说明」(小标签留空,自动编号)
+      if(parts.length>=3) return { ic:parts[0], t:parts[1], d:parts.slice(2).join("|") };
+      return { ic:"", t:parts[0]||"", d:parts[1]||"" }; }).filter(function(x){return x&&x.t;});
+    return out.length?out:null;
+  }
+  function parseFaq(text){
+    if(!text) return null;
+    var out=text.split(/\r?\n/).map(function(line){ line=line.trim(); if(!line) return null;
+      var i=line.indexOf("|");
+      return i<0 ? { q:line, a:"" } : { q:line.slice(0,i).trim(), a:line.slice(i+1).trim() }; }).filter(function(x){return x&&x.q;});
     return out.length?out:null;
   }
   function applyEvent(ev){
@@ -615,6 +632,7 @@
     if(ev.teamCap){ var c=parseInt(ev.teamCap,10); if(c>0) CAP=c; }
     if(ev.regDeadline) CFG.regDeadline=ev.regDeadline;
     var r=parseRules(ev.rulesText); if(r) CFG.rules=r;
+    var fq=parseFaq(ev.faqText); if(fq) CFG.faq=fq;
     if(ev.mapPool){ var m=String(ev.mapPool).split(/[,,]/).map(function(s){return s.trim();}).filter(Boolean); if(m.length) CFG.maps=m; }
     if(ev.startDate){ var d=new Date(ev.startDate); if(!isNaN(d.getTime())) CFG.startDate=d; }
   }
