@@ -68,6 +68,6 @@ Public reads use `team_public` and `player_public`. Neither exposes `contact`.
 
 ## Deploy
 
-Merging to `main` runs `.github/workflows/deploy.yml`: typecheck, lint, build, then Cloud Run.
+Build the image from the `Dockerfile` and run it on CloudBase Cloud Run, port 3000.
 
 Migrations run in the CloudBase SQL editor in numbered order.
