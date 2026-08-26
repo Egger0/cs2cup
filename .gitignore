@@ -1,19 +1,8 @@
-# Claude Code 内部目录
 .claude/
-
-# 无关/草稿目录
-egger/
-
-# 旧版单文件(已被 index.html + admin.html 取代)
-cs2-cup.html
-
-# 系统垃圾文件
+.playwright-mcp/
 .DS_Store
 Thumbs.db
 *.log
-
-# 工具产生的临时目录
-.playwright-mcp/
-
-# 设计文档与实施计划:仅本地保留,不进远端仓库
+cs2-cup.html
 docs/
+egger/
