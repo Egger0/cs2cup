@@ -14,6 +14,19 @@ cp .env.example .env.local
 npm run dev
 ```
 
+The local stack runs PostgREST twice: port 53000 as `anon`, port 53001 as
+`club_admin`. Point `RDB_BASE_URL` and `RDB_ADMIN_BASE_URL` at them.
+
+For the console, mint a local session:
+
+```bash
+node scripts/dev-session.mjs        # prints a token, serves JWKS on :53100
+```
+
+Set `CLOUDBASE_ISSUER=http://localhost:53100` and `CLOUDBASE_ENV_ID=dev-env`,
+insert the subject into `admin_user`, then set the token as the
+`cs2cup_session` cookie.
+
 | Script | |
 |---|---|
 | `stack:up` | Local PostgreSQL and PostgREST, applies `migrations/` |
@@ -21,7 +34,9 @@ npm run dev
 | `stack:down` | Destroys the local stack |
 | `photos:import` | Decodes legacy base64 photos to files and SQL |
 | `typecheck` `lint` `build` | Pipeline gates |
-| `e2e` | Browser tests against a running server |
+| `e2e` | Public browser tests, 23 behaviours |
+| `e2e:admin` | Console write tests, requires a dev session |
+| `serve` | Build, pack the standalone bundle, run it |
 
 For a server that is not running on port 3000, set `E2E_BASE_URL` before `npm run e2e`.
 For example, in PowerShell: `$env:E2E_BASE_URL = 'http://127.0.0.1:3100'; npm run e2e`.
@@ -35,7 +50,10 @@ For example, in PowerShell: `$env:E2E_BASE_URL = 'http://127.0.0.1:3100'; npm ru
 | `CLOUDBASE_ADMIN_KEY` | Privileged key, admin writes |
 | `CLOUDBASE_REGION` | Defaults to `ap-shanghai` |
 | `NEXT_PUBLIC_PHOTO_BASE_URL` | Object storage origin |
-| `RDB_BASE_URL` | Overrides the data endpoint, local only |
+| `RDB_BASE_URL` | Overrides the read endpoint, local only |
+| `RDB_ADMIN_BASE_URL` | Overrides the write endpoint, local only |
+| `CLOUDBASE_ISSUER` | Overrides the OIDC issuer, local only |
+| `NEXT_PUBLIC_SITE_URL` | Absolute origin for sitemap, feed and cards |
 
 ## Layout
 
@@ -51,7 +69,7 @@ For example, in PowerShell: `$env:E2E_BASE_URL = 'http://127.0.0.1:3100'; npm ru
 | `app/feed.xml/` | RSS |
 | `migrations/` | Numbered, re-runnable |
 | `seeds/` | Demo data, never production |
-| `scripts/` | One-off migration tools |
+| `scripts/` | Migration tools, browser tests, dev session |
 
 `components/ui/` must not import `lib/types.ts`.
 

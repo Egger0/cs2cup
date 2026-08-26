@@ -25,3 +25,15 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  rest-admin:
+    image: postgrest/postgrest:latest
+    environment:
+      PGRST_DB_URI: postgres://postgres:dev@db:5432/cs2cup
+      PGRST_DB_ANON_ROLE: club_admin
+      PGRST_DB_SCHEMAS: public
+    ports:
+      - '53001:3000'
+    depends_on:
+      db:
+        condition: service_healthy
