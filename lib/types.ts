@@ -64,6 +64,8 @@ export interface Tournament {
   heroTop: string
   heroBottom: string
   lede: string
+  championName: string | null
+  championNote: string | null
 }
 
 export interface Player {

@@ -54,6 +54,9 @@ For example, in PowerShell: `$env:E2E_BASE_URL = 'http://127.0.0.1:3100'; npm ru
 | `RDB_ADMIN_BASE_URL` | Overrides the write endpoint, local only |
 | `CLOUDBASE_ISSUER` | Overrides the OIDC issuer, local only |
 | `NEXT_PUBLIC_SITE_URL` | Absolute origin for sitemap, feed and cards |
+| `PHOTO_UPLOAD_DRIVER` | `local` or `cos`; defaults to `local` |
+| `PHOTO_LOCAL_ROOT` | Where the local driver writes; defaults to `public/photos` |
+| `COS_UPLOAD_URL` `COS_UPLOAD_TOKEN` | Object storage endpoint and credential |
 
 ## Layout
 
@@ -67,6 +70,7 @@ For example, in PowerShell: `$env:E2E_BASE_URL = 'http://127.0.0.1:3100'; npm ru
 | `components/layout/` | Shells and navigation |
 | `lib/` | Data access, auth, bracket resolution |
 | `app/feed.xml/` | RSS |
+| `app/media/[...key]/` | Serves local uploads |
 | `migrations/` | Numbered, re-runnable |
 | `seeds/` | Demo data, never production |
 | `scripts/` | Migration tools, browser tests, dev session |

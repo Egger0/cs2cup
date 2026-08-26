@@ -169,6 +169,8 @@ interface TournamentRow {
   hero_eyebrow: string
   hero_bottom: string
   lede: string
+  champion_name: string | null
+  champion_note: string | null
 }
 
 export async function adminListTournaments(): Promise<Tournament[]> {
@@ -195,6 +197,8 @@ export async function adminListTournaments(): Promise<Tournament[]> {
     heroTop: '',
     heroBottom: row.hero_bottom,
     lede: row.lede,
+    championName: row.champion_name,
+    championNote: row.champion_note,
   }))
 }
 
@@ -216,4 +220,101 @@ export function adminCreateTournament(values: {
     status: 'draft',
     hero_bottom: values.title,
   }, ADMIN)
+}
+
+interface PhotoRow {
+  id: number
+  tournament_id: number
+  storage_key: string
+  width: number
+  height: number
+  blur_data_url: string | null
+  caption: string | null
+  sort_order: number
+}
+
+export async function adminListPhotos(): Promise<
+  { id: number; tournamentId: number; storageKey: string; width: number; height: number; caption: string | null; sortOrder: number }[]
+> {
+  const rows = await selectRows<PhotoRow>('photo', {
+    ...ADMIN,
+    order: 'tournament_id.desc,sort_order.asc',
+  })
+  return rows.map(row => ({
+    id: row.id,
+    tournamentId: row.tournament_id,
+    storageKey: row.storage_key,
+    width: row.width,
+    height: row.height,
+    caption: row.caption,
+    sortOrder: row.sort_order,
+  }))
+}
+
+export function adminInsertPhoto(values: {
+  tournamentId: number
+  storageKey: string
+  width: number
+  height: number
+  caption: string | null
+  sortOrder: number
+}) {
+  return insertRows('photo', {
+    tournament_id: values.tournamentId,
+    storage_key: values.storageKey,
+    width: values.width,
+    height: values.height,
+    caption: values.caption,
+    sort_order: values.sortOrder,
+  }, ADMIN)
+}
+
+export function adminDeletePhoto(id: number) {
+  return deleteRows('photo', { ...ADMIN, filters: { id: `eq.${id}` } })
+}
+
+export function adminSaveTournament(id: number, values: Record<string, unknown>) {
+  return updateRows('tournament', values, { ...ADMIN, filters: { id: `eq.${id}` } })
+}
+
+export function adminInsertMatches(
+  rows: {
+    tournamentId: number
+    round: number
+    slot: number
+    roundLabel: string
+    bestOf: number
+  }[],
+) {
+  return insertRows(
+    'match',
+    rows.map(row => ({
+      tournament_id: row.tournamentId,
+      round: row.round,
+      slot: row.slot,
+      round_label: row.roundLabel,
+      best_of: row.bestOf,
+    })),
+    ADMIN,
+  )
+}
+
+export function adminDeleteMatches(tournamentId: number) {
+  return deleteRows('match', { ...ADMIN, filters: { tournament_id: `eq.${tournamentId}` } })
+}
+
+export function adminLinkMatch(
+  id: number,
+  values: { sourceA?: number; sourceB?: number; teamA?: number | null; teamB?: number | null },
+) {
+  const payload: Record<string, unknown> = {}
+  if (values.sourceA !== undefined) payload.source_match_a_id = values.sourceA
+  if (values.sourceB !== undefined) payload.source_match_b_id = values.sourceB
+  if (values.teamA !== undefined) payload.team_a_id = values.teamA
+  if (values.teamB !== undefined) payload.team_b_id = values.teamB
+  return updateRows('match', payload, { ...ADMIN, filters: { id: `eq.${id}` } })
+}
+
+export function adminSeedTeam(id: number, seed: number) {
+  return updateRows('team', { seed }, { ...ADMIN, filters: { id: `eq.${id}` } })
 }

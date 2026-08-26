@@ -72,8 +72,63 @@ const res = await anonPage.request.get(`${BASE}/admin/posts`, { maxRedirects: 0 
 check('未登录访问后台被拒', res.status() === 307, String(res.status()))
 await anon.close()
 
+// 上传素材
+const { writeFileSync, mkdirSync } = await import('node:fs')
+const png = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAGQAAABGCAYAAAA2Vh8vAAAAJUlEQVR4nO3BAQ0AAADCoPdPbQ43oAAAAAAAAAAAAAAAAAAA4M0AKvgAAY0jZuQAAAAASUVORK5CYII=',
+  'base64',
+)
+mkdirSync('/tmp/e2e-upload', { recursive: true })
+writeFileSync('/tmp/e2e-upload/probe.png', png)
+
+await page.goto(`${BASE}/admin/photos`, { waitUntil: 'domcontentloaded' })
+await page.waitForTimeout(1200)
+const photosBefore = Number(db('select count(*) from photo'))
+await page.setInputFiles('input[type=file]', '/tmp/e2e-upload/probe.png')
+await page.fill('#up-caption', 'E2E 上传测试')
+await page.locator('main form').getByRole('button', { name: '上传' }).click()
+await page.waitForTimeout(3000)
+const photosAfter = Number(db('select count(*) from photo'))
+check('后台上传素材入库', photosAfter === photosBefore + 1, `${photosBefore} → ${photosAfter}`)
+
+const key = db(`select storage_key from photo where caption='E2E 上传测试'`)
+const base = process.env.NEXT_PUBLIC_PHOTO_BASE_URL ?? '/media'
+const served = await page.request.get(`${BASE}${base}/${key}`)
+check('图片可通过 HTTP 取回', served.status() === 200, `${served.status()} ${key}`)
+const dims = db(`select width||'x'||height from photo where caption='E2E 上传测试'`)
+check('尺寸解析正确', dims === '100x70', dims)
+
+// 抽签生成对阵
+await page.goto(`${BASE}/admin/tournaments/4`, { waitUntil: 'domcontentloaded' })
+await page.waitForTimeout(1200)
+const beforeMatches = Number(db('select count(*) from match where tournament_id=4'))
+page.once('dialog', d => d.accept())
+await page.getByRole('button', { name: /生成对阵表|重新抽签/ }).click()
+await page.waitForTimeout(6000)
+const afterMatches = Number(db('select count(*) from match where tournament_id=4'))
+check('后台一键抽签', afterMatches === 15, `${beforeMatches} → ${afterMatches}`)
+const linked = Number(db('select count(*) from match where tournament_id=4 and source_match_a_id is not null'))
+check('晋级关系已连接', linked === 7, String(linked))
+const seeded = Number(db('select count(*) from match where tournament_id=4 and round=0 and team_a_id is not null'))
+check('首轮按种子配对', seeded === 8, String(seeded))
+
+// 冠军补录
+await page.goto(`${BASE}/admin/tournaments/3`, { waitUntil: 'domcontentloaded' })
+await page.waitForTimeout(1200)
+const champ = 'E2E 冠军 ' + stamp
+await page.fill('input[name=championName]', champ)
+await page.locator('main form').getByRole('button', { name: '保存' }).first().click()
+await page.waitForTimeout(3000)
+check('冠军补录入库', db('select champion_name from tournament where id=3') === champ)
+
+await page.goto(`${BASE}/tournaments`, { waitUntil: 'domcontentloaded' })
+await page.waitForTimeout(1500)
+check('荣誉墙显示冠军', (await page.evaluate(() => document.body.innerText)).includes(champ))
+
 check('无页面异常', errors.length === 0, errors.slice(0, 1).join())
 
+db(`delete from photo where caption='E2E 上传测试'`)
+db(`update tournament set champion_name=null where id=3`)
 db(`delete from post where slug like 'e2e-%'`)
 db(`delete from tournament where slug like 'e2e-cup-%'`)
 db(`update game set tagline='社团的主战场,宁理杯已经办到第四届。' where slug='cs2'`)
