@@ -13,9 +13,9 @@
 .go {
   flex: none;
   padding: 12px 22px;
-  border: 1px solid var(--t);
-  background: var(--t);
-  color: #06121f;
+  border: 1px solid var(--ct);
+  background: var(--ct);
+  color: var(--button-ink, #06121f);
   font-family: var(--font-display), sans-serif;
   font-weight: 700;
   cursor: pointer;
@@ -51,7 +51,7 @@
   font-family: var(--font-mono), monospace;
   font-size: 0.62rem;
   letter-spacing: 0.16em;
-  color: var(--t);
+  color: var(--ct);
   border: 1px solid currentColor;
   padding: 3px 0;
   text-align: center;

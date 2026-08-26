@@ -32,11 +32,9 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
 
   const mine = tournaments.filter(tournament => tournament.gameId === game.id)
   const news = posts.filter(post => post.gameId === game.id)
-  const accent = { '--game-accent': game.accentColor ?? 'var(--t)' } as React.CSSProperties
-
   return (
     <>
-      <header className={styles.head} style={accent}>
+      <header className={styles.head}>
         <span className={styles.glow} aria-hidden />
         <div className="wrap">
           <div className={styles.en}>{game.nameEn ?? game.slug}</div>
@@ -54,7 +52,7 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
       </header>
 
       {game.description ? (
-        <section className="section" style={accent}>
+        <section className="section">
           <div className="wrap">
             <div className={styles.about}>
               <p className={styles.description}>{game.description}</p>
@@ -71,7 +69,7 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
 
       <div className="divider" />
 
-      <section className="section" style={accent}>
+      <section className="section">
         <div className="wrap">
           <div data-rise>
             <SectionHead eyebrow="赛事" title={`${game.name} 的比赛`} />
@@ -95,7 +93,7 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
       {news.length > 0 ? (
         <>
           <div className="divider" />
-          <section className="section" style={accent}>
+          <section className="section">
             <div className="wrap">
               <div data-rise>
                 <SectionHead eyebrow="动态" title={`${game.name} 相关`} />

@@ -29,7 +29,7 @@
 .fill {
   position: absolute;
   inset: 0 auto 0 0;
-  background: linear-gradient(90deg, rgba(227, 166, 58, 0.14), rgba(227, 166, 58, 0.02));
+  background: linear-gradient(90deg, rgba(158, 182, 197, 0.14), rgba(158, 182, 197, 0.02));
   pointer-events: none;
 }
 

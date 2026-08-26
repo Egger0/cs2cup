@@ -7,7 +7,7 @@
   border: 1px solid var(--line-strong);
   background:
     linear-gradient(90deg, rgba(61, 155, 233, 0.1), transparent 42%),
-    linear-gradient(270deg, rgba(227, 166, 58, 0.1), transparent 42%),
+    linear-gradient(270deg, rgba(158, 182, 197, 0.1), transparent 42%),
     linear-gradient(180deg, var(--surface), var(--bg-2));
 }
 

@@ -1,12 +1,28 @@
 .theme {
+  --void: #070b12;
+  --bg: #0a101b;
+  --bg-2: #0d1420;
+  --surface: #101927;
+  --surface-2: #141f2e;
+  --line: rgba(143, 167, 186, 0.16);
+  --line-strong: #253348;
+  --ink: #e6edf5;
+  --muted: #90a0b4;
+  --muted-2: #657990;
+  --ct: #3d9be9;
+  --ct-dim: rgba(61, 155, 233, 0.16);
+  --t: #9eb6c5;
+  --t-dim: rgba(158, 182, 197, 0.16);
+  --c4: #f04452;
+  --honour: #e3a63a;
   --accent: var(--ct);
   --accent-dim: var(--ct-dim);
+  --button-ink: #07111e;
+  --danger-dim: rgba(240, 68, 82, 0.12);
+  --toast-ink: var(--ink);
   position: relative;
   z-index: 1;
   min-height: 100dvh;
   color-scheme: dark;
-  background:
-    radial-gradient(1100px 620px at 12% -8%, rgba(61, 155, 233, 0.1), transparent 60%),
-    radial-gradient(1000px 640px at 92% 4%, rgba(227, 166, 58, 0.09), transparent 62%),
-    linear-gradient(180deg, var(--bg), var(--void) 88%);
+  background: linear-gradient(180deg, var(--bg), var(--void) 88%);
 }

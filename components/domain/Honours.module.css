@@ -25,7 +25,7 @@
   position: absolute;
   inset: 0 0 auto 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--t), transparent);
+  background: linear-gradient(90deg, var(--honour, var(--t)), transparent);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
@@ -63,7 +63,7 @@
   width: 18px;
   height: 18px;
   flex: none;
-  color: var(--t);
+  color: var(--honour, var(--t));
 }
 
 .champion {
@@ -71,7 +71,7 @@
   font-weight: 900;
   font-size: clamp(1.15rem, 2.2vw, 1.5rem);
   letter-spacing: -0.02em;
-  color: #fff7e8;
+  color: var(--ink);
 }
 
 .pending {

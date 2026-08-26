@@ -16,10 +16,7 @@
 .tint {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(120% 90% at 14% 0%, rgba(61, 155, 233, 0.34), transparent 62%),
-    radial-gradient(90% 80% at 92% 12%, rgba(227, 166, 58, 0.18), transparent 58%),
-    linear-gradient(180deg, rgba(5, 7, 12, 0.72) 6%, rgba(5, 7, 12, 0.94) 74%, var(--bg) 100%);
+  background: linear-gradient(180deg, rgba(7, 11, 18, 0.72) 6%, rgba(7, 11, 18, 0.94) 74%, var(--bg) 100%);
 }
 
 .scan {

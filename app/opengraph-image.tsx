@@ -15,15 +15,15 @@ export default async function OpengraphImage() {
           flexDirection: 'column',
           justifyContent: 'center',
           padding: 88,
-          background: 'linear-gradient(140deg, #0b0906 0%, #0a0e16 58%, #05070c 100%)',
-          color: '#fff7e8',
+          background: 'linear-gradient(140deg, #0a101b 0%, #070b12 100%)',
+          color: '#e6edf5',
         }}
       >
         <div
           style={{
             fontSize: 26,
             letterSpacing: 10,
-            color: '#e3a63a',
+            color: '#3d9be9',
             display: 'flex',
           }}
         >
@@ -32,7 +32,7 @@ export default async function OpengraphImage() {
         <div style={{ fontSize: 108, fontWeight: 900, marginTop: 24, display: 'flex' }}>
           宁波理工电竞社
         </div>
-        <div style={{ fontSize: 34, color: '#8593a6', marginTop: 28, display: 'flex' }}>
+        <div style={{ fontSize: 34, color: '#90a0b4', marginTop: 28, display: 'flex' }}>
           浙大宁波理工学院 · 办比赛,也一起开黑
         </div>
         <div
@@ -40,7 +40,7 @@ export default async function OpengraphImage() {
             marginTop: 56,
             height: 4,
             width: 260,
-            background: 'linear-gradient(90deg, #e3a63a, transparent)',
+          background: 'linear-gradient(90deg, #3d9be9, transparent)',
             display: 'flex',
           }}
         />

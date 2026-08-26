@@ -4,7 +4,7 @@
   overflow: hidden;
   padding-block: clamp(56px, 10vh, 104px) clamp(36px, 6vh, 64px);
   border-bottom: 1px solid var(--line);
-  background: linear-gradient(180deg, #08090d 0%, var(--bg) 74%);
+  background: linear-gradient(180deg, var(--bg), var(--void));
 }
 
 .glow {
@@ -12,11 +12,7 @@
   inset: -60% -20% auto -30%;
   height: 170%;
   z-index: -1;
-  background: radial-gradient(
-    40% 36% at 24% 34%,
-    color-mix(in srgb, var(--game-accent) 26%, transparent),
-    transparent 68%
-  );
+  background: none;
 }
 
 .en {
@@ -24,7 +20,7 @@
   font-size: 0.7rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--game-accent);
+  color: var(--ct);
 }
 
 .name {
@@ -34,7 +30,7 @@
   line-height: 0.94;
   letter-spacing: -0.045em;
   margin-top: 16px;
-  color: #fff7e8;
+  color: var(--ink);
 }
 
 .tagline {
@@ -86,7 +82,7 @@
   color: var(--ink);
   max-width: 54ch;
   padding-left: 20px;
-  border-left: 2px solid var(--game-accent);
+  border-left: 2px solid var(--ct);
 }
 
 .format {

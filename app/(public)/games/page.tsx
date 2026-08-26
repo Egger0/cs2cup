@@ -31,7 +31,6 @@ export default async function GamesPage() {
                 key={game.id}
                 href={`/games/${game.slug}`}
                 className={styles.game}
-                style={{ '--game-accent': game.accentColor ?? undefined } as React.CSSProperties}
               >
                 <div className={styles.gameName}>{game.name}</div>
                 <div className={styles.gameEn}>{game.nameEn ?? game.slug}</div>

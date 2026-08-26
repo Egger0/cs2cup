@@ -28,16 +28,7 @@
   line-height: 0.96;
   letter-spacing: -0.045em;
   margin-top: 28px;
-  color: var(--ct);
-}
-
-@supports ((-webkit-background-clip: text) or (background-clip: text)) {
-  .name {
-    background: linear-gradient(100deg, var(--ct), var(--t));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
+  color: #4299e8;
 }
 
 .school {
@@ -46,7 +37,7 @@
   font-size: clamp(0.86rem, 1.8vw, 1.15rem);
   letter-spacing: 0.4em;
   text-indent: 0.4em;
-  color: var(--t);
+  color: #8fa7ba;
   margin-top: 16px;
 }
 
@@ -88,7 +79,7 @@
   position: absolute;
   inset: auto 0 0 0;
   height: 2px;
-  background: var(--game-accent, var(--t));
+  background: var(--ct);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -107,7 +98,7 @@
   font-weight: 900;
   font-size: clamp(1.5rem, 2.6vw, 2rem);
   letter-spacing: -0.03em;
-  color: var(--game-accent, var(--ink));
+  color: var(--ct);
 }
 
 .gameEn {
@@ -150,8 +141,8 @@
 }
 
 .spotlight {
-  border: 1px solid rgba(227, 166, 58, 0.28);
-  background: linear-gradient(180deg, rgba(20, 15, 8, 0.7), rgba(10, 12, 18, 0.85));
+  border: 1px solid var(--line-strong);
+  background: linear-gradient(180deg, var(--surface), var(--bg-2));
   padding: clamp(22px, 3vw, 30px);
 }
 

@@ -7,7 +7,7 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: linear-gradient(180deg, #0b0906 0%, var(--bg) 62%);
+  background: linear-gradient(180deg, #0a101b 0%, #070b12 62%);
 }
 
 .glow {
@@ -15,7 +15,7 @@
   inset: -40% -20% auto -20%;
   height: 140%;
   z-index: -1;
-  background: radial-gradient(44% 40% at 28% 34%, rgba(227, 166, 58, 0.2), transparent 68%);
+  background: none;
 }
 
 .code {
@@ -24,7 +24,7 @@
   font-size: clamp(6rem, 22vw, 16rem);
   line-height: 0.8;
   color: transparent;
-  -webkit-text-stroke: 2px rgba(227, 166, 58, 0.55);
+  -webkit-text-stroke: 2px rgba(61, 155, 233, 0.55);
   font-variant-numeric: tabular-nums;
 }
 
