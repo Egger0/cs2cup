@@ -17,7 +17,7 @@ export const metadata = { title: '关于社团 · 宁波理工电竞社' }
 
 export default async function ClubPage() {
   const [setting, members, posts, tournaments, photos] = await Promise.all([
-    getSiteSetting(),
+    safely(getSiteSetting, null),
     safely(listMembers, []),
     safely(() => listPosts(), []),
     safely(listTournaments, []),

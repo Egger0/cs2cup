@@ -5,6 +5,8 @@ export const display = Big_Shoulders({
   weight: ['600', '700', '800', '900'],
   variable: '--font-display',
   display: 'swap',
+  fallback: ['Arial Narrow', 'Helvetica Neue Condensed', 'sans-serif'],
+  adjustFontFallback: false,
 })
 
 export const mono = JetBrains_Mono({

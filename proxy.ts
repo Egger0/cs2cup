@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 const SESSION_COOKIE = 'cs2cup_session'
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (request.cookies.has(SESSION_COOKIE)) return NextResponse.next()
 
   const url = request.nextUrl.clone()
