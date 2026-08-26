@@ -107,29 +107,40 @@
 @media (max-width: 900px) {
   .nav {
     position: fixed;
-    inset: 64px 0 auto;
+    inset: 68px 0 auto;
     flex-direction: column;
     gap: 0;
-    padding: 8px 0;
-    background: var(--bg-2);
-    border-bottom: 1px solid var(--line);
-    transform: translateY(-8px);
+    padding: 6px 0 14px;
+    background: linear-gradient(180deg, var(--bg-2), var(--bg));
+    border-bottom: 1px solid var(--line-strong);
+    box-shadow: 0 26px 50px -28px rgba(0, 0, 0, 0.95);
+    clip-path: inset(0 0 100% 0);
     opacity: 0;
     pointer-events: none;
     transition:
-      transform 0.24s var(--ease),
+      clip-path 0.34s cubic-bezier(0.16, 1, 0.3, 1),
       opacity 0.24s ease;
   }
 
   .navOpen {
-    transform: translateY(0);
+    clip-path: inset(0 0 0 0);
     opacity: 1;
     pointer-events: auto;
   }
 
   .nav a {
     width: 100%;
-    padding: 14px var(--pad);
+    padding: 16px var(--pad);
+    font-size: 1.02rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .nav a:last-child {
+    border-bottom: none;
+  }
+
+  .nav a::after {
+    display: none;
   }
 
   .toggle {
