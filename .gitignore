@@ -12,3 +12,5 @@ next-env.d.ts
 cs2-cup.html
 docs/
 egger/
+migration-output/
+public/photos/
