@@ -49,7 +49,8 @@ npm run photos:import
 | `components/domain/` | 赛事领域组件 |
 | `components/layout/` | 页面骨架 |
 | `lib/` | 数据访问、鉴权、赛制推演 |
-| `migrations/` | 数据库迁移脚本 |
+| `migrations/` | 数据库迁移,按编号顺序执行,可重复运行 |
+| `seeds/` | 演示数据,仅本地预览,不要在生产执行 |
 | `scripts/` | 一次性迁移工具 |
 
 `components/ui/` 不得引入 `lib/types.ts`。
@@ -59,3 +60,4 @@ npm run photos:import
 推送到 `main` 触发 `.github/workflows/deploy.yml`,构建镜像并发布至 CloudBase 云托管。
 
 数据库迁移按 `migrations/` 下的编号顺序执行,全部脚本可重复运行。
+`seeds/` 是本地演示数据,不要在生产环境执行。

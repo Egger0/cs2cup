@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation'
-import { Reveal } from '@/components/ui'
 import { ResultsTable } from '@/components/domain/ResultsTable'
 import { SectionHead } from '@/components/domain/Sections'
 import { getMatchMaps, getMatches, getPublicTeams, getTournament, safely } from '@/lib/queries/public'
@@ -22,16 +21,16 @@ export default async function ResultsPage({ params }: { params: Promise<{ slug: 
   return (
     <section className="section">
       <div className="wrap">
-        <Reveal>
+        <div data-rise>
           <SectionHead
             eyebrow={`${decided.length} 场已完赛`}
             title="战报"
             lede="点开任意一场,可以看到完整的 Ban/Pick 过程与每张图的比分。"
           />
-        </Reveal>
-        <Reveal delay={60}>
+        </div>
+        <div data-rise="2">
           <ResultsTable matches={matches} teams={teams} maps={maps} slug={slug} />
-        </Reveal>
+        </div>
       </div>
     </section>
   )

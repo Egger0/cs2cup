@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Button, Empty, Reveal } from '@/components/ui'
+import { Button, Empty } from '@/components/ui'
 import { PostList } from '@/components/domain/PostList'
 import { ResultsTable } from '@/components/domain/ResultsTable'
 import { SectionHead } from '@/components/domain/Sections'
@@ -55,11 +55,11 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
       <div className="wrap">
         <div className={styles.overview}>
           <div className={styles.main}>
-            <Reveal>
+            <div data-rise>
               <p className={styles.lede}>{tournament.lede}</p>
-            </Reveal>
+            </div>
 
-            <Reveal delay={60}>
+            <div data-rise="2">
               <div className={styles.block}>
                 <SectionHead eyebrow="下一场" title={next ? '即将开打' : '等待抽签'} />
                 {next ? (
@@ -70,9 +70,9 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
                   <Empty>报名满员后统一抽签,首轮对阵会出现在这里</Empty>
                 )}
               </div>
-            </Reveal>
+            </div>
 
-            <Reveal delay={80}>
+            <div data-rise="2">
               <div className={styles.block}>
                 <SectionHead eyebrow="最近战报" title="打完的比赛" />
                 <ResultsTable
@@ -88,15 +88,15 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
                   </Link>
                 </p>
               </div>
-            </Reveal>
+            </div>
 
             {posts.length > 0 ? (
-              <Reveal delay={100}>
+              <div data-rise="3">
                 <div className={styles.block}>
                   <SectionHead eyebrow="公告" title="最近发生了什么" />
                   <PostList posts={posts} />
                 </div>
-              </Reveal>
+              </div>
             ) : null}
           </div>
 

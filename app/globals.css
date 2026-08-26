@@ -123,17 +123,61 @@ button {
   color: var(--muted-2);
 }
 
-.reveal {
-  opacity: 0;
-  transform: translateY(22px);
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.revealed {
-  opacity: 1;
-  transform: none;
-  transition:
-    opacity 0.7s var(--ease-out),
-    transform 0.7s var(--ease-out);
+@keyframes drift {
+  from {
+    transform: translateY(0) scale(1.08);
+  }
+  to {
+    transform: translateY(6%) scale(1.08);
+  }
+}
+
+@keyframes wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  [data-rise] {
+    animation: rise linear both;
+    animation-timeline: view();
+    animation-range: entry 4% cover 26%;
+  }
+
+  [data-rise='2'] {
+    animation-range: entry 4% cover 34%;
+  }
+
+  [data-rise='3'] {
+    animation-range: entry 4% cover 42%;
+  }
+
+  [data-wipe] {
+    animation: wipe linear both;
+    animation-timeline: view();
+    animation-range: entry 10% cover 40%;
+  }
+
+  [data-drift] {
+    animation: drift linear both;
+    animation-timeline: scroll();
+    animation-range: 0 60vh;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -146,8 +190,36 @@ button {
     scroll-behavior: auto !important;
   }
 
-  .reveal {
-    opacity: 1;
-    transform: none;
+  [data-rise],
+  [data-wipe],
+  [data-drift] {
+    animation: none !important;
   }
+}
+
+::view-transition-old(root) {
+  animation: fadeOut 0.18s cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+::view-transition-new(root) {
+  animation: fadeIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+::view-transition-group(tournament-title) {
+  animation-duration: 0.4s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }

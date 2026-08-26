@@ -1,5 +1,5 @@
 import 'server-only'
-import { selectRow, selectRows } from '../rdb'
+import { callFunction, selectRow, selectRows } from '../rdb'
 import type {
   ClubMember,
   FaqItem,
@@ -354,4 +354,14 @@ export async function listPosts(limit?: number): Promise<Post[]> {
     publishedAt: row.published_at,
     pinned: row.pinned,
   }))
+}
+
+export interface RegistrationStatus {
+  cap: number
+  taken: number
+  open: boolean
+}
+
+export function getRegistrationStatus(slug: string) {
+  return callFunction<RegistrationStatus>('registration_status', { p_slug: slug })
 }

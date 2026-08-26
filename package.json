@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "stack:up": "docker compose up -d --wait",
     "stack:down": "docker compose down -v",
-    "photos:import": "node --experimental-strip-types scripts/migrate-photos.ts && docker compose exec -T db psql -U postgres -d cs2cup -q -f - < migration-output/004_photos.sql && cp -R migration-output/photos/. public/photos/"
+    "photos:import": "node --experimental-strip-types scripts/migrate-photos.ts && docker compose exec -T db psql -U postgres -d cs2cup -q -f - < migration-output/004_photos.sql && cp -R migration-output/photos/. public/photos/",
+    "stack:seed": "for f in seeds/*.sql; do docker compose exec -T db psql -U postgres -d cs2cup -q -f - < \"$f\"; done"
   },
   "dependencies": {
     "next": "16.3.3",

@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation'
-import { Reveal } from '@/components/ui'
 import { FaqList, RuleGrid, SectionHead } from '@/components/domain/Sections'
 import { getTournament } from '@/lib/queries/public'
 
@@ -14,12 +13,12 @@ export default async function RulesPage({ params }: { params: Promise<{ slug: st
     <>
       <section className="section">
         <div className="wrap">
-          <Reveal>
+          <div data-rise>
             <SectionHead eyebrow="赛制规则" title="开赛之前先读这些" />
-          </Reveal>
-          <Reveal delay={60}>
+          </div>
+          <div data-rise="2">
             <RuleGrid rules={tournament.rules} />
-          </Reveal>
+          </div>
         </div>
       </section>
 
@@ -27,12 +26,12 @@ export default async function RulesPage({ params }: { params: Promise<{ slug: st
 
       <section className="section">
         <div className="wrap">
-          <Reveal>
+          <div data-rise>
             <SectionHead eyebrow="须知" title="常见问题" />
-          </Reveal>
-          <Reveal delay={60}>
+          </div>
+          <div data-rise="2">
             <FaqList faqs={tournament.faqs} />
-          </Reveal>
+          </div>
         </div>
       </section>
     </>

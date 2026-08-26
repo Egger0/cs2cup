@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { BracketFunnel } from '@/components/domain/BracketFunnel'
 import { PhotoBackdrop } from '@/components/domain/PhotoBackdrop'
 import { TournamentTabs } from '@/components/layout/TournamentTabs'
 import { getMatches, getPhotos, getPublicTeams, getTournament, safely } from '@/lib/queries/public'
@@ -37,6 +38,10 @@ export default async function TournamentLayout({
     <>
       <header className={styles.shell}>
         <PhotoBackdrop photo={photos[0] ?? null} />
+        <div className={styles.funnelLayer}>
+          <BracketFunnel teams={teams} capacity={tournament.teamCap} />
+        </div>
+        <span className={styles.grain} aria-hidden />
         <div className={`wrap ${styles.inner}`}>
           <div className={styles.top}>
             <div className={styles.identity}>

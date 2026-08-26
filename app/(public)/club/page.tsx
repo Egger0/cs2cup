@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation'
-import { Reveal } from '@/components/ui'
 import { PostList } from '@/components/domain/PostList'
 import { SectionHead, StatRow } from '@/components/domain/Sections'
 import {
@@ -33,11 +32,11 @@ export default async function ClubPage() {
     <>
       <section className="section">
         <div className="wrap">
-          <Reveal>
+          <div data-rise>
             <SectionHead eyebrow="关于我们" title={setting.clubName} />
-          </Reveal>
+          </div>
 
-          <Reveal delay={60}>
+          <div data-rise="2">
             <div className={styles.intro}>
               <div>
                 <p className={styles.paragraph}>
@@ -72,7 +71,7 @@ export default async function ClubPage() {
                 </div>
               </div>
             </div>
-          </Reveal>
+          </div>
         </div>
       </section>
 
@@ -90,14 +89,14 @@ export default async function ClubPage() {
       {members.length > 0 ? (
         <section className="section">
           <div className="wrap">
-            <Reveal>
+            <div data-rise>
               <SectionHead
                 eyebrow="核心团队"
                 title="谁在把比赛跑起来"
                 lede="名单待社团补充,岗位职责已经确定。"
               />
-            </Reveal>
-            <Reveal delay={80}>
+            </div>
+            <div data-rise="2">
               <div className={styles.roles}>
                 {members.map(member => (
                   <article key={member.id} className={styles.role}>
@@ -107,7 +106,7 @@ export default async function ClubPage() {
                   </article>
                 ))}
               </div>
-            </Reveal>
+            </div>
           </div>
         </section>
       ) : null}
@@ -116,18 +115,18 @@ export default async function ClubPage() {
 
       <section className="section">
         <div className="wrap">
-          <Reveal>
+          <div data-rise>
             <SectionHead eyebrow="社团公告" title="最近发生了什么" />
-          </Reveal>
-          <Reveal delay={80}>
+          </div>
+          <div data-rise="2">
             <PostList posts={posts} />
-          </Reveal>
+          </div>
         </div>
       </section>
 
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="wrap">
-          <Reveal>
+          <div data-rise>
             <div className={styles.join}>
               <div className={styles.joinText}>
                 <h2>想加入?直接来找我们</h2>
@@ -148,7 +147,7 @@ export default async function ClubPage() {
                 ) : null}
               </div>
             </div>
-          </Reveal>
+          </div>
         </div>
       </section>
     </>

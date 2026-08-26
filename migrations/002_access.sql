@@ -14,8 +14,15 @@ create or replace view public.team_public as
   from public.team
   where status = 'approved';
 
-create or replace view public.player_public as
-  select p.id, p.team_id, p.nickname, p.is_substitute, p.sort_order
+alter table public.player add column if not exists role text;
+
+create unique index if not exists player_team_nickname_key
+  on public.player (team_id, nickname);
+
+drop view if exists public.player_public;
+
+create view public.player_public as
+  select p.id, p.team_id, t.tournament_id, p.nickname, p.role, p.is_substitute, p.sort_order
   from public.player p
   join public.team t on t.id = p.team_id
   where t.status = 'approved';

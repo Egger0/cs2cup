@@ -32,6 +32,8 @@ begin
     return jsonb_build_object('ok', false, 'error', '赛事不存在');
   end if;
 
+  perform pg_advisory_xact_lock(hashtext('submit_team'), v_tournament.id::integer);
+
   if v_tournament.status not in ('registration', 'postponed') then
     return jsonb_build_object('ok', false, 'error', '当前赛事未开放报名');
   end if;

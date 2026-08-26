@@ -63,7 +63,7 @@ export default async function MatchPage({
         </div>
 
         <p style={{ marginTop: 28 }}>
-          <Link href={`/tournaments/${slug}#bracket`} className="readout">
+          <Link href={`/tournaments/${slug}/bracket`} className="readout">
             ← 回到对阵表
           </Link>
         </p>

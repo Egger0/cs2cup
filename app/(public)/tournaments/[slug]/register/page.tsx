@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
-import { Reveal } from '@/components/ui'
 import { SectionHead } from '@/components/domain/Sections'
-import { getPublicTeams, getTournament } from '@/lib/queries/public'
+import { getRegistrationStatus, getTournament } from '@/lib/queries/public'
 import { RegisterForm } from './RegisterForm'
 
 export const dynamic = 'force-dynamic'
@@ -11,22 +10,23 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
   const tournament = await getTournament(slug)
   if (!tournament) notFound()
 
-  const teams = await getPublicTeams(tournament.id)
-  const seatsLeft = Math.max(0, tournament.teamCap - teams.length)
+  const status = await getRegistrationStatus(slug)
+  const seatsLeft = Math.max(0, status.cap - status.taken)
+  const closed = !status.open || seatsLeft === 0
 
   return (
     <section className="section">
       <div className="wrap">
-        <Reveal>
+        <div data-rise>
           <SectionHead
-            eyebrow={seatsLeft > 0 ? `还剩 ${seatsLeft} 个席位` : '席位已满'}
+            eyebrow={closed ? '报名已关闭' : `还剩 ${seatsLeft} 个席位`}
             title="组队报名"
             lede="提交后由主办方审核。通过后战队会出现在参赛名单并进入对阵表。"
           />
-        </Reveal>
-        <Reveal delay={60}>
-          <RegisterForm slug={slug} disabled={seatsLeft === 0} />
-        </Reveal>
+        </div>
+        <div data-rise="2">
+          <RegisterForm slug={slug} disabled={closed} />
+        </div>
       </div>
     </section>
   )

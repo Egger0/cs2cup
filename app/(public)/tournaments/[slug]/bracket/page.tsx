@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation'
-import { Reveal } from '@/components/ui'
 import { Bracket } from '@/components/domain/Bracket'
 import { SectionHead } from '@/components/domain/Sections'
 import { winsNeeded } from '@/lib/bracket'
@@ -22,16 +21,16 @@ export default async function BracketPage({ params }: { params: Promise<{ slug: 
   return (
     <section className="section">
       <div className="wrap">
-        <Reveal>
+        <div data-rise>
           <SectionHead
             eyebrow="单败淘汰"
             title="对阵表"
             lede={`输一场即出局。每轮 BO${opening},胜者需要拿下 ${winsNeeded(opening)} 张图。点开任意一场看 Ban/Pick。`}
           />
-        </Reveal>
-        <Reveal delay={60}>
+        </div>
+        <div data-rise="2">
           <Bracket matches={matches} teams={teams} slug={slug} />
-        </Reveal>
+        </div>
       </div>
     </section>
   )

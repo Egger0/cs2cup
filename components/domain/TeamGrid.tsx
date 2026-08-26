@@ -23,7 +23,9 @@ export function TeamGrid({ teams }: { teams: PublicTeam[] }) {
               {team.players.map(player => (
                 <li key={player.id} className={styles.player}>
                   <span className={styles.playerName}>{player.nickname}</span>
-                  {player.role ? <span className={styles.playerRole}>{player.role}</span> : null}
+                  <span className={styles.playerRole}>
+                    {player.isSubstitute ? '替补' : (player.role ?? '')}
+                  </span>
                 </li>
               ))}
             </ul>

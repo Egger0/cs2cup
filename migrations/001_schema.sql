@@ -59,8 +59,10 @@ create table if not exists public.player (
   id            bigint generated always as identity primary key,
   team_id       bigint not null references public.team(id) on delete cascade,
   nickname      text not null,
+  role          text,
   is_substitute boolean not null default false,
-  sort_order    integer not null default 0
+  sort_order    integer not null default 0,
+  unique (team_id, nickname)
 );
 
 create index if not exists player_team_idx on public.player (team_id);

@@ -1,10 +1,3 @@
-alter table public.player
-  add column if not exists role text;
-
-alter table public.tournament
-  add column if not exists champion_team_id bigint references public.team(id) on delete set null,
-  add column if not exists cover_photo_id bigint;
-
 create table if not exists public.match_map (
   id         bigint generated always as identity primary key,
   match_id   bigint not null references public.match(id) on delete cascade,
@@ -20,13 +13,16 @@ create table if not exists public.match_map (
 
 create index if not exists match_map_match_idx on public.match_map (match_id, pick_order);
 
+create unique index if not exists club_member_role_key on public.club_member (role);
+
 create table if not exists public.club_member (
   id         bigint generated always as identity primary key,
   name       text not null,
   role       text not null,
   handle     text,
   intro      text,
-  sort_order integer not null default 0
+  sort_order integer not null default 0,
+  unique (role)
 );
 
 create table if not exists public.post (

@@ -34,4 +34,4 @@ from public.team t,
   ('sub','替补',true,6)
 ) as v(suffix, role, sub, ord)
 where t.tournament_id = (select id from public.tournament where slug = '2026-nlc')
-on conflict do nothing;
+on conflict (team_id, nickname) do nothing;
