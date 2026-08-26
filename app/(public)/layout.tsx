@@ -3,6 +3,8 @@ import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { getSiteSetting, safely } from '@/lib/queries/public'
 
+export const dynamic = 'force-dynamic'
+
 const LINKS = [
   { href: '/games', label: '项目' },
   { href: '/tournaments', label: '赛事' },
