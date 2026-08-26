@@ -1,0 +1,145 @@
+.head {
+  margin-bottom: clamp(28px, 4vw, 48px);
+}
+
+.eyebrow {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.eyebrow::before {
+  content: '';
+  width: 26px;
+  height: 1px;
+  background: var(--accent);
+}
+
+.title {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.7rem, 3.6vw, 2.7rem);
+  line-height: 1.05;
+  margin-top: 14px;
+  letter-spacing: -0.01em;
+}
+
+.lede {
+  color: var(--muted);
+  margin-top: 12px;
+  max-width: 56ch;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stat {
+  padding: clamp(20px, 3vw, 32px);
+  border-right: 1px solid var(--line);
+}
+
+.stat:last-child {
+  border-right: none;
+}
+
+.statValue {
+  font-family: var(--font-stat), sans-serif;
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  line-height: 1;
+  color: var(--ct);
+}
+
+.statUnit {
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.9rem;
+  color: var(--ink);
+  margin-left: 6px;
+}
+
+.statKey {
+  color: var(--muted);
+  font-size: 0.84rem;
+  letter-spacing: 0.16em;
+  margin-top: 10px;
+}
+
+.rules {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.rule {
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface);
+  padding: 22px;
+}
+
+.ruleLabel {
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+}
+
+.ruleTitle {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-block: 10px 8px;
+}
+
+.ruleBody {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.faq {
+  display: grid;
+  gap: 10px;
+}
+
+.faqItem {
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface);
+  padding: 16px 20px;
+}
+
+.faqItem summary {
+  cursor: pointer;
+  font-weight: 500;
+  list-style: none;
+}
+
+.faqItem summary::-webkit-details-marker {
+  display: none;
+}
+
+.faqItem summary::after {
+  content: '+';
+  float: right;
+  color: var(--accent);
+}
+
+.faqItem[open] summary::after {
+  content: '−';
+}
+
+.faqBody {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin-top: 12px;
+}

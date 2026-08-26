@@ -25,18 +25,17 @@ export class RdbError extends Error {
 }
 
 function endpoint() {
+  const override = process.env.RDB_BASE_URL
+  if (override) return override.replace(/\/$/, '')
   const env = process.env.CLOUDBASE_ENV_ID
-  if (!env) throw new Error('CLOUDBASE_ENV_ID is not set')
+  if (!env) throw new Error('CLOUDBASE_ENV_ID or RDB_BASE_URL must be set')
   return `https://${env}.api.tcloudbasegateway.com/v1/rdb/rest`
 }
 
 function keyFor(credential: Credential) {
-  const key =
-    credential === 'admin'
-      ? process.env.CLOUDBASE_ADMIN_KEY
-      : process.env.CLOUDBASE_ANON_KEY
-  if (!key) throw new Error(`CLOUDBASE_${credential.toUpperCase()}_KEY is not set`)
-  return key
+  return credential === 'admin'
+    ? process.env.CLOUDBASE_ADMIN_KEY
+    : process.env.CLOUDBASE_ANON_KEY
 }
 
 function search({ select, filters, order, limit }: QueryOptions) {
@@ -59,10 +58,11 @@ async function request<T>(
   const credential = options.credential ?? 'anon'
   const url = `${endpoint()}/${table}?${search(options)}`
 
+  const key = keyFor(credential)
   const response = await fetch(url, {
     method,
     headers: {
-      Authorization: `Bearer ${keyFor(credential)}`,
+      ...(key ? { Authorization: `Bearer ${key}` } : {}),
       'Content-Type': 'application/json',
       ...(body !== undefined ? { Prefer: 'return=representation' } : {}),
     },
@@ -103,10 +103,11 @@ export function deleteRows(table: string, options: QueryOptions) {
 }
 
 export function callFunction<T>(name: string, args: unknown, credential: Credential = 'anon') {
+  const key = keyFor(credential)
   return fetch(`${endpoint()}/rpc/${name}`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${keyFor(credential)}`,
+      ...(key ? { Authorization: `Bearer ${key}` } : {}),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(args),

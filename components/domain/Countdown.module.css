@@ -1,0 +1,51 @@
+.panel {
+  border: 1px solid var(--line-strong);
+  border-top: 2px solid var(--c4);
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--surface), var(--bg-2));
+  padding: clamp(20px, 3vw, 32px);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.9);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.clock {
+  font-family: var(--font-stat), sans-serif;
+  font-size: clamp(3rem, 8vw, 5.4rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--c4);
+  font-variant-numeric: tabular-nums;
+  margin-block: 10px;
+}
+
+.notice {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.3rem, 3.4vw, 2rem);
+  color: var(--t);
+  margin-block: 14px 10px;
+}
+
+.match {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.match b {
+  color: var(--ink);
+}
+
+.sub {
+  margin-top: 8px;
+  color: var(--muted-2);
+  font-size: 0.84rem;
+}

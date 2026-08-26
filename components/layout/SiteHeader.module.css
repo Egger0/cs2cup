@@ -1,0 +1,110 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(12px);
+  background: linear-gradient(180deg, rgba(10, 14, 22, 0.92), rgba(10, 14, 22, 0.72));
+  border-bottom: 1px solid var(--line);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 64px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.mark {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+  font-size: 0.8rem;
+  clip-path: polygon(14% 0, 100% 0, 100% 86%, 86% 100%, 0 100%, 0 14%);
+  overflow: hidden;
+}
+
+.markImage {
+  border: none;
+}
+
+.names {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.school {
+  font-family: var(--font-body), sans-serif;
+  font-weight: 400;
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  font-size: 0.94rem;
+}
+
+.nav a:hover {
+  color: var(--accent);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggle {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .nav {
+    position: fixed;
+    inset: 64px 0 auto;
+    flex-direction: column;
+    gap: 0;
+    padding: 8px 0;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--line);
+    transform: translateY(-8px);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      transform 0.24s var(--ease),
+      opacity 0.24s ease;
+  }
+
+  .navOpen {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .nav a {
+    width: 100%;
+    padding: 14px var(--pad);
+  }
+
+  .toggle {
+    display: inline-flex;
+  }
+}
