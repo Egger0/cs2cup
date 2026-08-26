@@ -108,8 +108,8 @@
   .gcell .meta .cp{color:#c3ccd9;margin-top:2px;word-break:break-word}
   .gcell .act{padding:0 10px 10px}
 
-  .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,140%);background:var(--surface-2);border:1px solid var(--ct);border-left:3px solid var(--ct);padding:13px 18px;border-radius:4px;z-index:100;box-shadow:0 20px 46px -18px rgba(0,0,0,.8);transition:transform .35s cubic-bezier(.2,.8,.2,1);font-size:.9rem;max-width:90vw}
-  .toast.show{transform:translate(-50%,0)}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,calc(100% + 44px));opacity:0;pointer-events:none;background:var(--surface-2);border:1px solid var(--ct);border-left:3px solid var(--ct);padding:13px 18px;border-radius:4px;z-index:100;box-shadow:0 20px 46px -18px rgba(0,0,0,.8);transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .35s ease;font-size:.9rem;max-width:90vw}
+  .toast.show{transform:translate(-50%,0);opacity:1;pointer-events:auto}
   .toast.bad{border-color:var(--c4);border-left-color:var(--c4)}
 
   [hidden]{display:none!important}
