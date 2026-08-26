@@ -210,7 +210,8 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
     contactQQ:"【替换为你的群号】", contactWechat:"【替换为微信号】",
     logoUrl:"", brandMark:"FX"
   };
-  var CFG=Object.assign({},DEF), MODE="demo";
+  var CLOUD_CONFIGURED=!!(window.LC&&LC.ready);
+  var CFG=Object.assign({},DEF), MODE=CLOUD_CONFIGURED?"loading":"demo";
   // 读取上次缓存的品牌作为初始值,避免加载中/离线回退成默认社名(防页头闪烁)
   try{ var _bc=JSON.parse(localStorage.getItem("cs2cup_brand")||"null");
     if(_bc){ ["clubName","brandEn","logoUrl","brandMark"].forEach(function(k){ if(_bc[k]!=null&&_bc[k]!=="") CFG[k]=_bc[k]; }); }
@@ -244,7 +245,9 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
     $("footWechat").textContent=CFG.contactWechat;
     $("footSchool").textContent="本赛事由 "+CFG.school+CFG.clubName+"主办";
     $("footCopy").textContent="© "+(new Date().getFullYear())+" "+CFG.clubName+" · "+CFG.title;
-    $("dataSrc").textContent=(MODE==="cloud")?"数据源:云端 · CloudBase":"数据源:演示模式(未连接云端)";
+    $("dataSrc").textContent=(MODE==="cloud")?"数据源:云端 · CloudBase":
+      (MODE==="loading")?"数据源:正在连接云端":
+      (MODE==="offline")?"数据源:云端暂不可用":"数据源:演示模式(未连接云端)";
   }
   function applyEvent(ev){
     if(!ev) return;
@@ -324,9 +327,9 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
       .then(function(){ return LC.listGallery(); })
       .then(function(list){ MODE="cloud"; applyBrand(); renderGallery(list||[]); })
       .catch(function(err){
-        MODE="demo"; applyBrand();
-        showBanner("暂时无法从云端加载照片,以下为演示样例。"+(err&&err.message?"("+err.message+")":""));
-        renderGallery(demoGallery);
+        MODE="offline"; applyBrand();
+        showBanner("暂时无法从云端加载照片,请稍后刷新。"+(err&&err.message?"("+err.message+")":""));
+        renderGallery([]);
       });
   }else{
     MODE="demo"; applyBrand();
