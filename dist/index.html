@@ -271,7 +271,7 @@
     <div class="section-head reveal">
       <span class="eyebrow">01 · 组队报名</span>
       <h2>集结你的五人车</h2>
-      <p>填写战队信息即报名成功。提交后你的战队会立刻出现在下方「参赛战队」名单,并自动进入对阵表的空位。带 <span style="color:var(--c4)">*</span> 为必填。</p>
+      <p>提交报名后由主办方审核；通过审核的战队会出现在下方「参赛战队」名单并进入对阵表。带 <span style="color:var(--c4)">*</span> 为必填。</p>
     </div>
     <div class="reg-grid">
       <aside class="reg-aside reveal">
@@ -438,8 +438,8 @@ try{
 var r=document.documentElement;if(r)r.classList.remove("boot");})();
 </script>
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/3.8.2/cloudbase.full.js"></script>
-<script src="config.js?v=20260826-security2"></script>
-<script src="lc.js?v=20260826-security2"></script>
+<script src="config.js?v=20260826-operations1"></script>
+<script src="lc.js?v=20260826-operations1"></script>
 <script>
 (function(){
   "use strict";
@@ -476,7 +476,7 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
     if(_bc){ ["clubName","brandEn","logoUrl","brandMark"].forEach(function(k){ if(_bc[k]!=null&&_bc[k]!=="") CFG[k]=_bc[k]; }); }
   }catch(e){}
   var CLOUD_CONFIGURED=!!(window.LC&&LC.ready);
-  var CAP=DEF.teamCap, MODE=CLOUD_CONFIGURED?"loading":"demo", teams=[], NEXT=null, BASE=null, tickTimer=null;
+  var CAP=DEF.teamCap, MODE=CLOUD_CONFIGURED?"loading":"demo", teams=[], REG_OCCUPIED=null, NEXT=null, BASE=null, tickTimer=null;
   var LKEY="cs2cup.demo.v2";
 
   // ---------- schedule ----------
@@ -582,7 +582,8 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
     }).join("");
   }
   function renderSlots(){
-    var left=Math.max(0,CAP-teams.length);
+    var occupied=REG_OCCUPIED==null?teams.length:REG_OCCUPIED;
+    var left=Math.max(0,CAP-occupied);
     $("slotLeft").textContent=left; $("meterFill").style.width=(CAP?Math.min(100,teams.length/CAP*100):0)+"%";
     if(left===0){ var st=$("statusTxt"); if(st&&st.textContent!=="报名已截止") st.textContent="报名已满"; }
   }
@@ -621,10 +622,10 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
   function saveDemo(){ if(MODE!=="cloud"){ try{ localStorage.setItem(LKEY,JSON.stringify(teams)); }catch(e){} } }
 
   // ---------- registration ----------
-  function afterAdd(name,seed){
+  function afterAdd(name){
     saveDemo(); renderAll();
     $("regForm").reset();
-    var toast=$("toast"); $("toastMsg").textContent=name+" 已入库 · 种子 #"+seed;
+    var toast=$("toast"); $("toastMsg").textContent=name+" 已提交 · 等待主办方审核";
     toast.classList.add("show"); setTimeout(function(){toast.classList.remove("show");},3400);
     $("teams").scrollIntoView({behavior:"smooth"});
   }
@@ -639,7 +640,7 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
     if(MODE==="loading"){ errEl.textContent="正在连接云端,请稍后再提交。"; return; }
     if(MODE==="offline"){ errEl.textContent="云端暂不可用,为避免丢失报名,当前不接受提交。"; return; }
     if(CFG.regDeadline){ var deadline=new Date(CFG.regDeadline); if(!isNaN(deadline.getTime())&&Date.now()>=deadline.getTime()){ errEl.textContent="报名已截止。"; return; } }
-    if(teams.length>=CAP){ errEl.textContent="名额已满("+CAP+"/"+CAP+"),报名已截止。"; return; }
+    if((REG_OCCUPIED==null?teams.length:REG_OCCUPIED)>=CAP){ errEl.textContent="名额已满("+CAP+"/"+CAP+"),报名已截止。"; return; }
     if(!name){ errEl.textContent="请填写战队名称。"; return; }
     if(tag.length<2){ errEl.textContent="战队 TAG 至少 2 个字符。"; return; }
     if(teams.some(function(t){return (t.tag||"").toUpperCase()===tag;})){ errEl.textContent="TAG「"+tag+"」已被占用,换一个吧。"; return; }
@@ -648,18 +649,18 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
     if(!contact){ errEl.textContent="请填写联系方式。"; return; }
     if(players.filter(Boolean).length<1){ errEl.textContent="请至少填写一名首发选手。"; return; }
     var roster=players.filter(Boolean); if(sub) roster.push(sub+"(替)");
-    var seed=teams.length+1;
-    var rec={ seed:seed, name:name, tag:tag, captain:cap, contact:contact, dept:f.dept.value.trim(), players:roster, note:f.note.value.trim() };
+    var rec={ name:name, tag:tag, captain:cap, contact:contact, dept:f.dept.value.trim(), players:roster, note:f.note.value.trim() };
     var btn=$("regSubmit");
 
     if(MODE==="cloud"){
       btn.disabled=true; btn.textContent="提交中…";
-      LC.addTeam(rec).then(function(id){
-        teams.push(Object.assign({id:id,createdAt:new Date()},rec)); afterAdd(name,seed);
+      LC.addTeam(rec).then(function(){
+        if(REG_OCCUPIED!=null) REG_OCCUPIED++;
+        afterAdd(name);
       }).catch(function(err){ errEl.textContent="提交失败:"+(err.message||err); })
       .then(function(){ btn.disabled=false; btn.textContent="提交报名"; });
     }else{
-      teams.push(Object.assign({id:"u"+Date.now(),createdAt:new Date()},rec)); afterAdd(name,seed);
+      teams.push(Object.assign({id:"u"+Date.now(),seed:teams.length+1,status:"approved",createdAt:new Date()},rec)); afterAdd(name);
     }
   });
 
@@ -717,7 +718,8 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
       .then(function(){ return LC.getEvent(); })
       .then(function(ev){ applyEvent(ev); BASE=CFG.startDate||upcomingSaturdayNoon(); })
       .then(function(){ return LC.listTeams(); })
-      .then(function(list){ MODE="cloud"; teams=list||[]; renderAll(); })
+      .then(function(list){ teams=list||[]; return LC.getRegistrationStatus(); })
+      .then(function(status){ if(status){ if(status.cap) CAP=parseInt(status.cap,10)||CAP; REG_OCCUPIED=parseInt(status.occupied,10)||0; } MODE="cloud"; renderAll(); })
       .catch(function(err){ MODE="offline"; teams=[]; renderAll(); $("formErr").textContent="云端数据暂不可用,报名已暂停。"+(err&&err.message?"("+err.message+")":""); });
   }else{
     useDemo(); finish();

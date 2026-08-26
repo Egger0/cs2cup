@@ -101,6 +101,11 @@ create trigger cs2cup_team_public_sync
 after insert or update or delete on public.team
 for each row execute function public.cs2cup_sync_team_public();
 
+-- 旧版报名原本会立刻公开；迁移后把它们视为已审核，避免现有名单消失。
+update public.team
+set data = data || jsonb_build_object('status', 'approved')
+where data ->> 'status' is null;
+
 -- 迁移旧数据；已有完整报名资料会继续保留在 private team 表中。
 insert into public.team_public (id, data, created_at)
 select id, data - array['captain', 'contact', 'note']::text[], created_at
@@ -188,22 +193,27 @@ begin
     raise exception '报名已截止';
   end if;
 
-  select count(*) into v_count from public.team;
+  select count(*) into v_count
+  from public.team
+  where coalesce(data ->> 'status', 'approved') in ('pending', 'approved');
   if v_count >= v_cap then
     raise exception '报名名额已满';
   end if;
   if exists (
     select 1 from public.team
-    where lower(btrim(data ->> 'tag')) = lower(v_tag)
-       or btrim(data ->> 'name') = v_name
+    where coalesce(data ->> 'status', 'approved') <> 'rejected'
+      and (lower(btrim(data ->> 'tag')) = lower(v_tag)
+        or btrim(data ->> 'name') = v_name
+        or lower(btrim(data ->> 'contact')) = lower(v_contact))
   ) then
-    raise exception '战队名称或 TAG 已存在';
+    raise exception '战队名称、TAG 或联系方式已有报名';
   end if;
   select s.seed into v_seed
   from generate_series(1, v_cap) as s(seed)
   where not exists (
     select 1 from public.team
-    where coalesce(public.cs2cup_safe_int(data ->> 'seed'), 0) = s.seed
+    where coalesce(data ->> 'status', 'approved') <> 'rejected'
+      and coalesce(public.cs2cup_safe_int(data ->> 'seed'), 0) = s.seed
   )
   order by s.seed
   limit 1;
@@ -215,10 +225,47 @@ begin
   values (jsonb_build_object(
     'seed', v_seed, 'name', v_name, 'tag', v_tag,
     'captain', v_captain, 'contact', v_contact,
-    'dept', v_dept, 'players', v_players, 'note', v_note
+    'dept', v_dept, 'players', v_players, 'note', v_note,
+    'status', 'pending'
   ))
   returning id into v_id;
   return v_id;
+end;
+$$;
+
+-- 公开页只需要“已占用名额”，不应读取待审核报名详情。
+create or replace function public.cs2cup_registration_status()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_event jsonb;
+  v_cap integer := 16;
+  v_occupied integer := 0;
+  v_deadline timestamptz;
+begin
+  if auth.role() <> 'anon' then
+    raise exception '只允许未登录访客读取报名状态' using errcode = '42501';
+  end if;
+  select data into v_event from public.event order by id desc limit 1;
+  if v_event is not null then
+    v_cap := greatest(2, least(128, coalesce(public.cs2cup_safe_int(v_event ->> 'teamCap'), 16)));
+    begin
+      v_deadline := nullif(v_event ->> 'regDeadline', '')::timestamptz;
+    exception when others then
+      v_deadline := null;
+    end;
+  end if;
+  select count(*) into v_occupied
+  from public.team
+  where coalesce(data ->> 'status', 'approved') in ('pending', 'approved');
+  return jsonb_build_object(
+    'cap', v_cap,
+    'occupied', v_occupied,
+    'closed', v_deadline is not null and now() >= v_deadline
+  );
 end;
 $$;
 
@@ -265,7 +312,8 @@ create policy team_admin_delete on public.team
 
 drop policy if exists team_public_read on public.team_public;
 create policy team_public_read on public.team_public
-  for select to anon, authenticated using (true);
+  for select to anon, authenticated
+  using (coalesce(data ->> 'status', 'approved') = 'approved');
 
 drop policy if exists gallery_read on public.gallery;
 drop policy if exists gallery_write on public.gallery;
@@ -284,6 +332,8 @@ create policy cs2cup_admin_self_read on public.cs2cup_admin
 -- 标准 PostgreSQL 权限仍保留；CloudBase RPC 的真正安全边界是上方函数内的角色校验。
 revoke all on function public.cs2cup_submit_team(jsonb) from public;
 grant execute on function public.cs2cup_submit_team(jsonb) to anon;
+revoke all on function public.cs2cup_registration_status() from public;
+grant execute on function public.cs2cup_registration_status() to anon;
 revoke all on function public.cs2cup_is_admin() from public;
 revoke all on function public.cs2cup_sync_team_public() from public;
 

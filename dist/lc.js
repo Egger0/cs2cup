@@ -115,6 +115,13 @@
         return id;
       });
   };
+  LC.getRegistrationStatus = function () {
+    return Promise.resolve(rdb.rpc("cs2cup_registration_status"))
+      .then(function (res) {
+        var data = scalar(res);
+        return Array.isArray(data) ? (data[0] || null) : data;
+      });
+  };
   LC.updateTeam = function (id, data) {
     return Promise.resolve(rdb.from("team").update({ data: data }).eq("id", id)).then(rows);
   };
@@ -187,7 +194,7 @@
       id: row.id,
       name: d.name, tag: d.tag, captain: d.captain, contact: d.contact,
       dept: d.dept || "", players: d.players || [], note: d.note || "",
-      seed: d.seed,
+      seed: d.seed, status: d.status || "approved",
       createdAt: row.created_at ? new Date(row.created_at) : null
     };
   };

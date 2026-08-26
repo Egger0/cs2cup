@@ -213,9 +213,9 @@
       <div class="tbl-scroll">
         <table>
           <thead><tr>
-            <th>种子</th><th>TAG</th><th>战队</th><th>队长</th><th>联系方式</th><th>学院</th><th>队员</th><th>报名时间</th><th></th>
+            <th>种子</th><th>状态</th><th>TAG</th><th>战队</th><th>队长</th><th>联系方式</th><th>学院</th><th>队员</th><th>报名时间</th><th></th>
           </tr></thead>
-          <tbody id="teamRows"><tr><td colspan="9" class="empty">加载中…</td></tr></tbody>
+          <tbody id="teamRows"><tr><td colspan="10" class="empty">加载中…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -252,8 +252,8 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/3.8.2/cloudbase.full.js"></script>
-<script src="config.js?v=20260826-security2"></script>
-<script src="lc.js?v=20260826-security2"></script>
+<script src="config.js?v=20260826-operations1"></script>
+<script src="lc.js?v=20260826-operations1"></script>
 <script>
 (function(){
   "use strict";
@@ -361,15 +361,25 @@
   // ---------- teams ----------
   var allTeams=[];
   function fmtTime(d){ if(!d) return "—"; var p=function(n){return(n<10?"0":"")+n;}; return (d.getMonth()+1)+"/"+d.getDate()+" "+p(d.getHours())+":"+p(d.getMinutes()); }
+  var STATUS_TEXT={pending:"待审核",approved:"已通过",rejected:"已拒绝"};
+  function teamData(t){ return { seed:t.seed, name:t.name, tag:t.tag, captain:t.captain, contact:t.contact,
+    dept:t.dept||"", players:t.players||[], note:t.note||"", status:t.status||"approved" }; }
+  function statusSelect(t){ var current=t.status||"approved";
+    return '<select class="btn btn-ghost btn-mini" data-status="'+t.id+'">'+["pending","approved","rejected"].map(function(s){
+      return '<option value="'+s+'"'+(s===current?' selected':'')+'>'+STATUS_TEXT[s]+'</option>';
+    }).join("")+'</select>'; }
   function renderTeams(){
     var kw=$("search").value.trim().toLowerCase();
     var rows=allTeams.filter(function(t){ return !kw || [t.name,t.tag,t.captain,t.dept].join(" ").toLowerCase().indexOf(kw)>=0; });
-    $("teamCount").innerHTML="共 <b>"+allTeams.length+"</b> 支"+(kw?(" · 匹配 "+rows.length):"");
+    var pending=allTeams.filter(function(t){return t.status==="pending";}).length;
+    var approved=allTeams.filter(function(t){return (t.status||"approved")==="approved";}).length;
+    $("teamCount").innerHTML="共 <b>"+allTeams.length+"</b> 支 · 待审核 "+pending+" · 已通过 "+approved+(kw?(" · 匹配 "+rows.length):"");
     var tb=$("teamRows");
-    if(!rows.length){ tb.innerHTML='<tr><td colspan="9" class="empty">'+(allTeams.length?"没有匹配的战队":"还没有战队报名")+'</td></tr>'; return; }
+    if(!rows.length){ tb.innerHTML='<tr><td colspan="10" class="empty">'+(allTeams.length?"没有匹配的战队":"还没有战队报名")+'</td></tr>'; return; }
     tb.innerHTML=rows.map(function(t){
       return '<tr>'+
         '<td class="fd">#'+(t.seed||"")+'</td>'+
+        '<td>'+statusSelect(t)+'</td>'+
         '<td><span class="tag-pill">'+esc(t.tag)+'</span></td>'+
         '<td class="fd">'+esc(t.name)+'</td>'+
         '<td>'+esc(t.captain)+'</td>'+
@@ -382,7 +392,7 @@
     }).join("");
   }
   function loadTeams(){
-    $("teamRows").innerHTML='<tr><td colspan="9" class="empty">加载中…</td></tr>';
+    $("teamRows").innerHTML='<tr><td colspan="10" class="empty">加载中…</td></tr>';
     return LC.listTeamsAdmin().then(function(list){ allTeams=list; renderTeams(); })
       .catch(function(err){ $("teamRows").innerHTML='<tr><td colspan="9" class="empty">加载失败:'+esc(err.message||String(err))+'</td></tr>'; });
   }
@@ -394,11 +404,20 @@
     if(!confirm("确认删除战队「"+name+"」的报名?此操作不可撤销。")) return;
     btn.disabled=true;
     LC.deleteTeam(id).then(function(){ allTeams=allTeams.filter(function(t){return String(t.id)!==String(id);}); renderTeams(); toast("已删除「"+name+"」"); })
-      .catch(function(err){ btn.disabled=false; toast("删除失败:"+(err.message||err),true); });
+       .catch(function(err){ btn.disabled=false; toast("删除失败:"+(err.message||err),true); });
+  });
+  $("teamRows").addEventListener("change",function(e){
+    var select=e.target.closest("[data-status]"); if(!select) return;
+    var id=select.getAttribute("data-status"), team=allTeams.filter(function(t){return String(t.id)===String(id);})[0];
+    if(!team) return;
+    select.disabled=true;
+    var data=teamData(team); data.status=select.value;
+    LC.updateTeam(id,data).then(function(){ team.status=data.status; renderTeams(); toast("已更新「"+team.name+"」状态为"+STATUS_TEXT[data.status]); })
+      .catch(function(err){ select.disabled=false; select.value=team.status||"approved"; toast("状态更新失败:"+(err.message||err),true); });
   });
   $("exportBtn").addEventListener("click",function(){
     if(!allTeams.length){ toast("暂无报名可导出",true); return; }
-    var head=["种子","战队名称","TAG","队长","联系方式","学院","队员","备注","报名时间"];
+    var head=["种子","审核状态","战队名称","TAG","队长","联系方式","学院","队员","备注","报名时间"];
     var lines=[head.join(",")];
     function csvCell(v){
       v=String(v==null?"":v);
@@ -406,7 +425,7 @@
       return '"'+v.replace(/"/g,'""')+'"';
     }
     allTeams.forEach(function(t){
-      var row=[t.seed||"",t.name,t.tag,t.captain,t.contact,t.dept||"",(t.players||[]).join("、"),t.note||"",fmtTime(t.createdAt)];
+      var row=[t.seed||"",STATUS_TEXT[t.status||"approved"],t.name,t.tag,t.captain,t.contact,t.dept||"",(t.players||[]).join("、"),t.note||"",fmtTime(t.createdAt)];
       lines.push(row.map(csvCell).join(","));
     });
     var blob=new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
