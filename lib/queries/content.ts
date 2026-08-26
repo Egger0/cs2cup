@@ -66,6 +66,10 @@ export function adminCreateGame(values: {
   }, ADMIN)
 }
 
+export function adminDeleteGame(id: number) {
+  return deleteRows('game', { ...ADMIN, filters: { id: `eq.${id}` } })
+}
+
 interface PostRow {
   id: number
   game_id: number | null
@@ -220,6 +224,10 @@ export function adminCreateTournament(values: {
     status: 'draft',
     hero_bottom: values.title,
   }, ADMIN)
+}
+
+export function adminDeleteTournament(id: number) {
+  return deleteRows('tournament', { ...ADMIN, filters: { id: `eq.${id}` } })
 }
 
 interface PhotoRow {

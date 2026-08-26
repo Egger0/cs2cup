@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Button, Empty, Field } from '@/components/ui'
 import { adminListGames, adminListTournaments } from '@/lib/queries/content'
 import { createTournament } from '../_actions'
+import { TournamentDeleteButton } from './TournamentDeleteButton'
 import styles from '../admin.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -72,6 +73,7 @@ export default async function AdminTournamentsPage() {
                   <Link href={`/tournaments/${tournament.slug}`}>
                     <Button size="mini">查看</Button>
                   </Link>
+                  <TournamentDeleteButton id={tournament.id} title={tournament.title} />
                 </div>
               </div>
             ))}

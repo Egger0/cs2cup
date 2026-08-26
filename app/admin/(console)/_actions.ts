@@ -22,7 +22,9 @@ import {
   adminCreateGame,
   adminCreatePost,
   adminCreateTournament,
+  adminDeleteGame,
   adminDeletePost,
+  adminDeleteTournament,
   adminSaveGame,
   adminSaveMember,
   adminSavePost,
@@ -281,6 +283,21 @@ export async function createGame(form: FormData) {
   redirect('/admin/games')
 }
 
+export async function removeGame(id: number) {
+  await requireAdmin()
+
+  const tournaments = await adminListTournaments()
+  const linked = tournaments.filter(tournament => tournament.gameId === id)
+  if (linked.length > 0) {
+    return { ok: false as const, error: `该项目关联了 ${linked.length} 个赛事，请先处理这些赛事。` }
+  }
+
+  await adminDeleteGame(id)
+  updateTag('game')
+  updateTag('post')
+  return { ok: true as const }
+}
+
 export async function updateMember(id: number, form: FormData) {
   await requireAdmin()
   await adminSaveMember(id, {
@@ -303,6 +320,31 @@ export async function createTournament(form: FormData) {
   })
   updateTag('tournament')
   redirect('/admin/tournaments')
+}
+
+export async function removeTournament(id: number) {
+  await requireAdmin()
+
+  const tournaments = await adminListTournaments()
+  const tournament = tournaments.find(entry => entry.id === id)
+  if (!tournament) return { ok: false as const, error: '赛事不存在或已删除。' }
+
+  const photos = (await adminListPhotos()).filter(photo => photo.tournamentId === id)
+  for (const photo of photos) {
+    try {
+      await removeObject(photo.storageKey)
+    } catch (error) {
+      console.error('tournament photo delete failed', error)
+      return { ok: false as const, error: '云存储图片删除失败，赛事未删除。' }
+    }
+  }
+
+  await adminDeleteTournament(id)
+  updateTag('tournament')
+  updateTag('photo')
+  updateTag(`teams:${id}`)
+  updateTag(`matches:${id}`)
+  return { ok: true as const }
 }
 
 export async function uploadPhoto(form: FormData) {

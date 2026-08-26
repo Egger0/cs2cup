@@ -3,13 +3,23 @@
 import { useState, useTransition } from 'react'
 import { Button, Field, TextField } from '@/components/ui'
 import type { Game } from '@/lib/types'
-import { updateGame } from '../_actions'
+import { removeGame, updateGame } from '../_actions'
 import styles from '../admin.module.css'
 
 export function GameEditor({ game }: { game: Game }) {
   const [pending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleDelete = () => {
+    if (!confirm(`确定删除「${game.name}」?此操作不可撤销。`)) return
+    startTransition(async () => {
+      setError('')
+      const result = await removeGame(game.id)
+      if (!result.ok) setError(result.error)
+    })
+  }
 
   if (!open) {
     return (
@@ -27,6 +37,10 @@ export function GameEditor({ game }: { game: Game }) {
           <Button size="mini" onClick={() => setOpen(true)}>
             编辑
           </Button>
+          <Button size="mini" variant="danger" disabled={pending} onClick={handleDelete}>
+            删除
+          </Button>
+          {error ? <span className={styles.error}>{error}</span> : null}
         </div>
       </div>
     )
@@ -81,6 +95,10 @@ export function GameEditor({ game }: { game: Game }) {
         <Button type="button" onClick={() => setOpen(false)}>
           取消
         </Button>
+        <Button type="button" size="mini" variant="danger" disabled={pending} onClick={handleDelete}>
+          删除
+        </Button>
+        {error ? <span className={styles.error}>{error}</span> : null}
       </div>
     </form>
   )
