@@ -1,65 +1,60 @@
-# CS2 校园杯 · 赛事网站
+# 宁波理工电竞社官网
 
-宁波理工学院电竞社 CS2（Counter-Strike 2）校园杯的官方网站，含公开报名页、往届赛事相册、后台管理平台。数据通过腾讯云 CloudBase（PostgreSQL）全网共享。
+浙大宁波理工学院电竞社官方网站。赛事报名、参赛战队、对阵赛程、往届相册与后台管理。
 
-## 快速开始（3 步）
+## 技术栈
 
-1. **配置云端**：编辑 `dist/config.js`，填入 环境ID + Publishable Key + 地域（详细图文教程见 [`SETUP-教程.md`](SETUP-教程.md)）。
-2. **初始化数据库**：CloudBase 控制台 → 数据库 → PostgreSQL → 「SQL 编辑器」，运行 [`数据库初始化.sql`](数据库初始化.sql)（自动建表 + 配权限，可重复运行）。
-3. **部署上线**：`git push` 到 main，CloudBase 静态托管自动拉取并重新发布。
-
-> 没配置云端之前网页也能正常打开，处于「演示模式」（报名只存在本地浏览器）。
-
-## 文件
-
-| 文件 | 作用 |
-|---|---|
-| `dist/index.html` | 公开主页：报名、战队名单、实时赛程对阵表 |
-| `dist/past.html` | 公开页：往届赛事相册（照片墙） |
-| `dist/admin.html` | 后台管理：改赛事信息、审核报名、录入赛果、传往届照片 |
-| `dist/lc.js` | 数据层（连接 CloudBase） |
-| `dist/config.js` | 配置：环境 ID + Publishable 公钥 + 地域 |
-| `数据库初始化.sql` | 建表 + RLS 权限脚本（在 CloudBase SQL 编辑器里运行） |
-| `SETUP-教程.md` | 从零上线的完整教程：注册、配置、建表、登录、部署、排错 |
-
-## 数据表（PostgreSQL）
-
-五张表，业务字段统一放在 `data(jsonb)` 里，程序自己读写，不用手动加列：
-
-| 表 | 用途 | 访客(anon) | 管理员（白名单 UID） |
-|---|---|---|---|
-| `event` | 赛事信息（取最新一条） | 读 | 读写 |
-| `team` | 完整报名（含联系方式与审核状态） | 不可读写 | 读写删 |
-| `team_public` | 已审核的公开战队资料 | 读 | 由数据库自动同步 |
-| `gallery` | 往届照片（每张一行） | 读 | 读写删 |
-| `cs2cup_admin` | 后台 UID 白名单 | 不可读写 | 仅本人可确认已获授权 |
-
-权限由数据库行级安全（RLS）自动判定：公开页只带 Publishable Key 以 anon 身份访问；报名只能调用数据库的原子提交函数。后台写权限仅授予 `cs2cup_admin` 白名单中的 UID，首次配置需在 SQL 控制台添加管理员 UID。
-
-## 录入赛果
-
-在后台的「赛程与赛果」中录入已通过战队的淘汰赛比分。前 3 轮为 BO3（胜方 2 分），总决赛为 BO5（胜方 3 分）；保存后公开页会自动显示比分、胜者和下一轮对阵。若改动上游场次的结果，系统会清除受影响下游场次的旧比分，需在新对阵产生后重新录入。
-
-## 部署（Git 自动部署）
-
-本仓库连接到腾讯云 CloudBase「静态托管 · Git 仓库部署」。
-**改网页只需 `git push`，CloudBase 会自动拉取并重新发布，不用手动删服务重传。**
-
-- 构建框架：其他 / 静态
-- 安装命令、构建命令：留空
-- 输出目录：`dist`（网站文件都在 `dist/` 目录里）
-- 部署路径：`/nbtcscup`
-- 部署命令：`tcb hosting deploy ./dist /nbtcscup -e <环境ID>`
-
-> 仓库根目录的文档（`README.md`、`数据库初始化.sql`、`SETUP-教程.md`）不会被部署上线，仅作源码与文档用途。
-
-## 安全说明
-
-- `config.js` 里只放环境的 **Publishable Key（客户端公钥）**，官方允许其暴露在前端。
-- **绝不**把腾讯云账号的 SecretId / SecretKey（账号级私钥）放进本仓库任何文件。
-- 后台写权限由数据库行级安全（RLS）保护：只有加入 `cs2cup_admin` 白名单的登录账号能改数据；`authenticated` 身份本身不代表管理员。
+Next.js App Router · React · TypeScript · CloudBase PostgreSQL · CloudBase 云托管
 
 ## 本地开发
 
-- 预览：`npx http-server . -p 4599 -c-1`（本仓库 `.claude/launch.json` 已内置该配置）。
-- 改完 `dist/` 下的文件，`git push` 即自动上线。
+```bash
+npm install
+npm run stack:up
+cp .env.example .env.local
+npm run dev
+```
+
+`stack:up` 会启动本地 PostgreSQL 与 PostgREST，并自动执行 `migrations/` 下的全部脚本。
+
+导入往届照片（需要现网只读公钥）：
+
+```bash
+LEGACY_RDB_BASE_URL=https://<env>.api.tcloudbasegateway.com/v1/rdb/rest \
+LEGACY_ANON_KEY=<publishable key> \
+npm run photos:import
+```
+
+停止本地环境：`npm run stack:down`
+
+## 环境变量
+
+| 变量 | 用途 |
+|---|---|
+| `CLOUDBASE_ENV_ID` | CloudBase 环境 ID |
+| `CLOUDBASE_ANON_KEY` | 匿名 Publishable Key,用于公开数据读取 |
+| `CLOUDBASE_ADMIN_KEY` | 管理凭据,用于后台读写 |
+| `CLOUDBASE_REGION` | 地域,默认 `ap-shanghai` |
+| `RDB_BASE_URL` | 覆盖数据接口基址,仅本地开发使用 |
+| `NEXT_PUBLIC_PHOTO_BASE_URL` | 相册图片的对象存储基址 |
+
+## 目录
+
+| 路径 | 内容 |
+|---|---|
+| `app/(public)/` | 公开页面 |
+| `app/admin/` | 后台管理 |
+| `components/ui/` | 无领域知识的基础组件 |
+| `components/domain/` | 赛事领域组件 |
+| `components/layout/` | 页面骨架 |
+| `lib/` | 数据访问、鉴权、赛制推演 |
+| `migrations/` | 数据库迁移脚本 |
+| `scripts/` | 一次性迁移工具 |
+
+`components/ui/` 不得引入 `lib/types.ts`。
+
+## 部署
+
+推送到 `main` 触发 `.github/workflows/deploy.yml`,构建镜像并发布至 CloudBase 云托管。
+
+首次部署与数据迁移见 [`HANDOFF.md`](HANDOFF.md)。

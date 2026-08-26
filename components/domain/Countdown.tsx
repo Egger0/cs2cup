@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 import { Badge } from '@/components/ui'
+import { readClock, readServerClock, subscribeToClock } from '@/lib/clock'
 import type { TournamentStatus } from '@/lib/types'
 import styles from './Countdown.module.css'
 
@@ -34,14 +35,7 @@ function remaining(target: number, now: number) {
 
 export function Countdown({ status, scheduledAt, label, opponents }: CountdownProps) {
   const target = scheduledAt ? Date.parse(scheduledAt) : null
-  const [now, setNow] = useState<number | null>(null)
-
-  useEffect(() => {
-    if (target === null) return
-    setNow(Date.now())
-    const timer = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(timer)
-  }, [target])
+  const now = useSyncExternalStore(subscribeToClock, readClock, readServerClock)
 
   const notice = STATUS_NOTICE[status]
   const showClock = notice === undefined && target !== null && Number.isFinite(target)
@@ -57,7 +51,7 @@ export function Countdown({ status, scheduledAt, label, opponents }: CountdownPr
 
       {showClock ? (
         <div className={styles.clock} suppressHydrationWarning>
-          {now === null
+          {now === 0
             ? '--:--:--'
             : (() => {
                 const { hours, minutes, seconds } = remaining(target, now)
