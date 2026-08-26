@@ -44,7 +44,6 @@ export default async function HomePage() {
   return (
     <>
       <section className={styles.hero}>
-        <span className={styles.glow} aria-hidden />
         <div className="wrap">
           <div className={styles.crest}>
             <Image

@@ -1,21 +1,9 @@
 .hero {
   position: relative;
-  isolation: isolate;
   overflow: hidden;
-  background: linear-gradient(180deg, #0b0906 0%, #0a0e16 58%, var(--bg) 100%);
+  background: transparent;
   border-bottom: 1px solid var(--line);
   padding-block: clamp(72px, 14vh, 152px) clamp(52px, 9vh, 104px);
-}
-
-.glow {
-  position: absolute;
-  inset: -50% -20% auto -20%;
-  height: 150%;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(46% 40% at 26% 32%, rgba(227, 166, 58, 0.26), transparent 68%),
-    radial-gradient(40% 38% at 78% 18%, rgba(61, 155, 233, 0.2), transparent 66%);
 }
 
 .crest {
