@@ -15,15 +15,6 @@
   min-width: 0;
 }
 
-.lede {
-  font-size: clamp(1.05rem, 1.5vw, 1.22rem);
-  line-height: 1.75;
-  color: var(--ink);
-  max-width: 52ch;
-  padding-left: 18px;
-  border-left: 2px solid var(--accent);
-}
-
 .block {
   margin-top: clamp(40px, 5vw, 64px);
 }
@@ -71,9 +62,10 @@
   gap: 14px;
 }
 
-.cta p {
-  color: var(--muted);
-  font-size: 0.9rem;
+.ctaLine {
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .cta a {

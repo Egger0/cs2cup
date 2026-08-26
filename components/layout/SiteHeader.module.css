@@ -25,21 +25,21 @@
 }
 
 .mark {
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   flex: none;
-  display: grid;
-  place-items: center;
-  border: 1.5px solid var(--accent);
-  color: var(--accent);
-  font-size: 0.8rem;
-  clip-path: polygon(14% 0, 100% 0, 100% 86%, 86% 100%, 0 100%, 0 14%);
+  border-radius: 50%;
   overflow: hidden;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
 }
 
-.markImage {
-  border: none;
+.mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
+
 
 .names {
   display: flex;

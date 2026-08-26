@@ -1,34 +1,23 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Button, Empty } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { PostList } from '@/components/domain/PostList'
 import { ResultsTable } from '@/components/domain/ResultsTable'
 import { SectionHead } from '@/components/domain/Sections'
-import { SeatGrid } from '@/components/domain/SeatGrid'
-import { Versus } from '@/components/domain/Versus'
-import { indexTeams, nextPlayableMatch } from '@/lib/bracket'
 import {
   getMatchMaps,
   getMatches,
   getPublicTeams,
+  getRegistrationStatus,
   getTournament,
   listPosts,
   listTournaments,
   safely,
 } from '@/lib/queries/public'
-import type { TournamentStatus } from '@/lib/types'
 import styles from './page.module.css'
 
 export const revalidate = 300
 export const dynamicParams = true
-
-const STATUS_TEXT: Record<TournamentStatus, string> = {
-  draft: '筹备中',
-  registration: '报名开放中',
-  running: '正在进行',
-  finished: '已结束',
-  postponed: '延期中',
-}
 
 export async function generateStaticParams() {
   const tournaments = await safely(listTournaments, [])
@@ -40,15 +29,17 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
   const tournament = await getTournament(slug)
   if (!tournament) notFound()
 
-  const [teams, matches, posts] = await Promise.all([
+  const [teams, matches, posts, registration] = await Promise.all([
     getPublicTeams(tournament.id),
     getMatches(tournament.id),
     safely(() => listPosts(2), []),
+    safely(() => getRegistrationStatus(slug), { cap: tournament.teamCap, taken: 0, open: false }),
   ])
 
-  const next = nextPlayableMatch(matches, indexTeams(teams))
-  const recent = matches.filter(match => match.winnerTeamId !== null).slice(-4)
+  const recent = matches.filter(match => match.winnerTeamId !== null).slice(-5)
   const matchMaps = await safely(() => getMatchMaps(recent.map(match => match.id)), [])
+  const seatsLeft = Math.max(0, registration.cap - registration.taken)
+  const acceptingEntries = registration.open && seatsLeft > 0
 
   return (
     <section className="section">
@@ -56,62 +47,48 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
         <div className={styles.overview}>
           <div className={styles.main}>
             <div data-rise>
-              <p className={styles.lede}>{tournament.lede}</p>
-            </div>
-
-            <div data-rise="2">
-              <div className={styles.block}>
-                <SectionHead eyebrow="下一场" title={next ? '即将开打' : '等待抽签'} />
-                {next ? (
-                  <Link href={`/tournaments/${slug}/matches/${next.match.id}`}>
-                    <Versus match={next.match} a={next.a} b={next.b} />
-                  </Link>
-                ) : (
-                  <Empty>报名满员后统一抽签,首轮对阵会出现在这里</Empty>
-                )}
-              </div>
-            </div>
-
-            <div data-rise="2">
-              <div className={styles.block}>
-                <SectionHead eyebrow="最近战报" title="打完的比赛" />
-                <ResultsTable
-                  matches={matches}
-                  teams={teams}
-                  maps={matchMaps}
-                  slug={tournament.slug}
-                  limit={4}
-                />
-                <p className={styles.more}>
-                  <Link href={`/tournaments/${slug}/results`} className="readout">
-                    查看全部战报 →
-                  </Link>
-                </p>
-              </div>
+              <SectionHead eyebrow="最近战报" title="打完的比赛" />
+              <ResultsTable
+                matches={matches}
+                teams={teams}
+                maps={matchMaps}
+                slug={tournament.slug}
+                limit={5}
+              />
+              <p className={styles.more}>
+                <Link href={`/tournaments/${slug}/results`} className="readout">
+                  查看全部战报 →
+                </Link>
+              </p>
             </div>
 
             {posts.length > 0 ? (
-              <div data-rise="3">
-                <div className={styles.block}>
-                  <SectionHead eyebrow="公告" title="最近发生了什么" />
-                  <PostList posts={posts} />
-                </div>
+              <div data-rise="2" className={styles.block}>
+                <SectionHead eyebrow="公告" title="最近发生了什么" />
+                <PostList posts={posts} />
               </div>
             ) : null}
           </div>
 
           <aside className={styles.aside}>
-            <SeatGrid
-              teams={teams}
-              capacity={tournament.teamCap}
-              statusLabel={STATUS_TEXT[tournament.status]}
-            />
-
             <div className={styles.cta}>
-              <p>带上你的五人车,来抢下这座校园杯。</p>
-              <Link href={`/tournaments/${slug}/register`}>
-                <Button variant="primary">报名参赛</Button>
-              </Link>
+              <div className="readout">{acceptingEntries ? '报名开放中' : '报名已截止'}</div>
+              <p className={styles.ctaLine}>
+                {acceptingEntries
+                  ? `还剩 ${seatsLeft} 个席位,先到先得。`
+                  : registration.open
+                    ? '十六个席位已满,下一届见。'
+                    : '本届不再接受报名。'}
+              </p>
+              {acceptingEntries ? (
+                <Link href={`/tournaments/${slug}/register`}>
+                  <Button variant="primary">报名参赛</Button>
+                </Link>
+              ) : (
+                <Link href={`/tournaments/${slug}/teams`}>
+                  <Button>看看谁报了名</Button>
+                </Link>
+              )}
             </div>
 
             {tournament.mapPool.length > 0 ? (

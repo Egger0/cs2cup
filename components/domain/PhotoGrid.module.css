@@ -59,6 +59,10 @@
   text-align: left;
 }
 
+.lightbox:not([open]) {
+  display: none;
+}
+
 .lightbox {
   position: fixed;
   inset: 0;

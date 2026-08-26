@@ -18,10 +18,6 @@ export interface SiteHeaderProps {
   status?: { label: string; open: boolean }
 }
 
-function initials(name: string) {
-  return name.slice(0, 2)
-}
-
 export function SiteHeader({ setting, links, status }: SiteHeaderProps) {
   const [open, setOpen] = useState(false)
 
@@ -29,16 +25,20 @@ export function SiteHeader({ setting, links, status }: SiteHeaderProps) {
     <header className={styles.header}>
       <div className={`wrap ${styles.inner}`}>
         <Link href="/" className={styles.brand}>
-          <span className={setting.logoUrl ? `${styles.mark} ${styles.markImage}` : styles.mark}>
-            {setting.logoUrl ? (
-              <Image src={setting.logoUrl} alt="" width={30} height={30} unoptimized />
-            ) : (
-              initials(setting.clubName)
-            )}
+          <span className={styles.mark}>
+            <Image
+              src={setting.logoUrl ?? '/brand/club-logo.jpg'}
+              alt=""
+              width={72}
+              height={72}
+              priority
+            />
           </span>
           <span className={styles.names}>
             <span>{setting.clubName}</span>
-            <small className={styles.school}>{setting.school}</small>
+            <small className={styles.school}>
+              {setting.clubNameEn ?? setting.school}
+            </small>
           </span>
         </Link>
 

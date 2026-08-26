@@ -27,7 +27,8 @@
   font-size: clamp(1.8rem, 4vw, 3rem);
   line-height: 1.08;
   margin-top: 16px;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
+  color: var(--ink);
 }
 
 .lede {

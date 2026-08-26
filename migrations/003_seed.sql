@@ -1,5 +1,5 @@
 insert into public.site_setting (id, club_name, club_name_en, school, contact_qq, contact_wechat, footer_copy)
-values (1, '宁波理工电竞社', null, '浙大宁波理工学院', '661543515', '无', '© 2026 宁波理工电竞社')
+values (1, '宁波理工电竞社', 'ESPORTS CLUB', '浙大宁波理工学院', '661543515', '无', '© 2026 宁波理工电竞社')
 on conflict (id) do nothing;
 
 insert into public.tournament (slug, title, game, season, edition, status, team_cap, hero_eyebrow, hero_top, hero_bottom, lede)

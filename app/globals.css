@@ -14,7 +14,7 @@
   --t: #e3a63a;
   --t-dim: rgba(227, 166, 58, 0.14);
   --c4: #e5484d;
-  --accent: var(--ct);
+  --accent: var(--t);
   --wrap: 1240px;
   --pad: clamp(20px, 5vw, 48px);
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -156,15 +156,15 @@ button {
   [data-rise] {
     animation: rise linear both;
     animation-timeline: view();
-    animation-range: entry 4% cover 26%;
+    animation-range: entry 0% entry 42%;
   }
 
   [data-rise='2'] {
-    animation-range: entry 4% cover 34%;
+    animation-range: entry 0% entry 56%;
   }
 
   [data-rise='3'] {
-    animation-range: entry 4% cover 42%;
+    animation-range: entry 0% entry 70%;
   }
 
   [data-wipe] {
