@@ -20,7 +20,30 @@ import type { Match, TeamStatus, TournamentStatus } from '@/lib/types'
 
 const SESSION_MAX_AGE = 60 * 60 * 8
 
-export async function signIn(token: string) {
+async function passwordToken(username: string, password: string) {
+  const env = process.env.CLOUDBASE_ENV_ID
+  if (!env) return null
+
+  try {
+    const response = await fetch(`https://${env}.api.tcloudbasegateway.com/auth/v1/signin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+      cache: 'no-store',
+    })
+    if (!response.ok) return null
+
+    const payload = (await response.json()) as { access_token?: unknown }
+    return typeof payload.access_token === 'string' ? payload.access_token : null
+  } catch {
+    return null
+  }
+}
+
+export async function signIn(username: string, password: string) {
+  const token = await passwordToken(username, password)
+  if (!token) return { ok: false as const, error: '登录凭证无效' }
+
   const claims = await verifyToken(token)
   if (!claims) return { ok: false as const, error: '登录凭证无效' }
 

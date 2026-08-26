@@ -5,41 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button, Field } from '@/components/ui'
 import { signIn } from '../_actions'
 
-declare global {
-  interface Window {
-    cloudbase?: {
-      init: (config: { env: string; accessKey: string; region: string }) => {
-        auth: () => {
-          signIn: (input: { username: string; password: string }) => Promise<{
-            credential?: { accessToken?: string }
-          }>
-          getAccessToken: () => Promise<{ accessToken: string }>
-        }
-      }
-    }
-  }
-}
-
-const SDK_URL = 'https://static.cloudbase.net/cloudbase-js-sdk/3.8.2/cloudbase.full.js'
-
-function loadSdk() {
-  if (window.cloudbase) return Promise.resolve()
-  return new Promise<void>((resolve, reject) => {
-    const script = document.createElement('script')
-    script.src = SDK_URL
-    script.onload = () => resolve()
-    script.onerror = () => reject(new Error('SDK 加载失败'))
-    document.head.append(script)
-  })
-}
-
-export interface LoginFormProps {
-  env: string
-  anonKey: string
-  region: string
-}
-
-export function LoginForm({ env, anonKey, region }: LoginFormProps) {
+export function LoginForm() {
   const router = useRouter()
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
@@ -48,19 +14,10 @@ export function LoginForm({ env, anonKey, region }: LoginFormProps) {
     setError('')
     setPending(true)
     try {
-      await loadSdk()
-      const app = window.cloudbase?.init({ env, accessKey: anonKey, region })
-      if (!app) throw new Error('SDK 初始化失败')
-
-      const auth = app.auth()
-      const login = await auth.signIn({
-        username: String(formData.get('username') ?? ''),
-        password: String(formData.get('password') ?? ''),
-      })
-      const accessToken = login.credential?.accessToken ?? (await auth.getAccessToken()).accessToken
-      if (!accessToken) throw new Error('未能取得登录令牌')
-
-      const result = await signIn(accessToken)
+      const result = await signIn(
+        String(formData.get('username') ?? ''),
+        String(formData.get('password') ?? ''),
+      )
       if (!result.ok) {
         setError(result.error)
         return
