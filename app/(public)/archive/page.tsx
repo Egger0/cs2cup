@@ -1,6 +1,6 @@
 import { SectionHead } from '@/components/domain/Sections'
 import { PhotoGrid, type PhotoGroup } from '@/components/domain/PhotoGrid'
-import { getPhotos, listTournaments } from '@/lib/queries/public'
+import { getPhotos, listTournaments, safely } from '@/lib/queries/public'
 
 export const revalidate = 300
 
@@ -9,7 +9,10 @@ export const metadata = {
 }
 
 export default async function ArchivePage() {
-  const [tournaments, photos] = await Promise.all([listTournaments(), getPhotos()])
+  const [tournaments, photos] = await Promise.all([
+    safely(listTournaments, []),
+    safely(() => getPhotos(), []),
+  ])
 
   const groups: PhotoGroup[] = tournaments
     .map(tournament => ({

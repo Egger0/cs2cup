@@ -162,6 +162,15 @@ const toPhoto = (row: PhotoRow): Photo => ({
   sortOrder: row.sort_order,
 })
 
+export async function safely<T>(work: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await work()
+  } catch (error) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') return fallback
+    throw error
+  }
+}
+
 export async function getSiteSetting(): Promise<SiteSetting | null> {
   const row = await selectRow<SiteSettingRow>('site_setting', {
     tags: ['site_setting'],

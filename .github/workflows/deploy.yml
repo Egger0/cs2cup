@@ -1,0 +1,45 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run typecheck
+
+      - run: npm run lint
+
+      - run: npm run build
+        env:
+          CLOUDBASE_ENV_ID: ${{ vars.CLOUDBASE_ENV_ID }}
+          CLOUDBASE_ANON_KEY: ${{ secrets.CLOUDBASE_ANON_KEY }}
+          NEXT_PUBLIC_PHOTO_BASE_URL: ${{ vars.PHOTO_BASE_URL }}
+
+      - name: Install CloudBase CLI
+        run: npm install -g @cloudbase/cli
+
+      - name: Deploy to CloudBase Cloud Run
+        env:
+          TENCENTCLOUD_SECRETID: ${{ secrets.TENCENTCLOUD_SECRETID }}
+          TENCENTCLOUD_SECRETKEY: ${{ secrets.TENCENTCLOUD_SECRETKEY }}
+          CLOUDBASE_ENV_ID: ${{ vars.CLOUDBASE_ENV_ID }}
+          SERVICE_NAME: ${{ vars.CLOUDRUN_SERVICE_NAME }}
+        run: tcb cloudrun deploy --envId "$CLOUDBASE_ENV_ID" --serviceName "$SERVICE_NAME" --targetPath . --noConfirm

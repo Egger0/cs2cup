@@ -5,13 +5,21 @@ import { Countdown } from '@/components/domain/Countdown'
 import { FaqList, RuleGrid, SectionHead, StatRow } from '@/components/domain/Sections'
 import { TeamGrid } from '@/components/domain/TeamGrid'
 import { indexTeams, nextPlayableMatch, winsNeeded } from '@/lib/bracket'
-import { getMatches, getPublicTeams, getTournament, listTournaments } from '@/lib/queries/public'
+import {
+  getMatches,
+  getPublicTeams,
+  getTournament,
+  listTournaments,
+  safely,
+} from '@/lib/queries/public'
 import styles from './page.module.css'
 
 export const revalidate = 300
 
+export const dynamicParams = true
+
 export async function generateStaticParams() {
-  const tournaments = await listTournaments()
+  const tournaments = await safely(listTournaments, [])
   return tournaments.map(tournament => ({ slug: tournament.slug }))
 }
 
