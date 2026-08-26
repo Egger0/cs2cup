@@ -8,15 +8,10 @@ export async function proxy(request: NextRequest) {
   const login = request.nextUrl.clone()
   login.pathname = '/admin/login'
 
-  if (!token) return NextResponse.redirect(login)
-  if (!issuerUrl()) return NextResponse.redirect(login)
+  if (!token || !issuerUrl()) return NextResponse.redirect(login)
 
   const claims = await verifyToken(token).catch(() => null)
-  if (!claims) {
-    const response = NextResponse.redirect(login)
-    response.cookies.delete(SESSION_COOKIE)
-    return response
-  }
+  if (!claims) return NextResponse.redirect(login)
 
   return NextResponse.next()
 }
