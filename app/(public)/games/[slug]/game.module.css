@@ -28,7 +28,7 @@
 }
 
 .name {
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--font-heavy), var(--font-body);
   font-weight: 900;
   font-size: clamp(2.6rem, 8vw, 5.6rem);
   line-height: 0.94;

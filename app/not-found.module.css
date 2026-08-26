@@ -20,7 +20,7 @@
 
 .code {
   font-family: var(--font-display), sans-serif;
-  font-weight: 900;
+  font-weight: 800;
   font-size: clamp(6rem, 22vw, 16rem);
   line-height: 0.8;
   color: transparent;
@@ -29,7 +29,7 @@
 }
 
 .line {
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--font-heavy), var(--font-body);
   font-weight: 900;
   font-size: clamp(1.4rem, 3.4vw, 2.4rem);
   letter-spacing: -0.03em;

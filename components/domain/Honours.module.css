@@ -67,7 +67,7 @@
 }
 
 .champion {
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--font-heavy), var(--font-body);
   font-weight: 900;
   font-size: clamp(1.15rem, 2.2vw, 1.5rem);
   letter-spacing: -0.02em;

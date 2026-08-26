@@ -15,7 +15,7 @@
   background: rgba(255, 255, 255, 0.02);
   border-bottom: 1px solid var(--line-strong);
   font-family: var(--font-mono), monospace;
-  font-weight: 500;
+  font-weight: 400;
   font-size: 0.64rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;

@@ -64,6 +64,8 @@ await ctx.addCookies([{ name: 'cs2cup_session', value: 'forged.token.here', url:
 await page.goto(`${BASE}/admin`, { waitUntil: 'domcontentloaded' })
 check('伪造 cookie 被拒', page.url().includes('/admin/login'))
 await ctx.clearCookies()
+await page.goto(BASE, { waitUntil: 'domcontentloaded' })
+await page.waitForTimeout(800)
 
 const m = await ctx.newPage()
 await m.setViewportSize({ width: 390, height: 760 })

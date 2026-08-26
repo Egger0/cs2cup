@@ -32,7 +32,7 @@ export default async function PublicLayout({ children }: { children: React.React
   return (
     <>
       <SiteHeader setting={setting} links={LINKS} />
-      <main>{children}</main>
+      <main id="main">{children}</main>
       <SiteFooter setting={setting} />
     </>
   )

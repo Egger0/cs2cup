@@ -83,7 +83,7 @@
 
 .cjk {
   display: block;
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--font-heavy), var(--font-body);
   font-weight: 900;
   font-size: clamp(4.2rem, 15vw, 12rem);
   line-height: 0.84;
