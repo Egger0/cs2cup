@@ -298,3 +298,50 @@
     animation: none;
   }
 }
+
+.compact .inner {
+  padding-block: clamp(26px, 4vh, 40px) 0;
+}
+
+.compact .split {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.compact .card,
+.compact .tagline,
+.compact .rail {
+  display: none;
+}
+
+.compact .cjk {
+  font-size: clamp(1.7rem, 3.4vw, 2.5rem);
+  text-shadow: none;
+}
+
+.compact .latin {
+  font-size: 0.68rem;
+  letter-spacing: 0.26em;
+  margin-top: 8px;
+}
+
+.compact .status {
+  font-size: 0.62rem;
+}
+
+.compact .title {
+  margin-top: 10px;
+}
+
+.compact .glow {
+  opacity: 0.5;
+}
+
+.cjk {
+  color: #fff7e8;
+  transition: color 0.2s ease;
+}
+
+a.cjk:hover {
+  color: var(--t);
+}

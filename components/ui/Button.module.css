@@ -18,7 +18,13 @@
 }
 
 .button:hover:not(:disabled) {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.9);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+  transition-duration: 0.06s;
 }
 
 .button:disabled {

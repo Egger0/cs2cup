@@ -9,11 +9,22 @@ create table if not exists public.site_setting (
   footer_copy    text
 );
 
+create table if not exists public.game (
+  id           bigint generated always as identity primary key,
+  slug         text not null unique,
+  name         text not null,
+  name_en      text,
+  accent_color text,
+  tagline      text,
+  sort_order   integer not null default 0,
+  active       boolean not null default true
+);
+
 create table if not exists public.tournament (
   id            bigint generated always as identity primary key,
   slug          text not null unique,
   title         text not null,
-  game          text not null default 'cs2',
+  game_id       bigint references public.game(id) on delete restrict,
   season        text not null,
   edition       integer not null,
   status        text not null default 'draft'

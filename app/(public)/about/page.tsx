@@ -13,7 +13,7 @@ import styles from './page.module.css'
 
 export const revalidate = 300
 
-export const metadata = { title: '关于社团 · 宁波理工电竞社' }
+export const metadata = { title: '关于 · 宁波理工电竞社' }
 
 export default async function ClubPage() {
   const [setting, members, posts, tournaments, photos] = await Promise.all([

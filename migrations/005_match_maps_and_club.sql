@@ -13,7 +13,6 @@ create table if not exists public.match_map (
 
 create index if not exists match_map_match_idx on public.match_map (match_id, pick_order);
 
-create unique index if not exists club_member_role_key on public.club_member (role);
 
 create table if not exists public.club_member (
   id         bigint generated always as identity primary key,
@@ -25,8 +24,11 @@ create table if not exists public.club_member (
   unique (role)
 );
 
+create unique index if not exists club_member_role_key on public.club_member (role);
+
 create table if not exists public.post (
   id           bigint generated always as identity primary key,
+  game_id      bigint references public.game(id) on delete set null,
   slug         text not null unique,
   title        text not null,
   summary      text not null,

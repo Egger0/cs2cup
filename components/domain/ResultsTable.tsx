@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Empty } from '@/components/ui'
+import { Button, Empty } from '@/components/ui'
 import { indexMatches, indexTeams, resolveMatch } from '@/lib/bracket'
 import type { Match, MatchMap, PublicTeam } from '@/lib/types'
 import styles from './ResultsTable.module.css'
@@ -15,7 +15,19 @@ export interface ResultsTableProps {
 export function ResultsTable({ matches, teams, maps, slug, limit }: ResultsTableProps) {
   const all = matches.filter(match => match.winnerTeamId !== null)
   const decided = limit === undefined ? all : all.slice(-limit)
-  if (decided.length === 0) return <Empty>还没有已完赛的比赛</Empty>
+  if (decided.length === 0) {
+    return (
+      <Empty
+        action={
+          <Link href={`/tournaments/${slug}/bracket`}>
+            <Button size="mini">看对阵表</Button>
+          </Link>
+        }
+      >
+        还没有打完的比赛。每场结束后,比分和 Ban/Pick 会出现在这里。
+      </Empty>
+    )
+  }
 
   const matchIndex = indexMatches(matches)
   const teamIndex = indexTeams(teams)

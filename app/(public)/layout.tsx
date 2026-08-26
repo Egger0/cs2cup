@@ -4,9 +4,10 @@ import { SiteHeader } from '@/components/layout/SiteHeader'
 import { getSiteSetting, safely } from '@/lib/queries/public'
 
 const LINKS = [
-  { href: '/', label: '本届赛事' },
-  { href: '/archive', label: '往届' },
-  { href: '/club', label: '社团' },
+  { href: '/games', label: '项目' },
+  { href: '/tournaments', label: '赛事' },
+  { href: '/archive', label: '存档' },
+  { href: '/about', label: '关于' },
 ]
 
 const FALLBACK_SETTING = {

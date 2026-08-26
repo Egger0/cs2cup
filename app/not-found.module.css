@@ -1,0 +1,51 @@
+.shell {
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  justify-items: start;
+  padding: var(--pad);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0b0906 0%, var(--bg) 62%);
+}
+
+.glow {
+  position: absolute;
+  inset: -40% -20% auto -20%;
+  height: 140%;
+  z-index: -1;
+  background: radial-gradient(44% 40% at 28% 34%, rgba(227, 166, 58, 0.2), transparent 68%);
+}
+
+.code {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 900;
+  font-size: clamp(6rem, 22vw, 16rem);
+  line-height: 0.8;
+  color: transparent;
+  -webkit-text-stroke: 2px rgba(227, 166, 58, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+
+.line {
+  font-family: var(--font-body), sans-serif;
+  font-weight: 900;
+  font-size: clamp(1.4rem, 3.4vw, 2.4rem);
+  letter-spacing: -0.03em;
+  margin-top: 22px;
+}
+
+.hint {
+  color: var(--muted);
+  margin-top: 12px;
+  max-width: 40ch;
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}

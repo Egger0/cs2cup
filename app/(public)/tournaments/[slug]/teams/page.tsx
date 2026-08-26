@@ -23,7 +23,7 @@ export default async function TeamsPage({ params }: { params: Promise<{ slug: st
           />
         </div>
         <div data-rise="2">
-          <TeamGrid teams={teams} />
+          <TeamGrid teams={teams} slug={slug} />
         </div>
       </div>
     </section>

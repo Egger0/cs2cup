@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Empty } from '@/components/ui'
+import { Button, Empty } from '@/components/ui'
 import { groupByRound, indexMatches, indexTeams, resolveMatch } from '@/lib/bracket'
 import type { Match, PublicTeam } from '@/lib/types'
 import styles from './Bracket.module.css'
@@ -12,7 +12,17 @@ export interface BracketProps {
 
 export function Bracket({ matches, teams, slug }: BracketProps) {
   if (matches.length === 0) {
-    return <Empty>报名满员后抽签,对阵表会出现在这里</Empty>
+    return (
+      <Empty
+        action={
+          <Link href={`/tournaments/${slug}/teams`}>
+            <Button size="mini">看参赛战队</Button>
+          </Link>
+        }
+      >
+        报名满员后统一抽签,对阵表会出现在这里。
+      </Empty>
+    )
   }
 
   const matchIndex = indexMatches(matches)

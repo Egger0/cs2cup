@@ -2,21 +2,32 @@ insert into public.site_setting (id, club_name, club_name_en, school, contact_qq
 values (1, '宁波理工电竞社', 'ESPORTS CLUB', '浙大宁波理工学院', '661543515', '无', '© 2026 宁波理工电竞社')
 on conflict (id) do nothing;
 
-insert into public.tournament (slug, title, game, season, edition, status, team_cap, hero_eyebrow, hero_top, hero_bottom, lede)
+insert into public.game (slug, name, name_en, accent_color, tagline, sort_order, active)
 values
-  ('2022-spring-nlc', '第一届春季宁理杯', 'csgo', '2022 春季', 1, 'finished', 16, '', '', '宁理杯', ''),
-  ('2022-autumn-nlc', '第二届秋季宁理杯', 'csgo', '2022 秋季', 2, 'finished', 16, '', '', '宁理杯', ''),
-  ('2025-nlc',        '第三届宁理杯',     'csgo', '2025',      3, 'finished', 16, '', '', '宁理杯', '')
+  ('cs2',      'CS2',        'Counter-Strike 2', '#e3a63a', '社团的主战场,宁理杯已办四届。',        1, true),
+  ('lol',      '英雄联盟',    'League of Legends', '#c89b3c', '五人开黑,校内赛与观赛活动。',          2, true),
+  ('valorant', '无畏契约',    'VALORANT',         '#ff4655', '战术射击,新开的项目。',                3, true)
+on conflict (slug) do nothing;
+
+insert into public.tournament (slug, title, game_id, season, edition, status, team_cap, hero_eyebrow, hero_top, hero_bottom, lede)
+select v.slug, v.title, g.id, v.season, v.edition, v.status, 16, '', '', '宁理杯', ''
+from (values
+  ('2022-spring-nlc', '第一届春季宁理杯', '2022 春季', 1, 'finished'),
+  ('2022-autumn-nlc', '第二届秋季宁理杯', '2022 秋季', 2, 'finished'),
+  ('2025-nlc',        '第三届宁理杯',     '2025',      3, 'finished')
+) as v(slug, title, season, edition, status)
+cross join public.game g
+where g.slug = 'cs2'
 on conflict (slug) do nothing;
 
 insert into public.tournament (
-  slug, title, game, season, edition, status, team_cap,
+  slug, title, game_id, season, edition, status, team_cap,
   hero_eyebrow, hero_top, hero_bottom, lede, map_pool, rules, faqs
 )
-values (
+select
   '2026-nlc',
   '第四届宁理杯',
-  'csgo',
+  g.id,
   '2026',
   4,
   'postponed',
@@ -41,5 +52,6 @@ values (
     {"question":"对阵表什么时候公布?","answer":"报名满员后统一抽签,种子对阵会即时反映在本页「对阵赛程」中。"},
     {"question":"比赛在哪里进行?","answer":"线下电竞教室集中开赛,具体场地与时间通过报名时填写的联系方式通知。"}
   ]$faqs$::jsonb
-)
+from public.game g
+where g.slug = 'cs2'
 on conflict (slug) do nothing;

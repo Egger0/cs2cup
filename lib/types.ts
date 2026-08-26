@@ -29,11 +29,24 @@ export interface FaqItem {
   answer: string
 }
 
+export interface Game {
+  id: number
+  slug: string
+  name: string
+  nameEn: string | null
+  accentColor: string | null
+  tagline: string | null
+  sortOrder: number
+  active: boolean
+}
+
 export interface Tournament {
   id: number
   slug: string
   title: string
-  game: string
+  gameId: number | null
+  gameSlug: string | null
+  gameName: string | null
   season: string
   edition: number
   status: TournamentStatus
@@ -131,6 +144,7 @@ export interface ClubMember {
 
 export interface Post {
   id: number
+  gameId: number | null
   slug: string
   title: string
   summary: string

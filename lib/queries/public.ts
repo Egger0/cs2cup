@@ -2,6 +2,7 @@ import 'server-only'
 import { callFunction, selectRow, selectRows } from '../rdb'
 import type {
   ClubMember,
+  Game,
   FaqItem,
   Match,
   MatchMap,
@@ -33,7 +34,8 @@ interface TournamentRow {
   id: number
   slug: string
   title: string
-  game: string
+  game_id: number | null
+  game: { slug: string; name: string } | null
   season: string
   edition: number
   status: TournamentStatus
@@ -114,7 +116,9 @@ const toTournament = (row: TournamentRow): Tournament => ({
   id: row.id,
   slug: row.slug,
   title: row.title,
-  game: row.game,
+  gameId: row.game_id,
+  gameSlug: row.game?.slug ?? null,
+  gameName: row.game?.name ?? null,
   season: row.season,
   edition: row.edition,
   status: row.status,
@@ -188,6 +192,7 @@ export async function getSiteSetting(): Promise<SiteSetting | null> {
 
 export async function listTournaments(): Promise<Tournament[]> {
   const rows = await selectRows<TournamentRow>('tournament', {
+    select: '*,game(slug,name)',
     order: 'edition.desc',
     tags: ['tournament'],
     revalidate: REVALIDATE,
@@ -197,6 +202,7 @@ export async function listTournaments(): Promise<Tournament[]> {
 
 export async function getTournament(slug: string): Promise<Tournament | null> {
   const row = await selectRow<TournamentRow>('tournament', {
+    select: '*,game(slug,name)',
     filters: { slug: `eq.${slug}` },
     tags: ['tournament', `tournament:${slug}`],
     revalidate: REVALIDATE,
@@ -206,6 +212,7 @@ export async function getTournament(slug: string): Promise<Tournament | null> {
 
 export async function getCurrentTournament(): Promise<Tournament | null> {
   const rows = await selectRows<TournamentRow>('tournament', {
+    select: '*,game(slug,name)',
     filters: { status: 'neq.finished' },
     order: 'edition.desc',
     limit: 1,
@@ -330,6 +337,7 @@ export async function listMembers(): Promise<ClubMember[]> {
 
 interface PostRow {
   id: number
+  game_id: number | null
   slug: string
   title: string
   summary: string
@@ -347,6 +355,7 @@ export async function listPosts(limit?: number): Promise<Post[]> {
   })
   return rows.map(row => ({
     id: row.id,
+    gameId: row.game_id,
     slug: row.slug,
     title: row.title,
     summary: row.summary,
@@ -364,4 +373,44 @@ export interface RegistrationStatus {
 
 export function getRegistrationStatus(slug: string) {
   return callFunction<RegistrationStatus>('registration_status', { p_slug: slug })
+}
+
+interface GameRow {
+  id: number
+  slug: string
+  name: string
+  name_en: string | null
+  accent_color: string | null
+  tagline: string | null
+  sort_order: number
+  active: boolean
+}
+
+const toGame = (row: GameRow): Game => ({
+  id: row.id,
+  slug: row.slug,
+  name: row.name,
+  nameEn: row.name_en,
+  accentColor: row.accent_color,
+  tagline: row.tagline,
+  sortOrder: row.sort_order,
+  active: row.active,
+})
+
+export async function listGames(): Promise<Game[]> {
+  const rows = await selectRows<GameRow>('game', {
+    order: 'sort_order.asc',
+    tags: ['game'],
+    revalidate: REVALIDATE,
+  })
+  return rows.map(toGame)
+}
+
+export async function getGame(slug: string): Promise<Game | null> {
+  const row = await selectRow<GameRow>('game', {
+    filters: { slug: `eq.${slug}` },
+    tags: ['game', `game:${slug}`],
+    revalidate: REVALIDATE,
+  })
+  return row ? toGame(row) : null
 }
