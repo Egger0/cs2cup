@@ -31,11 +31,23 @@ export default async function GamesPage() {
                 key={game.id}
                 href={`/games/${game.slug}`}
                 className={styles.game}
+                data-game={game.slug}
               >
                 <div className={styles.gameName}>{game.name}</div>
                 <div className={styles.gameEn}>{game.nameEn ?? game.slug}</div>
                 {game.tagline ? <p className={styles.gameTagline}>{game.tagline}</p> : null}
-                <div className={styles.gameMeta}>{count > 0 ? `${count} 届赛事` : '筹备中'}</div>
+                <div className={styles.gameMeta}>
+                  <span className={styles.gameStatusDot} aria-hidden="true" />
+                  <span className={styles.gameMetaText}>
+                    {count > 0 ? (
+                      <>
+                        已举办 <strong>{String(count).padStart(2, '0')}</strong> 届赛事
+                      </>
+                    ) : (
+                      '赛季筹备中'
+                    )}
+                  </span>
+                </div>
               </Link>
             )
           })}

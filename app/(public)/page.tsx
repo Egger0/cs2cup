@@ -83,12 +83,22 @@ export default async function HomePage() {
                 key={game.id}
                 href={`/games/${game.slug}`}
                 className={styles.game}
+                data-game={game.slug}
               >
                 <div className={styles.gameName}>{game.name}</div>
                 <div className={styles.gameEn}>{game.nameEn ?? game.slug}</div>
                 {game.tagline ? <p className={styles.gameTagline}>{game.tagline}</p> : null}
                 <div className={styles.gameMeta}>
-                  {countFor(game.id) > 0 ? `${countFor(game.id)} 届赛事` : '筹备中'}
+                  <span className={styles.gameStatusDot} aria-hidden="true" />
+                  <span className={styles.gameMetaText}>
+                    {countFor(game.id) > 0 ? (
+                      <>
+                        已举办 <strong>{String(countFor(game.id)).padStart(2, '0')}</strong> 届赛事
+                      </>
+                    ) : (
+                      '赛季筹备中'
+                    )}
+                  </span>
                 </div>
               </Link>
             ))}
