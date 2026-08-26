@@ -475,7 +475,8 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
   try{ var _bc=JSON.parse(localStorage.getItem("cs2cup_brand")||"null");
     if(_bc){ ["clubName","brandEn","logoUrl","brandMark"].forEach(function(k){ if(_bc[k]!=null&&_bc[k]!=="") CFG[k]=_bc[k]; }); }
   }catch(e){}
-  var CAP=DEF.teamCap, MODE="demo", teams=[], NEXT=null, BASE=null;
+  var CLOUD_CONFIGURED=!!(window.LC&&LC.ready);
+  var CAP=DEF.teamCap, MODE=CLOUD_CONFIGURED?"loading":"demo", teams=[], NEXT=null, BASE=null, tickTimer=null;
   var LKEY="cs2cup.demo.v2";
 
   // ---------- schedule ----------
@@ -560,8 +561,13 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
     }
     $("asideNote").textContent = (MODE==="cloud")
       ? "报名信息提交后由主办方统一收集管理,请如实填写"
+      : (MODE==="loading") ? "正在连接云端,报名暂不可提交"
+      : (MODE==="offline") ? "云端暂不可用,报名已暂停,请稍后刷新"
       : "演示模式:报名暂存在本地浏览器(配置云端后改为统一收集)";
-    $("dataSrc").textContent = (MODE==="cloud") ? "数据源:云端 · CloudBase" : "数据源:演示模式(未连接云端)";
+    $("dataSrc").textContent = (MODE==="cloud") ? "数据源:云端 · CloudBase"
+      : (MODE==="loading") ? "数据源:正在连接云端"
+      : (MODE==="offline") ? "数据源:云端暂不可用"
+      : "数据源:演示模式(未连接云端)";
   }
 
   // ---------- render ----------
@@ -630,6 +636,9 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
         cap=f.captain.value.trim(), contact=f.contact.value.trim();
     var players=["p1","p2","p3","p4","p5"].map(function(k){return f[k].value.trim();});
     var sub=f.p6.value.trim();
+    if(MODE==="loading"){ errEl.textContent="正在连接云端,请稍后再提交。"; return; }
+    if(MODE==="offline"){ errEl.textContent="云端暂不可用,为避免丢失报名,当前不接受提交。"; return; }
+    if(CFG.regDeadline){ var deadline=new Date(CFG.regDeadline); if(!isNaN(deadline.getTime())&&Date.now()>=deadline.getTime()){ errEl.textContent="报名已截止。"; return; } }
     if(teams.length>=CAP){ errEl.textContent="名额已满("+CAP+"/"+CAP+"),报名已截止。"; return; }
     if(!name){ errEl.textContent="请填写战队名称。"; return; }
     if(tag.length<2){ errEl.textContent="战队 TAG 至少 2 个字符。"; return; }
@@ -697,7 +706,7 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
   function useDemo(){ MODE="demo"; var saved=loadDemo();
     teams = saved && saved.length ? saved : demoSeed.map(function(s,i){ return Object.assign({},s,{id:"seed"+i,seed:i+1,createdAt:new Date()}); });
   }
-  function finish(){ BASE=CFG.startDate||upcomingSaturdayNoon(); renderAll(); tick(); setInterval(tick,1000); }
+  function finish(){ BASE=CFG.startDate||upcomingSaturdayNoon(); renderAll(); tick(); if(!tickTimer) tickTimer=setInterval(tick,1000); }
 
   // 用上次缓存的赛事配置立即渲染(避免刷新闪回默认),云端数据到达后再更新
   var _st = window.__CS2CUP_STATE;
@@ -706,11 +715,10 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
     finish();
     Promise.resolve(LC.ensureAuth()).catch(function(){})
       .then(function(){ return LC.getEvent(); })
-      .then(function(ev){ applyEvent(ev); })
-      .catch(function(){})
+      .then(function(ev){ applyEvent(ev); BASE=CFG.startDate||upcomingSaturdayNoon(); })
       .then(function(){ return LC.listTeams(); })
       .then(function(list){ MODE="cloud"; teams=list||[]; renderAll(); })
-      .catch(function(){ useDemo(); renderAll(); });
+      .catch(function(err){ MODE="offline"; teams=[]; renderAll(); $("formErr").textContent="云端数据暂不可用,报名已暂停。"+(err&&err.message?"("+err.message+")":""); });
   }else{
     useDemo(); finish();
   }

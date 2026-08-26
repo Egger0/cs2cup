@@ -125,27 +125,11 @@
 <div id="loginView" class="wrap" hidden>
   <form class="login" id="loginForm">
     <h1>管理员登录</h1>
-    <p>用管理员邮箱和密码登录。首次使用请点下方「创建管理员账号」。</p>
+    <p>仅数据库管理员白名单中的账号可进入后台。账号创建与授权请在 CloudBase 控制台完成。</p>
     <div class="field"><label for="email">邮箱</label><input id="email" type="email" autocomplete="username" placeholder="you@example.com" /></div>
     <div class="field"><label for="password">密码</label><input id="password" type="password" autocomplete="current-password" placeholder="登录密码" /></div>
     <span class="err" id="loginErr"></span>
     <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center" id="loginBtn">登录</button>
-    <div class="split"></div>
-    <button type="button" class="btn btn-ghost" style="width:100%;justify-content:center" id="toSignup">首次使用?创建管理员账号</button>
-  </form>
-
-  <!-- 注册(首次) -->
-  <form class="login" id="signupForm" hidden>
-    <h1>创建管理员账号</h1>
-    <p>输入邮箱和密码,点击后会发送一个验证码到你的邮箱,填入即可完成注册并登录。</p>
-    <div class="field"><label for="suEmail">邮箱</label><input id="suEmail" type="email" placeholder="you@example.com" /></div>
-    <div class="field"><label for="suPassword">设置密码 <span class="hint">至少 6 位,以后用它登录</span></label><input id="suPassword" type="password" placeholder="设置一个密码" /></div>
-    <div class="field" id="otpWrap" hidden><label for="suOtp">邮箱验证码 <span class="hint">查收邮件,几分钟内有效</span></label><input id="suOtp" inputmode="numeric" placeholder="6 位数字" /></div>
-    <span class="err" id="suErr"></span>
-    <button type="button" class="btn btn-primary" style="width:100%;justify-content:center" id="suSendBtn">发送验证码</button>
-    <button type="button" class="btn btn-primary" style="width:100%;justify-content:center" id="suVerifyBtn" hidden>完成注册并登录</button>
-    <div class="split"></div>
-    <button type="button" class="btn btn-ghost" style="width:100%;justify-content:center" id="toLogin">返回登录</button>
   </form>
 </div>
 
@@ -399,7 +383,7 @@
   }
   function loadTeams(){
     $("teamRows").innerHTML='<tr><td colspan="9" class="empty">加载中…</td></tr>';
-    return LC.listTeams().then(function(list){ allTeams=list; renderTeams(); })
+    return LC.listTeamsAdmin().then(function(list){ allTeams=list; renderTeams(); })
       .catch(function(err){ $("teamRows").innerHTML='<tr><td colspan="9" class="empty">加载失败:'+esc(err.message||String(err))+'</td></tr>'; });
   }
   $("search").addEventListener("input",renderTeams);
@@ -416,9 +400,14 @@
     if(!allTeams.length){ toast("暂无报名可导出",true); return; }
     var head=["种子","战队名称","TAG","队长","联系方式","学院","队员","备注","报名时间"];
     var lines=[head.join(",")];
+    function csvCell(v){
+      v=String(v==null?"":v);
+      if(/^[\t\r\n ]*[=+\-@]/.test(v)) v="'"+v;
+      return '"'+v.replace(/"/g,'""')+'"';
+    }
     allTeams.forEach(function(t){
       var row=[t.seed||"",t.name,t.tag,t.captain,t.contact,t.dept||"",(t.players||[]).join("、"),t.note||"",fmtTime(t.createdAt)];
-      lines.push(row.map(function(v){ v=String(v==null?"":v); return '"'+v.replace(/"/g,'""')+'"'; }).join(","));
+      lines.push(row.map(csvCell).join(","));
     });
     var blob=new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
     var a=document.createElement("a"); a.href=URL.createObjectURL(blob);
@@ -523,9 +512,9 @@
   // ---------- auth ----------
   function showUidBanner(user){
     var uid=user && (user.id||user.uid||user.sub) || "";
-    $("uidBanner").innerHTML='<div class="banner ok"><span>✅</span><span>已作为管理员登录'+
+    $("uidBanner").innerHTML='<div class="banner ok"><span>✅</span><span>已获后台管理员授权'+
       (user&&user.email?('(<b>'+esc(user.email)+'</b>)'):'')+'。权限由数据库的安全策略(RLS)自动判定,'+
-      '<b>无需再手动配置任何 UID</b>。'+
+      '<b>仅白名单 UID 可写入数据</b>。'+
       (uid?('<br><span class="muted" style="font-size:.82rem">账号 UID:<span class="uid-box" id="uidVal">'+esc(uid)+'</span> '+
       '<button class="btn btn-ghost btn-mini" id="copyUid" type="button">复制</button>(一般用不到,排错时可能会用)</span>'):'')+
       '</span></div>';
@@ -543,6 +532,17 @@
     loadEvent(); loadTeams(); loadGallery();
   }
   function showLogin(){ $("dashView").hidden=true; $("loginView").hidden=false; }
+  function showAccessDenied(user){
+    var uid=user && (user.id||user.uid||user.sub) || "(未取得 UID)";
+    showLogin();
+    $("loginErr").textContent="该账号未获后台授权。请让环境管理员将 UID 加入 cs2cup_admin 白名单："+uid;
+    $("connBanner").innerHTML='<div class="banner warn"><span>⚠️</span><span>已登录但没有后台权限。UID：<b>'+esc(uid)+
+      '</b>。请在 CloudBase SQL 控制台完成授权后重新登录。<button class="btn btn-ghost btn-mini" id="denyLogout" type="button">退出</button></span></div>';
+    $("denyLogout").addEventListener("click",function(){ LC.logout().then(function(){ location.reload(); }); });
+  }
+  function openDashboardIfAdmin(user){
+    return LC.isAdmin().then(function(ok){ if(ok) showDashboard(user); else showAccessDenied(user); });
+  }
 
   // login
   $("loginForm").addEventListener("submit",function(e){
@@ -550,47 +550,20 @@
     var email=$("email").value.trim(), pw=$("password").value;
     if(!email||!pw){ $("loginErr").textContent="请输入邮箱和密码"; return; }
     var btn=$("loginBtn"); btn.disabled=true; btn.textContent="登录中…";
-    LC.login(email,pw).then(function(){ return LC.getUser(); }).then(function(user){ showDashboard(user); })
+    LC.login(email,pw).then(function(){ return LC.getUser(); }).then(function(user){ return openDashboardIfAdmin(user); })
       .catch(function(err){ $("loginErr").textContent="登录失败:"+(err.message||err); })
       .then(function(){ btn.disabled=false; btn.textContent="登录"; });
   });
 
-  // signup toggle
-  $("toSignup").addEventListener("click",function(){ $("loginForm").hidden=true; $("signupForm").hidden=false; $("suEmail").value=$("email").value; });
-  $("toLogin").addEventListener("click",function(){ $("signupForm").hidden=true; $("loginForm").hidden=false; });
-
-  var pendingSignup=null;
-  $("suSendBtn").addEventListener("click",function(){
-    $("suErr").textContent="";
-    var email=$("suEmail").value.trim(), pw=$("suPassword").value;
-    if(!email||!pw){ $("suErr").textContent="请输入邮箱和密码"; return; }
-    if(pw.length<6){ $("suErr").textContent="密码至少 6 位"; return; }
-    var btn=$("suSendBtn"); btn.disabled=true; btn.textContent="发送中…";
-    LC.signUp(email,pw).then(function(data){
-      pendingSignup=data; $("otpWrap").hidden=false; $("suSendBtn").hidden=true; $("suVerifyBtn").hidden=false;
-      toast("验证码已发送,请查收邮箱"); $("suOtp").focus();
-    }).catch(function(err){ $("suErr").textContent="发送失败:"+(err.message||err); btn.disabled=false; btn.textContent="发送验证码"; });
-  });
-  $("suVerifyBtn").addEventListener("click",function(){
-    $("suErr").textContent="";
-    var code=$("suOtp").value.trim();
-    if(!code){ $("suErr").textContent="请输入邮箱验证码"; return; }
-    if(!pendingSignup){ $("suErr").textContent="请先发送验证码"; return; }
-    var btn=$("suVerifyBtn"); btn.disabled=true; btn.textContent="验证中…";
-    LC.verifyOtp(pendingSignup,code).then(function(){ return LC.getUser(); }).then(function(user){ toast("注册成功,已登录"); showDashboard(user); })
-      .catch(function(err){ $("suErr").textContent="验证失败:"+(err.message||err); btn.disabled=false; btn.textContent="完成注册并登录"; });
-  });
-
   // ---------- boot ----------
   if(showConn()){
-    if(window.LC_ADMIN_HINT){ $("email").value=window.LC_ADMIN_HINT; }
     LC.getSession().then(function(session){
-      if(session){ return LC.getUser().then(function(user){ user?showDashboard(user):showLogin(); }); }
+      if(session){ return LC.getUser().then(function(user){ return user?openDashboardIfAdmin(user):showLogin(); }); }
       showLogin();
     }).catch(showLogin);
   }else{
     showLogin();
-    document.querySelectorAll("#loginView input,#loginView button").forEach(function(el){ if(el.id!=="toLogin"&&el.id!=="toSignup") el.disabled=true; });
+    document.querySelectorAll("#loginView input,#loginView button").forEach(function(el){ el.disabled=true; });
   }
 })();
 </script>

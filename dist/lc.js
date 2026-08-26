@@ -12,8 +12,8 @@
 //    —— 所有业务字段都放在 data(jsonb)里,程序读写 data。
 //
 //  安全(RLS):
-//    · 访客 = anon 角色(仅用 Publishable Key,不登录):可读 event/team、可报名(insert team)
-//    · 管理员 = authenticated 角色(admin.html 登录后):可改 event、可改/删 team
+//    · 访客 = anon 角色(仅用 Publishable Key,不登录):可读公开资料、可调用受控报名 RPC
+//    · 管理员 = authenticated 且 UID 在 cs2cup_admin 白名单:可管理赛事、完整报名与相册
 //    公开页「绝不」匿名登录,以保证访客始终是 anon,无法删改数据。
 // ===================================================================
 (function () {
@@ -57,6 +57,14 @@
     }
     return res ? res.data : null;
   }
+  function scalar(res) {
+    if (res && res.error) {
+      var er = res.error;
+      var msg = er.message || er.msg || er.hint || (typeof er === "string" ? er : JSON.stringify(er));
+      var e = new Error(msg); e.raw = er; throw e;
+    }
+    return res ? res.data : null;
+  }
 
   // ---- 赛事信息(event 表)----
   // 取最新一条(按自增 id 最大)。返回 { id, ...业务字段 } 或 null
@@ -82,17 +90,30 @@
   };
 
   // ---- 报名战队(team 表)----
+  // 公开页只读 team_public，不会获得队长和联系方式等私密字段。
   LC.listTeams = function () {
-    return Promise.resolve(rdb.from("team").select("*")).then(function (res) {
+    return Promise.resolve(rdb.from("team_public").select("*")).then(function (res) {
       var d = rows(res).map(LC.plain);
       d.sort(function (a, b) { return (a.seed || 0) - (b.seed || 0); }); // 客户端排序,避免依赖 order() 语法
       return d;
     });
   };
+  // 只有 SQL 白名单中的管理员能通过 RLS 读取完整报名资料。
+  LC.listTeamsAdmin = function () {
+    return Promise.resolve(rdb.from("team").select("*")).then(function (res) {
+      var d = rows(res).map(LC.plain);
+      d.sort(function (a, b) { return (a.seed || 0) - (b.seed || 0); });
+      return d;
+    });
+  };
   LC.addTeam = function (data) {
     var payload = {}; Object.keys(data).forEach(function (k) { payload[k] = data[k]; });
-    return Promise.resolve(rdb.from("team").insert({ data: payload }).select())
-      .then(function (res) { var d = rows(res); return (d[0] && d[0].id) || null; });
+    return Promise.resolve(rdb.rpc("cs2cup_submit_team", { p_team: payload }))
+      .then(function (res) {
+        var id = scalar(res);
+        if (Array.isArray(id)) return (id[0] && (id[0].id || id[0].cs2cup_submit_team)) || null;
+        return id;
+      });
   };
   LC.updateTeam = function (id, data) {
     return Promise.resolve(rdb.from("team").update({ data: data }).eq("id", id)).then(rows);
@@ -171,17 +192,9 @@
     };
   };
 
-  // ---- 管理员鉴权(邮箱 + 密码;首次用邮箱验证码注册)----
+  // ---- 管理员鉴权(邮箱 + 密码；数据库再校验管理员 UID)----
   LC.login = function (email, password) {
     return Promise.resolve(auth.signInWithPassword({ email: email, password: password })).then(authData);
-  };
-  LC.signUp = function (email, password, username) {
-    return Promise.resolve(auth.signUp({
-      email: email, password: password, username: username || email.split("@")[0]
-    })).then(authData);
-  };
-  LC.verifyOtp = function (pending, token) {
-    return Promise.resolve(pending.verifyOtp({ token: token })).then(authData);
   };
   LC.logout = function () { return Promise.resolve(auth.signOut()); };
 
@@ -202,5 +215,13 @@
     return Promise.resolve(auth.getSession())
       .then(function (res) { var d = authData(res); return (d && d.session) ? d.session : null; })
       .catch(function () { return null; });
+  };
+  LC.isAdmin = function () {
+    return LC.getUser().then(function (user) {
+      var id = user && (user.id || user.uid || user.sub);
+      if (!id) return false;
+      return Promise.resolve(rdb.from("cs2cup_admin").select("user_id").eq("user_id", id))
+        .then(function (res) { return rows(res).length > 0; });
+    });
   };
 })();
