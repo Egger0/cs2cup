@@ -6,10 +6,13 @@ import type { Tournament } from '@/lib/types'
 import { uploadPhoto } from '../_actions'
 import styles from '../admin.module.css'
 
+const MAX_PHOTO_BYTES = 10 * 1024 * 1024
+
 export function Uploader({ tournaments }: { tournaments: Tournament[] }) {
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [tooLarge, setTooLarge] = useState(false)
 
   return (
     <form
@@ -42,12 +45,19 @@ export function Uploader({ tournaments }: { tournaments: Tournament[] }) {
           accept="image/jpeg,image/png,image/webp"
           required
           className={styles.file}
+          onChange={event => {
+            const file = event.currentTarget.files?.[0]
+            const invalid = Boolean(file && file.size > MAX_PHOTO_BYTES)
+            setTooLarge(invalid)
+            if (invalid) setError('单张图片不要超过 10 MB')
+            else setError('')
+          }}
         />
       </label>
       <Field id="up-caption" name="caption" label="说明" hint="选填" />
       {error ? <p style={{ color: 'var(--c4)', fontSize: '0.88rem' }}>{error}</p> : null}
       <div className={styles.rowActions}>
-        <Button type="submit" variant="primary" disabled={pending}>
+        <Button type="submit" variant="primary" disabled={pending || tooLarge}>
           {pending ? '上传中…' : '上传'}
         </Button>
         {message ? <span className={styles.ok}>{message}</span> : null}

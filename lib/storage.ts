@@ -1,12 +1,13 @@
 import 'server-only'
 import { mkdir, unlink, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 
 export interface StoredFile {
   key: string
 }
 
-const LOCAL_ROOT = process.env.PHOTO_LOCAL_ROOT ?? 'public/photos'
+const LOCAL_ROOT = process.env.PHOTO_LOCAL_ROOT ?? join(tmpdir(), 'cs2cup-photos')
 
 export const LOCAL_UPLOAD_ROOT = LOCAL_ROOT
 

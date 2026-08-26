@@ -316,8 +316,8 @@ export async function uploadPhoto(form: FormData) {
   if (!(file instanceof File) || file.size === 0) {
     return { ok: false as const, error: '请选择一张图片' }
   }
-  if (file.size > 8 * 1024 * 1024) {
-    return { ok: false as const, error: '单张图片不要超过 8MB' }
+  if (file.size > 10 * 1024 * 1024) {
+    return { ok: false as const, error: '单张图片不要超过 10 MB' }
   }
 
   const tournamentId = Number(form.get('tournamentId'))
@@ -340,15 +340,21 @@ export async function uploadPhoto(form: FormData) {
   const mine = existing.filter(photo => photo.tournamentId === tournamentId)
   const key = `${tournament.slug}/${Date.now()}.${MIME_TO_EXT[mime] ?? 'bin'}`
 
-  await putObject(key, buffer, mime)
-  await adminInsertPhoto({
-    tournamentId,
-    storageKey: key,
-    width: size.width,
-    height: size.height,
-    caption: String(form.get('caption') ?? '').trim() || null,
-    sortOrder: mine.length,
-  })
+  try {
+    await putObject(key, buffer, mime)
+    await adminInsertPhoto({
+      tournamentId,
+      storageKey: key,
+      width: size.width,
+      height: size.height,
+      caption: String(form.get('caption') ?? '').trim() || null,
+      sortOrder: mine.length,
+    })
+  } catch (error) {
+    console.error('photo upload failed', error)
+    await removeObject(key)
+    return { ok: false as const, error: '图片保存失败，请稍后重试' }
+  }
 
   updateTag('photo')
   return { ok: true as const, key, width: size.width, height: size.height }
