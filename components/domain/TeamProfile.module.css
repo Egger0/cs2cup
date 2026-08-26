@@ -19,7 +19,7 @@
 
 .tag {
   font-family: var(--font-display), sans-serif;
-  font-weight: 900;
+  font-weight: 800;
   font-size: clamp(2rem, 5vw, 3.4rem);
   letter-spacing: 0.04em;
   color: var(--t);
@@ -27,7 +27,7 @@
 }
 
 .name {
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--font-heavy), var(--font-body);
   font-weight: 900;
   font-size: clamp(1.5rem, 3.4vw, 2.4rem);
   letter-spacing: -0.03em;

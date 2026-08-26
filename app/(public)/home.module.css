@@ -34,7 +34,7 @@
 }
 
 .name {
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--font-heavy), var(--font-body);
   font-weight: 900;
   font-size: clamp(2.6rem, 7vw, 5.4rem);
   line-height: 0.96;
@@ -106,7 +106,7 @@
 }
 
 .gameName {
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--font-heavy), var(--font-body);
   font-weight: 900;
   font-size: clamp(1.5rem, 2.6vw, 2rem);
   letter-spacing: -0.03em;

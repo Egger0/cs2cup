@@ -6,7 +6,7 @@ export const metadata = { title: '页面不存在 · 宁波理工电竞社' }
 
 export default function NotFound() {
   return (
-    <main className={styles.shell}>
+    <main id="main" className={styles.shell}>
       <span className={styles.glow} aria-hidden />
       <div className={styles.code}>404</div>
       <h1 className={styles.line}>这一枪打空了</h1>

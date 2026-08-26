@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { body, display, mono } from '@/lib/fonts'
+import { display, heavy, mono } from '@/lib/fonts'
 import './globals.css'
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://example.invalid'
@@ -22,13 +22,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN" className={`${display.variable} ${body.variable} ${mono.variable}`}>
+    <html lang="zh-CN" className={`${display.variable} ${heavy.variable} ${mono.variable}`}>
       <head>
         <noscript>
           <style>{'.reveal{opacity:1 !important;transform:none !important}'}</style>
         </noscript>
       </head>
       <body>
+        <a href="#main" className="skip">
+          跳到主内容
+        </a>
         <span className="scrollbar" aria-hidden />
         {children}
       </body>

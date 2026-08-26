@@ -39,10 +39,16 @@ html {
   inherits: false;
 }
 
+:root {
+  --font-body:
+    -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Noto Sans CJK SC', 'Source Han Sans SC', sans-serif;
+}
+
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-body), system-ui, sans-serif;
+  font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
@@ -271,4 +277,23 @@ button {
   .scrollbar {
     display: none;
   }
+}
+
+.skip {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 200;
+  padding: 12px 18px;
+  border: 1px solid var(--t);
+  background: var(--void);
+  color: var(--ink);
+  font-family: var(--font-body), sans-serif;
+  font-weight: 500;
+  transform: translateY(-160%);
+  transition: transform 0.2s var(--ease);
+}
+
+.skip:focus-visible {
+  transform: translateY(0);
 }

@@ -127,6 +127,12 @@ check('荣誉墙显示冠军', (await page.evaluate(() => document.body.innerTex
 
 check('无页面异常', errors.length === 0, errors.slice(0, 1).join())
 
+// 抽签会清空 match_map,恢复演示夹具供前台套件使用
+execSync('for f in seeds/*.sql; do docker compose exec -T db psql -U postgres -d cs2cup -q -f - < "$f" >/dev/null 2>&1; done', {
+  shell: '/bin/bash',
+  cwd: '/Users/m1ng/code/internet/cs2cup',
+})
+
 db(`delete from photo where caption='E2E 上传测试'`)
 db(`update tournament set champion_name=null where id=3`)
 db(`delete from post where slug like 'e2e-%'`)

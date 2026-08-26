@@ -34,6 +34,10 @@ insert the subject into `admin_user`, then set the token as the
 | `stack:down` | Destroys the local stack |
 | `photos:import` | Decodes legacy base64 photos to files and SQL |
 | `typecheck` `lint` `build` | Pipeline gates |
+| `a11y` | axe across 14 pages, zero violations expected |
+| `keyboard` | Focus order, skip link, dialog and drawer |
+| `perf` | Transfer, JS, image, font, LCP and CLS against a budget |
+| `check` | Everything above in sequence |
 | `e2e` | Public browser tests, 23 behaviours |
 | `e2e:admin` | Console write tests, requires a dev session |
 | `serve` | Build, pack the standalone bundle, run it |
@@ -73,6 +77,10 @@ insert the subject into `admin_user`, then set the token as the
 | `scripts/` | Migration tools, browser tests, dev session |
 
 `components/ui/` must not import `lib/types.ts`.
+
+Body text uses the platform CJK stack. The webfont is reserved for headings,
+where the heavy Chinese title carries the identity. That choice costs about
+200KB and is the reason the font budget is what it is.
 
 ## Data
 
