@@ -163,6 +163,7 @@
   .match .slot .nm{font-family:var(--font-display);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .match .slot .sd{font-family:var(--font-stat);font-size:1.05rem;color:var(--muted-2);flex:none}
   .match .slot.tbd .nm{color:var(--muted-2)}
+  .match .slot.winner .nm{color:var(--ok);font-weight:700}
   .match .slot.top{border-left:3px solid var(--ct)}
   .match .slot.bot{border-left:3px solid var(--t)}
   .match .when{font-family:var(--font-display);font-size:.68rem;letter-spacing:.1em;color:var(--muted);text-align:center;padding:6px;background:var(--bg-2);border-top:1px solid var(--line)}
@@ -438,8 +439,8 @@ try{
 var r=document.documentElement;if(r)r.classList.remove("boot");})();
 </script>
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/3.8.2/cloudbase.full.js"></script>
-<script src="config.js?v=20260826-operations1"></script>
-<script src="lc.js?v=20260826-operations1"></script>
+<script src="config.js?v=20260826-operations2"></script>
+<script src="lc.js?v=20260826-operations2"></script>
 <script>
 (function(){
   "use strict";
@@ -487,15 +488,28 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
   function matchTime(ri,mi){ var r=ROUNDS[ri]; var d=new Date(BASE.getTime()); d.setDate(d.getDate()+r.day); return addMin(d, mi*r.step); }
   var PAIRS=[[1,16],[8,9],[5,12],[4,13],[3,14],[6,11],[7,10],[2,15]];
   function teamBySeed(s){ for(var i=0;i<teams.length;i++){ if(Number(teams[i].seed)===Number(s)) return teams[i]; } return null; }
+  function resultKey(ri,mi){ return "r"+ri+"m"+mi; }
+  function matchTeams(ri,mi){
+    if(ri===0) return {a:teamBySeed(PAIRS[mi][0]),b:teamBySeed(PAIRS[mi][1])};
+    var left=matchTeams(ri-1,mi*2), right=matchTeams(ri-1,mi*2+1);
+    return {a:matchWinner(ri-1,mi*2,left),b:matchWinner(ri-1,mi*2+1,right)};
+  }
+  function matchWinner(ri,mi,pair){
+    var r=(CFG.matchResults||{})[resultKey(ri,mi)], target=ri===3?3:2;
+    if(!r || !pair.a || !pair.b || !Number.isInteger(r.a) || !Number.isInteger(r.b)) return null;
+    if(r.a===target && r.b>=0 && r.b<target) return pair.a;
+    if(r.b===target && r.a>=0 && r.a<target) return pair.b;
+    return null;
+  }
+  function matchState(ri,mi){ var pair=matchTeams(ri,mi); return {a:pair.a,b:pair.b,winner:matchWinner(ri,mi,pair),result:(CFG.matchResults||{})[resultKey(ri,mi)]||null}; }
   function computeNext(){
-    var now=Date.now(), firstFuture=null, firstPlayable=null;
-    for(var mi=0;mi<8;mi++){ var t=matchTime(0,mi); if(t.getTime()<=now) continue;
-      var a=teamBySeed(PAIRS[mi][0]), b=teamBySeed(PAIRS[mi][1]);
-      if(!firstFuture) firstFuture={ri:0,mi:mi,time:t,a:a,b:b,round:ROUNDS[0].name};
-      if(a&&b){ firstPlayable={ri:0,mi:mi,time:t,a:a,b:b,round:ROUNDS[0].name}; break; } }
-    var best=firstPlayable||firstFuture;
-    if(!best) best={ri:1,mi:0,time:matchTime(1,0),a:null,b:null,round:ROUNDS[1].name};
-    return best;
+    var firstFuture=null, firstPlayable=null;
+    for(var ri=0;ri<ROUNDS.length;ri++) for(var mi=0;mi<ROUNDS[ri].matches;mi++){
+      var state=matchState(ri,mi), t=matchTime(ri,mi);
+      if(!state.winner && !firstFuture && t.getTime()>Date.now()) firstFuture={ri:ri,mi:mi,time:t,a:state.a,b:state.b,round:ROUNDS[ri].name};
+      if(!state.winner && state.a&&state.b){ firstPlayable={ri:ri,mi:mi,time:t,a:state.a,b:state.b,round:ROUNDS[ri].name}; break; }
+    }
+    return firstPlayable||firstFuture||{ri:3,mi:0,time:matchTime(3,0),a:null,b:null,round:"总决赛"};
   }
 
   // ---------- apply config to DOM ----------
@@ -593,18 +607,18 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
     $("featA").textContent=NEXT.a?(NEXT.a.name+" ["+NEXT.a.tag+"]"):"待定";
     $("featB").textContent=NEXT.b?(NEXT.b.name+" ["+NEXT.b.tag+"]"):"待定";
   }
-  function slotHTML(team,pos){
+  function slotHTML(team,pos,score,winner){
     if(!team) return '<div class="slot tbd '+pos+'"><span class="nm">待定 TBD</span><span class="sd">—</span></div>';
-    return '<div class="slot '+pos+'"><span class="nm">'+esc(team.tag)+' · '+esc(team.name)+'</span><span class="sd">'+team.seed+'</span></div>';
+    return '<div class="slot '+pos+(winner?' winner':'')+'"><span class="nm">'+esc(team.tag)+' · '+esc(team.name)+'</span><span class="sd">'+(score==null?team.seed:score)+'</span></div>';
   }
   function renderBracket(){
     var el=$("bracketEl"), html='<div class="round"><div class="rname">16 强 · BO3</div>';
-    for(var mi=0;mi<8;mi++){ var a=teamBySeed(PAIRS[mi][0]), b=teamBySeed(PAIRS[mi][1]); var isNext=(NEXT.ri===0&&NEXT.mi===mi);
-      html+='<div class="match'+(isNext?' next':'')+'">'+slotHTML(a,"top")+slotHTML(b,"bot")+'<div class="when">'+fmt(matchTime(0,mi))+(isNext?' · 下一场':'')+'</div></div>'; }
+    for(var mi=0;mi<8;mi++){ var state=matchState(0,mi), isNext=(NEXT.ri===0&&NEXT.mi===mi);
+      html+='<div class="match'+(isNext?' next':'')+'">'+slotHTML(state.a,"top",state.result&&state.result.a,state.winner===state.a)+slotHTML(state.b,"bot",state.result&&state.result.b,state.winner===state.b)+'<div class="when">'+fmt(matchTime(0,mi))+(isNext?' · 下一场':'')+'</div></div>'; }
     html+='</div>';
     [{n:"八强 · BO3",c:4,ri:1},{n:"半决赛 · BO3",c:2,ri:2},{n:"总决赛 · BO5",c:1,ri:3}].forEach(function(r){
       html+='<div class="round"><div class="rname">'+r.n+'</div>';
-      for(var i=0;i<r.c;i++){ var nx=(NEXT.ri===r.ri&&NEXT.mi===i); html+='<div class="match'+(nx?' next':'')+'">'+slotHTML(null,"top")+slotHTML(null,"bot")+'<div class="when">'+fmt(matchTime(r.ri,i))+'</div></div>'; }
+      for(var i=0;i<r.c;i++){ var state=matchState(r.ri,i), nx=(NEXT.ri===r.ri&&NEXT.mi===i); html+='<div class="match'+(nx?' next':'')+'">'+slotHTML(state.a,"top",state.result&&state.result.a,state.winner===state.a)+slotHTML(state.b,"bot",state.result&&state.result.b,state.winner===state.b)+'<div class="when">'+fmt(matchTime(r.ri,i))+(nx?' · 下一场':'')+'</div></div>'; }
       html+='</div>';
     });
     el.innerHTML=html;
@@ -696,6 +710,7 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
     var fq=parseFaq(ev.faqText); if(fq) CFG.faq=fq;
     if(ev.mapPool){ var m=String(ev.mapPool).split(",").map(function(s){return s.trim();}).filter(Boolean); if(m.length) CFG.maps=m; }
     if(ev.startDate){ var d=new Date(ev.startDate); if(!isNaN(d.getTime())) CFG.startDate=d; }
+    CFG.matchResults = ev.matchResults && typeof ev.matchResults==="object" ? ev.matchResults : {};
     saveState(ev);
   }
   // 缓存:cs2cup_brand 供页头防闪烁脚本;cs2cup_state 保存完整赛事配置,下次刷新首屏直接渲染

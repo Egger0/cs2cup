@@ -92,6 +92,12 @@
   .empty{text-align:center;color:var(--muted);padding:40px}
   .players-cell{color:#aeb9c7;font-size:.8rem}
   .uid-box{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border:1px solid var(--line-strong);border-radius:3px;padding:4px 10px;color:var(--t);user-select:all}
+  .score-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px}
+  .score-match{background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:14px}
+  .score-match h3{font-size:.82rem;letter-spacing:.08em;color:var(--muted);margin-bottom:10px}
+  .score-team{display:grid;grid-template-columns:1fr 58px;gap:10px;align-items:center;font-size:.9rem}
+  .score-team+.score-team{margin-top:8px}
+  .score-team input{text-align:center;padding:7px 6px;font-family:var(--fd);font-weight:700}
 
   .ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
   .gcell{background:var(--bg);border:1px solid var(--line);border-radius:5px;overflow:hidden;display:flex;flex-direction:column}
@@ -139,6 +145,7 @@
   <div class="tabs">
     <button class="tab active" data-tab="event">赛事信息</button>
     <button class="tab" data-tab="teams">报名管理</button>
+    <button class="tab" data-tab="schedule">赛程与赛果</button>
     <button class="tab" data-tab="gallery">往届相册</button>
   </div>
 
@@ -221,6 +228,17 @@
     </div>
   </section>
 
+  <!-- 赛程与赛果 -->
+  <section class="panel" id="panel-schedule">
+    <div class="card">
+      <h2>淘汰赛赛果</h2>
+      <div class="sub">基于已通过战队的种子自动排出 16 强。前 3 轮按 BO3 录入（获胜方 2 分），总决赛按 BO5（获胜方 3 分）。保存后公开页会自动显示比分与晋级队伍；更改某场赛果会清除其后续场次的比分。</div>
+      <div class="toolbar"><span class="count" id="scheduleCount"></span><span style="flex:1"></span><button class="btn btn-ghost" id="scheduleRefresh">刷新名单</button><button class="btn btn-primary" id="saveResultsBtn">保存赛果</button></div>
+      <span class="err" id="scheduleErr"></span>
+      <div id="scheduleEl" class="score-list"></div>
+    </div>
+  </section>
+
   <!-- 往届相册 -->
   <section class="panel" id="panel-gallery">
     <div class="card">
@@ -252,8 +270,8 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/3.8.2/cloudbase.full.js"></script>
-<script src="config.js?v=20260826-operations1"></script>
-<script src="lc.js?v=20260826-operations1"></script>
+<script src="config.js?v=20260826-operations2"></script>
+<script src="lc.js?v=20260826-operations2"></script>
 <script>
 (function(){
   "use strict";
@@ -273,7 +291,7 @@
 
   // ---------- event ----------
   var EV_FIELDS=["clubName","school","title","heroTop","heroBottom","eyebrow","lede","teamCap","contactQQ","contactWechat","rulesText","faqText","mapPool"];
-  var currentEventId=null;
+  var currentEventId=null, currentEventData={};
 
   function toLocalInput(d){ if(!d) return ""; var p=function(n){return(n<10?"0":"")+n;};
     return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes()); }
@@ -286,7 +304,7 @@
     $("logoLink").value = (ev && ev.logoUrl && /^https?:/i.test(ev.logoUrl)) ? ev.logoUrl : "";
   }
   function loadEvent(){
-    return LC.getEvent().then(function(ev){ currentEventId = ev? ev.id : null; fillEventForm(ev); })
+    return LC.getEvent().then(function(ev){ currentEventId = ev? ev.id : null; currentEventData=ev||{}; fillEventForm(ev); renderSchedule(); })
       .catch(function(err){ $("eventErr").textContent="读取赛事信息失败:"+(err.message||err); });
   }
   $("eventForm").addEventListener("submit",function(e){
@@ -297,7 +315,7 @@
     data.regDeadline=$("regDeadline").value?new Date($("regDeadline").value).toISOString():"";
     data.logoUrl=$("logoUrl").value||"";
     var btn=$("saveEventBtn"); btn.disabled=true; btn.textContent="保存中…";
-    LC.saveEvent(data,currentEventId).then(function(id){ currentEventId=id; toast("赛事信息已保存 ✔"); })
+    LC.updateEventData(data,currentEventId).then(function(id){ currentEventId=id; currentEventData=Object.assign({},currentEventData,data,{id:id}); toast("赛事信息已保存 ✔"); })
       .catch(function(err){ $("eventErr").textContent="保存失败:"+(err.message||err)+"(若提示无权限 / permission denied,多半是数据库初始化.sql 还没在「SQL 编辑器」里跑过)"; })
       .then(function(){ btn.disabled=false; btn.textContent="保存赛事信息"; });
   });
@@ -393,7 +411,7 @@
   }
   function loadTeams(){
     $("teamRows").innerHTML='<tr><td colspan="10" class="empty">加载中…</td></tr>';
-    return LC.listTeamsAdmin().then(function(list){ allTeams=list; renderTeams(); })
+    return LC.listTeamsAdmin().then(function(list){ allTeams=list; renderTeams(); renderSchedule(); })
       .catch(function(err){ $("teamRows").innerHTML='<tr><td colspan="9" class="empty">加载失败:'+esc(err.message||String(err))+'</td></tr>'; });
   }
   $("search").addEventListener("input",renderTeams);
@@ -434,6 +452,68 @@
     setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
     toast("已导出 "+allTeams.length+" 支战队");
   });
+
+  // ---------- schedule / 赛程与赛果 ----------
+  var BRACKET_ROUNDS=[{name:"16 强",matches:8,target:2},{name:"八强",matches:4,target:2},{name:"半决赛",matches:2,target:2},{name:"总决赛",matches:1,target:3}];
+  var BRACKET_PAIRS=[[1,16],[8,9],[5,12],[4,13],[3,14],[6,11],[7,10],[2,15]];
+  function scoreKey(ri,mi){ return "r"+ri+"m"+mi; }
+  function approvedTeam(seed){ return allTeams.filter(function(t){ return (t.status||"approved")==="approved" && Number(t.seed)===Number(seed); })[0]||null; }
+  function scheduleWinner(results,ri,mi,pair){
+    var r=results[scoreKey(ri,mi)], target=BRACKET_ROUNDS[ri].target;
+    if(!r || !pair.a || !pair.b || r.a===undefined || r.b===undefined) return null;
+    return r.a===target && r.b>=0 && r.b<target ? pair.a : (r.b===target && r.a>=0 && r.a<target ? pair.b : null);
+  }
+  function schedulePair(results,ri,mi){
+    if(ri===0) return {a:approvedTeam(BRACKET_PAIRS[mi][0]),b:approvedTeam(BRACKET_PAIRS[mi][1])};
+    var left=schedulePair(results,ri-1,mi*2), right=schedulePair(results,ri-1,mi*2+1);
+    return {a:scheduleWinner(results,ri-1,mi*2,left),b:scheduleWinner(results,ri-1,mi*2+1,right)};
+  }
+  function teamLabel(t){ return t ? esc(t.tag+" · "+t.name) : "等待上一场胜者"; }
+  function renderSchedule(){
+    var el=$("scheduleEl"); if(!el) return;
+    var results=currentEventData.matchResults||{}, approved=allTeams.filter(function(t){return (t.status||"approved")==="approved";}).length;
+    $("scheduleCount").textContent="已通过 "+approved+" 支；当前赛果 "+Object.keys(results).length+" 场";
+    var html=[];
+    BRACKET_ROUNDS.forEach(function(round,ri){ for(var mi=0;mi<round.matches;mi++){
+      var pair=schedulePair(results,ri,mi), r=results[scoreKey(ri,mi)];
+      html.push('<div class="score-match"><h3>'+round.name+' · 第 '+(mi+1)+' 场 · BO'+(round.target===3?5:3)+'</h3>');
+      if(pair.a&&pair.b){
+        html.push('<label class="score-team"><span>'+teamLabel(pair.a)+'</span><input type="number" min="0" max="'+round.target+'" inputmode="numeric" data-score="'+scoreKey(ri,mi)+':a" value="'+(r&&r.a!==undefined?r.a:"")+'" aria-label="'+teamLabel(pair.a)+' 比分"></label>');
+        html.push('<label class="score-team"><span>'+teamLabel(pair.b)+'</span><input type="number" min="0" max="'+round.target+'" inputmode="numeric" data-score="'+scoreKey(ri,mi)+':b" value="'+(r&&r.b!==undefined?r.b:"")+'" aria-label="'+teamLabel(pair.b)+' 比分"></label>');
+      }else{
+        html.push('<div class="muted">等待双方队伍产生后可录入比分。</div>');
+      }
+      html.push('</div>');
+    }});
+    el.innerHTML=html.join("");
+  }
+  function sameResult(a,b){ return !!a===!!b && (!a || (a.a===b.a && a.b===b.b)); }
+  function clearFollowing(results,ri,mi){
+    if(ri>=BRACKET_ROUNDS.length-1) return;
+    var nextMi=Math.floor(mi/2), nextKey=scoreKey(ri+1,nextMi);
+    if(results[nextKey]){ delete results[nextKey]; clearFollowing(results,ri+1,nextMi); }
+  }
+  $("saveResultsBtn").addEventListener("click",function(){
+    var err=$("scheduleErr"), draft=JSON.parse(JSON.stringify(currentEventData.matchResults||{})), changed=[];
+    err.textContent="";
+    BRACKET_ROUNDS.forEach(function(round,ri){ for(var mi=0;mi<round.matches;mi++){
+      var key=scoreKey(ri,mi), a=$("scheduleEl").querySelector('[data-score="'+key+':a"]'), b=$("scheduleEl").querySelector('[data-score="'+key+':b"]');
+      if(!a||!b) return;
+      var av=a.value.trim(), bv=b.value.trim(), next;
+      if(!av&&!bv) next=null;
+      else if(!/^\d+$/.test(av)||!/^\d+$/.test(bv)) { err.textContent=round.name+" 第 "+(mi+1)+" 场请同时填写两个非负整数比分。"; return; }
+      else { next={a:Number(av),b:Number(bv)}; if(next.a>round.target||next.b>round.target||(next.a!==round.target&&next.b!==round.target)||next.a===next.b){ err.textContent=round.name+" 第 "+(mi+1)+" 场必须由一方先达到 "+round.target+" 分，且不能平局。"; return; } }
+      if(!sameResult(draft[key],next)) { if(next) draft[key]=next; else delete draft[key]; changed.push({ri:ri,mi:mi}); }
+    }});
+    if(err.textContent) return;
+    changed.forEach(function(m){ clearFollowing(draft,m.ri,m.mi); });
+    if(!changed.length){ toast("没有需要保存的赛果"); return; }
+    var btn=$("saveResultsBtn"); btn.disabled=true; btn.textContent="保存中…";
+    LC.updateEventData({matchResults:draft},currentEventId).then(function(id){ currentEventId=id; currentEventData=Object.assign({},currentEventData,{id:id,matchResults:draft}); renderSchedule(); toast("赛果已保存，公开赛程已更新 ✔"); })
+      .catch(function(e){ err.textContent="保存赛果失败:"+(e.message||e); })
+      .then(function(){ btn.disabled=false; btn.textContent="保存赛果"; });
+  });
+  $("scheduleRefresh").addEventListener("click",function(){ loadEvent(); loadTeams(); });
 
   // ---------- gallery / 往届相册 ----------
   var galleryItems=[];

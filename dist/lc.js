@@ -88,6 +88,15 @@
       .then(function (res) { var d = rows(res); return (d[0] && d[0].id) || null; })
       .then(function (id) { return id != null ? id : LC.getEvent().then(function (ev) { return ev && ev.id; }); });
   };
+  // 管理端针对同一届赛事追加小块数据（例如赛果），避免保存表单时覆盖其他配置。
+  LC.updateEventData = function (data, existingId) {
+    if (!existingId) return LC.saveEvent(data, null);
+    return LC.getEvent().then(function (current) {
+      var merged = Object.assign({}, current || {}, data);
+      delete merged.id;
+      return LC.saveEvent(merged, existingId);
+    });
+  };
 
   // ---- 报名战队(team 表)----
   // 公开页只读 team_public，不会获得队长和联系方式等私密字段。
