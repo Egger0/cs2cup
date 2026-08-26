@@ -61,7 +61,12 @@ export function FaqList({ faqs }: { faqs: FaqItem[] }) {
     <div className={styles.faq}>
       {faqs.map(faq => (
         <details key={faq.question} className={styles.faqItem}>
-          <summary>{faq.question}</summary>
+          <summary>
+            {faq.question}
+            <span className={styles.faqSign} aria-hidden>
+              +
+            </span>
+          </summary>
           <p className={styles.faqBody}>{faq.answer}</p>
         </details>
       ))}

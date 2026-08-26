@@ -43,6 +43,7 @@ npm run photos:import
 | 路径 | 内容 |
 |---|---|
 | `app/(public)/` | 公开页面 |
+| `app/(public)/tournaments/[slug]/` | 赛事区域:总览、战队、对阵、战报、规则、报名 |
 | `app/admin/` | 后台管理 |
 | `components/ui/` | 无领域知识的基础组件 |
 | `components/domain/` | 赛事领域组件 |
@@ -57,4 +58,4 @@ npm run photos:import
 
 推送到 `main` 触发 `.github/workflows/deploy.yml`,构建镜像并发布至 CloudBase 云托管。
 
-首次部署与数据迁移见 [`HANDOFF.md`](HANDOFF.md)。
+数据库迁移按 `migrations/` 下的编号顺序执行,全部脚本可重复运行。

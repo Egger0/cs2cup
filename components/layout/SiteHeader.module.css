@@ -12,16 +12,16 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  height: 64px;
+  height: 68px;
 }
 
 .brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-family: var(--font-display), sans-serif;
+  font-family: var(--font-body), sans-serif;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 .mark {
@@ -48,11 +48,11 @@
 }
 
 .school {
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--font-mono), monospace;
   font-weight: 400;
-  font-size: 0.66rem;
-  letter-spacing: 0.18em;
-  color: var(--muted);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  color: var(--muted-2);
 }
 
 .nav {
@@ -62,8 +62,29 @@
   font-size: 0.94rem;
 }
 
+.nav a {
+  position: relative;
+  padding-block: 4px;
+  transition: color 0.2s ease;
+}
+
+.nav a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 1px;
+  background: var(--accent);
+  transition: width 0.28s var(--ease);
+}
+
 .nav a:hover {
   color: var(--accent);
+}
+
+.nav a:hover::after {
+  width: 100%;
 }
 
 .actions {
@@ -74,6 +95,13 @@
 
 .toggle {
   display: none;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--line);
+  cursor: pointer;
 }
 
 @media (max-width: 900px) {

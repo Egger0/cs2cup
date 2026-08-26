@@ -7,8 +7,7 @@
 .card {
   border: 1px solid var(--line);
   border-left: 2px solid var(--accent);
-  border-radius: 3px;
-  background: var(--surface);
+  background: linear-gradient(180deg, var(--surface), rgba(13, 19, 31, 0.9));
   padding: 16px 18px;
   transition:
     transform 0.2s var(--ease),
@@ -28,17 +27,18 @@
 }
 
 .seed {
-  font-family: var(--font-stat), sans-serif;
-  font-size: 1.5rem;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  font-size: 1.9rem;
   color: var(--muted-2);
   line-height: 1;
 }
 
 .tag {
-  font-family: var(--font-display), sans-serif;
+  font-family: var(--font-mono), monospace;
   font-weight: 700;
-  font-size: 0.78rem;
-  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
   color: var(--accent);
   border: 1px solid currentColor;
   border-radius: 2px;
@@ -46,9 +46,9 @@
 }
 
 .name {
-  font-family: var(--font-display), sans-serif;
-  font-weight: 600;
-  font-size: 1.05rem;
+  font-family: var(--font-body), sans-serif;
+  font-weight: 700;
+  font-size: 1.06rem;
   margin-top: 10px;
 }
 

@@ -1,126 +1,131 @@
-import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Button } from '@/components/ui'
-import { Countdown } from '@/components/domain/Countdown'
-import { FaqList, RuleGrid, SectionHead, StatRow } from '@/components/domain/Sections'
-import { TeamGrid } from '@/components/domain/TeamGrid'
-import { indexTeams, nextPlayableMatch, winsNeeded } from '@/lib/bracket'
+import { notFound } from 'next/navigation'
+import { Button, Empty, Reveal } from '@/components/ui'
+import { PostList } from '@/components/domain/PostList'
+import { ResultsTable } from '@/components/domain/ResultsTable'
+import { SectionHead } from '@/components/domain/Sections'
+import { SeatGrid } from '@/components/domain/SeatGrid'
+import { Versus } from '@/components/domain/Versus'
+import { indexTeams, nextPlayableMatch } from '@/lib/bracket'
 import {
+  getMatchMaps,
   getMatches,
   getPublicTeams,
   getTournament,
+  listPosts,
   listTournaments,
   safely,
 } from '@/lib/queries/public'
+import type { TournamentStatus } from '@/lib/types'
 import styles from './page.module.css'
 
 export const revalidate = 300
-
 export const dynamicParams = true
+
+const STATUS_TEXT: Record<TournamentStatus, string> = {
+  draft: '筹备中',
+  registration: '报名开放中',
+  running: '正在进行',
+  finished: '已结束',
+  postponed: '延期中',
+}
 
 export async function generateStaticParams() {
   const tournaments = await safely(listTournaments, [])
   return tournaments.map(tournament => ({ slug: tournament.slug }))
 }
 
-export default async function TournamentPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function OverviewPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const tournament = await getTournament(slug)
   if (!tournament) notFound()
 
-  const [teams, matches] = await Promise.all([
+  const [teams, matches, posts] = await Promise.all([
     getPublicTeams(tournament.id),
     getMatches(tournament.id),
+    safely(() => listPosts(2), []),
   ])
 
   const next = nextPlayableMatch(matches, indexTeams(teams))
-  const finalMatch = matches.reduce<number | null>(
-    (best, match) => (best === null || match.round > best ? match.round : best),
-    null,
-  )
-  const finalBestOf = matches.find(match => match.round === finalMatch)?.bestOf ?? 5
+  const decided = matches.filter(match => match.winnerTeamId !== null).slice(-4)
+  const matchMaps = await safely(() => getMatchMaps(decided.map(match => match.id)), [])
 
   return (
-    <>
-      <section className={`wrap ${styles.hero}`}>
-        <div className={styles.heroGrid}>
-          <div>
-            <span className={styles.eyebrow}>{tournament.heroEyebrow || tournament.season}</span>
-            <h1 className={styles.title}>
-              <span>{tournament.heroTop}</span>
-              <span className={styles.titleAccent}>{tournament.heroBottom}</span>
-            </h1>
-            <p className={styles.lede}>{tournament.lede}</p>
-            <div className={styles.actions}>
-              <Link href="#register">
-                <Button variant="primary">立即报名参赛 →</Button>
-              </Link>
-              <Link href="#bracket">
-                <Button>查看完整赛程</Button>
+    <section className="section">
+      <div className="wrap">
+        <div className={styles.overview}>
+          <div className={styles.main}>
+            <Reveal>
+              <p className={styles.lede}>{tournament.lede}</p>
+            </Reveal>
+
+            <Reveal delay={60}>
+              <div className={styles.block}>
+                <SectionHead eyebrow="下一场" title={next ? '即将开打' : '等待抽签'} />
+                {next ? (
+                  <Link href={`/tournaments/${slug}/matches/${next.match.id}`}>
+                    <Versus match={next.match} a={next.a} b={next.b} />
+                  </Link>
+                ) : (
+                  <Empty>报名满员后统一抽签,首轮对阵会出现在这里</Empty>
+                )}
+              </div>
+            </Reveal>
+
+            <Reveal delay={80}>
+              <div className={styles.block}>
+                <SectionHead eyebrow="最近战报" title="打完的比赛" />
+                <ResultsTable
+                  matches={decided}
+                  teams={teams}
+                  maps={matchMaps}
+                  slug={tournament.slug}
+                />
+                <p className={styles.more}>
+                  <Link href={`/tournaments/${slug}/results`} className="readout">
+                    查看全部战报 →
+                  </Link>
+                </p>
+              </div>
+            </Reveal>
+
+            {posts.length > 0 ? (
+              <Reveal delay={100}>
+                <div className={styles.block}>
+                  <SectionHead eyebrow="公告" title="最近发生了什么" />
+                  <PostList posts={posts} />
+                </div>
+              </Reveal>
+            ) : null}
+          </div>
+
+          <aside className={styles.aside}>
+            <SeatGrid
+              teams={teams}
+              capacity={tournament.teamCap}
+              statusLabel={STATUS_TEXT[tournament.status]}
+            />
+
+            <div className={styles.cta}>
+              <p>带上你的五人车,来抢下这座校园杯。</p>
+              <Link href={`/tournaments/${slug}/register`}>
+                <Button variant="primary">报名参赛</Button>
               </Link>
             </div>
-          </div>
-          <Countdown
-            status={tournament.status}
-            scheduledAt={next?.match.scheduledAt ?? null}
-            label={`${tournament.heroBottom} · ${tournament.season}`}
-            opponents={next ? `${next.a?.name ?? '待定'} vs ${next.b?.name ?? '待定'}` : '待定 vs 待定'}
-          />
+
+            {tournament.mapPool.length > 0 ? (
+              <div className={styles.pool}>
+                <div className="readout">现役地图池</div>
+                <ul className={styles.poolList}>
+                  {tournament.mapPool.map(map => (
+                    <li key={map}>{map}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </aside>
         </div>
-      </section>
-
-      <section className="wrap">
-        <StatRow
-          items={[
-            { value: String(tournament.teamCap), unit: '支', key: '参赛席位' },
-            { value: 'BO3', key: '淘汰赛赛制' },
-            { value: String(tournament.mapPool.length), unit: '图', key: '现役地图池' },
-            { value: `BO${finalBestOf}`, key: '总决赛赛制' },
-          ]}
-        />
-      </section>
-
-      <div className="divider" />
-
-      <section id="teams" className="section">
-        <div className="wrap">
-          <SectionHead
-            eyebrow="01 · 参赛战队"
-            title={
-              <>
-                已确认战队{' '}
-                <span style={{ color: 'var(--muted)' }}>
-                  {teams.length}/{tournament.teamCap}
-                </span>
-              </>
-            }
-            lede="按报名先后种子排序。种子号决定首轮对阵——高种子对阵低种子。"
-          />
-          <TeamGrid teams={teams} />
-        </div>
-      </section>
-
-      <div className="divider" />
-
-      <section id="rules" className="section">
-        <div className="wrap">
-          <SectionHead
-            eyebrow="02 · 赛制规则"
-            title="开赛之前先读这些"
-            lede={`每轮胜者需赢下 ${winsNeeded(3)} 张地图,总决赛为 BO${finalBestOf}。`}
-          />
-          <RuleGrid rules={tournament.rules} />
-        </div>
-      </section>
-
-      <div className="divider" />
-
-      <section id="faq" className="section">
-        <div className="wrap">
-          <SectionHead eyebrow="03 · 须知" title="常见问题" />
-          <FaqList faqs={tournament.faqs} />
-        </div>
-      </section>
-    </>
+      </div>
+    </section>
   )
 }

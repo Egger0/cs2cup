@@ -55,6 +55,7 @@ export interface Player {
   id: number
   teamId: number
   nickname: string
+  role: string | null
   isSubstitute: boolean
   sortOrder: number
 }
@@ -103,4 +104,37 @@ export interface Photo {
   blurDataUrl: string | null
   caption: string | null
   sortOrder: number
+}
+
+export type VetoAction = 'ban' | 'pick' | 'decider'
+
+export interface MatchMap {
+  id: number
+  matchId: number
+  pickOrder: number
+  mapName: string
+  action: VetoAction
+  chosenBy: 'a' | 'b' | null
+  scoreA: number | null
+  scoreB: number | null
+  played: boolean
+}
+
+export interface ClubMember {
+  id: number
+  name: string
+  role: string
+  handle: string | null
+  intro: string | null
+  sortOrder: number
+}
+
+export interface Post {
+  id: number
+  slug: string
+  title: string
+  summary: string
+  body: string
+  publishedAt: string
+  pinned: boolean
 }

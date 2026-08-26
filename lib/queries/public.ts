@@ -1,15 +1,19 @@
 import 'server-only'
 import { selectRow, selectRows } from '../rdb'
 import type {
+  ClubMember,
   FaqItem,
   Match,
+  MatchMap,
   Photo,
   Player,
+  Post,
   PublicTeam,
   RuleItem,
   SiteSetting,
   Tournament,
   TournamentStatus,
+  VetoAction,
 } from '../types'
 
 const REVALIDATE = 300
@@ -61,6 +65,7 @@ interface PlayerRow {
   id: number
   team_id: number
   nickname: string
+  role: string | null
   is_substitute: boolean
   sort_order: number
 }
@@ -130,6 +135,7 @@ const toPlayer = (row: PlayerRow): Player => ({
   id: row.id,
   teamId: row.team_id,
   nickname: row.nickname,
+  role: row.role,
   isSubstitute: row.is_substitute,
   sortOrder: row.sort_order,
 })
@@ -260,4 +266,90 @@ export async function getPhotos(tournamentId?: number): Promise<Photo[]> {
     revalidate: REVALIDATE,
   })
   return rows.map(toPhoto)
+}
+
+interface MatchMapRow {
+  id: number
+  match_id: number
+  pick_order: number
+  map_name: string
+  action: VetoAction
+  chosen_by: 'a' | 'b' | null
+  score_a: number | null
+  score_b: number | null
+  played: boolean
+}
+
+export async function getMatchMaps(matchIds: number[]): Promise<MatchMap[]> {
+  if (matchIds.length === 0) return []
+  const rows = await selectRows<MatchMapRow>('match_map_public', {
+    filters: { match_id: `in.(${matchIds.join(',')})` },
+    order: 'match_id.asc,pick_order.asc',
+    tags: ['match_map'],
+    revalidate: REVALIDATE,
+  })
+  return rows.map(row => ({
+    id: row.id,
+    matchId: row.match_id,
+    pickOrder: row.pick_order,
+    mapName: row.map_name,
+    action: row.action,
+    chosenBy: row.chosen_by,
+    scoreA: row.score_a,
+    scoreB: row.score_b,
+    played: row.played,
+  }))
+}
+
+interface MemberRow {
+  id: number
+  name: string
+  role: string
+  handle: string | null
+  intro: string | null
+  sort_order: number
+}
+
+export async function listMembers(): Promise<ClubMember[]> {
+  const rows = await selectRows<MemberRow>('club_member', {
+    order: 'sort_order.asc',
+    tags: ['club_member'],
+    revalidate: REVALIDATE,
+  })
+  return rows.map(row => ({
+    id: row.id,
+    name: row.name,
+    role: row.role,
+    handle: row.handle,
+    intro: row.intro,
+    sortOrder: row.sort_order,
+  }))
+}
+
+interface PostRow {
+  id: number
+  slug: string
+  title: string
+  summary: string
+  body: string
+  published_at: string
+  pinned: boolean
+}
+
+export async function listPosts(limit?: number): Promise<Post[]> {
+  const rows = await selectRows<PostRow>('post', {
+    order: 'pinned.desc,published_at.desc',
+    limit,
+    tags: ['post'],
+    revalidate: REVALIDATE,
+  })
+  return rows.map(row => ({
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    summary: row.summary,
+    body: row.body,
+    publishedAt: row.published_at,
+    pinned: row.pinned,
+  }))
 }

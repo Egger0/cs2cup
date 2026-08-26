@@ -1,65 +1,107 @@
-.hero {
-  padding-block: clamp(48px, 9vh, 96px);
-}
-
-.heroGrid {
+.overview {
   display: grid;
-  gap: clamp(32px, 5vw, 64px);
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 350px);
+  gap: clamp(28px, 4vw, 56px);
+  align-items: start;
 }
 
-@media (max-width: 900px) {
-  .heroGrid {
+@media (max-width: 940px) {
+  .overview {
     grid-template-columns: 1fr;
   }
 }
 
-.eyebrow {
-  font-family: var(--font-display), sans-serif;
-  font-size: 0.8rem;
-  letter-spacing: 0.24em;
-  color: var(--muted);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.7em;
-}
-
-.eyebrow::before {
-  content: '';
-  width: 40px;
-  height: 1px;
-  background: var(--accent);
-}
-
-.title {
-  font-family: var(--font-display), sans-serif;
-  font-weight: 700;
-  font-size: clamp(3rem, 9vw, 6.4rem);
-  line-height: 0.94;
-  letter-spacing: -0.02em;
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-}
-
-.titleAccent {
-  background: linear-gradient(100deg, var(--ct), #9ecbf5);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.main {
+  min-width: 0;
 }
 
 .lede {
-  color: var(--muted);
-  font-size: clamp(1rem, 1.4vw, 1.1rem);
-  max-width: 46ch;
-  margin-top: 24px;
+  font-size: clamp(1.05rem, 1.5vw, 1.22rem);
+  line-height: 1.75;
+  color: var(--ink);
+  max-width: 52ch;
+  padding-left: 18px;
+  border-left: 2px solid var(--accent);
 }
 
-.actions {
+.block {
+  margin-top: clamp(40px, 5vw, 64px);
+}
+
+.block a {
+  display: block;
+}
+
+.more {
+  margin-top: 14px;
+  text-align: right;
+}
+
+.more a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 8px;
+}
+
+.more a:hover {
+  color: var(--ct);
+}
+
+.aside {
+  position: sticky;
+  top: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (max-width: 940px) {
+  .aside {
+    position: static;
+  }
+}
+
+.cta {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cta p {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.cta a {
+  display: block;
+}
+
+.cta button {
+  width: 100%;
+}
+
+.pool {
+  border: 1px solid var(--line);
+  padding: 18px 20px;
+}
+
+.poolList {
+  list-style: none;
+  margin-top: 12px;
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 34px;
+  gap: 6px;
+}
+
+.poolList li {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  padding: 4px 8px;
 }

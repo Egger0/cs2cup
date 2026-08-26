@@ -20,6 +20,7 @@ interface TeamRow {
     id: number
     team_id: number
     nickname: string
+    role: string | null
     is_substitute: boolean
     sort_order: number
   }[]
@@ -50,6 +51,7 @@ export async function listTeamsWithContact(tournamentId: number): Promise<Team[]
         id: p.id,
         teamId: p.team_id,
         nickname: p.nickname,
+        role: p.role,
         isSubstitute: p.is_substitute,
         sortOrder: p.sort_order,
       }))

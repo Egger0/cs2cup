@@ -1,22 +1,22 @@
-import { Chakra_Petch, Noto_Sans_SC, Teko } from 'next/font/google'
+import { Big_Shoulders, JetBrains_Mono, Noto_Sans_SC } from 'next/font/google'
 
-export const display = Chakra_Petch({
+export const display = Big_Shoulders({
   subsets: ['latin'],
-  weight: ['500', '600', '700'],
+  weight: ['600', '700', '800', '900'],
   variable: '--font-display',
+  display: 'swap',
+})
+
+export const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-mono',
   display: 'swap',
 })
 
 export const body = Noto_Sans_SC({
   subsets: ['latin'],
-  weight: ['400', '500', '700'],
+  weight: ['400', '500', '700', '900'],
   variable: '--font-body',
-  display: 'swap',
-})
-
-export const stat = Teko({
-  subsets: ['latin'],
-  weight: ['500', '600'],
-  variable: '--font-stat',
   display: 'swap',
 })

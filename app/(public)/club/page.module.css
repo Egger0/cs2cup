@@ -1,0 +1,135 @@
+.intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+  gap: clamp(28px, 5vw, 64px);
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .intro {
+    grid-template-columns: 1fr;
+  }
+}
+
+.paragraph {
+  color: var(--muted);
+  font-size: 1.02rem;
+  line-height: 1.85;
+  max-width: 56ch;
+}
+
+.paragraph + .paragraph {
+  margin-top: 18px;
+}
+
+.facts {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.fact {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.fact:last-child {
+  border-bottom: none;
+}
+
+.factKey {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+
+.factValue {
+  font-weight: 500;
+  text-align: right;
+}
+
+.roles {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.role {
+  background: var(--bg);
+  padding: 24px;
+  transition: background 0.24s ease;
+}
+
+.role:hover {
+  background: var(--surface);
+}
+
+.roleName {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.roleHolder {
+  font-family: var(--font-body), sans-serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin-block: 12px 8px;
+}
+
+.roleIntro {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.join {
+  border: 1px solid var(--line-strong);
+  background:
+    linear-gradient(120deg, rgba(61, 155, 233, 0.12), transparent 58%),
+    var(--surface);
+  padding: clamp(28px, 4vw, 48px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.joinText h2 {
+  font-family: var(--font-body), sans-serif;
+  font-weight: 900;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  letter-spacing: -0.02em;
+}
+
+.joinText p {
+  color: var(--muted);
+  margin-top: 10px;
+  max-width: 46ch;
+}
+
+.contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contact {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.82rem;
+  color: var(--ink);
+}
+
+.contact span {
+  color: var(--muted-2);
+  letter-spacing: 0.12em;
+  margin-right: 10px;
+}
