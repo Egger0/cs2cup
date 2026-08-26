@@ -282,3 +282,40 @@
   height: 100%;
   object-fit: cover;
 }
+
+.timeGrid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+}
+
+.timeCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  background: var(--bg-2);
+}
+
+.timeSlot {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  color: var(--muted-2);
+  flex: none;
+}
+
+.timeInput {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.78rem;
+}
+
+.timeInput:focus {
+  outline: none;
+  color: var(--t);
+}

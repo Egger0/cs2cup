@@ -4,6 +4,7 @@ import { adminListGames, adminListTournaments } from '@/lib/queries/content'
 import { listAdminMatches, listTeamsWithContact } from '@/lib/queries/admin'
 import { TournamentEditor } from './TournamentEditor'
 import { BracketBuilder } from './BracketBuilder'
+import { Scheduler } from './Scheduler'
 import styles from '../../admin.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -50,6 +51,13 @@ export default async function AdminTournamentPage({
           />
         )}
       </section>
+
+      {matches.length > 0 ? (
+        <section className={styles.panel}>
+          <h2 className={styles.panelHead}>赛程时间</h2>
+          <Scheduler tournamentId={tournamentId} matches={matches} />
+        </section>
+      ) : null}
     </>
   )
 }
