@@ -318,3 +318,36 @@ export function adminLinkMatch(
 export function adminSeedTeam(id: number, seed: number) {
   return updateRows('team', { seed }, { ...ADMIN, filters: { id: `eq.${id}` } })
 }
+
+export function adminScheduleMatch(id: number, scheduledAt: string | null) {
+  return updateRows('match', { scheduled_at: scheduledAt }, { ...ADMIN, filters: { id: `eq.${id}` } })
+}
+
+export async function adminGetSiteSetting() {
+  const rows = await selectRows<{
+    id: number
+    club_name: string
+    club_name_en: string | null
+    school: string
+    logo_url: string | null
+    contact_qq: string | null
+    contact_wechat: string | null
+    footer_copy: string | null
+  }>('site_setting', { ...ADMIN, limit: 1 })
+  const row = rows[0]
+  if (!row) return null
+  return {
+    id: row.id,
+    clubName: row.club_name,
+    clubNameEn: row.club_name_en,
+    school: row.school,
+    logoUrl: row.logo_url,
+    contactQq: row.contact_qq,
+    contactWechat: row.contact_wechat,
+    footerCopy: row.footer_copy,
+  }
+}
+
+export function adminSaveSiteSetting(values: Record<string, unknown>) {
+  return updateRows('site_setting', values, { ...ADMIN, filters: { id: 'eq.1' } })
+}

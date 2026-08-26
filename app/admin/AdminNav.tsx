@@ -11,6 +11,7 @@ const LINKS = [
   { href: '/admin/posts', label: '动态' },
   { href: '/admin/photos', label: '素材' },
   { href: '/admin/members', label: '成员' },
+  { href: '/admin/settings', label: '设置' },
 ]
 
 export function AdminNav() {

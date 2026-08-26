@@ -31,10 +31,12 @@ import {
   adminLinkMatch,
   adminSaveTournament,
   adminSeedTeam,
+  adminScheduleMatch,
   adminDeletePhoto,
   adminInsertPhoto,
   adminListPhotos,
   adminListTournaments,
+  adminSaveSiteSetting,
 } from '@/lib/queries/content'
 import { selectRows } from '@/lib/rdb'
 import type { Match, TeamStatus } from '@/lib/types'
@@ -357,4 +359,49 @@ export async function deletePhotoAndFile(id: number, storageKey: string) {
   await adminDeletePhoto(id)
   await removeObject(storageKey)
   updateTag('photo')
+}
+
+export async function scheduleRounds(
+  tournamentId: number,
+  startIso: string,
+  roundGapDays: number,
+  matchGapMinutes: number,
+) {
+  await requireAdmin()
+
+  const start = new Date(startIso)
+  if (Number.isNaN(start.getTime())) return { ok: false as const, error: '开赛时间无效' }
+
+  const matches = await listAdminMatches(tournamentId)
+  if (matches.length === 0) return { ok: false as const, error: '还没有对阵表' }
+
+  for (const match of matches) {
+    const when = new Date(start)
+    when.setDate(when.getDate() + match.round * roundGapDays)
+    when.setMinutes(when.getMinutes() + match.slot * matchGapMinutes)
+    await adminScheduleMatch(match.id, when.toISOString())
+  }
+
+  updateTag(`matches:${tournamentId}`)
+  return { ok: true as const, scheduled: matches.length }
+}
+
+export async function setMatchTime(id: number, tournamentId: number, value: string) {
+  await requireAdmin()
+  const iso = value ? new Date(value).toISOString() : null
+  await adminScheduleMatch(id, iso)
+  updateTag(`matches:${tournamentId}`)
+}
+
+export async function updateSiteSetting(form: FormData) {
+  await requireAdmin()
+  await adminSaveSiteSetting({
+    club_name: String(form.get('clubName') ?? '').trim(),
+    club_name_en: String(form.get('clubNameEn') ?? '').trim() || null,
+    school: String(form.get('school') ?? '').trim(),
+    contact_qq: String(form.get('contactQq') ?? '').trim() || null,
+    contact_wechat: String(form.get('contactWechat') ?? '').trim() || null,
+    footer_copy: String(form.get('footerCopy') ?? '').trim() || null,
+  })
+  updateTag('site_setting')
 }

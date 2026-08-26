@@ -99,6 +99,22 @@ for (const path of ['/sitemap.xml', '/robots.txt', '/feed.xml']) {
   check(`${path} 可用`, res.status() === 200, String(res.status()))
 }
 
+await page.goto(`${BASE}/search?q=` + encodeURIComponent('宁理'), { waitUntil: 'domcontentloaded' })
+await page.waitForTimeout(1200)
+const hits = await page.locator('main a[class*="hit"]').count()
+check('搜索有结果', hits > 0, `${hits} 条`)
+
+await page.goto(`${BASE}/search?q=zzzznope`, { waitUntil: 'domcontentloaded' })
+await page.waitForTimeout(1000)
+check('搜索空结果有提示', (await page.evaluate(() => document.body.innerText)).includes('没有匹配'))
+
+const rpc = await page.request.post('http://localhost:53000/rpc/submit_team', {
+  headers: { 'Content-Type': 'application/json' },
+  data: { payload: { slug: '2026-nlc', name: 'x', tag: 'XX', captain: 'x', contact: 'y' } },
+  failOnStatusCode: false,
+})
+check('匿名无法直接调用报名接口', rpc.status() === 401, String(rpc.status()))
+
 check('控制台无错误', errors.length === 0, errors.slice(0, 2).join(' | '))
 
 await browser.close()

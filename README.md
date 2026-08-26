@@ -90,8 +90,12 @@ For example, in PowerShell: `$env:E2E_BASE_URL = 'http://127.0.0.1:3100'; npm ru
 | `photo` | Object storage keys |
 | `club_member` `post` | Club content |
 | `admin_user` | Allowlist |
+| `registration_attempt` | Rate-limit ledger, hashed fingerprints |
 
 Public reads use `team_public` and `player_public`. Neither exposes `contact`.
+
+`submit_team` is executable only by `club_admin`, so entries must pass through
+the server action, which rate-limits by hashed address and user agent.
 
 ## Deploy
 

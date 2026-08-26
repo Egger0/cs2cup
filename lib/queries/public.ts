@@ -466,3 +466,68 @@ export async function listHonours() {
 
   return withChampions
 }
+
+export interface SearchHit {
+  kind: 'tournament' | 'team' | 'post' | 'game'
+  title: string
+  subtitle: string
+  href: string
+}
+
+export async function search(query: string): Promise<SearchHit[]> {
+  const term = query.trim()
+  if (term.length === 0) return []
+  const like = `ilike.*${term}*`
+
+  const [games, tournaments, posts] = await Promise.all([
+    selectRows<GameRow>('game', { filters: { or: `(name.${like},name_en.${like})` }, limit: 8 }),
+    selectRows<TournamentRow>('tournament', {
+      select: '*,game(slug,name)',
+      filters: { or: `(title.${like},season.${like})` },
+      limit: 8,
+    }),
+    selectRows<PostRow>('post', {
+      filters: { or: `(title.${like},summary.${like},body.${like})` },
+      limit: 8,
+    }),
+  ])
+
+  const teamHits: SearchHit[] = []
+  const allTournaments = await listTournaments()
+  const teams = await selectRows<{ id: number; tournament_id: number; name: string; tag: string }>(
+    'team_public',
+    { filters: { or: `(name.${like},tag.${like})` }, limit: 10 },
+  )
+  for (const team of teams) {
+    const tournament = allTournaments.find(entry => entry.id === team.tournament_id)
+    if (!tournament) continue
+    teamHits.push({
+      kind: 'team',
+      title: team.name,
+      subtitle: `${team.tag} · ${tournament.title}`,
+      href: `/tournaments/${tournament.slug}/teams/${team.tag}`,
+    })
+  }
+
+  return [
+    ...games.map(row => ({
+      kind: 'game' as const,
+      title: row.name,
+      subtitle: row.name_en ?? '项目',
+      href: `/games/${row.slug}`,
+    })),
+    ...tournaments.map(row => ({
+      kind: 'tournament' as const,
+      title: row.title,
+      subtitle: `${row.season} · 第 ${row.edition} 届`,
+      href: `/tournaments/${row.slug}`,
+    })),
+    ...teamHits,
+    ...posts.map(row => ({
+      kind: 'post' as const,
+      title: row.title,
+      subtitle: new Date(row.published_at).toLocaleDateString('zh-CN'),
+      href: `/news/${row.slug}`,
+    })),
+  ]
+}
