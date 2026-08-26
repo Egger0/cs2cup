@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { getSiteSetting, safely } from '@/lib/queries/public'
+import styles from './public-theme.module.css'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,10 +31,10 @@ export default async function PublicLayout({ children }: { children: React.React
   if (!setting) notFound()
 
   return (
-    <>
+    <div className={styles.theme}>
       <SiteHeader setting={setting} links={LINKS} />
       <main id="main">{children}</main>
       <SiteFooter setting={setting} />
-    </>
+    </div>
   )
 }
