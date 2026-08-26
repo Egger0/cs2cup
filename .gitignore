@@ -3,6 +3,12 @@
 .DS_Store
 Thumbs.db
 *.log
+.env
+.env.local
+.next/
+node_modules/
+next-env.d.ts
+*.tsbuildinfo
 cs2-cup.html
 docs/
 egger/
