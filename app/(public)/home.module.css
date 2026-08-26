@@ -40,7 +40,16 @@
   line-height: 0.96;
   letter-spacing: -0.045em;
   margin-top: 28px;
-  color: #fff7e8;
+  color: var(--ct);
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .name {
+    background: linear-gradient(100deg, var(--ct), var(--t));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
 
 .school {
