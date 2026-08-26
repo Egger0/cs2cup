@@ -9,10 +9,12 @@ export interface ResultsTableProps {
   teams: PublicTeam[]
   maps: MatchMap[]
   slug: string
+  limit?: number
 }
 
-export function ResultsTable({ matches, teams, maps, slug }: ResultsTableProps) {
-  const decided = matches.filter(match => match.winnerTeamId !== null)
+export function ResultsTable({ matches, teams, maps, slug, limit }: ResultsTableProps) {
+  const all = matches.filter(match => match.winnerTeamId !== null)
+  const decided = limit === undefined ? all : all.slice(-limit)
   if (decided.length === 0) return <Empty>还没有已完赛的比赛</Empty>
 
   const matchIndex = indexMatches(matches)

@@ -64,6 +64,7 @@ interface TeamRow {
 interface PlayerRow {
   id: number
   team_id: number
+  tournament_id: number
   nickname: string
   role: string | null
   is_substitute: boolean
@@ -223,6 +224,7 @@ export async function getPublicTeams(tournamentId: number): Promise<PublicTeam[]
       revalidate: REVALIDATE,
     }),
     selectRows<PlayerRow>('player_public', {
+      filters: { tournament_id: `eq.${tournamentId}` },
       order: 'sort_order.asc',
       tags: [`teams:${tournamentId}`],
       revalidate: REVALIDATE,

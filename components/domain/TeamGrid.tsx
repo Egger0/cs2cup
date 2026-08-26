@@ -19,11 +19,14 @@ export function TeamGrid({ teams }: { teams: PublicTeam[] }) {
             {team.dept ? ` · ${team.dept}` : ''}
           </p>
           {team.players.length > 0 ? (
-            <p className={styles.roster}>
-              {team.players
-                .map(player => (player.isSubstitute ? `${player.nickname}(替补)` : player.nickname))
-                .join('、')}
-            </p>
+            <ul className={styles.roster}>
+              {team.players.map(player => (
+                <li key={player.id} className={styles.player}>
+                  <span className={styles.playerName}>{player.nickname}</span>
+                  {player.role ? <span className={styles.playerRole}>{player.role}</span> : null}
+                </li>
+              ))}
+            </ul>
           ) : null}
         </article>
       ))}

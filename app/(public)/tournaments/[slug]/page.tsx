@@ -47,8 +47,8 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
   ])
 
   const next = nextPlayableMatch(matches, indexTeams(teams))
-  const decided = matches.filter(match => match.winnerTeamId !== null).slice(-4)
-  const matchMaps = await safely(() => getMatchMaps(decided.map(match => match.id)), [])
+  const recent = matches.filter(match => match.winnerTeamId !== null).slice(-4)
+  const matchMaps = await safely(() => getMatchMaps(recent.map(match => match.id)), [])
 
   return (
     <section className="section">
@@ -76,10 +76,11 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
               <div className={styles.block}>
                 <SectionHead eyebrow="最近战报" title="打完的比赛" />
                 <ResultsTable
-                  matches={decided}
+                  matches={matches}
                   teams={teams}
                   maps={matchMaps}
                   slug={tournament.slug}
+                  limit={4}
                 />
                 <p className={styles.more}>
                   <Link href={`/tournaments/${slug}/results`} className="readout">
