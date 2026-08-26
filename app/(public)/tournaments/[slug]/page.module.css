@@ -1,0 +1,99 @@
+.overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 350px);
+  gap: clamp(28px, 4vw, 56px);
+  align-items: start;
+}
+
+@media (max-width: 940px) {
+  .overview {
+    grid-template-columns: 1fr;
+  }
+}
+
+.main {
+  min-width: 0;
+}
+
+.block {
+  margin-top: clamp(40px, 5vw, 64px);
+}
+
+.block a {
+  display: block;
+}
+
+.more {
+  margin-top: 14px;
+  text-align: right;
+}
+
+.more a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 8px;
+}
+
+.more a:hover {
+  color: var(--ct);
+}
+
+.aside {
+  position: sticky;
+  top: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (max-width: 940px) {
+  .aside {
+    position: static;
+  }
+}
+
+.cta {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ctaLine {
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.cta a {
+  display: block;
+}
+
+.cta button {
+  width: 100%;
+}
+
+.pool {
+  border: 1px solid var(--line);
+  padding: 18px 20px;
+}
+
+.poolList {
+  list-style: none;
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.poolList li {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  padding: 4px 8px;
+}

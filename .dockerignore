@@ -1,0 +1,12 @@
+.git
+.github
+.next
+node_modules
+docs
+migrations
+migration-output
+scripts
+dist
+.env
+.env.local
+*.log

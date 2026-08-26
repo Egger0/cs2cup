@@ -1,0 +1,147 @@
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(227, 166, 58, 0.28);
+}
+
+.seed {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  line-height: 1;
+  color: var(--muted-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.tag {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 900;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  letter-spacing: 0.04em;
+  color: var(--t);
+  line-height: 1;
+}
+
+.name {
+  font-family: var(--font-body), sans-serif;
+  font-weight: 900;
+  font-size: clamp(1.5rem, 3.4vw, 2.4rem);
+  letter-spacing: -0.03em;
+  margin-top: 10px;
+}
+
+.meta {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  color: var(--muted-2);
+  margin-top: 12px;
+}
+
+.record {
+  display: flex;
+  gap: 24px;
+}
+
+.recordItem {
+  text-align: right;
+}
+
+.recordValue {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  font-size: 2rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.recordKey {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  margin-top: 8px;
+}
+
+.roster {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.player {
+  background: var(--bg);
+  padding: 18px 20px;
+}
+
+.playerRole {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--t);
+}
+
+.playerName {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.98rem;
+  margin-top: 10px;
+}
+
+.sub {
+  color: var(--muted-2);
+}
+
+.timeline {
+  border-top: 1px solid var(--line);
+}
+
+.game {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.round {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  color: var(--muted-2);
+}
+
+.opponent {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.score {
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.won {
+  color: var(--t);
+}
+
+.lost {
+  color: var(--muted-2);
+}
+
+.pending {
+  color: var(--muted-2);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+}

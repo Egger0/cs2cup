@@ -1,65 +1,75 @@
-# CS2 校园杯 · 赛事网站
+# cs2cup
 
-宁波理工学院电竞社 CS2（Counter-Strike 2）校园杯的官方网站，含公开报名页、往届赛事相册、后台管理平台。数据通过腾讯云 CloudBase（PostgreSQL）全网共享。
+Esports club site for Ningbo Institute of Technology, Zhejiang University. Registration, rosters, brackets, match reports with ban/pick, archive, admin.
 
-## 快速开始（3 步）
+Next.js App Router · React · TypeScript · CloudBase PostgreSQL · Cloud Run
 
-1. **配置云端**：编辑 `dist/config.js`，填入 环境ID + Publishable Key + 地域（详细图文教程见 [`SETUP-教程.md`](SETUP-教程.md)）。
-2. **初始化数据库**：CloudBase 控制台 → 数据库 → PostgreSQL → 「SQL 编辑器」，运行 [`数据库初始化.sql`](数据库初始化.sql)（自动建表 + 配权限，可重复运行）。
-3. **部署上线**：`git push` 到 main，CloudBase 静态托管自动拉取并重新发布。
+## Develop
 
-> 没配置云端之前网页也能正常打开，处于「演示模式」（报名只存在本地浏览器）。
+```bash
+npm install
+npm run stack:up
+npm run stack:seed
+cp .env.example .env.local
+npm run dev
+```
 
-## 文件
-
-| 文件 | 作用 |
+| Script | |
 |---|---|
-| `dist/index.html` | 公开主页：报名、战队名单、实时赛程对阵表 |
-| `dist/past.html` | 公开页：往届赛事相册（照片墙） |
-| `dist/admin.html` | 后台管理：改赛事信息、审核报名、录入赛果、传往届照片 |
-| `dist/lc.js` | 数据层（连接 CloudBase） |
-| `dist/config.js` | 配置：环境 ID + Publishable 公钥 + 地域 |
-| `数据库初始化.sql` | 建表 + RLS 权限脚本（在 CloudBase SQL 编辑器里运行） |
-| `SETUP-教程.md` | 从零上线的完整教程：注册、配置、建表、登录、部署、排错 |
+| `stack:up` | Local PostgreSQL and PostgREST, applies `migrations/` |
+| `stack:seed` | Demo fixtures, local only |
+| `stack:down` | Destroys the local stack |
+| `photos:import` | Decodes legacy base64 photos to files and SQL |
+| `typecheck` `lint` `build` | Pipeline gates |
+| `e2e` | Browser tests against a running server |
 
-## 数据表（PostgreSQL）
+## Environment
 
-五张表，业务字段统一放在 `data(jsonb)` 里，程序自己读写，不用手动加列：
+| Variable | |
+|---|---|
+| `CLOUDBASE_ENV_ID` | CloudBase environment |
+| `CLOUDBASE_ANON_KEY` | Publishable key, public reads |
+| `CLOUDBASE_ADMIN_KEY` | Privileged key, admin writes |
+| `CLOUDBASE_REGION` | Defaults to `ap-shanghai` |
+| `NEXT_PUBLIC_PHOTO_BASE_URL` | Object storage origin |
+| `RDB_BASE_URL` | Overrides the data endpoint, local only |
 
-| 表 | 用途 | 访客(anon) | 管理员（白名单 UID） |
-|---|---|---|---|
-| `event` | 赛事信息（取最新一条） | 读 | 读写 |
-| `team` | 完整报名（含联系方式与审核状态） | 不可读写 | 读写删 |
-| `team_public` | 已审核的公开战队资料 | 读 | 由数据库自动同步 |
-| `gallery` | 往届照片（每张一行） | 读 | 读写删 |
-| `cs2cup_admin` | 后台 UID 白名单 | 不可读写 | 仅本人可确认已获授权 |
+## Layout
 
-权限由数据库行级安全（RLS）自动判定：公开页只带 Publishable Key 以 anon 身份访问；报名只能调用数据库的原子提交函数。后台写权限仅授予 `cs2cup_admin` 白名单中的 UID，首次配置需在 SQL 控制台添加管理员 UID。
+| Path | |
+|---|---|
+| `app/(public)/` | Public routes |
+| `app/(public)/tournaments/[slug]/` | Overview, teams, bracket, results, rules, register |
+| `app/admin/` | Console |
+| `components/ui/` | Primitives, no domain imports |
+| `components/domain/` | Tournament components |
+| `components/layout/` | Shells and navigation |
+| `lib/` | Data access, auth, bracket resolution |
+| `app/feed.xml/` | RSS |
+| `migrations/` | Numbered, re-runnable |
+| `seeds/` | Demo data, never production |
+| `scripts/` | One-off migration tools |
 
-## 录入赛果
+`components/ui/` must not import `lib/types.ts`.
 
-在后台的「赛程与赛果」中录入已通过战队的淘汰赛比分。前 3 轮为 BO3（胜方 2 分），总决赛为 BO5（胜方 3 分）；保存后公开页会自动显示比分、胜者和下一轮对阵。若改动上游场次的结果，系统会清除受影响下游场次的旧比分，需在新对阵产生后重新录入。
+## Data
 
-## 部署（Git 自动部署）
+| Table | |
+|---|---|
+| `site_setting` | Single row |
+| `tournament` | Edition, game, format, status |
+| `team` | Holds `contact`, revoked from `anon` |
+| `player` | Roster entries |
+| `match` | Round, slot, scores, self-referencing sources |
+| `match_map` | Ordered ban/pick, skipped maps retained |
+| `photo` | Object storage keys |
+| `club_member` `post` | Club content |
+| `admin_user` | Allowlist |
 
-本仓库连接到腾讯云 CloudBase「静态托管 · Git 仓库部署」。
-**改网页只需 `git push`，CloudBase 会自动拉取并重新发布，不用手动删服务重传。**
+Public reads use `team_public` and `player_public`. Neither exposes `contact`.
 
-- 构建框架：其他 / 静态
-- 安装命令、构建命令：留空
-- 输出目录：`dist`（网站文件都在 `dist/` 目录里）
-- 部署路径：`/nbtcscup`
-- 部署命令：`tcb hosting deploy ./dist /nbtcscup -e <环境ID>`
+## Deploy
 
-> 仓库根目录的文档（`README.md`、`数据库初始化.sql`、`SETUP-教程.md`）不会被部署上线，仅作源码与文档用途。
+Build the image from the `Dockerfile` and run it on CloudBase Cloud Run, port 3000.
 
-## 安全说明
-
-- `config.js` 里只放环境的 **Publishable Key（客户端公钥）**，官方允许其暴露在前端。
-- **绝不**把腾讯云账号的 SecretId / SecretKey（账号级私钥）放进本仓库任何文件。
-- 后台写权限由数据库行级安全（RLS）保护：只有加入 `cs2cup_admin` 白名单的登录账号能改数据；`authenticated` 身份本身不代表管理员。
-
-## 本地开发
-
-- 预览：`npx http-server . -p 4599 -c-1`（本仓库 `.claude/launch.json` 已内置该配置）。
-- 改完 `dist/` 下的文件，`git push` 即自动上线。
+Migrations run in the CloudBase SQL editor in numbered order.

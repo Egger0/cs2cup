@@ -1,0 +1,139 @@
+.edition {
+  margin-bottom: clamp(56px, 8vw, 104px);
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 16px;
+  margin-bottom: clamp(20px, 3vw, 32px);
+  border-bottom: 1px solid rgba(227, 166, 58, 0.26);
+}
+
+.year {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.4rem, 6vw, 4.4rem);
+  line-height: 0.86;
+  color: var(--t);
+  font-variant-numeric: tabular-nums;
+}
+
+.name {
+  font-family: var(--font-body), sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.05rem, 2vw, 1.4rem);
+  margin-left: 16px;
+}
+
+.count {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  white-space: nowrap;
+}
+
+.sheet {
+  columns: 3 300px;
+  column-gap: clamp(14px, 2vw, 22px);
+}
+
+@media (max-width: 720px) {
+  .sheet {
+    columns: 1;
+  }
+}
+
+.poster {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin-bottom: clamp(14px, 2vw, 22px);
+  break-inside: avoid;
+  padding: 0;
+  border: 1px solid var(--line);
+  background: var(--void);
+  overflow: hidden;
+  cursor: zoom-in;
+  transition:
+    border-color 0.3s ease,
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.poster:hover {
+  border-color: rgba(227, 166, 58, 0.5);
+  transform: translateY(-3px);
+}
+
+.poster img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.poster:hover img {
+  transform: scale(1.02);
+}
+
+.caption {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 28px 14px 10px;
+  background: linear-gradient(180deg, transparent, rgba(5, 7, 12, 0.9));
+  font-family: var(--font-mono), monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.poster:hover .caption {
+  opacity: 1;
+}
+
+.lightbox:not([open]) {
+  display: none;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 4vw, 56px);
+  background: rgba(5, 7, 12, 0.96);
+  border: none;
+}
+
+.lightbox::backdrop {
+  background: rgba(5, 7, 12, 0.96);
+}
+
+.lightbox img {
+  max-width: min(1200px, 94vw);
+  max-height: 88vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border: 1px solid var(--line-strong);
+}
+
+.close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}

@@ -1,0 +1,189 @@
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0b0906 0%, #0a0e16 58%, var(--bg) 100%);
+  border-bottom: 1px solid var(--line);
+  padding-block: clamp(72px, 14vh, 152px) clamp(52px, 9vh, 104px);
+}
+
+.glow {
+  position: absolute;
+  inset: -50% -20% auto -20%;
+  height: 150%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(46% 40% at 26% 32%, rgba(227, 166, 58, 0.26), transparent 68%),
+    radial-gradient(40% 38% at 78% 18%, rgba(61, 155, 233, 0.2), transparent 66%);
+}
+
+.crest {
+  width: clamp(76px, 9vw, 112px);
+  height: clamp(76px, 9vw, 112px);
+  border-radius: 50%;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2), 0 20px 60px -24px rgba(0, 0, 0, 0.9);
+}
+
+.crest img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.name {
+  font-family: var(--font-body), sans-serif;
+  font-weight: 900;
+  font-size: clamp(2.6rem, 7vw, 5.4rem);
+  line-height: 0.96;
+  letter-spacing: -0.045em;
+  margin-top: 28px;
+  color: #fff7e8;
+}
+
+.school {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  font-size: clamp(0.86rem, 1.8vw, 1.15rem);
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+  color: var(--t);
+  margin-top: 16px;
+}
+
+.lede {
+  color: var(--ink);
+  font-size: clamp(1.02rem, 1.7vw, 1.28rem);
+  line-height: 1.7;
+  max-width: 40ch;
+  margin-top: 26px;
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 34px;
+}
+
+.games {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.game {
+  position: relative;
+  display: block;
+  background: var(--bg);
+  padding: clamp(24px, 3vw, 34px);
+  overflow: hidden;
+  transition: background 0.3s ease;
+}
+
+.game::before {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 2px;
+  background: var(--game-accent, var(--t));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.game:hover {
+  background: var(--surface);
+}
+
+.game:hover::before {
+  transform: scaleX(1);
+}
+
+.gameName {
+  font-family: var(--font-body), sans-serif;
+  font-weight: 900;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  letter-spacing: -0.03em;
+  color: var(--game-accent, var(--ink));
+}
+
+.gameEn {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  margin-top: 8px;
+}
+
+.gameTagline {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 14px;
+  text-wrap: pretty;
+}
+
+.gameMeta {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  color: var(--muted-2);
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.columns {
+  display: grid;
+  gap: clamp(28px, 5vw, 64px);
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+  align-items: start;
+}
+
+@media (max-width: 940px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.spotlight {
+  border: 1px solid rgba(227, 166, 58, 0.28);
+  background: linear-gradient(180deg, rgba(20, 15, 8, 0.7), rgba(10, 12, 18, 0.85));
+  padding: clamp(22px, 3vw, 30px);
+}
+
+.spotlightHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.spotlightTitle {
+  font-family: var(--font-body), sans-serif;
+  font-weight: 700;
+  font-size: 1.16rem;
+  margin-top: 16px;
+}
+
+.spotlightMeta {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  color: var(--muted-2);
+  margin-top: 10px;
+}
+
+.spotlightBody {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 14px;
+  text-wrap: pretty;
+}

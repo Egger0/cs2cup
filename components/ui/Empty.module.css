@@ -1,0 +1,21 @@
+.empty {
+  padding: clamp(40px, 6vw, 64px) 24px;
+  border: 1px dashed var(--line-strong);
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  text-align: center;
+}
+
+.line {
+  color: var(--muted);
+  font-size: 0.94rem;
+  max-width: 44ch;
+}
+
+.action {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}

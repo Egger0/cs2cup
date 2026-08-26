@@ -1,0 +1,76 @@
+.list {
+  display: grid;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.item {
+  color: inherit;
+  background: var(--bg);
+  padding: clamp(20px, 2.4vw, 28px);
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  gap: clamp(16px, 3vw, 40px);
+  align-items: start;
+  transition: background 0.24s ease;
+}
+
+.item:hover {
+  background: var(--surface);
+}
+
+@media (max-width: 680px) {
+  .item {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+.stamp {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--muted-2);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pin {
+  align-self: flex-start;
+  color: var(--t);
+  border: 1px solid currentColor;
+  padding: 1px 6px;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+}
+
+.title {
+  font-family: var(--font-body), sans-serif;
+  font-weight: 700;
+  font-size: 1.08rem;
+}
+
+.summary {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 8px;
+  max-width: 62ch;
+}
+
+.more {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  color: var(--t);
+  margin-top: 14px;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.24s ease, transform 0.24s var(--ease);
+}
+
+.item:hover .more {
+  opacity: 1;
+  transform: none;
+}

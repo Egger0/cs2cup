@@ -1,13 +1,16 @@
-# Claude Code 内部目录
 .claude/
-
-# 无关/草稿目录
-egger/
-
-# 旧版单文件(已被 index.html + admin.html 取代)
-cs2-cup.html
-
-# 系统垃圾文件
+.playwright-mcp/
 .DS_Store
 Thumbs.db
 *.log
+.env
+.env.local
+.next/
+node_modules/
+next-env.d.ts
+*.tsbuildinfo
+cs2-cup.html
+docs/
+egger/
+migration-output/
+public/photos/
