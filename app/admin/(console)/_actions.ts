@@ -352,7 +352,7 @@ export async function uploadPhoto(form: FormData) {
     })
   } catch (error) {
     console.error('photo upload failed', error)
-    await removeObject(key)
+    await removeObject(key).catch(cleanupError => console.error('photo upload cleanup failed', cleanupError))
     return { ok: false as const, error: '图片保存失败，请稍后重试' }
   }
 
@@ -362,9 +362,22 @@ export async function uploadPhoto(form: FormData) {
 
 export async function deletePhotoAndFile(id: number, storageKey: string) {
   await requireAdmin()
-  await adminDeletePhoto(id)
-  await removeObject(storageKey)
+  try {
+    await removeObject(storageKey)
+  } catch (error) {
+    console.error('photo delete failed', error)
+    return { ok: false as const, error: '云存储删除失败，未移除照片记录' }
+  }
+
+  try {
+    await adminDeletePhoto(id)
+  } catch (error) {
+    console.error('photo record delete failed', error)
+    return { ok: false as const, error: '图片已从云存储删除，但照片记录未移除' }
+  }
+
   updateTag('photo')
+  return { ok: true as const }
 }
 
 export async function scheduleRounds(

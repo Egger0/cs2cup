@@ -53,14 +53,13 @@ For example, in PowerShell: `$env:E2E_BASE_URL = 'http://127.0.0.1:3100'; npm ru
 | `CLOUDBASE_ANON_KEY` | Publishable key, public reads |
 | `CLOUDBASE_ADMIN_KEY` | Privileged key, admin writes |
 | `CLOUDBASE_REGION` | Defaults to `ap-shanghai` |
-| `NEXT_PUBLIC_PHOTO_BASE_URL` | Object storage origin |
 | `RDB_BASE_URL` | Overrides the read endpoint, local only |
 | `RDB_ADMIN_BASE_URL` | Overrides the write endpoint, local only |
 | `CLOUDBASE_ISSUER` | Overrides the OIDC issuer, local only |
 | `NEXT_PUBLIC_SITE_URL` | Absolute origin for sitemap, feed and cards |
-| `PHOTO_UPLOAD_DRIVER` | `local` or `cos`; defaults to `local` |
-| `PHOTO_LOCAL_ROOT` | Where the local driver writes; defaults to `public/photos` |
-| `COS_UPLOAD_URL` `COS_UPLOAD_TOKEN` | Object storage endpoint and credential |
+| `PHOTO_UPLOAD_DRIVER` | `local` or `cloudbase`; defaults to `local` |
+| `PHOTO_LOCAL_ROOT` | Where the local driver writes; defaults to a temporary directory |
+| `PHOTO_BUCKET` | CloudBase PG Storage bucket; defaults to `cs2cup-photos` |
 
 ## Layout
 
@@ -110,3 +109,8 @@ the server action, which rate-limits by hashed address and user agent.
 Build the image from the `Dockerfile` and run it on CloudBase Cloud Run, port 3000.
 
 Migrations run in the CloudBase SQL editor in numbered order.
+
+For persistent photos, run `migrations/010_photo_storage.sql`, then set
+`PHOTO_UPLOAD_DRIVER=cloudbase` and `PHOTO_BUCKET=cs2cup-photos` in Cloud Run.
+The existing server-only `CLOUDBASE_ENV_ID` and `CLOUDBASE_ADMIN_KEY` authorize
+the private bucket; browsers continue to read photos only through `/media/...`.

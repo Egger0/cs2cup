@@ -92,8 +92,7 @@ const photosAfter = Number(db('select count(*) from photo'))
 check('后台上传素材入库', photosAfter === photosBefore + 1, `${photosBefore} → ${photosAfter}`)
 
 const key = db(`select storage_key from photo where caption='E2E 上传测试'`)
-const base = process.env.NEXT_PUBLIC_PHOTO_BASE_URL ?? '/media'
-const served = await page.request.get(`${BASE}${base}/${key}`)
+const served = await page.request.get(`${BASE}/media/${key}`)
 check('图片可通过 HTTP 取回', served.status() === 200, `${served.status()} ${key}`)
 const dims = db(`select width||'x'||height from photo where caption='E2E 上传测试'`)
 check('尺寸解析正确', dims === '100x70', dims)

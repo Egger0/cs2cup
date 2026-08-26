@@ -22,6 +22,7 @@
     "check": "npm run typecheck && npm run lint && npm run e2e && npm run e2e:admin && npm run a11y && npm run keyboard && npm run perf"
   },
   "dependencies": {
+    "@cloudbase/js-sdk": "^3.8.2",
     "next": "16.3.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",

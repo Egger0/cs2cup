@@ -1,6 +1,6 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui'
 import { photoUrl } from '@/lib/media'
@@ -15,6 +15,7 @@ export function PhotoRow({
   tournamentLabel: string
 }) {
   const [pending, startTransition] = useTransition()
+  const [error, setError] = useState('')
 
   return (
     <div className={styles.listRow}>
@@ -43,11 +44,16 @@ export function PhotoRow({
           disabled={pending}
           onClick={() => {
             if (!confirm('删除这张图片?文件也会一并移除。')) return
-            startTransition(() => void deletePhotoAndFile(photo.id, photo.storageKey))
+            startTransition(async () => {
+              setError('')
+              const result = await deletePhotoAndFile(photo.id, photo.storageKey)
+              if (!result.ok) setError(result.error)
+            })
           }}
         >
           删除
         </Button>
+        {error ? <span className={styles.error}>{error}</span> : null}
       </div>
     </div>
   )

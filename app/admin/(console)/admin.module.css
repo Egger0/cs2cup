@@ -110,6 +110,11 @@
   font-size: 0.84rem;
 }
 
+.error {
+  color: var(--danger);
+  font-size: 0.78rem;
+}
+
 .bar {
   display: flex;
   align-items: center;
