@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, Field } from '@/components/ui'
-import { signIn } from '../_actions'
+import { signIn } from '../(console)/_actions'
 
 export function LoginForm() {
   const router = useRouter()
