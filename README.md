@@ -23,6 +23,9 @@ npm run dev
 | `typecheck` `lint` `build` | Pipeline gates |
 | `e2e` | Browser tests against a running server |
 
+For a server that is not running on port 3000, set `E2E_BASE_URL` before `npm run e2e`.
+For example, in PowerShell: `$env:E2E_BASE_URL = 'http://127.0.0.1:3100'; npm run e2e`.
+
 ## Environment
 
 | Variable | |

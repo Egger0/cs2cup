@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { issuerUrl, verifyToken } from '@/lib/jwt'
+import { verifyToken } from '@/lib/jwt'
 
 const SESSION_COOKIE = 'cs2cup_session'
 
@@ -9,8 +9,6 @@ export async function proxy(request: NextRequest) {
   login.pathname = '/admin/login'
 
   if (!token) return NextResponse.redirect(login)
-  if (!issuerUrl()) return NextResponse.redirect(login)
-
   const claims = await verifyToken(token).catch(() => null)
   if (!claims) {
     const response = NextResponse.redirect(login)

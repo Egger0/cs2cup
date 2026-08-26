@@ -15,7 +15,7 @@ import {
   removePhoto,
 } from '@/lib/queries/admin'
 import { decideWinner, downstreamOf } from '@/lib/bracket'
-import { selectRow } from '@/lib/rdb'
+import { selectRows } from '@/lib/rdb'
 import type { Match, TeamStatus, TournamentStatus } from '@/lib/types'
 
 const SESSION_MAX_AGE = 60 * 60 * 8
@@ -24,13 +24,14 @@ export async function signIn(token: string) {
   const claims = await verifyToken(token)
   if (!claims) return { ok: false as const, error: '登录凭证无效' }
 
-  const row = await selectRow<{ user_id: string }>('admin_user', {
+  const rows = await selectRows<{ user_id: string }>('admin_user', {
     select: 'user_id',
-    filters: { user_id: `eq.${claims.sub}` },
     credential: 'admin',
     revalidate: false,
   })
-  if (!row) return { ok: false as const, error: '该账号不在管理员白名单中' }
+  if (!rows.some(row => row.user_id === claims.sub)) {
+    return { ok: false as const, error: '该账号不在管理员白名单中' }
+  }
 
   const store = await cookies()
   store.set(SESSION_COOKIE, token, {

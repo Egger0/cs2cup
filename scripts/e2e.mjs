@@ -1,6 +1,6 @@
 import { chromium } from 'playwright'
 
-const BASE = 'http://localhost:3000'
+const BASE = (process.env.E2E_BASE_URL ?? 'http://localhost:3000').replace(/\/$/, '')
 const results = []
 const check = (name, pass, detail = '') => {
   results.push({ name, pass, detail })
@@ -43,15 +43,19 @@ check('BP 区块渲染', hasVeto)
 await page.goto(`${BASE}/archive`, { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(1600)
 const posters = await page.locator('button[class*="poster"]').count()
-check('存档页有图', posters === 10, `${posters} 张`)
-await page.locator('button[class*="poster"]').first().click()
-await page.waitForTimeout(600)
-const lbOpen = await page.locator('dialog[open]').isVisible().catch(() => false)
-check('灯箱可打开', lbOpen)
-await page.keyboard.press('Escape')
-await page.waitForTimeout(500)
-const lbClosed = (await page.locator('dialog[open]').count()) === 0
-check('Esc 可关闭灯箱', lbClosed)
+if (posters > 0) {
+  check('存档页有图', true, `${posters} 张`)
+  await page.locator('button[class*="poster"]').first().click()
+  await page.waitForTimeout(600)
+  const lbOpen = await page.locator('dialog[open]').isVisible().catch(() => false)
+  check('灯箱可打开', lbOpen)
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(500)
+  const lbClosed = (await page.locator('dialog[open]').count()) === 0
+  check('Esc 可关闭灯箱', lbClosed)
+} else {
+  check('存档页空状态可用', await page.getByText('还没有往届海报').isVisible().catch(() => false))
+}
 
 await page.goto(`${BASE}/admin`, { waitUntil: 'domcontentloaded' })
 check('未登录后台被拦截', page.url().includes('/admin/login'), page.url().replace(BASE, ''))

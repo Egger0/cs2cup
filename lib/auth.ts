@@ -1,7 +1,7 @@
 import 'server-only'
 import { cookies } from 'next/headers'
 import { verifyToken } from './jwt'
-import { selectRow } from './rdb'
+import { selectRows } from './rdb'
 
 export const SESSION_COOKIE = 'cs2cup_session'
 
@@ -12,13 +12,12 @@ export interface AdminIdentity {
 }
 
 async function isWhitelisted(uid: string) {
-  const row = await selectRow<{ user_id: string }>('admin_user', {
+  const rows = await selectRows<{ user_id: string }>('admin_user', {
     select: 'user_id',
-    filters: { user_id: `eq.${uid}` },
     credential: 'admin',
     revalidate: false,
   })
-  return row !== null
+  return rows.some(row => row.user_id === uid)
 }
 
 export async function getCurrentAdmin(): Promise<AdminIdentity | null> {

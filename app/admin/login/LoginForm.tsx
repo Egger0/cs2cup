@@ -10,7 +10,9 @@ declare global {
     cloudbase?: {
       init: (config: { env: string; accessKey: string; region: string }) => {
         auth: () => {
-          signIn: (input: { username: string; password: string }) => Promise<unknown>
+          signIn: (input: { username: string; password: string }) => Promise<{
+            credential?: { accessToken?: string }
+          }>
           getAccessToken: () => Promise<{ accessToken: string }>
         }
       }
@@ -51,11 +53,12 @@ export function LoginForm({ env, anonKey, region }: LoginFormProps) {
       if (!app) throw new Error('SDK 初始化失败')
 
       const auth = app.auth()
-      await auth.signIn({
+      const login = await auth.signIn({
         username: String(formData.get('username') ?? ''),
         password: String(formData.get('password') ?? ''),
       })
-      const { accessToken } = await auth.getAccessToken()
+      const accessToken = login.credential?.accessToken ?? (await auth.getAccessToken()).accessToken
+      if (!accessToken) throw new Error('未能取得登录令牌')
 
       const result = await signIn(accessToken)
       if (!result.ok) {
