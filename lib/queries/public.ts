@@ -382,6 +382,8 @@ interface GameRow {
   name_en: string | null
   accent_color: string | null
   tagline: string | null
+  description: string | null
+  format_note: string | null
   sort_order: number
   active: boolean
 }
@@ -393,6 +395,8 @@ const toGame = (row: GameRow): Game => ({
   nameEn: row.name_en,
   accentColor: row.accent_color,
   tagline: row.tagline,
+  description: row.description,
+  formatNote: row.format_note,
   sortOrder: row.sort_order,
   active: row.active,
 })
@@ -413,4 +417,23 @@ export async function getGame(slug: string): Promise<Game | null> {
     revalidate: REVALIDATE,
   })
   return row ? toGame(row) : null
+}
+
+export async function getPost(slug: string): Promise<Post | null> {
+  const row = await selectRow<PostRow>('post', {
+    filters: { slug: `eq.${slug}` },
+    tags: ['post', `post:${slug}`],
+    revalidate: REVALIDATE,
+  })
+  if (!row) return null
+  return {
+    id: row.id,
+    gameId: row.game_id,
+    slug: row.slug,
+    title: row.title,
+    summary: row.summary,
+    body: row.body,
+    publishedAt: row.published_at,
+    pinned: row.pinned,
+  }
 }

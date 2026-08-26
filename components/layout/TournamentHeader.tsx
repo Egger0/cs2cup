@@ -72,8 +72,9 @@ export function TournamentHeader({
               </span>
             </h1>
 
-            <p className={styles.tagline}>{tagline}</p>
+            {compact ? null : <p className={styles.tagline}>{tagline}</p>}
 
+            {compact ? null : (
             <div className={styles.rail}>
               <span className={styles.railItem}>
                 <span className={styles.railValue}>
@@ -94,9 +95,10 @@ export function TournamentHeader({
                 <span className={styles.railKey}>现役地图</span>
               </span>
             </div>
+            )}
           </div>
 
-          {next ? (
+          {next && !compact ? (
             <Link href={`${base}/matches/${next.id}`} className={styles.card}>
               <div className={styles.cardHead}>
                 <span>下一场</span>

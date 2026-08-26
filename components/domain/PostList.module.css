@@ -6,6 +6,7 @@
 }
 
 .item {
+  color: inherit;
   background: var(--bg);
   padding: clamp(20px, 2.4vw, 28px);
   display: grid;
@@ -58,10 +59,18 @@
   max-width: 62ch;
 }
 
-.body {
-  color: var(--muted-2);
-  font-size: 0.86rem;
-  margin-top: 10px;
-  max-width: 66ch;
-  line-height: 1.8;
+.more {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  color: var(--t);
+  margin-top: 14px;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.24s ease, transform 0.24s var(--ease);
+}
+
+.item:hover .more {
+  opacity: 1;
+  transform: none;
 }

@@ -6,6 +6,7 @@ import { getSiteSetting, safely } from '@/lib/queries/public'
 const LINKS = [
   { href: '/games', label: '项目' },
   { href: '/tournaments', label: '赛事' },
+  { href: '/news', label: '动态' },
   { href: '/archive', label: '存档' },
   { href: '/about', label: '关于' },
 ]

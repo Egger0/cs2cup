@@ -36,6 +36,8 @@ export interface Game {
   nameEn: string | null
   accentColor: string | null
   tagline: string | null
+  description: string | null
+  formatNote: string | null
   sortOrder: number
   active: boolean
 }

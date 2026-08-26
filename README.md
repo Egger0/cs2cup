@@ -21,6 +21,7 @@ npm run dev
 | `stack:down` | Destroys the local stack |
 | `photos:import` | Decodes legacy base64 photos to files and SQL |
 | `typecheck` `lint` `build` | Pipeline gates |
+| `e2e` | Browser tests against a running server |
 
 ## Environment
 
@@ -44,6 +45,7 @@ npm run dev
 | `components/domain/` | Tournament components |
 | `components/layout/` | Shells and navigation |
 | `lib/` | Data access, auth, bracket resolution |
+| `app/feed.xml/` | RSS |
 | `migrations/` | Numbered, re-runnable |
 | `seeds/` | Demo data, never production |
 | `scripts/` | One-off migration tools |

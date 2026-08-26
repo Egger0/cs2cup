@@ -23,7 +23,11 @@ export function TeamGrid({ teams, slug }: { teams: PublicTeam[]; slug?: string }
   return (
     <div className={styles.grid}>
       {teams.map(team => (
-        <article key={team.id} className={styles.card}>
+        <Link
+          key={team.id}
+          href={slug ? `/tournaments/${slug}/teams/${team.tag}` : '#'}
+          className={styles.card}
+        >
           <div className={styles.head}>
             <span className={styles.seed}>{team.seed ? `#${team.seed}` : '—'}</span>
             <span className={styles.tag}>{team.tag}</span>
@@ -45,7 +49,7 @@ export function TeamGrid({ teams, slug }: { teams: PublicTeam[]; slug?: string }
               ))}
             </ul>
           ) : null}
-        </article>
+        </Link>
       ))}
     </div>
   )

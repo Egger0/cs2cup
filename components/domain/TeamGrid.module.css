@@ -5,6 +5,8 @@
 }
 
 .card {
+  display: block;
+  color: inherit;
   border: 1px solid var(--line);
   border-left: 2px solid var(--accent);
   background: linear-gradient(180deg, var(--surface), rgba(13, 19, 31, 0.9));

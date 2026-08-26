@@ -16,6 +16,8 @@ create table if not exists public.game (
   name_en      text,
   accent_color text,
   tagline      text,
+  description  text,
+  format_note  text,
   sort_order   integer not null default 0,
   active       boolean not null default true
 );

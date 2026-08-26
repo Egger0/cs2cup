@@ -1,13 +1,24 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { issuerUrl, verifyToken } from '@/lib/jwt'
 
 const SESSION_COOKIE = 'cs2cup_session'
 
-export function proxy(request: NextRequest) {
-  if (request.cookies.has(SESSION_COOKIE)) return NextResponse.next()
+export async function proxy(request: NextRequest) {
+  const token = request.cookies.get(SESSION_COOKIE)?.value
+  const login = request.nextUrl.clone()
+  login.pathname = '/admin/login'
 
-  const url = request.nextUrl.clone()
-  url.pathname = '/admin/login'
-  return NextResponse.redirect(url)
+  if (!token) return NextResponse.redirect(login)
+  if (!issuerUrl()) return NextResponse.redirect(login)
+
+  const claims = await verifyToken(token).catch(() => null)
+  if (!claims) {
+    const response = NextResponse.redirect(login)
+    response.cookies.delete(SESSION_COOKIE)
+    return response
+  }
+
+  return NextResponse.next()
 }
 
 export const config = {

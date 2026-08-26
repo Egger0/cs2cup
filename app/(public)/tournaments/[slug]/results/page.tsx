@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
+import { MapStats } from '@/components/domain/MapStats'
 import { ResultsTable } from '@/components/domain/ResultsTable'
 import { SectionHead } from '@/components/domain/Sections'
+import { mapStats } from '@/lib/mapstats'
 import { getMatchMaps, getMatches, getPublicTeams, getTournament, safely } from '@/lib/queries/public'
 
 export const revalidate = 300
@@ -17,6 +19,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ slug: 
 
   const decided = matches.filter(match => match.winnerTeamId !== null)
   const maps = await safely(() => getMatchMaps(decided.map(match => match.id)), [])
+  const stats = mapStats(maps, tournament.mapPool)
 
   return (
     <section className="section">
@@ -31,6 +34,17 @@ export default async function ResultsPage({ params }: { params: Promise<{ slug: 
         <div data-rise="2">
           <ResultsTable matches={matches} teams={teams} maps={maps} slug={slug} />
         </div>
+
+        {stats.length > 0 ? (
+          <div data-rise="3" style={{ marginTop: 56 }}>
+            <SectionHead
+              eyebrow="地图数据"
+              title="哪张图最常打"
+              lede="统计自每场比赛的 Ban/Pick 记录。"
+            />
+            <MapStats stats={stats} />
+          </div>
+        ) : null}
       </div>
     </section>
   )

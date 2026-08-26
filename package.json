@@ -12,7 +12,8 @@
     "stack:up": "docker compose up -d --wait",
     "stack:down": "docker compose down -v",
     "photos:import": "node --experimental-strip-types scripts/migrate-photos.ts && docker compose exec -T db psql -U postgres -d cs2cup -q -f - < migration-output/004_photos.sql && cp -R migration-output/photos/. public/photos/",
-    "stack:seed": "for f in seeds/*.sql; do docker compose exec -T db psql -U postgres -d cs2cup -q -f - < \"$f\"; done"
+    "stack:seed": "for f in seeds/*.sql; do docker compose exec -T db psql -U postgres -d cs2cup -q -f - < \"$f\"; done",
+    "e2e": "node scripts/e2e.mjs"
   },
   "dependencies": {
     "next": "16.3.3",
@@ -26,6 +27,7 @@
     "@types/react-dom": "19.2.5",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.3.3",
+    "playwright": "^1.62.1",
     "typescript": "^6.0.3"
   }
 }

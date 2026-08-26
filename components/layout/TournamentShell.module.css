@@ -308,12 +308,6 @@
   gap: 0;
 }
 
-.compact .card,
-.compact .tagline,
-.compact .rail {
-  display: none;
-}
-
 .compact .cjk {
   font-size: clamp(1.7rem, 3.4vw, 2.5rem);
   text-shadow: none;

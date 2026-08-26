@@ -2,12 +2,26 @@ insert into public.site_setting (id, club_name, club_name_en, school, contact_qq
 values (1, '宁波理工电竞社', 'ESPORTS CLUB', '浙大宁波理工学院', '661543515', '无', '© 2026 宁波理工电竞社')
 on conflict (id) do nothing;
 
-insert into public.game (slug, name, name_en, accent_color, tagline, sort_order, active)
+insert into public.game (slug, name, name_en, accent_color, tagline, description, format_note, sort_order, active)
 values
-  ('cs2',      'CS2',        'Counter-Strike 2', '#e3a63a', '社团的主战场,宁理杯已办四届。',        1, true),
-  ('lol',      '英雄联盟',    'League of Legends', '#c89b3c', '五人开黑,校内赛与观赛活动。',          2, true),
-  ('valorant', '无畏契约',    'VALORANT',         '#ff4655', '战术射击,新开的项目。',                3, true)
-on conflict (slug) do nothing;
+  ('cs2', 'CS2', 'Counter-Strike 2', '#e3a63a',
+   '社团的主战场,宁理杯已经办到第四届。',
+   '五人一队,进攻方安放 C4,防守方拆弹或打完时间。宁理杯用现役七图池,赛前 Ban/Pick 定图,MR12 规则先到 13 回合胜出,平局进加时。',
+   '单败淘汰 · 前几轮 BO3 · 决赛 BO5 · 校内 128-tick 服务器',
+   1, true),
+  ('lol', '英雄联盟', 'League of Legends', '#c89b3c',
+   '五人开黑,校内赛与观赛活动。',
+   '上单、打野、中单、射手、辅助五个位置,推塔到对方基地。社团组织校内排位赛和 S 赛观赛,新人也能找到队友。',
+   '待定 · 想牵头办一场校内赛可以直接联系我们',
+   2, true),
+  ('valorant', '无畏契约', 'VALORANT', '#ff4655',
+   '战术射击加英雄技能,社团新开的项目。',
+   '五人一队,进攻方安放 Spike,防守方拆除。每名选手选一位有独特技能的特工,枪法之外还要配合技能开局。',
+   '待定 · 正在招募第一批固定队员',
+   3, true)
+on conflict (slug) do update set
+  description = excluded.description,
+  format_note = excluded.format_note;
 
 insert into public.tournament (slug, title, game_id, season, edition, status, team_cap, hero_eyebrow, hero_top, hero_bottom, lede)
 select v.slug, v.title, g.id, v.season, v.edition, v.status, 16, '', '', '宁理杯', ''

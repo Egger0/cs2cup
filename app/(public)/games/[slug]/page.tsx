@@ -1,16 +1,23 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Empty } from '@/components/ui'
+import { Button, Empty } from '@/components/ui'
 import { PostList } from '@/components/domain/PostList'
 import { SectionHead } from '@/components/domain/Sections'
 import { TournamentList } from '@/components/domain/TournamentList'
 import { getGame, listGames, listPosts, listTournaments, safely } from '@/lib/queries/public'
+import styles from './game.module.css'
 
 export const revalidate = 300
 
 export async function generateStaticParams() {
   const games = await safely(listGames, [])
   return games.map(game => ({ slug: game.slug }))
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const game = await safely(() => getGame(slug), null)
+  return { title: game ? game.name : '项目' }
 }
 
 export default async function GamePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -25,27 +32,61 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
 
   const mine = tournaments.filter(tournament => tournament.gameId === game.id)
   const news = posts.filter(post => post.gameId === game.id)
+  const accent = { '--game-accent': game.accentColor ?? 'var(--t)' } as React.CSSProperties
 
   return (
     <>
-      <section className="section">
+      <header className={styles.head} style={accent}>
+        <span className={styles.glow} aria-hidden />
+        <div className="wrap">
+          <div className={styles.en}>{game.nameEn ?? game.slug}</div>
+          <h1 className={styles.name}>{game.name}</h1>
+          {game.tagline ? <p className={styles.tagline}>{game.tagline}</p> : null}
+          <div className={styles.stats}>
+            <span className={styles.stat}>
+              <b>{mine.length}</b> 届赛事
+            </span>
+            <span className={styles.stat}>
+              <b>{news.length}</b> 条动态
+            </span>
+          </div>
+        </div>
+      </header>
+
+      {game.description ? (
+        <section className="section" style={accent}>
+          <div className="wrap">
+            <div className={styles.about}>
+              <p className={styles.description}>{game.description}</p>
+              {game.formatNote ? (
+                <div className={styles.format}>
+                  <div className="readout">社团赛制</div>
+                  <p>{game.formatNote}</p>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <div className="divider" />
+
+      <section className="section" style={accent}>
         <div className="wrap">
           <div data-rise>
-            <SectionHead
-              eyebrow={game.nameEn ?? game.slug}
-              title={game.name}
-              lede={game.tagline ?? undefined}
-            />
+            <SectionHead eyebrow="赛事" title={`${game.name} 的比赛`} />
           </div>
           {mine.length > 0 ? (
             <TournamentList tournaments={mine} />
           ) : (
-            <Empty>
-              这个项目还没有赛事。想牵头办一场?
-              <Link href="/about" style={{ color: 'var(--t)' }}>
-                {' '}
-                来找我们
-              </Link>
+            <Empty
+              action={
+                <Link href="/about">
+                  <Button variant="primary">来牵头办一场</Button>
+                </Link>
+              }
+            >
+              这个项目还没有办过比赛。社团有服务器、有裁判、有海报设计,缺的是发起人。
             </Empty>
           )}
         </div>
@@ -54,7 +95,7 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
       {news.length > 0 ? (
         <>
           <div className="divider" />
-          <section className="section">
+          <section className="section" style={accent}>
             <div className="wrap">
               <div data-rise>
                 <SectionHead eyebrow="动态" title={`${game.name} 相关`} />
