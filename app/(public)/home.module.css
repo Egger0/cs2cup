@@ -65,14 +65,15 @@
 
 .game {
   --game-marker: var(--ct);
+  --game-glow: rgba(61, 155, 233, 0.06);
+  --game-hover-border: rgba(61, 155, 233, 0.62);
   position: relative;
   display: block;
   isolation: isolate;
   background: #080f1c;
-  border: 1px solid #1e2c40;
+  border: 1px solid #223044;
   padding: clamp(24px, 3vw, 34px);
   overflow: hidden;
-  transition: border-color 0.22s ease, transform 0.22s ease;
 }
 
 .game::before {
@@ -82,12 +83,8 @@
   top: 0;
   left: clamp(24px, 3vw, 34px);
   width: 52px;
-  height: 3px;
-  background: #3d9be9;
-  opacity: 0;
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: opacity 0.22s ease, transform 0.22s ease;
+  height: 4px;
+  background: var(--game-marker);
 }
 
 .game::after {
@@ -96,12 +93,8 @@
   z-index: 0;
   inset: 0;
   pointer-events: none;
-  background-image:
-    radial-gradient(circle at 100% 100%, transparent 0 46px, rgba(61, 155, 233, 0.05) 47px 48px, transparent 49px 78px, rgba(61, 155, 233, 0.04) 79px 80px, transparent 81px),
-    linear-gradient(rgba(61, 155, 233, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(61, 155, 233, 0.035) 1px, transparent 1px);
-  background-size: auto, 30px 30px, 30px 30px;
-  background-position: bottom right, top right, top right;
+  opacity: 0.8;
+  background: radial-gradient(circle at 100% 0, var(--game-glow), transparent 48%);
 }
 
 .game > * {
@@ -111,30 +104,34 @@
 
 .game[data-game='cs2'] {
   --game-marker: #e38617;
+  --game-glow: rgba(227, 134, 23, 0.08);
+  --game-hover-border: rgba(227, 134, 23, 0.62);
 }
 
 .game[data-game='lol'] {
-  --game-marker: #b99b57;
+  --game-marker: #d4a84f;
+  --game-glow: rgba(212, 168, 79, 0.08);
+  --game-hover-border: rgba(212, 168, 79, 0.62);
 }
 
 .game[data-game='valorant'] {
-  --game-marker: #e94b5c;
+  --game-marker: #f05262;
+  --game-glow: rgba(240, 82, 98, 0.08);
+  --game-hover-border: rgba(240, 82, 98, 0.62);
 }
 
 .game:hover,
 .game:focus-visible {
-  border-color: #3d9be9;
-  transform: translateY(-2px);
+  border-color: var(--game-hover-border);
 }
 
-.game:hover::before,
-.game:focus-visible::before {
+.game:hover::after,
+.game:focus-visible::after {
   opacity: 1;
-  transform: scaleX(1);
 }
 
 .game:focus-visible {
-  outline: 2px solid #3d9be9;
+  outline: 2px solid var(--game-marker);
   outline-offset: 3px;
 }
 
@@ -143,7 +140,7 @@
   font-weight: 900;
   font-size: clamp(1.5rem, 2.6vw, 2rem);
   letter-spacing: -0.03em;
-  color: #e8f0f8;
+  color: var(--game-marker);
 }
 
 .gameEn {
@@ -151,12 +148,12 @@
   font-size: 0.62rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #7389a3;
+  color: #7e9abb;
   margin-top: 10px;
 }
 
 .gameTagline {
-  color: #becbdc;
+  color: #c9d5e2;
   font-size: 0.9rem;
   line-height: 1.7;
   margin-top: 18px;
@@ -170,7 +167,7 @@
   font-family: var(--font-mono), monospace;
   font-size: 0.66rem;
   letter-spacing: 0.14em;
-  color: #7389a3;
+  color: #8091a7;
   margin-top: 22px;
   padding-top: 14px;
   border-top: 1px solid rgba(115, 137, 163, 0.18);
@@ -188,18 +185,6 @@
   color: #3d9be9;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .game,
-  .game::before {
-    transition: none;
-  }
-
-  .game:hover,
-  .game:focus-visible {
-    transform: none;
-  }
 }
 
 .columns {
