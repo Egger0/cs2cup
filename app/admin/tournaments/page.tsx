@@ -66,6 +66,9 @@ export default async function AdminTournamentsPage() {
                   </div>
                 </div>
                 <div className={styles.rowActions}>
+                  <Link href={`/admin/tournaments/${tournament.id}`}>
+                    <Button size="mini">编辑</Button>
+                  </Link>
                   <Link href={`/tournaments/${tournament.slug}`}>
                     <Button size="mini">查看</Button>
                   </Link>

@@ -9,6 +9,7 @@ const LINKS = [
   { href: '/admin/tournaments', label: '赛事' },
   { href: '/admin/games', label: '项目' },
   { href: '/admin/posts', label: '动态' },
+  { href: '/admin/photos', label: '素材' },
   { href: '/admin/members', label: '成员' },
 ]
 

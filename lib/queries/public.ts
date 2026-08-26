@@ -51,6 +51,8 @@ interface TournamentRow {
   hero_top: string
   hero_bottom: string
   lede: string
+  champion_name: string | null
+  champion_note: string | null
 }
 
 interface TeamRow {
@@ -134,6 +136,8 @@ const toTournament = (row: TournamentRow): Tournament => ({
   heroTop: row.hero_top,
   heroBottom: row.hero_bottom,
   lede: row.lede,
+  championName: row.champion_name,
+  championNote: row.champion_note,
 })
 
 const toPlayer = (row: PlayerRow): Player => ({
@@ -436,4 +440,29 @@ export async function getPost(slug: string): Promise<Post | null> {
     publishedAt: row.published_at,
     pinned: row.pinned,
   }
+}
+
+export async function listHonours() {
+  const tournaments = await listTournaments()
+  const finished = tournaments.filter(tournament => tournament.status === 'finished')
+
+  const withChampions = await Promise.all(
+    finished.map(async tournament => {
+      if (tournament.championName) {
+        return { tournament, champion: tournament.championName }
+      }
+      const [matches, teams] = await Promise.all([
+        getMatches(tournament.id),
+        getPublicTeams(tournament.id),
+      ])
+      const finalRound = matches.reduce((best, match) => Math.max(best, match.round), -1)
+      const decider = matches.find(match => match.round === finalRound)
+      const winner = decider?.winnerTeamId
+        ? teams.find(team => team.id === decider.winnerTeamId)
+        : undefined
+      return { tournament, champion: winner?.name ?? null }
+    }),
+  )
+
+  return withChampions
 }

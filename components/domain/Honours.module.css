@@ -1,0 +1,87 @@
+.wall {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.entry {
+  position: relative;
+  background: var(--bg);
+  padding: clamp(22px, 3vw, 32px);
+  display: block;
+  color: inherit;
+  overflow: hidden;
+  transition: background 0.3s ease;
+}
+
+.entry:hover {
+  background: var(--surface);
+}
+
+.entry::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--t), transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.entry:hover::before {
+  transform: scaleX(1);
+}
+
+.year {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  line-height: 1;
+  color: var(--muted-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.edition {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.16em;
+  color: var(--muted-2);
+  margin-top: 12px;
+}
+
+.cup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.trophy {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: var(--t);
+}
+
+.champion {
+  font-family: var(--font-body), sans-serif;
+  font-weight: 900;
+  font-size: clamp(1.15rem, 2.2vw, 1.5rem);
+  letter-spacing: -0.02em;
+  color: #fff7e8;
+}
+
+.pending {
+  color: var(--muted-2);
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.note {
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin-top: 12px;
+}

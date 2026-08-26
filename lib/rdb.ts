@@ -70,11 +70,9 @@ async function request<T>(
       ...(body !== undefined ? { Prefer: 'return=representation' } : {}),
     },
     body: body === undefined ? undefined : JSON.stringify(body),
-    next:
-      method === 'GET'
-        ? { tags: options.tags, revalidate: options.revalidate }
-        : undefined,
-    cache: method === 'GET' ? undefined : 'no-store',
+    ...(method === 'GET' && credential !== 'admin'
+      ? { next: { tags: options.tags, revalidate: options.revalidate } }
+      : { cache: 'no-store' as const }),
   })
 
   if (!response.ok) {

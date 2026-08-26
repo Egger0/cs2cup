@@ -43,6 +43,8 @@ create table if not exists public.tournament (
   hero_top      text not null default '',
   hero_bottom   text not null default '',
   lede          text not null default '',
+  champion_name text,
+  champion_note text,
   created_at    timestamptz not null default now()
 );
 
