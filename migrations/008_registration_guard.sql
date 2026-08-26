@@ -1,5 +1,4 @@
 revoke execute on function public.submit_team(jsonb) from anon, authenticated, public;
-grant execute on function public.submit_team(jsonb) to club_admin;
 
 create table if not exists public.registration_attempt (
   id            bigint generated always as identity primary key,
@@ -15,11 +14,6 @@ create index if not exists registration_attempt_window_idx
 alter table public.registration_attempt enable row level security;
 
 revoke all on public.registration_attempt from anon, authenticated;
-grant select, insert, delete on public.registration_attempt to club_admin;
-
-drop policy if exists registration_attempt_admin on public.registration_attempt;
-create policy registration_attempt_admin on public.registration_attempt for all
-  to club_admin using (true) with check (true);
 
 create or replace function public.recent_registration_attempts(p_fingerprint text, p_minutes integer)
 returns integer
@@ -35,4 +29,3 @@ as $$
 $$;
 
 revoke execute on function public.recent_registration_attempts(text, integer) from public;
-grant execute on function public.recent_registration_attempts(text, integer) to club_admin;
