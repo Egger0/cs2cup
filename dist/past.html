@@ -43,9 +43,13 @@
   .nav a{font-family:var(--font-display);font-weight:500;font-size:.9rem;padding:8px 14px;color:var(--muted);border-radius:2px;transition:color .18s,background .18s}
   .nav a:hover{color:var(--ink);background:rgba(255,255,255,.05)}
   .nav a.here{color:var(--t)}
+  .hud-actions{display:flex;align-items:center;gap:8px;flex:none}
+  .share-btn{padding:8px 12px;font-size:.82rem}
+  .menu-toggle{display:none;width:42px;height:42px;padding:0;justify-content:center;font-size:1.05rem}
   .btn{font-family:var(--font-display);font-weight:600;font-size:.9rem;letter-spacing:.04em;padding:9px 16px;border-radius:2px;border:1px solid transparent;cursor:pointer;transition:transform .16s,box-shadow .16s,background .16s,border-color .16s;display:inline-flex;align-items:center;gap:8px}
   .btn-ghost{background:transparent;color:var(--ink);border-color:var(--line-strong)}
   .btn-ghost:hover{border-color:var(--ct);color:var(--ct);transform:translateY(-2px)}
+  .btn.menu-toggle{display:none}
 
   main{position:relative;z-index:1;flex:1 0 auto}
   .arch-hero{padding-top:clamp(46px,7vh,88px);padding-bottom:clamp(20px,3vh,34px)}
@@ -94,11 +98,19 @@
   .foot .contact b{color:var(--ink);font-family:var(--font-display)}
   .foot .callsign{font-family:var(--font-display);color:var(--muted-2);font-size:.78rem;letter-spacing:.2em;text-transform:uppercase}
   .datasrc{font-size:.72rem;color:var(--muted-2);margin-top:14px;font-family:var(--font-display);letter-spacing:.08em}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,140%);background:var(--surface-2);border:1px solid var(--ct);border-left:3px solid var(--ct);padding:13px 18px;border-radius:4px;z-index:110;box-shadow:0 24px 50px -20px rgba(0,0,0,.8);display:flex;align-items:center;gap:10px;transition:transform .35s cubic-bezier(.2,.8,.2,1);max-width:90vw}
+  .toast.show{transform:translate(-50%,0)}
+  .toast .tk{font-family:var(--font-display);font-weight:700;color:var(--ct)}
+  .toast .td{color:#c3ccd9;font-size:.9rem}
 
   .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
   .reveal.in{opacity:1;transform:none}
 
-  @media(max-width:760px){.nav{display:none}.brand small{display:none}}
+  @media(max-width:980px){
+    .hud-inner{position:relative}.nav{display:none;position:absolute;top:calc(100% + 8px);left:0;right:0;padding:8px;background:var(--surface-2);border:1px solid var(--line-strong);box-shadow:0 20px 46px -24px rgba(0,0,0,.85);gap:2px}.nav.open{display:grid}.nav a{min-height:44px;display:flex;align-items:center;padding:10px 12px}
+    .btn.menu-toggle{display:inline-flex}
+  }
+  @media(max-width:560px){.brand small,.return-btn{display:none}.share-btn{min-width:44px;padding:8px 10px}.share-btn .label{display:none}.foot{gap:30px}.foot .contact:last-child{text-align:left!important}.shots{gap:12px}.arch-hero{padding-top:42px}}
   a:focus-visible,button:focus-visible{outline:2px solid var(--t);outline-offset:2px}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto;transition:none!important}.reveal{opacity:1;transform:none}}
 </style>
@@ -111,10 +123,14 @@
       <span class="mark" id="brandMark">FX</span>
       <span><span id="brandName">锋线电竞社</span><small id="brandEn">Frontline Esports · CS2</small></span>
     </a>
-    <nav class="nav">
+    <nav class="nav" id="publicNav" aria-label="赛事导航">
       <a href="index.html#register">报名</a><a href="index.html#teams">参赛战队</a><a href="index.html#bracket">对阵赛程</a><a href="index.html#rules">赛制规则</a><a href="index.html#faq">须知</a><a href="past.html" class="here">往届赛事</a>
     </nav>
-    <a href="index.html#register" class="btn btn-ghost">← 返回报名</a>
+    <div class="hud-actions">
+      <button class="btn btn-ghost share-btn" id="shareBtn" type="button" aria-label="分享赛事"><span aria-hidden="true">↗</span><span class="label">分享赛事</span></button>
+      <a href="index.html#register" class="btn btn-ghost return-btn">← 返回报名</a>
+      <button class="btn btn-ghost menu-toggle" id="menuToggle" type="button" aria-label="打开赛事导航" aria-controls="publicNav" aria-expanded="false">☰</button>
+    </div>
   </div>
 </header>
 
@@ -170,6 +186,8 @@
   </div>
 </footer>
 
+<div class="toast" id="shareToast" role="status" aria-live="polite"><span class="tk">↗ 分享赛事</span><span class="td" id="shareToastMsg"></span></div>
+
 <div class="lb" id="lightbox" role="dialog" aria-modal="true" aria-label="照片查看">
   <button class="x" id="lbClose" aria-label="关闭">×</button>
   <img id="lbImg" src="" alt="" />
@@ -203,6 +221,24 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
   "use strict";
   function $(id){return document.getElementById(id);}
   function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function showShareToast(title,message){ var toast=$("shareToast"); toast.querySelector(".tk").textContent=title; $("shareToastMsg").textContent=message; toast.classList.add("show"); setTimeout(function(){toast.classList.remove("show");},3400); }
+  function copyLink(url){
+    if(navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(url);
+    return new Promise(function(resolve,reject){ var input=document.createElement("textarea"); input.value=url; input.setAttribute("readonly",""); input.style.position="fixed"; input.style.opacity="0"; document.body.appendChild(input); input.select();
+      try{ if(!document.execCommand("copy")) throw new Error("浏览器拒绝复制"); resolve(); }catch(e){ reject(e); } finally{ document.body.removeChild(input); } });
+  }
+  function sharePage(){
+    var url=location.href.split("#")[0], data={title:document.title,text:"查看 CS2 校园杯往届赛事回顾",url:url};
+    var action=navigator.share ? navigator.share(data) : Promise.reject(new Error("当前浏览器不支持系统分享"));
+    return action.then(function(){ showShareToast("↗ 已打开分享", "已调用系统分享面板"); })
+      .catch(function(){ return copyLink(url).then(function(){ showShareToast("↗ 链接已复制", "可直接粘贴发送给队友"); }); })
+      .catch(function(){ showShareToast("! 分享失败", "请从浏览器地址栏复制链接"); });
+  }
+  function setupMenu(){ var nav=$("publicNav"), btn=$("menuToggle"); function close(){ nav.classList.remove("open"); btn.setAttribute("aria-expanded","false"); btn.setAttribute("aria-label","打开赛事导航"); btn.textContent="☰"; }
+    btn.addEventListener("click",function(){ var open=nav.classList.toggle("open"); btn.setAttribute("aria-expanded",String(open)); btn.setAttribute("aria-label",open?"关闭赛事导航":"打开赛事导航"); btn.textContent=open?"×":"☰"; });
+    nav.addEventListener("click",function(e){ if(e.target.closest("a")) close(); }); document.addEventListener("keydown",function(e){ if(e.key==="Escape") close(); });
+  }
+  $("shareBtn").addEventListener("click",sharePage); setupMenu();
 
   var DEF={
     clubName:"锋线电竞社", brandEn:"Frontline Esports · CS2", school:"XX 大学",

@@ -43,6 +43,9 @@
   .nav{display:flex;gap:6px}
   .nav a{font-family:var(--font-display);font-weight:500;font-size:.9rem;padding:8px 14px;color:var(--muted);border-radius:2px;transition:color .18s,background .18s}
   .nav a:hover{color:var(--ink);background:rgba(255,255,255,.05)}
+  .hud-actions{display:flex;align-items:center;gap:8px;flex:none}
+  .share-btn{padding:8px 12px;font-size:.82rem}
+  .menu-toggle{display:none;width:42px;height:42px;padding:0;justify-content:center;font-size:1.05rem}
   .status{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;color:#9be8b3;border:1px solid rgba(64,220,120,.3);background:rgba(64,220,120,.08);padding:7px 12px;border-radius:2px}
   .status .dot{width:8px;height:8px;border-radius:50%;background:#3fe07f;box-shadow:0 0 10px #3fe07f;animation:pulse 1.8s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -63,6 +66,7 @@
   .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 30px -12px rgba(61,155,233,.8)}
   .btn-ghost{background:transparent;color:var(--ink);border-color:var(--line-strong)}
   .btn-ghost:hover{border-color:var(--t);color:var(--t);transform:translateY(-2px)}
+  .btn.menu-toggle{display:none}
 
   .c4{background:linear-gradient(180deg,var(--surface),var(--bg-2));border:1px solid var(--line);border-top:2px solid var(--c4);border-radius:4px;padding:24px 24px 22px;position:relative;box-shadow:0 30px 60px -30px rgba(0,0,0,.7)}
   .c4 .cap{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -198,8 +202,12 @@
   .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
   .reveal.in{opacity:1;transform:none}
 
-  @media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:36px}.reg-grid{grid-template-columns:1fr}.nav{display:none}.stats{grid-template-columns:1fr 1fr}}
-  @media(max-width:560px){.field.two{grid-template-columns:1fr}.roster{grid-template-columns:1fr}.status .txt{display:none}.brand small{display:none}}
+  @media(max-width:980px){
+    .hero-grid{grid-template-columns:1fr;gap:36px}.reg-grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}
+    .hud-inner{position:relative}.nav{display:none;position:absolute;top:calc(100% + 8px);left:0;right:0;padding:8px;background:var(--surface-2);border:1px solid var(--line-strong);box-shadow:0 20px 46px -24px rgba(0,0,0,.85);gap:2px}.nav.open{display:grid}.nav a{min-height:44px;display:flex;align-items:center;padding:10px 12px}
+    .btn.menu-toggle{display:inline-flex}
+  }
+  @media(max-width:560px){.field.two{grid-template-columns:1fr}.roster{grid-template-columns:1fr}.status{padding:7px 9px}.status .txt,.brand small{display:none}.cta-row{display:grid;grid-template-columns:1fr}.cta-row .btn{justify-content:center}.foot{gap:30px}.foot .contact:last-child{text-align:left!important}.share-btn{min-width:44px;padding:8px 10px}.share-btn .label{display:none}}
   a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--t);outline-offset:2px}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto;transition:none!important}.reveal{opacity:1;transform:none}}
 </style>
@@ -212,10 +220,14 @@
       <span class="mark" id="brandMark">FX</span>
       <span><span id="brandName">锋线电竞社</span><small id="brandEn">Frontline Esports · CS2</small></span>
     </a>
-    <nav class="nav">
+    <nav class="nav" id="publicNav" aria-label="赛事导航">
       <a href="#register">报名</a><a href="#teams">参赛战队</a><a href="#bracket">对阵赛程</a><a href="#rules">赛制规则</a><a href="#faq">须知</a><a href="past.html">往届赛事</a>
     </nav>
-    <span class="status"><span class="dot"></span><span class="txt" id="statusTxt">报名开放中</span></span>
+    <div class="hud-actions">
+      <button class="btn btn-ghost share-btn" id="shareBtn" type="button" aria-label="分享赛事"><span aria-hidden="true">↗</span><span class="label">分享赛事</span></button>
+      <span class="status"><span class="dot"></span><span class="txt" id="statusTxt">报名开放中</span></span>
+      <button class="btn btn-ghost menu-toggle" id="menuToggle" type="button" aria-label="打开赛事导航" aria-controls="publicNav" aria-expanded="false">☰</button>
+    </div>
   </div>
 </header>
 
@@ -446,6 +458,24 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
   "use strict";
   function $(id){return document.getElementById(id);}
   function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function showToast(title,message){ var toast=$("toast"), key=toast.querySelector(".tk"); key.textContent=title; $("toastMsg").textContent=message; toast.classList.add("show"); setTimeout(function(){toast.classList.remove("show");},3400); }
+  function copyLink(url){
+    if(navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(url);
+    return new Promise(function(resolve,reject){ var input=document.createElement("textarea"); input.value=url; input.setAttribute("readonly",""); input.style.position="fixed"; input.style.opacity="0"; document.body.appendChild(input); input.select();
+      try{ if(!document.execCommand("copy")) throw new Error("浏览器拒绝复制"); resolve(); }catch(e){ reject(e); } finally{ document.body.removeChild(input); } });
+  }
+  function sharePage(){
+    var url=location.href.split("#")[0], data={title:document.title,text:"查看 CS2 校园杯报名、赛程与赛事信息",url:url};
+    var action=navigator.share ? navigator.share(data) : Promise.reject(new Error("当前浏览器不支持系统分享"));
+    return action.then(function(){ showToast("↗ 已打开分享", "已调用系统分享面板"); })
+      .catch(function(){ return copyLink(url).then(function(){ showToast("↗ 链接已复制", "可直接粘贴发送给队友"); }); })
+      .catch(function(){ showToast("! 分享失败", "请从浏览器地址栏复制链接"); });
+  }
+  function setupMenu(){ var nav=$("publicNav"), btn=$("menuToggle"); function close(){ nav.classList.remove("open"); btn.setAttribute("aria-expanded","false"); btn.setAttribute("aria-label","打开赛事导航"); btn.textContent="☰"; }
+    btn.addEventListener("click",function(){ var open=nav.classList.toggle("open"); btn.setAttribute("aria-expanded",String(open)); btn.setAttribute("aria-label",open?"关闭赛事导航":"打开赛事导航"); btn.textContent=open?"×":"☰"; });
+    nav.addEventListener("click",function(e){ if(e.target.closest("a")) close(); }); document.addEventListener("keydown",function(e){ if(e.key==="Escape") close(); });
+  }
+  $("shareBtn").addEventListener("click",sharePage); setupMenu();
 
   // ---------- defaults (used when 未连接云端 or 字段为空) ----------
   var DEF={
@@ -639,8 +669,7 @@ var r=document.documentElement;if(r)r.classList.remove("boot");})();
   function afterAdd(name){
     saveDemo(); renderAll();
     $("regForm").reset();
-    var toast=$("toast"); $("toastMsg").textContent=name+" 已提交 · 等待主办方审核";
-    toast.classList.add("show"); setTimeout(function(){toast.classList.remove("show");},3400);
+    showToast("✔ 报名已提交", name+" 已提交 · 等待主办方审核");
     $("teams").scrollIntoView({behavior:"smooth"});
   }
   var form=$("regForm");
