@@ -1,0 +1,12 @@
+.theme {
+  --accent: var(--ct);
+  --accent-dim: var(--ct-dim);
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  color-scheme: dark;
+  background:
+    radial-gradient(1100px 640px at 8% -10%, rgba(61, 155, 233, 0.13), transparent 62%),
+    radial-gradient(900px 580px at 96% 2%, rgba(61, 155, 233, 0.055), transparent 60%),
+    linear-gradient(180deg, var(--bg), var(--void) 88%);
+}
