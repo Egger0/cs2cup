@@ -197,7 +197,7 @@ export async function getSiteSetting(): Promise<SiteSetting | null> {
 export async function listTournaments(): Promise<Tournament[]> {
   const rows = await selectRows<TournamentRow>('tournament', {
     select: '*,game(slug,name)',
-    order: 'edition.desc',
+    order: 'season.desc,edition.desc',
     tags: ['tournament'],
     revalidate: REVALIDATE,
   })
@@ -218,7 +218,7 @@ export async function getCurrentTournament(): Promise<Tournament | null> {
   const rows = await selectRows<TournamentRow>('tournament', {
     select: '*,game(slug,name)',
     filters: { status: 'neq.finished' },
-    order: 'edition.desc',
+    order: 'season.desc,edition.desc',
     limit: 1,
     tags: ['tournament'],
     revalidate: REVALIDATE,

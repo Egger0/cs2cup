@@ -178,7 +178,7 @@ interface TournamentRow {
 }
 
 export async function adminListTournaments(): Promise<Tournament[]> {
-  const rows = await selectRows<TournamentRow>('tournament', { ...ADMIN, order: 'edition.desc' })
+  const rows = await selectRows<TournamentRow>('tournament', { ...ADMIN, order: 'season.desc,edition.desc' })
   return rows.map(row => ({
     id: row.id,
     slug: row.slug,
