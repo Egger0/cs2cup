@@ -1,63 +1,73 @@
-# 宁波理工电竞社官网
+# cs2cup
 
-浙大宁波理工学院电竞社官方网站。赛事报名、参赛战队、对阵赛程、往届相册与后台管理。
+Esports club site for Ningbo Institute of Technology, Zhejiang University. Registration, rosters, brackets, match reports with ban/pick, archive, admin.
 
-## 技术栈
+Next.js App Router · React · TypeScript · CloudBase PostgreSQL · Cloud Run
 
-Next.js App Router · React · TypeScript · CloudBase PostgreSQL · CloudBase 云托管
-
-## 本地开发
+## Develop
 
 ```bash
 npm install
 npm run stack:up
+npm run stack:seed
 cp .env.example .env.local
 npm run dev
 ```
 
-`stack:up` 会启动本地 PostgreSQL 与 PostgREST，并自动执行 `migrations/` 下的全部脚本。
-
-导入往届照片（需要现网只读公钥）：
-
-```bash
-LEGACY_RDB_BASE_URL=https://<env>.api.tcloudbasegateway.com/v1/rdb/rest \
-LEGACY_ANON_KEY=<publishable key> \
-npm run photos:import
-```
-
-停止本地环境：`npm run stack:down`
-
-## 环境变量
-
-| 变量 | 用途 |
+| Script | |
 |---|---|
-| `CLOUDBASE_ENV_ID` | CloudBase 环境 ID |
-| `CLOUDBASE_ANON_KEY` | 匿名 Publishable Key,用于公开数据读取 |
-| `CLOUDBASE_ADMIN_KEY` | 管理凭据,用于后台读写 |
-| `CLOUDBASE_REGION` | 地域,默认 `ap-shanghai` |
-| `RDB_BASE_URL` | 覆盖数据接口基址,仅本地开发使用 |
-| `NEXT_PUBLIC_PHOTO_BASE_URL` | 相册图片的对象存储基址 |
+| `stack:up` | Local PostgreSQL and PostgREST, applies `migrations/` |
+| `stack:seed` | Demo fixtures, local only |
+| `stack:down` | Destroys the local stack |
+| `photos:import` | Decodes legacy base64 photos to files and SQL |
+| `typecheck` `lint` `build` | Pipeline gates |
 
-## 目录
+## Environment
 
-| 路径 | 内容 |
+| Variable | |
 |---|---|
-| `app/(public)/` | 公开页面 |
-| `app/(public)/tournaments/[slug]/` | 赛事区域:总览、战队、对阵、战报、规则、报名 |
-| `app/admin/` | 后台管理 |
-| `components/ui/` | 无领域知识的基础组件 |
-| `components/domain/` | 赛事领域组件 |
-| `components/layout/` | 页面骨架 |
-| `lib/` | 数据访问、鉴权、赛制推演 |
-| `migrations/` | 数据库迁移,按编号顺序执行,可重复运行 |
-| `seeds/` | 演示数据,仅本地预览,不要在生产执行 |
-| `scripts/` | 一次性迁移工具 |
+| `CLOUDBASE_ENV_ID` | CloudBase environment |
+| `CLOUDBASE_ANON_KEY` | Publishable key, public reads |
+| `CLOUDBASE_ADMIN_KEY` | Privileged key, admin writes |
+| `CLOUDBASE_REGION` | Defaults to `ap-shanghai` |
+| `NEXT_PUBLIC_PHOTO_BASE_URL` | Object storage origin |
+| `RDB_BASE_URL` | Overrides the data endpoint, local only |
 
-`components/ui/` 不得引入 `lib/types.ts`。
+## Layout
 
-## 部署
+| Path | |
+|---|---|
+| `app/(public)/` | Public routes |
+| `app/(public)/tournaments/[slug]/` | Overview, teams, bracket, results, rules, register |
+| `app/admin/` | Console |
+| `components/ui/` | Primitives, no domain imports |
+| `components/domain/` | Tournament components |
+| `components/layout/` | Shells and navigation |
+| `lib/` | Data access, auth, bracket resolution |
+| `migrations/` | Numbered, re-runnable |
+| `seeds/` | Demo data, never production |
+| `scripts/` | One-off migration tools |
 
-推送到 `main` 触发 `.github/workflows/deploy.yml`,构建镜像并发布至 CloudBase 云托管。
+`components/ui/` must not import `lib/types.ts`.
 
-数据库迁移按 `migrations/` 下的编号顺序执行,全部脚本可重复运行。
-`seeds/` 是本地演示数据,不要在生产环境执行。
+## Data
+
+| Table | |
+|---|---|
+| `site_setting` | Single row |
+| `tournament` | Edition, game, format, status |
+| `team` | Holds `contact`, revoked from `anon` |
+| `player` | Roster entries |
+| `match` | Round, slot, scores, self-referencing sources |
+| `match_map` | Ordered ban/pick, skipped maps retained |
+| `photo` | Object storage keys |
+| `club_member` `post` | Club content |
+| `admin_user` | Allowlist |
+
+Public reads use `team_public` and `player_public`. Neither exposes `contact`.
+
+## Deploy
+
+Merging to `main` runs `.github/workflows/deploy.yml`: typecheck, lint, build, then Cloud Run.
+
+Migrations run in the CloudBase SQL editor in numbered order.
