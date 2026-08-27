@@ -1,5 +1,6 @@
 import { generateKeyPair, exportJWK, SignJWT } from 'jose'
 import { createServer } from 'node:http'
+import { chmodSync, writeFileSync } from 'node:fs'
 
 const ISSUER = process.env.DEV_ISSUER ?? 'http://localhost:53100'
 const AUD = process.env.DEV_AUD ?? 'dev-env'
@@ -32,4 +33,11 @@ const token = await new SignJWT({ sub: SUB, aud: AUD })
   .setExpirationTime('8h')
   .sign(privateKey)
 
-console.log(token)
+const tokenFile = process.env.DEV_TOKEN_FILE
+if (tokenFile) {
+  writeFileSync(tokenFile, token, { encoding: 'utf8', mode: 0o600 })
+  chmodSync(tokenFile, 0o600)
+  console.error(`dev token written to ${tokenFile}`)
+} else {
+  console.log(token)
+}
