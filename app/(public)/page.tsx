@@ -1,11 +1,15 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { NextMatchCountdown } from '@/components/domain/NextMatchCountdown'
 import { Button, Empty } from '@/components/ui'
 import { PostList } from '@/components/domain/PostList'
 import { SectionHead } from '@/components/domain/Sections'
+import { indexTeams, nextPlayableMatch } from '@/lib/bracket'
 import {
   getCurrentTournament,
+  getMatches,
+  getPublicTeams,
   getSiteSetting,
   listGames,
   listPosts,
@@ -38,37 +42,61 @@ export default async function HomePage() {
 
   if (!setting) notFound()
 
+  let nextMatch: ReturnType<typeof nextPlayableMatch> = null
+  if (current) {
+    const [teams, matches] = await Promise.all([
+      safely(() => getPublicTeams(current.id), []),
+      safely(() => getMatches(current.id), []),
+    ])
+    nextMatch = nextPlayableMatch(matches, indexTeams(teams))
+  }
+
   const countFor = (gameId: number) =>
     tournaments.filter(tournament => tournament.gameId === gameId).length
 
   return (
     <>
       <section className={styles.hero}>
-        <div className="wrap">
-          <div className={styles.crest}>
-            <Image
-              src={setting.logoUrl ?? '/brand/club-logo.jpg'}
-              alt=""
-              width={224}
-              height={224}
-              priority
-            />
-          </div>
-          <h1 className={styles.name}>{setting.clubName}</h1>
-          <div className={styles.school}>{setting.school}</div>
-          <p className={styles.lede}>
-            办比赛,也一起开黑。选手、解说、导播、摄影、设计——每个位置都缺人。
-          </p>
-          <div className={styles.actions}>
-            {current ? (
-              <Link href={`/tournaments/${current.slug}`}>
-                <Button variant="primary">看本届宁理杯</Button>
+        <div className={`wrap ${styles.heroGrid}`}>
+          <div className={styles.heroCopy}>
+            <div className={styles.crest}>
+              <Image
+                src={setting.logoUrl ?? '/brand/club-logo.jpg'}
+                alt=""
+                width={224}
+                height={224}
+                priority
+              />
+            </div>
+            <h1 className={styles.name}>{setting.clubName}</h1>
+            <div className={styles.school}>{setting.school}</div>
+            <p className={styles.lede}>
+              办比赛,也一起开黑。选手、解说、导播、摄影、设计——每个位置都缺人。
+            </p>
+            <div className={styles.actions}>
+              {current ? (
+                <Link href={`/tournaments/${current.slug}`}>
+                  <Button variant="primary">看本届宁理杯</Button>
+                </Link>
+              ) : null}
+              <Link href="/about">
+                <Button>加入我们</Button>
               </Link>
-            ) : null}
-            <Link href="/about">
-              <Button>加入我们</Button>
-            </Link>
+            </div>
           </div>
+          {current ? (
+            <NextMatchCountdown
+              tournamentTitle={current.title}
+              match={nextMatch ? {
+                href: `/tournaments/${current.slug}/matches/${nextMatch.match.id}`,
+                scheduledAt: nextMatch.match.scheduledAt,
+                roundLabel: nextMatch.match.roundLabel,
+                bestOf: nextMatch.match.bestOf,
+                teamA: nextMatch.a?.tag ?? '待定',
+                teamB: nextMatch.b?.tag ?? '待定',
+              } : null}
+            />
+          ) : null}
         </div>
       </section>
 

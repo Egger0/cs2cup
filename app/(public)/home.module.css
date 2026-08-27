@@ -6,6 +6,17 @@
   padding-block: clamp(72px, 14vh, 152px) clamp(52px, 9vh, 104px);
 }
 
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, .76fr);
+  gap: clamp(2.5rem, 7vw, 7rem);
+  align-items: center;
+}
+
+.heroCopy {
+  min-width: 0;
+}
+
 .crest {
   width: clamp(76px, 9vw, 112px);
   height: clamp(76px, 9vw, 112px);
@@ -195,6 +206,11 @@
 }
 
 @media (max-width: 940px) {
+  .heroGrid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
   .columns {
     grid-template-columns: 1fr;
   }
