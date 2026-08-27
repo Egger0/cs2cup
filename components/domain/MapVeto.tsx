@@ -41,7 +41,10 @@ export function MapVeto({ maps, teamAName, teamBName }: MapVetoProps) {
               <span className={styles.order}>{String(map.pickOrder).padStart(2, '0')}</span>
 
               <span className={styles.mapCell}>
-                <span className={styles.actor}>{ACTION_LABEL[map.action]}</span>
+                <span className={styles.actor}>
+                  {ACTION_LABEL[map.action]}
+                  {map.action === 'pick' ? ` · ${sideName(map.chosenBy)}` : ''}
+                </span>
                 <span className={styles.mapName}>{map.mapName}</span>
               </span>
 

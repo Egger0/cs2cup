@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { TournamentHeader } from '@/components/layout/TournamentHeader'
-import { indexTeams, nextPlayableMatch } from '@/lib/bracket'
+import { indexTeams, isByeMatch, isCompletedMatch, nextPlayableMatch } from '@/lib/bracket'
 import { getMatches, getPublicTeams, getTournament } from '@/lib/queries/public'
 import type { TournamentStatus } from '@/lib/types'
 
@@ -28,7 +28,8 @@ export default async function TournamentLayout({
     getMatches(tournament.id),
   ])
 
-  const played = matches.filter(match => match.winnerTeamId !== null).length
+  const played = matches.filter(isCompletedMatch).length
+  const playable = matches.filter(match => !isByeMatch(match)).length
   const next = nextPlayableMatch(matches, indexTeams(teams))
   const base = `/tournaments/${slug}`
 
@@ -44,7 +45,7 @@ export default async function TournamentLayout({
         season={tournament.season}
         tagline={tournament.lede}
         seats={[teams.length, tournament.teamCap]}
-        played={[played, matches.length]}
+        played={[played, playable]}
         maps={tournament.mapPool.length}
         next={
           next

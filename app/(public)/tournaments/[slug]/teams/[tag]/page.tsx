@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { Empty } from '@/components/ui'
 import { MapStats } from '@/components/domain/MapStats'
 import { SectionHead } from '@/components/domain/Sections'
-import { indexMatches, indexTeams, resolveMatch } from '@/lib/bracket'
+import { indexMatches, indexTeams, isByeMatch, isCompletedMatch, resolveMatch } from '@/lib/bracket'
 import { mapStats } from '@/lib/mapstats'
 import { getMatchMaps, getMatches, getPublicTeams, getTournament, safely } from '@/lib/queries/public'
 import styles from '@/components/domain/TeamProfile.module.css'
@@ -35,9 +35,11 @@ export default async function TeamPage({
     .filter(entry => entry.a?.id === team.id || entry.b?.id === team.id)
     .sort((x, y) => x.match.round - y.match.round)
 
-  const wins = played.filter(entry => entry.match.winnerTeamId === team.id).length
+  const wins = played.filter(
+    entry => isCompletedMatch(entry.match) && entry.match.winnerTeamId === team.id,
+  ).length
   const losses = played.filter(
-    entry => entry.match.winnerTeamId !== null && entry.match.winnerTeamId !== team.id,
+    entry => isCompletedMatch(entry.match) && entry.match.winnerTeamId !== team.id,
   ).length
 
   const maps = await safely(
@@ -106,7 +108,8 @@ export default async function TeamPage({
               const own = isA ? entry.match.scoreA : entry.match.scoreB
               const other = isA ? entry.match.scoreB : entry.match.scoreA
               const won = entry.match.winnerTeamId === team.id
-              const decided = entry.match.winnerTeamId !== null
+              const decided = isCompletedMatch(entry.match)
+              const bye = isByeMatch(entry.match)
 
               return (
                 <Link
@@ -115,8 +118,12 @@ export default async function TeamPage({
                   className={styles.game}
                 >
                   <span className={styles.round}>{entry.match.roundLabel}</span>
-                  <span className={styles.opponent}>vs {opponent?.name ?? '待定'}</span>
-                  {decided ? (
+                  <span className={styles.opponent}>
+                    {bye ? '轮空，无需对手' : `vs ${opponent?.name ?? '待定'}`}
+                  </span>
+                  {bye ? (
+                    <span className={styles.pending}>轮空晋级</span>
+                  ) : decided ? (
                     <span className={`${styles.score} ${won ? styles.won : styles.lost}`}>
                       {own} : {other}
                     </span>

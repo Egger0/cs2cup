@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { MapStats } from '@/components/domain/MapStats'
 import { ResultsTable } from '@/components/domain/ResultsTable'
 import { SectionHead } from '@/components/domain/Sections'
+import { isCompletedMatch } from '@/lib/bracket'
 import { mapStats } from '@/lib/mapstats'
 import { getMatchMaps, getMatches, getPublicTeams, getTournament, safely } from '@/lib/queries/public'
 
@@ -17,7 +18,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ slug: 
     getMatches(tournament.id),
   ])
 
-  const decided = matches.filter(match => match.winnerTeamId !== null)
+  const decided = matches.filter(isCompletedMatch)
   const maps = await safely(() => getMatchMaps(decided.map(match => match.id)), [])
   const stats = mapStats(maps, tournament.mapPool)
 

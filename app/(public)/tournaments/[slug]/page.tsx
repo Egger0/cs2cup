@@ -4,6 +4,7 @@ import { Button } from '@/components/ui'
 import { PostList } from '@/components/domain/PostList'
 import { ResultsTable } from '@/components/domain/ResultsTable'
 import { SectionHead } from '@/components/domain/Sections'
+import { isCompletedMatch } from '@/lib/bracket'
 import {
   getMatchMaps,
   getMatches,
@@ -36,7 +37,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
     safely(() => getRegistrationStatus(slug), { cap: tournament.teamCap, taken: 0, open: false }),
   ])
 
-  const recent = matches.filter(match => match.winnerTeamId !== null).slice(-5)
+  const recent = matches.filter(isCompletedMatch).slice(-5)
   const matchMaps = await safely(() => getMatchMaps(recent.map(match => match.id)), [])
   const seatsLeft = Math.max(0, registration.cap - registration.taken)
   const acceptingEntries = registration.open && seatsLeft > 0
