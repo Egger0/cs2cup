@@ -8,7 +8,7 @@
 .grid {
   display: grid;
   gap: 32px;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .brand {
@@ -23,10 +23,71 @@
   font-weight: 500;
 }
 
+.douyin {
+  display: grid;
+  justify-self: end;
+  justify-items: center;
+  gap: 8px;
+  color: var(--muted-2);
+  text-align: center;
+}
+
+.qrImage {
+  width: 112px;
+  height: 112px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: #fff;
+}
+
+.douyin figcaption {
+  display: grid;
+  gap: 3px;
+  font-size: 0.7rem;
+}
+
+.douyin strong {
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 .legal {
   margin-top: 40px;
   padding-top: 20px;
   border-top: 1px solid var(--line);
   color: var(--muted-2);
   font-size: 0.82rem;
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-areas:
+      'identity douyin'
+      'contact douyin';
+    grid-template-columns: minmax(0, 1fr) 88px;
+    gap: 16px;
+  }
+
+  .identity {
+    grid-area: identity;
+  }
+
+  .contact {
+    grid-area: contact;
+  }
+
+  .douyin {
+    grid-area: douyin;
+    align-self: center;
+  }
+
+  .qrImage {
+    width: 88px;
+    height: 88px;
+  }
+
+  .douyin figcaption span {
+    display: none;
+  }
 }

@@ -21,8 +21,8 @@ const FALLBACK_SETTING = {
   clubNameEn: null,
   school: '浙大宁波理工学院',
   logoUrl: null,
-  contactQq: null,
-  contactWechat: null,
+  contactQq: '661543515',
+  contactWechat: '无',
   footerCopy: null,
 }
 
