@@ -10,11 +10,15 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(340px, .76fr);
   gap: clamp(2.5rem, 7vw, 7rem);
-  align-items: center;
+  align-items: start;
 }
 
 .heroCopy {
   min-width: 0;
+}
+
+.heroPanel {
+  padding-top: calc(clamp(76px, 9vw, 112px) + 88px);
 }
 
 .crest {
@@ -209,6 +213,10 @@
   .heroGrid {
     grid-template-columns: 1fr;
     gap: 2.5rem;
+  }
+
+  .heroPanel {
+    padding-top: 0;
   }
 
   .columns {

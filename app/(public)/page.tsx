@@ -85,17 +85,19 @@ export default async function HomePage() {
             </div>
           </div>
           {current ? (
-            <NextMatchCountdown
-              tournamentTitle={current.title}
-              match={nextMatch ? {
-                href: `/tournaments/${current.slug}/matches/${nextMatch.match.id}`,
-                scheduledAt: nextMatch.match.scheduledAt,
-                roundLabel: nextMatch.match.roundLabel,
-                bestOf: nextMatch.match.bestOf,
-                teamA: nextMatch.a?.tag ?? '待定',
-                teamB: nextMatch.b?.tag ?? '待定',
-              } : null}
-            />
+            <div className={styles.heroPanel}>
+              <NextMatchCountdown
+                tournamentTitle={current.title}
+                match={nextMatch ? {
+                  href: `/tournaments/${current.slug}/matches/${nextMatch.match.id}`,
+                  scheduledAt: nextMatch.match.scheduledAt,
+                  roundLabel: nextMatch.match.roundLabel,
+                  bestOf: nextMatch.match.bestOf,
+                  teamA: nextMatch.a?.tag ?? '待定',
+                  teamB: nextMatch.b?.tag ?? '待定',
+                } : null}
+              />
+            </div>
           ) : null}
         </div>
       </section>
