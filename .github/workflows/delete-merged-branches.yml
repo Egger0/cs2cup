@@ -1,0 +1,72 @@
+---
+name: Delete merged pull request branches
+
+on:
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  delete-merged-branch:
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref != github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Delete the merged branch
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
+        with:
+          script: |
+            const pullRequest = context.payload.pull_request;
+            const repositoryName = `${context.repo.owner}/${context.repo.repo}`;
+
+            if (!pullRequest.merged || pullRequest.head.repo?.full_name !== repositoryName) {
+              core.notice('Skipping a pull request that was not merged from this repository.');
+              return;
+            }
+
+            const branch = pullRequest.head.ref;
+            const repository = await github.rest.repos.get(context.repo);
+            if (branch === repository.data.default_branch) {
+              core.notice(`Skipping the current default branch: ${branch}`);
+              return;
+            }
+
+            const ref = `heads/${branch}`;
+            const refRequest = { ...context.repo, ref };
+
+            async function refExists() {
+              try {
+                await github.rest.git.getRef(refRequest);
+                return true;
+              } catch (error) {
+                if (error.status === 404) return false;
+                throw error;
+              }
+            }
+
+            if (!(await refExists())) {
+              core.notice(`Branch is already absent: ${branch}`);
+              return;
+            }
+
+            try {
+              await github.rest.git.deleteRef(refRequest);
+              core.notice(`Deleted merged branch: ${branch}`);
+            } catch (error) {
+              if (error.status === 404) {
+                core.notice(`Branch is already absent: ${branch}`);
+                return;
+              }
+
+              if (error.status === 422 && !(await refExists())) {
+                core.notice(`Branch disappeared before deletion completed: ${branch}`);
+                return;
+              }
+
+              throw error;
+            }
