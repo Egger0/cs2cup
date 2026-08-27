@@ -59,6 +59,12 @@
   color: var(--muted-2);
 }
 
+.postponed {
+  color: #e7b34b;
+  background: rgba(231, 179, 75, 0.12);
+  border-color: rgba(231, 179, 75, 0.38);
+}
+
 @media (max-width: 640px) {
   .row {
     grid-template-columns: 68px minmax(0, 1fr);
