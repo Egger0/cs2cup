@@ -204,6 +204,19 @@ export interface MatchReportResult extends MatchWriteResult {
   maps: number
 }
 
+export interface MatchScheduleInput {
+  id: number
+  expectedScheduledAt: string | null
+  scheduledAt: string | null
+}
+
+export interface MatchScheduleResult {
+  ok: true
+  matches: number
+  scheduled: number
+  cleared: number
+}
+
 export async function listAdminMatchMaps(matchIds: number[]): Promise<MatchMap[]> {
   if (matchIds.length === 0) return []
 
@@ -292,6 +305,22 @@ export function saveAdminMatchReport(
       p_team_a_id: teamAId,
       p_team_b_id: teamBId,
       p_maps: maps,
+    },
+    'admin',
+  )
+}
+
+export function replaceMatchSchedule(
+  tournamentId: number,
+  matches: MatchScheduleInput[],
+): Promise<MatchScheduleResult> {
+  return callFunction<MatchScheduleResult>(
+    'replace_match_schedule',
+    {
+      p_tournament_id: tournamentId,
+      p_match_ids: matches.map(match => match.id),
+      p_expected_scheduled_at: matches.map(match => match.expectedScheduledAt),
+      p_scheduled_at: matches.map(match => match.scheduledAt),
     },
     'admin',
   )

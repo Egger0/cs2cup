@@ -293,52 +293,6 @@ export function adminSaveTournament(id: number, values: Record<string, unknown>)
   return updateRows('tournament', values, { ...ADMIN, filters: { id: `eq.${id}` } })
 }
 
-export function adminInsertMatches(
-  rows: {
-    tournamentId: number
-    round: number
-    slot: number
-    roundLabel: string
-    bestOf: number
-  }[],
-) {
-  return insertRows(
-    'match',
-    rows.map(row => ({
-      tournament_id: row.tournamentId,
-      round: row.round,
-      slot: row.slot,
-      round_label: row.roundLabel,
-      best_of: row.bestOf,
-    })),
-    ADMIN,
-  )
-}
-
-export function adminDeleteMatches(tournamentId: number) {
-  return deleteRows('match', { ...ADMIN, filters: { tournament_id: `eq.${tournamentId}` } })
-}
-
-export function adminLinkMatch(
-  id: number,
-  values: { sourceA?: number; sourceB?: number; teamA?: number | null; teamB?: number | null },
-) {
-  const payload: Record<string, unknown> = {}
-  if (values.sourceA !== undefined) payload.source_match_a_id = values.sourceA
-  if (values.sourceB !== undefined) payload.source_match_b_id = values.sourceB
-  if (values.teamA !== undefined) payload.team_a_id = values.teamA
-  if (values.teamB !== undefined) payload.team_b_id = values.teamB
-  return updateRows('match', payload, { ...ADMIN, filters: { id: `eq.${id}` } })
-}
-
-export function adminSeedTeam(id: number, seed: number) {
-  return updateRows('team', { seed }, { ...ADMIN, filters: { id: `eq.${id}` } })
-}
-
-export function adminScheduleMatch(id: number, scheduledAt: string | null) {
-  return updateRows('match', { scheduled_at: scheduledAt }, { ...ADMIN, filters: { id: `eq.${id}` } })
-}
-
 export async function adminGetSiteSetting() {
   const rows = await selectRows<{
     id: number

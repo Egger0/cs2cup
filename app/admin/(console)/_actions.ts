@@ -9,6 +9,7 @@ import {
   listAdminMatches,
   listTeamsWithContact,
   replaceBracket,
+  replaceMatchSchedule,
   removeTeam,
   saveAdminMatchReport,
   saveAdminMatchScore,
@@ -16,7 +17,7 @@ import {
   removePhoto,
 } from '@/lib/queries/admin'
 import { MIME_TO_EXT, imageSize, sniffMime } from '@/lib/image'
-import { isByeMatch } from '@/lib/bracket'
+import { isIsoInstant } from '@/lib/datetime'
 import { bracketSize, orderBySeed, seedPositions } from '@/lib/seeding'
 import { putObject, removeObject, uploadsEnabled } from '@/lib/storage'
 import {
@@ -30,7 +31,6 @@ import {
   adminSaveMember,
   adminSavePost,
   adminSaveTournament,
-  adminScheduleMatch,
   adminDeletePhoto,
   adminInsertPhoto,
   adminListPhotos,
@@ -38,10 +38,19 @@ import {
   adminSaveSiteSetting,
 } from '@/lib/queries/content'
 import { RdbError, selectRows } from '@/lib/rdb'
-import type { MatchMapInput } from '@/lib/queries/admin'
+import type { MatchMapInput, MatchScheduleInput } from '@/lib/queries/admin'
 import type { TeamStatus, VetoAction } from '@/lib/types'
 
 const SESSION_MAX_AGE = 60 * 60 * 8
+
+function readRdbPayload(error: RdbError) {
+  const raw = error.message.slice(error.message.indexOf(':') + 1).trim()
+  try {
+    return JSON.parse(raw) as { code?: unknown; message?: unknown }
+  } catch {
+    return null
+  }
+}
 
 function writeError(error: unknown, fallback: string) {
   if (!(error instanceof RdbError)) {
@@ -50,13 +59,16 @@ function writeError(error: unknown, fallback: string) {
   }
   if (error.status >= 500) console.error(fallback, error)
 
-  const raw = error.message.slice(error.message.indexOf(':') + 1).trim()
-  try {
-    const payload = JSON.parse(raw) as { message?: unknown }
-    return typeof payload.message === 'string' ? payload.message : fallback
-  } catch {
-    return fallback
-  }
+  const payload = readRdbPayload(error)
+  return typeof payload?.message === 'string' ? payload.message : fallback
+}
+
+function scheduleError(error: unknown) {
+  if (!(error instanceof RdbError)) return writeError(error, '发布赛程失败')
+  const payload = readRdbPayload(error)
+  if (payload?.code === '40001') return '赛程已被其他管理员或新签表更新，请刷新后重试'
+  if (payload?.code === '22023') return '赛程时间顺序或场次范围无效，请检查后重试'
+  return writeError(error, '发布赛程失败')
 }
 
 async function passwordToken(username: string, password: string) {
@@ -503,45 +515,60 @@ export async function deletePhotoAndFile(id: number, storageKey: string) {
   return { ok: true as const }
 }
 
-export async function scheduleRounds(
-  tournamentId: number,
-  startIso: string,
-  roundGapDays: number,
-  matchGapMinutes: number,
-) {
+export async function publishMatchSchedule(tournamentId: number, payloadJson: string) {
   await requireAdmin()
 
-  const start = new Date(startIso)
-  if (Number.isNaN(start.getTime())) return { ok: false as const, error: '开赛时间无效' }
-  if (!Number.isInteger(roundGapDays) || roundGapDays < 0) {
-    return { ok: false as const, error: '每轮间隔必须是非负整数' }
-  }
-  if (!Number.isInteger(matchGapMinutes) || matchGapMinutes < 0) {
-    return { ok: false as const, error: '场次间隔必须是非负整数' }
+  if (!Number.isSafeInteger(tournamentId) || tournamentId <= 0) {
+    return { ok: false as const, error: '赛事编号无效' }
   }
 
-  const matches = (await listAdminMatches(tournamentId)).filter(match => !isByeMatch(match))
-  if (matches.length === 0) return { ok: false as const, error: '没有需要排程的比赛' }
+  let raw: unknown
+  try {
+    raw = JSON.parse(payloadJson)
+  } catch {
+    return { ok: false as const, error: '赛程数据格式无效' }
+  }
+  if (!Array.isArray(raw) || raw.length === 0) {
+    return { ok: false as const, error: '赛程场次数量无效' }
+  }
 
-  const roundSlots = new Map<number, number>()
-  for (const match of matches) {
-    const roundSlot = roundSlots.get(match.round) ?? 0
-    const when = new Date(start)
-    when.setDate(when.getDate() + match.round * roundGapDays)
-    when.setMinutes(when.getMinutes() + roundSlot * matchGapMinutes)
-    await adminScheduleMatch(match.id, when.toISOString())
-    roundSlots.set(match.round, roundSlot + 1)
+  const normaliseTimestamp = (value: unknown): string | null | undefined => {
+    if (value === null) return null
+    return isIsoInstant(value) ? value : undefined
+  }
+
+  const schedule: MatchScheduleInput[] = []
+  const ids = new Set<number>()
+  for (const entry of raw) {
+    if (!entry || typeof entry !== 'object') {
+      return { ok: false as const, error: '赛程场次格式无效' }
+    }
+    const row = entry as Record<string, unknown>
+    const id = Number(row.id)
+    const expectedScheduledAt = normaliseTimestamp(row.expectedScheduledAt)
+    const scheduledAt = normaliseTimestamp(row.scheduledAt)
+    if (
+      !Number.isSafeInteger(id) ||
+      id <= 0 ||
+      ids.has(id) ||
+      expectedScheduledAt === undefined ||
+      scheduledAt === undefined
+    ) {
+      return { ok: false as const, error: '赛程场次或时间无效' }
+    }
+    ids.add(id)
+    schedule.push({ id, expectedScheduledAt, scheduledAt })
+  }
+
+  let result: Awaited<ReturnType<typeof replaceMatchSchedule>>
+  try {
+    result = await replaceMatchSchedule(tournamentId, schedule)
+  } catch (error) {
+    return { ok: false as const, error: scheduleError(error) }
   }
 
   updateTag(`matches:${tournamentId}`)
-  return { ok: true as const, scheduled: matches.length }
-}
-
-export async function setMatchTime(id: number, tournamentId: number, value: string) {
-  await requireAdmin()
-  const iso = value ? new Date(value).toISOString() : null
-  await adminScheduleMatch(id, iso)
-  updateTag(`matches:${tournamentId}`)
+  return result
 }
 
 export async function updateSiteSetting(form: FormData) {
