@@ -26,13 +26,7 @@ export function TournamentList({ tournaments }: { tournaments: Tournament[] }) {
             </span>
           </span>
           <span
-            className={
-              tournament.status === 'postponed'
-                ? `${styles.state} ${styles.postponed}`
-                : tournament.status === 'finished'
-                  ? `${styles.state} ${styles.done}`
-                  : `${styles.state} ${styles.live}`
-            }
+            className={`${styles.state} ${styles[tournament.status]}`}
           >
             {STATE[tournament.status]}
           </span>

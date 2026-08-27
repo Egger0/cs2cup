@@ -51,12 +51,28 @@
   white-space: nowrap;
 }
 
-.live {
-  color: var(--t);
+.draft {
+  color: #8091a7;
+  background: rgba(128, 145, 167, 0.08);
+  border-color: rgba(128, 145, 167, 0.32);
 }
 
-.done {
-  color: var(--muted-2);
+.registration {
+  color: #3d9be9;
+  background: rgba(61, 155, 233, 0.10);
+  border-color: rgba(61, 155, 233, 0.38);
+}
+
+.running {
+  color: #e94b5c;
+  background: rgba(233, 75, 92, 0.10);
+  border-color: rgba(233, 75, 92, 0.38);
+}
+
+.finished {
+  color: #7389a3;
+  background: rgba(115, 137, 163, 0.08);
+  border-color: rgba(115, 137, 163, 0.32);
 }
 
 .postponed {
