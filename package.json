@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "node .next/standalone/server.js",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test:seeding": "node --experimental-strip-types scripts/seeding-test.mjs",
+    "test:match-operations": "docker compose exec -T db psql -U postgres -d cs2cup -q -f - < scripts/match-operations-test.sql",
     "stack:up": "docker compose up -d --wait",
     "stack:down": "docker compose down -v",
     "photos:import": "node --experimental-strip-types scripts/migrate-photos.ts && docker compose exec -T db psql -U postgres -d cs2cup -q -f - < migration-output/004_photos.sql && cp -R migration-output/photos/. public/photos/",
@@ -19,7 +21,7 @@
     "a11y": "node scripts/a11y.mjs",
     "keyboard": "node scripts/keyboard.mjs",
     "perf": "node scripts/perf.mjs",
-    "check": "npm run typecheck && npm run lint && npm run e2e && npm run e2e:admin && npm run a11y && npm run keyboard && npm run perf"
+    "check": "npm run typecheck && npm run lint && npm run test:seeding && npm run test:match-operations && npm run e2e && npm run e2e:admin && npm run a11y && npm run keyboard && npm run perf"
   },
   "dependencies": {
     "@cloudbase/js-sdk": "^3.8.2",
