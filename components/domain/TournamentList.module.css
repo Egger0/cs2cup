@@ -16,6 +16,7 @@
 .row:hover {
   background: rgba(255, 255, 255, 0.02);
   padding-inline: 14px;
+  border-color: rgba(215, 231, 243, 0.18);
 }
 
 .year {
@@ -23,14 +24,36 @@
   font-weight: 800;
   font-size: clamp(1.7rem, 3vw, 2.4rem);
   line-height: 1;
-  color: var(--t);
+  color: #5e748a;
+  opacity: .78;
   font-variant-numeric: tabular-nums;
+  transition: color 0.24s ease, opacity 0.24s ease;
+}
+
+.year[data-timeline='0'] {
+  color: #b8d3e6;
+  opacity: 1;
+}
+
+.year[data-timeline='1'] {
+  color: #7f9ab2;
+  opacity: .9;
+}
+
+.row:hover .year {
+  color: #d7e7f3;
+  opacity: 1;
 }
 
 .title {
   font-family: var(--font-body), sans-serif;
   font-weight: 700;
   font-size: clamp(1rem, 1.8vw, 1.24rem);
+  transition: color 0.24s ease;
+}
+
+.row:hover .title {
+  color: #d7e7f3;
 }
 
 .meta {

@@ -14,11 +14,18 @@ const STATE: Record<TournamentStatus, string> = {
 export function TournamentList({ tournaments }: { tournaments: Tournament[] }) {
   if (tournaments.length === 0) return <Empty>还没有赛事</Empty>
 
+  const years = [...new Set(tournaments.map(tournament => tournament.season.replace(/[^0-9]/g, '')))]
+    .sort((a, b) => Number(b) - Number(a))
+
   return (
     <div className={styles.list}>
-      {tournaments.map(tournament => (
-        <Link key={tournament.id} href={`/tournaments/${tournament.slug}`} className={styles.row}>
-          <span className={styles.year}>{tournament.season.replace(/[^0-9]/g, '')}</span>
+      {tournaments.map(tournament => {
+        const year = tournament.season.replace(/[^0-9]/g, '')
+        const timeline = Math.min(years.indexOf(year), 2)
+
+        return (
+          <Link key={tournament.id} href={`/tournaments/${tournament.slug}`} className={styles.row}>
+            <span className={styles.year} data-timeline={timeline}>{year}</span>
           <span>
             <span className={styles.title}>{tournament.title}</span>
             <span className={styles.meta}>
@@ -30,8 +37,9 @@ export function TournamentList({ tournaments }: { tournaments: Tournament[] }) {
           >
             {STATE[tournament.status]}
           </span>
-        </Link>
-      ))}
+          </Link>
+        )
+      })}
     </div>
   )
 }
