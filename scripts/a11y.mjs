@@ -8,6 +8,7 @@ const PAGES = [
   '/games/cs2',
   '/tournaments',
   '/tournaments/2026-nlc',
+  '/tournaments/2026-nlc/schedule?state=all',
   '/tournaments/2026-nlc/teams',
   '/tournaments/2026-nlc/bracket',
   '/tournaments/2026-nlc/results',

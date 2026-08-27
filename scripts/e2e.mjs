@@ -18,6 +18,12 @@ page.on('pageerror', e => errors.push('pageerror: ' + e.message))
 await page.goto(BASE, { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(800)
 check('Home page loads', await page.locator('h1').first().isVisible())
+const tabIcon = await page.locator('link[rel~="icon"]').first().getAttribute('href')
+check(
+  'Tab icon uses the current club logo',
+  tabIcon?.includes('/brand/club-logo.jpg') === true,
+  tabIcon ?? 'missing',
+)
 
 const gameLinks = await page.locator('a[href^="/games/"]').count()
 check('Home page lists games', gameLinks >= 3, `${gameLinks} games`)
@@ -26,6 +32,52 @@ await page.goto(`${BASE}/games/lol`, { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(800)
 const lolEmpty = await page.getByText('这个项目还没有办过比赛').isVisible().catch(() => false)
 check('Empty game page provides guidance', lolEmpty)
+
+await page.goto(`${BASE}/tournaments/2026-nlc`, { waitUntil: 'domcontentloaded' })
+const tournamentNav = page.getByRole('navigation', { name: '赛事导航' })
+const scheduleTab = tournamentNav.getByRole('link', { name: '赛程' })
+check(
+  'Tournament navigation links to schedule',
+  (await scheduleTab.getAttribute('href')) === '/tournaments/2026-nlc/schedule',
+)
+await scheduleTab.click()
+await page.waitForURL(/\/tournaments\/2026-nlc\/schedule$/, { timeout: 15000 }).catch(() => {})
+check('Schedule route is reachable', page.url().endsWith('/tournaments/2026-nlc/schedule'))
+check(
+  'Schedule tab identifies the current page',
+  (await scheduleTab.getAttribute('aria-current')) === 'page',
+)
+
+await page.goto(`${BASE}/tournaments/2026-nlc/schedule?state=all`, { waitUntil: 'domcontentloaded' })
+await page.waitForTimeout(800)
+const scheduleLinks = page.locator('main a[href^="/tournaments/2026-nlc/matches/"]')
+const scheduleLinkCount = await scheduleLinks.count()
+check('Schedule ledger lists matches', scheduleLinkCount === 15, `${scheduleLinkCount} matches`)
+const scheduledTimes = await scheduleLinks.locator('time[datetime]').evaluateAll(nodes =>
+  nodes.map(node => Date.parse(node.getAttribute('datetime') ?? '')),
+)
+const chronological =
+  scheduledTimes.length === scheduleLinkCount &&
+  scheduledTimes.every(Number.isFinite) &&
+  scheduledTimes.every((time, index) => index === 0 || scheduledTimes[index - 1] <= time)
+check('Schedule ledger is chronological', chronological, `${scheduledTimes.length} scheduled matches`)
+
+await page.locator('select[name="team"]').selectOption('FROST')
+await page.getByRole('button', { name: '查看日程' }).click()
+await page.waitForURL(url => new URL(url).searchParams.get('team') === 'FROST')
+const filteredScheduleUrl = new URL(page.url())
+check(
+  'Team filter uses a readable tag in the URL',
+  filteredScheduleUrl.searchParams.get('team') === 'FROST',
+  `${filteredScheduleUrl.pathname}${filteredScheduleUrl.search}`,
+)
+const filteredScheduleLinks = page.locator('main a[href^="/tournaments/2026-nlc/matches/"]')
+const filteredScheduleText = await filteredScheduleLinks.allTextContents()
+check(
+  'Team filter limits the schedule ledger',
+  filteredScheduleText.length > 0 && filteredScheduleText.every(text => text.includes('FROST')),
+  `${filteredScheduleText.length} matches`,
+)
 
 await page.goto(`${BASE}/tournaments/2026-nlc/teams`, { waitUntil: 'domcontentloaded' })
 const teamCards = await page.locator('main a[href*="/teams/"]').count()
@@ -91,11 +143,56 @@ const reportLinkVisible = reportBox
     reportBox.y + reportBox.height <= 760
   : false
 check('Mobile match-report link is visible without scrolling', reportLinkVisible, reportBox ? `${Math.round(reportBox.x)},${Math.round(reportBox.y)}` : 'missing')
+await m.goto(`${BASE}/tournaments/2026-nlc/schedule?state=all`, { waitUntil: 'domcontentloaded' })
+await m.waitForTimeout(1000)
+const mobileScheduleForm = m.locator('main form')
+await mobileScheduleForm.scrollIntoViewIfNeeded()
+const mobileScheduleOverflow = await m.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)
+check('Mobile schedule has no horizontal overflow', !mobileScheduleOverflow)
+const mobileScheduleControls = mobileScheduleForm.locator('select, button, a')
+const mobileControlCount = await mobileScheduleControls.count()
+const mobileControlsVisible = await mobileScheduleControls.evaluateAll(nodes =>
+  nodes.every(node => {
+    const rect = node.getBoundingClientRect()
+    const style = getComputedStyle(node)
+    return (
+      rect.width > 0 &&
+      rect.height >= 44 &&
+      rect.left >= 0 &&
+      rect.right <= window.innerWidth &&
+      style.visibility !== 'hidden' &&
+      style.display !== 'none'
+    )
+  }),
+)
+check(
+  'Mobile schedule controls are visible',
+  mobileControlCount === 4 && mobileControlsVisible,
+  `${mobileControlCount} controls`,
+)
+await m.goto(`${BASE}/tournaments/2026-nlc/rules`, { waitUntil: 'domcontentloaded' })
+await m.evaluate(() => document.fonts.ready)
+await m.waitForTimeout(100)
+const mobileTournamentNav = m.getByRole('navigation', { name: '赛事导航' })
+const activeTournamentTab = mobileTournamentNav.locator('[aria-current="page"]')
+const [navBox, activeTabBox, tournamentNavScroll] = await Promise.all([
+  mobileTournamentNav.boundingBox(),
+  activeTournamentTab.boundingBox(),
+  mobileTournamentNav.evaluate(element => element.scrollLeft),
+])
+const activeTabVisible = navBox && activeTabBox
+  ? activeTabBox.x >= navBox.x && activeTabBox.x + activeTabBox.width <= navBox.x + navBox.width
+  : false
+check(
+  'Mobile tournament navigation reveals the active tab',
+  activeTabVisible && tournamentNavScroll > 0,
+  `scroll ${Math.round(tournamentNavScroll)}`,
+)
 await m.close()
 
 await page.goto(`${BASE}/tournaments/2026-nlc/teams/FROST`, { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(1200)
-check('Team page includes match history', await page.getByText('打过的比赛').isVisible().catch(() => false))
+check('Team page includes match history', await page.getByText('赛程与战绩').isVisible().catch(() => false))
 check('Team page includes map statistics', await page.getByText('Ban/Pick 倾向').isVisible().catch(() => false))
 
 await page.goto(`${BASE}/tournaments/2026-nlc/results`, { waitUntil: 'domcontentloaded' })

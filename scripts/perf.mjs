@@ -14,7 +14,13 @@ const BUDGET = {
   requests: 60,
 }
 
-const PAGES = ['/', '/tournaments/2026-nlc', '/tournaments/2026-nlc/bracket', '/archive']
+const PAGES = [
+  '/',
+  '/tournaments/2026-nlc',
+  '/tournaments/2026-nlc/schedule?state=all',
+  '/tournaments/2026-nlc/bracket',
+  '/archive',
+]
 
 const browser = await chromium.launch()
 const rows = []

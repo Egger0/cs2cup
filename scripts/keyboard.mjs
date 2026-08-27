@@ -52,6 +52,41 @@ const landmarks = await page.evaluate(() => ({
 }))
 check('Page landmarks are complete', landmarks.main === 1 && landmarks.nav >= 1 && landmarks.footer === 1, JSON.stringify(landmarks))
 
+await page.goto(`${BASE}/tournaments/2026-nlc/schedule`, { waitUntil: 'domcontentloaded' })
+await page.waitForTimeout(1200)
+const scheduleTeamFilter = page.locator('select[name="team"]')
+await scheduleTeamFilter.focus()
+check(
+  'Schedule team filter accepts focus',
+  await scheduleTeamFilter.evaluate(element => element === document.activeElement),
+)
+await page.keyboard.press('f')
+const selectedTeam = await scheduleTeamFilter.inputValue()
+check('Keyboard changes the schedule team filter', selectedTeam.length > 0, selectedTeam)
+await page.keyboard.press('Tab')
+const scheduleSubmitFocused = await page.getByRole('button', { name: '查看日程' }).evaluate(
+  element => element === document.activeElement,
+)
+check('Tab reaches the schedule filter submit button', scheduleSubmitFocused)
+await Promise.all([
+  page.waitForURL(url => new URL(url).searchParams.get('team') === selectedTeam),
+  page.keyboard.press('Enter'),
+])
+const keyboardScheduleLinks = page.locator('main a[href^="/tournaments/2026-nlc/matches/"]')
+check('Keyboard-filtered schedule exposes match links', (await keyboardScheduleLinks.count()) > 0)
+const firstScheduleLink = keyboardScheduleLinks.first()
+await firstScheduleLink.focus()
+const firstScheduleHref = await firstScheduleLink.getAttribute('href')
+await Promise.all([
+  page.waitForURL(/\/tournaments\/2026-nlc\/matches\/\d+$/),
+  page.keyboard.press('Enter'),
+])
+check(
+  'Keyboard opens a schedule match link',
+  firstScheduleHref !== null && page.url().endsWith(firstScheduleHref),
+  firstScheduleHref ?? 'missing link',
+)
+
 await page.goto(`${BASE}/archive`, { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(1600)
 await page.locator('button[class*="poster"]').first().focus()

@@ -129,24 +129,167 @@ try {
   check('Uploaded dimensions are detected', dims === '100x70', dims)
 
   // Generate the bracket.
-  await page.goto(`${BASE}/admin/tournaments/4`, {
+  const scheduleTournamentId = Number(
+    db(`select id from tournament where slug = '2026-nlc'`),
+  )
+  if (!Number.isSafeInteger(scheduleTournamentId) || scheduleTournamentId <= 0) {
+    throw new Error('Canonical schedule tournament is missing')
+  }
+  await page.goto(`${BASE}/admin/tournaments/${scheduleTournamentId}`, {
     waitUntil: 'domcontentloaded',
   })
   await page.waitForTimeout(1200)
-  const beforeMatches = Number(db('select count(*) from match where tournament_id=4'))
+  const beforeMatches = Number(
+    db(`select count(*) from match where tournament_id=${scheduleTournamentId}`),
+  )
   page.once('dialog', d => d.accept())
   await page.getByRole('button', { name: /生成对阵表|重新抽签/ }).click()
   await page.waitForTimeout(6000)
-  const afterMatches = Number(db('select count(*) from match where tournament_id=4'))
+  const afterMatches = Number(
+    db(`select count(*) from match where tournament_id=${scheduleTournamentId}`),
+  )
   check('Admin generates a bracket', afterMatches === 15, `${beforeMatches} → ${afterMatches}`)
   const linked = Number(
-    db('select count(*) from match where tournament_id=4 and source_match_a_id is not null'),
+    db(
+      `select count(*) from match where tournament_id=${scheduleTournamentId} and source_match_a_id is not null`,
+    ),
   )
   check('Bracket progression is linked', linked === 7, String(linked))
   const seeded = Number(
-    db('select count(*) from match where tournament_id=4 and round=0 and team_a_id is not null'),
+    db(
+      `select count(*) from match where tournament_id=${scheduleTournamentId} and round=0 and team_a_id is not null`,
+    ),
   )
   check('Opening round follows seed placement', seeded === 8, String(seeded))
+
+  // Preview and publish the full schedule.
+  const nonByeFilter = `
+    m.tournament_id = ${scheduleTournamentId}
+    and not (
+      m.round = 0
+      and m.source_match_a_id is null
+      and m.source_match_b_id is null
+      and m.winner_team_id is not null
+      and m.score_a is null
+      and m.score_b is null
+      and ((m.team_a_id is null) <> (m.team_b_id is null))
+    )
+  `
+  const scheduleSnapshotSql = `
+    select coalesce(
+      string_agg(
+        m.id::text || '=' || coalesce(m.scheduled_at::text, 'null'),
+        ',' order by m.id
+      ),
+      ''
+    )
+    from match m
+    where ${nonByeFilter}
+  `
+  const nonByeMatches = Number(db(`select count(*) from match m where ${nonByeFilter}`))
+  const beforeSchedulePreview = db(scheduleSnapshotSql)
+  const firstBeijingTime = '2099-05-06T19:30'
+
+  await page.fill('#sc-start', firstBeijingTime)
+  await page.fill('#sc-round', '2')
+  await page.fill('#sc-match', '90')
+  await page.getByRole('button', { name: '生成预览' }).click()
+  await page.getByText('预览已生成，确认无误后再发布').waitFor()
+
+  const firstMatchTime = page.getByLabel(/第 1 场开赛时间/).first()
+  check(
+    'Schedule preview starts at the requested Beijing local time',
+    (await firstMatchTime.inputValue()) === firstBeijingTime,
+    await firstMatchTime.inputValue(),
+  )
+  const afterSchedulePreview = db(scheduleSnapshotSql)
+  check(
+    'Generating a schedule preview performs zero database writes',
+    afterSchedulePreview === beforeSchedulePreview,
+  )
+
+  const scheduleUrl = page.url()
+  const navigationDialogPromise = page.waitForEvent('dialog')
+  const navigationPromise = page.getByRole('link', { name: '项目', exact: true }).click()
+  const navigationDialog = await navigationDialogPromise
+  const navigationWarning = navigationDialog.message()
+  await navigationDialog.dismiss()
+  await navigationPromise
+  check(
+    'Unsaved schedule changes block internal navigation',
+    page.url() === scheduleUrl && navigationWarning.includes('未发布'),
+  )
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  const plannerActions = page
+    .locator('form:has(#sc-start)')
+    .getByRole('button')
+  const plannerActionBoxes = await plannerActions.evaluateAll(buttons =>
+    buttons.map(button => {
+      const rect = button.getBoundingClientRect()
+      return { width: rect.width, height: rect.height }
+    }),
+  )
+  check(
+    'Schedule planner actions remain usable on mobile',
+    plannerActionBoxes.length === 3 &&
+      plannerActionBoxes.every(box => box.width >= 120 && box.height <= 60),
+    JSON.stringify(plannerActionBoxes),
+  )
+  await page.setViewportSize({ width: 1440, height: 1000 })
+
+  await page.getByRole('button', { name: '发布赛程' }).click()
+  await page
+    .getByText(`已发布 ${nonByeMatches} 场，${nonByeMatches} 场已有时间`)
+    .waitFor({ timeout: 10_000 })
+
+  const publishedSchedule = db(`
+    select
+      count(*) filter (where m.scheduled_at is not null)::text
+      || ':' || count(*)::text
+      || ':' || count(distinct m.xmin::text)::text
+    from match m
+    where ${nonByeFilter}
+  `)
+  check(
+    'Publishing writes every non-bye match atomically',
+    publishedSchedule === `${nonByeMatches}:${nonByeMatches}:1`,
+    publishedSchedule,
+  )
+
+  const firstUtcTime = db(`
+    select to_char(
+      m.scheduled_at at time zone 'UTC',
+      'YYYY-MM-DD"T"HH24:MI:SS"Z"'
+    )
+    from match m
+    where ${nonByeFilter}
+    order by m.round, m.slot
+    limit 1
+  `)
+  check(
+    'Beijing datetime-local persists as the correct UTC instant',
+    firstUtcTime === '2099-05-06T11:30:00Z',
+    firstUtcTime,
+  )
+
+  const chronologicalViolations = Number(db(`
+    select count(*)
+    from match child
+    join match source
+      on source.id = child.source_match_a_id
+      or source.id = child.source_match_b_id
+    where child.tournament_id = ${scheduleTournamentId}
+      and source.tournament_id = ${scheduleTournamentId}
+      and child.scheduled_at is not null
+      and source.scheduled_at is not null
+      and child.scheduled_at <= source.scheduled_at
+  `))
+  check(
+    'Parent matches are scheduled after every scheduled source',
+    chronologicalViolations === 0,
+    String(chronologicalViolations),
+  )
 
   await page.goto(`${BASE}/admin`, { waitUntil: 'domcontentloaded' })
   await page.waitForTimeout(1200)
@@ -217,7 +360,11 @@ try {
 
   check('Pages have no runtime errors', errors.length === 0, errors.slice(0, 1).join())
 } finally {
-  // Bracket generation clears match_map; restore demo fixtures for the public suite.
+  // Bracket and schedule tests replace demo matches; rebuild canonical public fixtures.
+  db(`
+    delete from match
+    where tournament_id = (select id from tournament where slug = '2026-nlc')
+  `)
   execSync(
     'for f in seeds/*.sql; do docker compose exec -T db psql -U postgres -d cs2cup -q -f - < "$f" >/dev/null 2>&1; done',
     {
