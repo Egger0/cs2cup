@@ -72,7 +72,7 @@ export default async function HomePage() {
             <h1 className={styles.name}>{setting.clubName}</h1>
             <div className={styles.school}>{setting.school}</div>
             <p className={styles.lede}>
-              办比赛,也一起开黑。选手、解说、导播、摄影、设计——每个位置都缺人。
+              办比赛，也一起开黑。选手、解说、导播、摄影、设计——每个位置都缺人。
             </p>
             <div className={styles.actions}>
               {current ? (
