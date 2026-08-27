@@ -169,8 +169,16 @@ interface TournamentRow {
   season: string
   edition: number
   status: string
+  format: string
   team_cap: number
+  reg_deadline: string | null
+  starts_at: string | null
+  accent_color: string | null
+  map_pool: Tournament['mapPool']
+  rules: Tournament['rules']
+  faqs: Tournament['faqs']
   hero_eyebrow: string
+  hero_top: string
   hero_bottom: string
   lede: string
   champion_name: string | null
@@ -189,16 +197,16 @@ export async function adminListTournaments(): Promise<Tournament[]> {
     season: row.season,
     edition: row.edition,
     status: row.status as Tournament['status'],
-    format: 'single_elimination',
+    format: row.format,
     teamCap: row.team_cap,
-    regDeadline: null,
-    startsAt: null,
-    accentColor: null,
-    mapPool: [],
-    rules: [],
-    faqs: [],
+    regDeadline: row.reg_deadline,
+    startsAt: row.starts_at,
+    accentColor: row.accent_color,
+    mapPool: row.map_pool ?? [],
+    rules: row.rules ?? [],
+    faqs: row.faqs ?? [],
     heroEyebrow: row.hero_eyebrow,
-    heroTop: '',
+    heroTop: row.hero_top,
     heroBottom: row.hero_bottom,
     lede: row.lede,
     championName: row.champion_name,

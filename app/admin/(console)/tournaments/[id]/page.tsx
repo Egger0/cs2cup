@@ -45,7 +45,6 @@ export default async function AdminTournamentPage({
         ) : (
           <BracketBuilder
             tournamentId={tournamentId}
-            teamCap={tournament.teamCap}
             approvedCount={approved.length}
             existingMatches={matches.length}
           />

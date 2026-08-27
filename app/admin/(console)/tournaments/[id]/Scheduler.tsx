@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button, Field } from '@/components/ui'
+import { isByeMatch } from '@/lib/bracket'
 import type { Match } from '@/lib/types'
 import { scheduleRounds, setMatchTime } from '../../_actions'
 import styles from '../../admin.module.css'
@@ -23,7 +24,8 @@ export function Scheduler({
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState('')
 
-  const rounds = [...new Set(matches.map(match => match.round))].sort((a, b) => a - b)
+  const schedulable = matches.filter(match => !isByeMatch(match))
+  const rounds = [...new Set(schedulable.map(match => match.round))].sort((a, b) => a - b)
 
   return (
     <>
@@ -72,10 +74,10 @@ export function Scheduler({
       {rounds.map(round => (
         <div key={round} style={{ marginBottom: 24 }}>
           <div className="readout" style={{ marginBottom: 10 }}>
-            {matches.find(match => match.round === round)?.roundLabel}
+            {schedulable.find(match => match.round === round)?.roundLabel}
           </div>
           <div className={styles.timeGrid}>
-            {matches
+            {schedulable
               .filter(match => match.round === round)
               .map(match => (
                 <label key={match.id} className={styles.timeCell}>

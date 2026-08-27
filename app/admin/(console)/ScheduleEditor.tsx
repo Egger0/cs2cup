@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { Button, Empty } from '@/components/ui'
 import { groupByRound, indexMatches, indexTeams, resolveMatch, winsNeeded } from '@/lib/bracket'
@@ -40,7 +41,19 @@ export function ScheduleEditor({
     }
     setError('')
     startTransition(async () => {
-      const result = await recordScore(match.id, scoreA, scoreB, tournamentId)
+      const resolved = resolveMatch(match, matchIndex, teamIndex)
+      if (!resolved.a || !resolved.b) {
+        setError('对阵双方尚未确定，请刷新页面')
+        return
+      }
+      const result = await recordScore(
+        match.id,
+        resolved.a.id,
+        resolved.b.id,
+        scoreA,
+        scoreB,
+        tournamentId,
+      )
       if (!result.ok) setError(result.error)
     })
   }
@@ -66,6 +79,7 @@ export function ScheduleEditor({
                   <div className={styles.scoreRow}>
                     <span>{resolved.a?.name ?? '待定'}</span>
                     <input
+                      key={`a:${match.id}:${match.scoreA ?? 'empty'}`}
                       className={styles.scoreInput}
                       name="scoreA"
                       type="number"
@@ -78,6 +92,7 @@ export function ScheduleEditor({
                   <div className={styles.scoreRow}>
                     <span>{resolved.b?.name ?? '待定'}</span>
                     <input
+                      key={`b:${match.id}:${match.scoreB ?? 'empty'}`}
                       className={styles.scoreInput}
                       name="scoreB"
                       type="number"
@@ -87,13 +102,23 @@ export function ScheduleEditor({
                       disabled={!resolved.a || !resolved.b}
                     />
                   </div>
-                  <Button
-                    type="submit"
-                    size="mini"
-                    disabled={pending || !resolved.a || !resolved.b}
-                  >
-                    保存 BO{match.bestOf}
-                  </Button>
+                  <div className={styles.rowActions}>
+                    <Button
+                      type="submit"
+                      size="mini"
+                      disabled={pending || !resolved.a || !resolved.b}
+                    >
+                      保存 BO{match.bestOf}
+                    </Button>
+                    {resolved.a && resolved.b ? (
+                      <Link
+                        href={`/admin/tournaments/${tournamentId}/matches/${match.id}`}
+                        className="readout"
+                      >
+                        编辑战报 →
+                      </Link>
+                    ) : null}
+                  </div>
                 </form>
               )
             })}

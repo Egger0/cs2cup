@@ -1,6 +1,6 @@
 import 'server-only'
-import { deleteRows, insertRows, selectRows, updateRows } from '../rdb'
-import type { Match, Photo, Team, TeamStatus, Tournament } from '../types'
+import { callFunction, deleteRows, insertRows, selectRows, updateRows } from '../rdb'
+import type { Match, MatchMap, Photo, Team, TeamStatus, Tournament, VetoAction } from '../types'
 
 const ADMIN = { credential: 'admin', revalidate: false } as const
 
@@ -60,11 +60,11 @@ export async function listTeamsWithContact(tournamentId: number): Promise<Team[]
 }
 
 export function setTeamStatus(id: number, status: TeamStatus) {
-  return updateRows('team', { status }, { ...ADMIN, filters: { id: `eq.${id}` } })
-}
-
-export function setTeamSeed(id: number, seed: number | null) {
-  return updateRows('team', { seed }, { ...ADMIN, filters: { id: `eq.${id}` } })
+  return updateRows(
+    'team',
+    status === 'approved' ? { status } : { status, seed: null },
+    { ...ADMIN, filters: { id: `eq.${id}` } },
+  )
 }
 
 export function removeTeam(id: number) {
@@ -152,6 +152,149 @@ export async function listAdminMatches(tournamentId: number): Promise<Match[]> {
     winnerTeamId: row.winner_team_id,
     scheduledAt: row.scheduled_at,
   }))
+}
+
+interface MatchMapRow {
+  id: number
+  match_id: number
+  pick_order: number
+  map_name: string
+  action: VetoAction
+  chosen_by: 'a' | 'b' | null
+  score_a: number | null
+  score_b: number | null
+  played: boolean
+}
+
+export interface MatchMapInput {
+  mapName: string
+  action: VetoAction
+  chosenBy: 'a' | 'b' | null
+  scoreA: number | null
+  scoreB: number | null
+  played: boolean
+}
+
+export interface BracketReplaceResult {
+  ok: true
+  created: number
+  byes: number
+  teams: number
+}
+
+export interface TeamSeedResult {
+  ok: true
+  tournamentId: number
+  teamId: number
+  seed: number | null
+  swappedTeamId: number | null
+}
+
+export interface MatchWriteResult {
+  ok: true
+  tournamentId: number
+  matchId: number
+  scoreA: number | null
+  scoreB: number | null
+  winnerTeamId: number | null
+  cleared: number
+}
+
+export interface MatchReportResult extends MatchWriteResult {
+  maps: number
+}
+
+export async function listAdminMatchMaps(matchIds: number[]): Promise<MatchMap[]> {
+  if (matchIds.length === 0) return []
+
+  const ids = [...new Set(matchIds)]
+  if (ids.some(id => !Number.isSafeInteger(id) || id <= 0)) {
+    throw new TypeError('matchIds must contain positive safe integers')
+  }
+
+  const rows = await selectRows<MatchMapRow>('match_map', {
+    ...ADMIN,
+    filters: { match_id: `in.(${ids.join(',')})` },
+    order: 'match_id.asc,pick_order.asc',
+  })
+
+  return rows.map(row => ({
+    id: row.id,
+    matchId: row.match_id,
+    pickOrder: row.pick_order,
+    mapName: row.map_name,
+    action: row.action,
+    chosenBy: row.chosen_by,
+    scoreA: row.score_a,
+    scoreB: row.score_b,
+    played: row.played,
+  }))
+}
+
+export function replaceBracket(
+  tournamentId: number,
+  teamIds: number[],
+  seedPositions: number[],
+): Promise<BracketReplaceResult> {
+  return callFunction<BracketReplaceResult>(
+    'replace_bracket',
+    {
+      p_tournament_id: tournamentId,
+      p_team_ids: teamIds,
+      p_seed_positions: seedPositions,
+    },
+    'admin',
+  )
+}
+
+export function assignTeamSeed(
+  tournamentId: number,
+  teamId: number,
+  seed: number | null,
+): Promise<TeamSeedResult> {
+  return callFunction<TeamSeedResult>(
+    'set_team_seed',
+    { p_tournament_id: tournamentId, p_team_id: teamId, p_seed: seed },
+    'admin',
+  )
+}
+
+export function saveAdminMatchScore(
+  matchId: number,
+  teamAId: number | null,
+  teamBId: number | null,
+  scoreA: number | null,
+  scoreB: number | null,
+): Promise<MatchWriteResult> {
+  return callFunction<MatchWriteResult>(
+    'save_match_score',
+    {
+      p_match_id: matchId,
+      p_team_a_id: teamAId,
+      p_team_b_id: teamBId,
+      p_score_a: scoreA,
+      p_score_b: scoreB,
+    },
+    'admin',
+  )
+}
+
+export function saveAdminMatchReport(
+  matchId: number,
+  teamAId: number,
+  teamBId: number,
+  maps: MatchMapInput[],
+): Promise<MatchReportResult> {
+  return callFunction<MatchReportResult>(
+    'save_match_report',
+    {
+      p_match_id: matchId,
+      p_team_a_id: teamAId,
+      p_team_b_id: teamBId,
+      p_maps: maps,
+    },
+    'admin',
+  )
 }
 
 export function addPhoto(values: Omit<Photo, 'id'>) {

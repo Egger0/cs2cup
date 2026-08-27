@@ -5,18 +5,19 @@ import { redirect } from 'next/navigation'
 import { updateTag } from 'next/cache'
 import { SESSION_COOKIE, requireAdmin, verifyToken } from '@/lib/auth'
 import {
-  clearMatches,
+  assignTeamSeed,
   listAdminMatches,
   listTeamsWithContact,
+  replaceBracket,
   removeTeam,
-  saveMatchScore,
-  setTeamSeed,
+  saveAdminMatchReport,
+  saveAdminMatchScore,
   setTeamStatus,
   removePhoto,
 } from '@/lib/queries/admin'
-import { decideWinner, downstreamOf } from '@/lib/bracket'
 import { MIME_TO_EXT, imageSize, sniffMime } from '@/lib/image'
-import { firstRoundPairs, planRounds } from '@/lib/seeding'
+import { isByeMatch } from '@/lib/bracket'
+import { bracketSize, orderBySeed, seedPositions } from '@/lib/seeding'
 import { putObject, removeObject, uploadsEnabled } from '@/lib/storage'
 import {
   adminCreateGame,
@@ -28,11 +29,7 @@ import {
   adminSaveGame,
   adminSaveMember,
   adminSavePost,
-  adminDeleteMatches,
-  adminInsertMatches,
-  adminLinkMatch,
   adminSaveTournament,
-  adminSeedTeam,
   adminScheduleMatch,
   adminDeletePhoto,
   adminInsertPhoto,
@@ -40,10 +37,27 @@ import {
   adminListTournaments,
   adminSaveSiteSetting,
 } from '@/lib/queries/content'
-import { selectRows } from '@/lib/rdb'
-import type { Match, TeamStatus } from '@/lib/types'
+import { RdbError, selectRows } from '@/lib/rdb'
+import type { MatchMapInput } from '@/lib/queries/admin'
+import type { TeamStatus, VetoAction } from '@/lib/types'
 
 const SESSION_MAX_AGE = 60 * 60 * 8
+
+function writeError(error: unknown, fallback: string) {
+  if (!(error instanceof RdbError)) {
+    console.error(fallback, error)
+    return fallback
+  }
+  if (error.status >= 500) console.error(fallback, error)
+
+  const raw = error.message.slice(error.message.indexOf(':') + 1).trim()
+  try {
+    const payload = JSON.parse(raw) as { message?: unknown }
+    return typeof payload.message === 'string' ? payload.message : fallback
+  } catch {
+    return fallback
+  }
+}
 
 async function passwordToken(username: string, password: string) {
   const env = process.env.CLOUDBASE_ENV_ID
@@ -107,8 +121,19 @@ export async function updateTeamStatus(id: number, status: TeamStatus, tournamen
 
 export async function updateTeamSeed(id: number, seed: number | null, tournamentId: number) {
   await requireAdmin()
-  await setTeamSeed(id, seed)
+
+  if (seed !== null && !Number.isInteger(seed)) {
+    return { ok: false as const, error: '种子号必须是整数' }
+  }
+
+  try {
+    await assignTeamSeed(tournamentId, id, seed)
+  } catch (error) {
+    return { ok: false as const, error: writeError(error, '种子号保存失败') }
+  }
+
   updateTag(`teams:${tournamentId}`)
+  return { ok: true as const }
 }
 
 export async function deleteTeam(id: number, tournamentId: number) {
@@ -139,63 +164,45 @@ export async function updateTournament(id: number, form: FormData) {
   updateTag('tournament')
 }
 
-export async function buildBracket(tournamentId: number, teamCap: number) {
+export async function buildBracket(tournamentId: number) {
   await requireAdmin()
 
   const teams = await listTeamsWithContact(tournamentId)
   const approved = teams
     .filter(team => team.status === 'approved')
-    .sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999) || a.createdAt.localeCompare(b.createdAt))
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
 
   if (approved.length < 2) return { ok: false as const, error: '通过审核的战队不足两支' }
 
-  for (const [index, team] of approved.entries()) {
-    if (team.seed !== index + 1) await adminSeedTeam(team.id, index + 1)
+  const size = bracketSize(approved.length)
+  let orderedTeams: typeof approved
+  try {
+    orderedTeams = orderBySeed(approved)
+  } catch {
+    return { ok: false as const, error: `种子号必须唯一且位于 1–${approved.length}` }
   }
 
-  await adminDeleteMatches(tournamentId)
-
-  const rounds = planRounds(teamCap)
-  const rows = rounds.flatMap(round =>
-    Array.from({ length: round.matches }, (_, slot) => ({
+  let result: Awaited<ReturnType<typeof replaceBracket>>
+  try {
+    result = await replaceBracket(
       tournamentId,
-      round: round.round,
-      slot,
-      roundLabel: round.label,
-      bestOf: round.bestOf,
-    })),
-  )
-  await adminInsertMatches(rows)
-
-  const created = await listAdminMatches(tournamentId)
-  const find = (round: number, slot: number) =>
-    created.find(match => match.round === round && match.slot === slot)
-
-  for (const match of created) {
-    if (match.round === 0) continue
-    const a = find(match.round - 1, match.slot * 2)
-    const b = find(match.round - 1, match.slot * 2 + 1)
-    if (a && b) await adminLinkMatch(match.id, { sourceA: a.id, sourceB: b.id })
-  }
-
-  const size = 2 ** Math.ceil(Math.log2(Math.max(2, teamCap)))
-  const bySeed = new Map(approved.map(team => [team.seed ?? 0, team.id]))
-  for (const [slot, [high, low]] of firstRoundPairs(size).entries()) {
-    const match = find(0, slot)
-    if (!match) continue
-    await adminLinkMatch(match.id, {
-      teamA: bySeed.get(high) ?? null,
-      teamB: bySeed.get(low) ?? null,
-    })
+      orderedTeams.map(team => team.id),
+      seedPositions(size),
+    )
+  } catch (error) {
+    return { ok: false as const, error: writeError(error, '生成对阵表失败') }
   }
 
   updateTag(`matches:${tournamentId}`)
+  updateTag('match_map')
   updateTag('tournament')
-  return { ok: true as const, created: rows.length }
+  return result
 }
 
 export async function recordScore(
   matchId: number,
+  teamAId: number,
+  teamBId: number,
   scoreA: number | null,
   scoreB: number | null,
   tournamentId: number,
@@ -203,17 +210,91 @@ export async function recordScore(
   await requireAdmin()
 
   const matches = await listAdminMatches(tournamentId)
-  const target = matches.find(match => match.id === matchId)
-  if (!target) return { ok: false as const, error: '比赛不存在' }
+  if (!matches.some(match => match.id === matchId)) {
+    return { ok: false as const, error: '比赛不存在' }
+  }
 
-  const updated: Match = { ...target, scoreA, scoreB }
-  const winner = decideWinner(updated)
-
-  await saveMatchScore(matchId, scoreA, scoreB, winner)
-  await clearMatches(downstreamOf(matchId, matches))
+  let result: Awaited<ReturnType<typeof saveAdminMatchScore>>
+  try {
+    result = await saveAdminMatchScore(matchId, teamAId, teamBId, scoreA, scoreB)
+  } catch (error) {
+    return { ok: false as const, error: writeError(error, '比分保存失败') }
+  }
 
   updateTag(`matches:${tournamentId}`)
-  return { ok: true as const }
+  updateTag('match_map')
+  updateTag('tournament')
+  return result
+}
+
+export async function saveMatchReport(
+  matchId: number,
+  tournamentId: number,
+  teamAId: number,
+  teamBId: number,
+  mapsJson: string,
+) {
+  await requireAdmin()
+
+  const matches = await listAdminMatches(tournamentId)
+  if (!matches.some(match => match.id === matchId)) {
+    return { ok: false as const, error: '比赛不存在' }
+  }
+
+  let raw: unknown
+  try {
+    raw = JSON.parse(mapsJson)
+  } catch {
+    return { ok: false as const, error: '战报数据格式无效' }
+  }
+  if (!Array.isArray(raw) || raw.length > 32) {
+    return { ok: false as const, error: '战报步骤数量无效' }
+  }
+
+  const readScore = (value: unknown) => {
+    if (value === null || value === undefined || value === '') return null
+    const score = Number(value)
+    return Number.isInteger(score) ? score : Number.NaN
+  }
+
+  const maps: MatchMapInput[] = []
+  for (const entry of raw) {
+    if (!entry || typeof entry !== 'object') {
+      return { ok: false as const, error: '战报步骤格式无效' }
+    }
+    const row = entry as Record<string, unknown>
+    const mapName = String(row.mapName ?? '').trim()
+    const action = String(row.action ?? '') as VetoAction
+    const scoreA = readScore(row.scoreA)
+    const scoreB = readScore(row.scoreB)
+    if (!mapName || !['ban', 'pick', 'decider'].includes(action)) {
+      return { ok: false as const, error: '请补全地图和操作类型' }
+    }
+    if (Number.isNaN(scoreA) || Number.isNaN(scoreB)) {
+      return { ok: false as const, error: '地图比分必须是整数' }
+    }
+    maps.push({
+      mapName,
+      action,
+      chosenBy: row.chosenBy === 'a' || row.chosenBy === 'b' ? row.chosenBy : null,
+      scoreA,
+      scoreB,
+      played: row.played === true,
+    })
+  }
+
+  let result: Awaited<ReturnType<typeof saveAdminMatchReport>>
+  try {
+    result = await saveAdminMatchReport(matchId, teamAId, teamBId, maps)
+  } catch (error) {
+    return { ok: false as const, error: writeError(error, '战报保存失败') }
+  }
+  if (result.ok) {
+    updateTag(`matches:${tournamentId}`)
+    updateTag('match_map')
+    updateTag('tournament')
+  }
+  return result
 }
 
 export async function deletePhoto(id: number) {
@@ -432,15 +513,24 @@ export async function scheduleRounds(
 
   const start = new Date(startIso)
   if (Number.isNaN(start.getTime())) return { ok: false as const, error: '开赛时间无效' }
+  if (!Number.isInteger(roundGapDays) || roundGapDays < 0) {
+    return { ok: false as const, error: '每轮间隔必须是非负整数' }
+  }
+  if (!Number.isInteger(matchGapMinutes) || matchGapMinutes < 0) {
+    return { ok: false as const, error: '场次间隔必须是非负整数' }
+  }
 
-  const matches = await listAdminMatches(tournamentId)
-  if (matches.length === 0) return { ok: false as const, error: '还没有对阵表' }
+  const matches = (await listAdminMatches(tournamentId)).filter(match => !isByeMatch(match))
+  if (matches.length === 0) return { ok: false as const, error: '没有需要排程的比赛' }
 
+  const roundSlots = new Map<number, number>()
   for (const match of matches) {
+    const roundSlot = roundSlots.get(match.round) ?? 0
     const when = new Date(start)
     when.setDate(when.getDate() + match.round * roundGapDays)
-    when.setMinutes(when.getMinutes() + match.slot * matchGapMinutes)
+    when.setMinutes(when.getMinutes() + roundSlot * matchGapMinutes)
     await adminScheduleMatch(match.id, when.toISOString())
+    roundSlots.set(match.round, roundSlot + 1)
   }
 
   updateTag(`matches:${tournamentId}`)

@@ -53,6 +53,19 @@ export function decideWinner(match: Match): number | null {
   return null
 }
 
+export function isCompletedMatch(match: Match) {
+  return match.winnerTeamId !== null && match.scoreA !== null && match.scoreB !== null
+}
+
+export function isByeMatch(match: Match) {
+  return (
+    match.winnerTeamId !== null &&
+    match.scoreA === null &&
+    match.scoreB === null &&
+    ((match.teamAId === null) !== (match.teamBId === null))
+  )
+}
+
 export function nextPlayableMatch(
   matches: Match[],
   teams: Map<number, PublicTeam>,
