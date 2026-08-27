@@ -39,7 +39,7 @@
 
 .pin {
   align-self: flex-start;
-  color: var(--t);
+  color: var(--ct);
   border: 1px solid currentColor;
   padding: 1px 6px;
   font-size: 0.6rem;
