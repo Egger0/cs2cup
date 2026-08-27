@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button, Empty } from '@/components/ui'
 import { groupByRound, indexMatches, indexTeams, isByeMatch, resolveMatch } from '@/lib/bracket'
+import { formatSiteCompactDateTime } from '@/lib/datetime'
 import type { Match, PublicTeam } from '@/lib/types'
 import styles from './Bracket.module.css'
 
@@ -72,18 +73,15 @@ export function Bracket({ matches, teams, slug }: BracketProps) {
                   </div>
                   <div className={styles.meta}>
                     <span>{bye ? '轮空晋级' : `BO${match.bestOf}`}</span>
-                    <span>
-                      {bye
-                        ? '无需比赛'
-                        : match.scheduledAt
-                          ? new Date(match.scheduledAt).toLocaleString('zh-CN', {
-                              month: 'numeric',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
-                          : '时间待定'}
-                    </span>
+                    {bye ? (
+                      <span>无需比赛</span>
+                    ) : match.scheduledAt ? (
+                      <time dateTime={match.scheduledAt}>
+                        {formatSiteCompactDateTime(match.scheduledAt) ?? '时间待定'}
+                      </time>
+                    ) : (
+                      <span>时间待定</span>
+                    )}
                   </div>
                 </Link>
               )

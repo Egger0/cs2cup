@@ -145,3 +145,23 @@
   font-family: var(--font-mono), monospace;
   font-size: 0.7rem;
 }
+
+.scheduleLink {
+  margin-top: 12px;
+  text-align: right;
+}
+
+.scheduleLink a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 8px;
+  color: var(--muted-2);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+}
+
+.scheduleLink a:hover {
+  color: var(--ct);
+}

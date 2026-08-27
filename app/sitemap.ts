@@ -22,7 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...games.map(game => ({ url: `${BASE}/games/${game.slug}`, lastModified: now, priority: 0.7 })),
     ...tournaments.flatMap(tournament => {
       const base = `${BASE}/tournaments/${tournament.slug}`
-      return ['', '/teams', '/bracket', '/results', '/rules'].map(suffix => ({
+      return ['', '/schedule', '/teams', '/bracket', '/results', '/rules'].map(suffix => ({
         url: `${base}${suffix}`,
         lastModified: now,
         priority: suffix === '' ? 0.9 : 0.5,

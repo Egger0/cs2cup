@@ -5,7 +5,7 @@ import { NextMatchCountdown } from '@/components/domain/NextMatchCountdown'
 import { Button, Empty } from '@/components/ui'
 import { PostList } from '@/components/domain/PostList'
 import { SectionHead } from '@/components/domain/Sections'
-import { indexTeams, nextPlayableMatch } from '@/lib/bracket'
+import { buildScheduleEntries, selectNextScheduleEntry } from '@/lib/schedule'
 import {
   getCurrentTournament,
   getMatches,
@@ -43,13 +43,13 @@ export default async function HomePage() {
 
   if (!setting) notFound()
 
-  let nextMatch: ReturnType<typeof nextPlayableMatch> = null
+  let nextMatch: ReturnType<typeof selectNextScheduleEntry> = null
   if (current) {
     const [teams, matches] = await Promise.all([
       safely(() => getPublicTeams(current.id), []),
       safely(() => getMatches(current.id), []),
     ])
-    nextMatch = nextPlayableMatch(matches, indexTeams(teams))
+    nextMatch = selectNextScheduleEntry(buildScheduleEntries(matches, teams))
   }
 
   const countFor = (gameId: number) =>
@@ -89,6 +89,7 @@ export default async function HomePage() {
             <div className={styles.heroPanel}>
               <NextMatchCountdown
                 tournamentTitle={current?.title ?? '本地预览'}
+                scheduleHref={current ? `/tournaments/${current.slug}/schedule` : undefined}
                 match={nextMatch && current ? {
                   href: `/tournaments/${current.slug}/matches/${nextMatch.match.id}`,
                   scheduledAt: nextMatch.match.scheduledAt,
@@ -96,6 +97,7 @@ export default async function HomePage() {
                   bestOf: nextMatch.match.bestOf,
                   teamA: nextMatch.a?.tag ?? '待定',
                   teamB: nextMatch.b?.tag ?? '待定',
+                  status: nextMatch.status,
                 } : null}
               />
             </div>

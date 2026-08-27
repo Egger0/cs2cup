@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { indexMatches, indexTeams, resolveMatch } from '@/lib/bracket'
+import { formatSiteDateTime } from '@/lib/datetime'
 import { listAdminMatchMaps, listAdminMatches, listTeamsWithContact } from '@/lib/queries/admin'
 import { adminListTournaments } from '@/lib/queries/content'
 import { MatchReportEditor } from './MatchReportEditor'
@@ -30,8 +31,6 @@ export default async function AdminMatchReportPage({
 
   const resolved = resolveMatch(match, indexMatches(matches), indexTeams(teams))
   const maps = await listAdminMatchMaps([match.id])
-  const scheduledAt = match.scheduledAt ? new Date(match.scheduledAt) : null
-
   return (
     <div className={styles.page}>
       <Link href="/admin" className={styles.back}>
@@ -48,15 +47,8 @@ export default async function AdminMatchReportPage({
           {resolved.b?.name ?? '待定'}
         </h1>
         <p className={styles.meta}>
-          {scheduledAt
-            ? scheduledAt.toLocaleString('zh-CN', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                weekday: 'long',
-                hour: '2-digit',
-                minute: '2-digit',
-              })
+          {match.scheduledAt
+            ? (formatSiteDateTime(match.scheduledAt) ?? '比赛时间待定')
             : '比赛时间待定'}
         </p>
       </header>

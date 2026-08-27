@@ -4,6 +4,7 @@ import { SectionHead } from '@/components/domain/Sections'
 import { MapVeto } from '@/components/domain/MapVeto'
 import { Versus } from '@/components/domain/Versus'
 import { indexMatches, indexTeams, isByeMatch, resolveMatch } from '@/lib/bracket'
+import { formatSiteDateTime } from '@/lib/datetime'
 import { getMatchMaps, getMatches, getPublicTeams, getTournament } from '@/lib/queries/public'
 
 export const revalidate = 300
@@ -33,8 +34,6 @@ export default async function MatchPage({
   const bye = isByeMatch(match)
   const byeTeam = resolved.a ?? resolved.b
 
-  const played = new Date(match.scheduledAt ?? '')
-
   return (
     <section className="section">
       <div className="wrap">
@@ -49,13 +48,7 @@ export default async function MatchPage({
             bye
               ? '自动晋级，无需安排比赛'
               : match.scheduledAt
-                ? played.toLocaleString('zh-CN', {
-                    month: 'long',
-                    day: 'numeric',
-                    weekday: 'long',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })
+                ? (formatSiteDateTime(match.scheduledAt) ?? '时间待定')
                 : '时间待定'
           }
         />

@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 import { TournamentHeader } from '@/components/layout/TournamentHeader'
-import { indexTeams, isByeMatch, isCompletedMatch, nextPlayableMatch } from '@/lib/bracket'
+import { isByeMatch, isCompletedMatch } from '@/lib/bracket'
 import { getMatches, getPublicTeams, getTournament } from '@/lib/queries/public'
+import { buildScheduleEntries, selectNextScheduleEntry } from '@/lib/schedule'
 import type { TournamentStatus } from '@/lib/types'
 
 const STATUS_TEXT: Record<TournamentStatus, string> = {
@@ -30,7 +31,7 @@ export default async function TournamentLayout({
 
   const played = matches.filter(isCompletedMatch).length
   const playable = matches.filter(match => !isByeMatch(match)).length
-  const next = nextPlayableMatch(matches, indexTeams(teams))
+  const next = selectNextScheduleEntry(buildScheduleEntries(matches, teams))
   const base = `/tournaments/${slug}`
 
   return (
@@ -63,6 +64,7 @@ export default async function TournamentLayout({
         }
         tabs={[
           { href: base, label: '总览', exact: true },
+          { href: `${base}/schedule`, label: '赛程' },
           { href: `${base}/teams`, label: '参赛战队', count: teams.length },
           { href: `${base}/bracket`, label: '对阵表' },
           { href: `${base}/results`, label: '战报', count: played },

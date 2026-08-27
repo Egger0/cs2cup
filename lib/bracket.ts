@@ -59,25 +59,14 @@ export function isCompletedMatch(match: Match) {
 
 export function isByeMatch(match: Match) {
   return (
+    match.round === 0 &&
+    match.sourceMatchAId === null &&
+    match.sourceMatchBId === null &&
     match.winnerTeamId !== null &&
     match.scoreA === null &&
     match.scoreB === null &&
     ((match.teamAId === null) !== (match.teamBId === null))
   )
-}
-
-export function nextPlayableMatch(
-  matches: Match[],
-  teams: Map<number, PublicTeam>,
-): ResolvedMatch | null {
-  const index = indexMatches(matches)
-  const ordered = [...matches].sort((x, y) => x.round - y.round || x.slot - y.slot)
-  for (const match of ordered) {
-    if (match.winnerTeamId !== null) continue
-    const resolved = resolveMatch(match, index, teams)
-    if (resolved.a && resolved.b) return resolved
-  }
-  return null
 }
 
 export function downstreamOf(matchId: number, matches: Match[]): number[] {

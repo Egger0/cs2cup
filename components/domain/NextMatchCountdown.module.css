@@ -121,6 +121,22 @@ a.match:focus-visible {
   letter-spacing: .08em;
 }
 
+.scheduleLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 0.45rem;
+  padding-inline: 0.25rem;
+  color: #8091a7;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+}
+
+.scheduleLink:hover,
+.scheduleLink:focus-visible {
+  color: #8fc8fa;
+}
+
 @media (prefers-reduced-motion: reduce) {
   a.match {
     transition: none;
