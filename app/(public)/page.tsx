@@ -32,6 +32,7 @@ const FALLBACK = {
 }
 
 export default async function HomePage() {
+  const previewCountdown = process.env.HOME_PREVIEW_COUNTDOWN === '1'
   const [setting, games, tournaments, posts, current] = await Promise.all([
     safely(getSiteSetting, FALLBACK),
     safely(listGames, []),
@@ -84,11 +85,11 @@ export default async function HomePage() {
               </Link>
             </div>
           </div>
-          {current ? (
+          {current || previewCountdown ? (
             <div className={styles.heroPanel}>
               <NextMatchCountdown
-                tournamentTitle={current.title}
-                match={nextMatch ? {
+                tournamentTitle={current?.title ?? '本地预览'}
+                match={nextMatch && current ? {
                   href: `/tournaments/${current.slug}/matches/${nextMatch.match.id}`,
                   scheduledAt: nextMatch.match.scheduledAt,
                   roundLabel: nextMatch.match.roundLabel,

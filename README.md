@@ -45,6 +45,17 @@ insert the subject into `admin_user`, then set the token as the
 For a server that is not running on port 3000, set `E2E_BASE_URL` before `npm run e2e`.
 For example, in PowerShell: `$env:E2E_BASE_URL = 'http://127.0.0.1:3100'; npm run e2e`.
 
+### Visual preview without data
+
+For homepage visual adjustments without CloudBase or the local database, build and run the production container with the preview flag:
+
+```powershell
+docker build -t cs2cup-local .
+docker run --rm --name cs2cup-local -p 3100:3000 -e HOME_PREVIEW_COUNTDOWN=1 -e NEXT_PUBLIC_SITE_URL=http://localhost:3100 cs2cup-local
+```
+
+Open `http://localhost:3100`. The flag uses static fallbacks and displays the homepage countdown card as an unscheduled local preview. Do not set it in Cloud Run.
+
 ## Environment
 
 | Variable | |
