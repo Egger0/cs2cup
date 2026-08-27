@@ -8,6 +8,7 @@ const PAGES = [
   '/games/cs2',
   '/tournaments',
   '/tournaments/2026-nlc',
+  '/tournaments/2026-nlc/schedule?state=all',
   '/tournaments/2026-nlc/teams',
   '/tournaments/2026-nlc/bracket',
   '/tournaments/2026-nlc/results',
@@ -48,14 +49,14 @@ for (const path of PAGES) {
     entry.pages.add(path)
     byRule.set(violation.id, entry)
   }
-  console.log(`${count === 0 ? 'PASS' : 'FAIL'}  ${path.padEnd(36)} ${count} 项`)
+  console.log(`${count === 0 ? 'PASS' : 'FAIL'}  ${path.padEnd(36)} ${count} issues`)
 }
 
-console.log('\n=== 汇总 ===')
+console.log('\n=== Summary ===')
 for (const [rule, entry] of [...byRule.entries()].sort((a, b) => b[1].nodes - a[1].nodes)) {
-  console.log(`${(entry.impact ?? '?').padEnd(9)} ${rule.padEnd(30)} ${entry.nodes} 处 / ${entry.pages.size} 页`)
+  console.log(`${(entry.impact ?? '?').padEnd(9)} ${rule.padEnd(30)} ${entry.nodes} occurrences / ${entry.pages.size} pages`)
   console.log(`          ${entry.help}`)
 }
-console.log(`\n合计 ${total} 项`)
+console.log(`\nTotal: ${total} issues`)
 await browser.close()
 if (total > 0) process.exit(1)

@@ -2,8 +2,8 @@ import { chromium } from 'playwright'
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:3000'
 
-// 预算按实测设定,留出约 15% 余量。字体占比高是刻意的:
-// 中文重磅标题是这个站的视觉识别,不是可有可无的装饰。
+// Budgets are based on measured values with roughly 15% headroom.
+// The display font is an intentional part of the site's visual identity.
 const BUDGET = {
   transferKb: 700,
   jsKb: 180,
@@ -14,7 +14,13 @@ const BUDGET = {
   requests: 60,
 }
 
-const PAGES = ['/', '/tournaments/2026-nlc', '/tournaments/2026-nlc/bracket', '/archive']
+const PAGES = [
+  '/',
+  '/tournaments/2026-nlc',
+  '/tournaments/2026-nlc/schedule?state=all',
+  '/tournaments/2026-nlc/bracket',
+  '/archive',
+]
 
 const browser = await chromium.launch()
 const rows = []
@@ -81,30 +87,30 @@ for (const path of PAGES) {
   rows.push(row)
 
   const over = []
-  if (row.transferKb > BUDGET.transferKb) over.push(`总量 ${row.transferKb}KB`)
+  if (row.transferKb > BUDGET.transferKb) over.push(`total ${row.transferKb}KB`)
   if (row.jsKb > BUDGET.jsKb) over.push(`JS ${row.jsKb}KB`)
-  if (row.imageKb > BUDGET.imageKb) over.push(`图片 ${row.imageKb}KB`)
-  if (row.fontKb > BUDGET.fontKb) over.push(`字体 ${row.fontKb}KB`)
+  if (row.imageKb > BUDGET.imageKb) over.push(`images ${row.imageKb}KB`)
+  if (row.fontKb > BUDGET.fontKb) over.push(`fonts ${row.fontKb}KB`)
   if (row.lcp > BUDGET.lcpMs) over.push(`LCP ${row.lcp}ms`)
   if (row.cls > BUDGET.clsScore) over.push(`CLS ${row.cls}`)
-  if (row.requests > BUDGET.requests) over.push(`请求 ${row.requests}`)
+  if (row.requests > BUDGET.requests) over.push(`requests ${row.requests}`)
 
   if (over.length) failed += 1
   console.log(
     `${over.length ? 'FAIL' : 'PASS'}  ${path.padEnd(32)} ` +
       `${String(row.transferKb).padStart(4)}KB  JS ${String(row.jsKb).padStart(3)}KB  ` +
-      `IMG ${String(row.imageKb).padStart(3)}KB  字体 ${String(row.fontKb).padStart(3)}KB  ` +
+      `IMG ${String(row.imageKb).padStart(3)}KB  FONT ${String(row.fontKb).padStart(3)}KB  ` +
       `LCP ${String(row.lcp).padStart(4)}ms  ` +
-      `CLS ${row.cls}  ${row.requests} 请求` +
-      (over.length ? `  超出: ${over.join(', ')}` : ''),
+      `CLS ${row.cls}  ${row.requests} requests` +
+      (over.length ? `  over budget: ${over.join(', ')}` : ''),
   )
   await ctx.close()
 }
 
 console.log(
-  `\n预算: 总量 ${BUDGET.transferKb}KB · JS ${BUDGET.jsKb}KB · 图片 ${BUDGET.imageKb}KB · ` +
-    `字体 ${BUDGET.fontKb}KB · LCP ${BUDGET.lcpMs}ms · CLS ${BUDGET.clsScore} · 请求 ${BUDGET.requests}`,
+  `\nBudget: total ${BUDGET.transferKb}KB · JS ${BUDGET.jsKb}KB · images ${BUDGET.imageKb}KB · ` +
+    `fonts ${BUDGET.fontKb}KB · LCP ${BUDGET.lcpMs}ms · CLS ${BUDGET.clsScore} · requests ${BUDGET.requests}`,
 )
-console.log(`${rows.length - failed}/${rows.length} 页在预算内`)
+console.log(`${rows.length - failed}/${rows.length} pages within budget`)
 await browser.close()
 if (failed) process.exit(1)

@@ -45,7 +45,6 @@ export default async function AdminTournamentPage({
         ) : (
           <BracketBuilder
             tournamentId={tournamentId}
-            teamCap={tournament.teamCap}
             approvedCount={approved.length}
             existingMatches={matches.length}
           />
@@ -55,7 +54,12 @@ export default async function AdminTournamentPage({
       {matches.length > 0 ? (
         <section className={styles.panel}>
           <h2 className={styles.panelHead}>赛程时间</h2>
-          <Scheduler tournamentId={tournamentId} matches={matches} />
+          <Scheduler
+            key={matches.map(match => `${match.id}:${match.scheduledAt ?? ''}`).join('|')}
+            tournamentId={tournamentId}
+            matches={matches}
+            teams={teams}
+          />
         </section>
       ) : null}
     </>

@@ -101,6 +101,7 @@
 
 .rowActions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
 }
@@ -201,6 +202,22 @@
   font-size: 0.82rem;
 }
 
+.seedInput {
+  width: 54px;
+  padding: 5px 7px;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  background: var(--bg-2);
+  color: var(--ink);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.78rem;
+}
+
+.seedInput:disabled {
+  color: var(--muted-2);
+  opacity: 0.55;
+}
+
 .scoreGrid {
   display: grid;
   gap: 12px;
@@ -288,39 +305,216 @@
   object-fit: cover;
 }
 
-.timeGrid {
+.scheduleEditor {
   display: grid;
-  gap: 8px;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 28px;
+}
+
+.schedulePlanner {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+}
+
+.scheduleFields {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) repeat(2, minmax(180px, 1fr));
+  gap: 18px;
+}
+
+.scheduleHint {
+  color: var(--muted-2);
+  font-size: 0.78rem;
+}
+
+.scheduleRounds {
+  border-block: 1px solid var(--line);
+}
+
+.scheduleRound + .scheduleRound {
+  border-top: 1px solid var(--line-strong);
+}
+
+.scheduleRoundHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 0;
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.timeGrid {
+  border-top: 1px solid var(--line);
 }
 
 .timeCell {
-  display: flex;
+  display: grid;
+  grid-template-columns: 92px minmax(260px, 1fr) minmax(230px, auto);
   align-items: center;
-  gap: 10px;
-  border: 1px solid var(--line);
-  padding: 8px 12px;
-  background: var(--bg-2);
+  gap: 20px;
+  min-height: 84px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  transition: background-color 0.2s ease, padding-inline 0.2s ease;
+}
+
+.timeCell[data-changed] {
+  padding-inline: 12px;
+  background: var(--surface);
 }
 
 .timeSlot {
   font-family: var(--font-mono), monospace;
-  font-size: 0.66rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
   color: var(--muted-2);
-  flex: none;
+}
+
+.timeTeams {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.timeTeams > span {
+  display: grid;
+  min-width: 0;
+}
+
+.timeTeams > span:last-child {
+  text-align: right;
+}
+
+.timeTeams b {
+  color: var(--ink);
+  font-family: var(--font-display), sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+}
+
+.timeTeams small {
+  overflow: hidden;
+  color: var(--muted-2);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeTeams i {
+  color: var(--muted-2);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.6rem;
+  font-style: normal;
+}
+
+.timeControl {
+  display: grid;
+  gap: 5px;
+}
+
+.timeZone {
+  color: var(--muted-2);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .timeInput {
-  flex: 1;
+  width: 100%;
+  min-height: 44px;
   min-width: 0;
-  background: transparent;
-  border: none;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--void);
   color: var(--ink);
   font-family: var(--font-mono), monospace;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
 }
 
 .timeInput:focus {
-  outline: none;
+  outline: 2px solid var(--t);
+  outline-offset: 2px;
+}
+
+.schedulePublish {
+  position: sticky;
+  z-index: 2;
+  bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  min-height: 76px;
+  padding: 14px 18px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
+.schedulePublish:not([data-dirty]) {
+  position: static;
+}
+
+.schedulePublish strong {
+  font-size: 0.88rem;
+}
+
+.schedulePublish p {
+  margin-top: 3px;
+  color: var(--muted-2);
+  font-size: 0.76rem;
+}
+
+.schedulePublish p[data-tone='ok'] {
   color: var(--t);
+}
+
+.schedulePublish p[data-tone='error'] {
+  color: var(--danger);
+}
+
+@media (max-width: 820px) {
+  .schedulePlanner .rowActions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .schedulePlanner .rowActions > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .schedulePlanner .rowActions > * {
+    width: 100%;
+  }
+
+  .scheduleFields,
+  .timeCell {
+    grid-template-columns: 1fr;
+  }
+
+  .timeCell {
+    gap: 10px;
+    padding-block: 16px;
+  }
+
+  .timeTeams {
+    max-width: 520px;
+  }
+
+  .schedulePublish {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .schedulePublish button {
+    width: 100%;
+  }
 }

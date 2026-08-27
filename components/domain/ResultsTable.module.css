@@ -100,3 +100,67 @@
 .link:hover {
   text-decoration: underline;
 }
+
+@media (max-width: 640px) {
+  .wrap {
+    overflow-x: visible;
+  }
+
+  .table,
+  .table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 14px;
+    padding: 14px;
+  }
+
+  .table td {
+    padding: 0;
+  }
+
+  .round {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .score {
+    grid-column: 2;
+    grid-row: 1;
+    text-align: right;
+  }
+
+  .team {
+    grid-column: 1;
+    grid-row: 2;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .maps {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .row td:last-child {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: center;
+  }
+
+  .link {
+    min-height: 44px;
+    margin: -8px;
+    padding: 0 8px;
+  }
+}

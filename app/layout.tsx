@@ -11,6 +11,11 @@ export const metadata: Metadata = {
     template: '%s · 宁波理工电竞社',
   },
   description: '浙大宁波理工学院电竞社官方网站。赛事、战队、对阵与社团动态。',
+  icons: {
+    icon: { url: '/brand/club-logo.jpg', type: 'image/jpeg' },
+    shortcut: '/brand/club-logo.jpg',
+    apple: '/brand/club-logo.jpg',
+  },
   alternates: { types: { 'application/rss+xml': `${SITE}/feed.xml` } },
   openGraph: {
     type: 'website',

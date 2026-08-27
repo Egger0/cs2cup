@@ -19,13 +19,13 @@ const first = await page.evaluate(() => {
   const el = document.activeElement
   return { tag: el?.tagName, text: (el?.textContent ?? '').trim().slice(0, 20), href: el?.getAttribute('href') }
 })
-check('存在跳到主内容的链接', first.href === '#main' || first.text.includes('主内容'), `${first.tag} ${first.text}`)
+check('Skip-to-content link is first', first.href === '#main' || first.text.includes('主内容'), `${first.tag} ${first.href}`)
 
 const focusable = await page.evaluate(() => {
   const nodes = [...document.querySelectorAll('a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])')]
   return nodes.filter(n => n.getBoundingClientRect().height > 0).length
 })
-check('可聚焦元素存在', focusable > 5, `${focusable} 个`)
+check('Focusable controls are available', focusable > 5, `${focusable} controls`)
 
 const invisibleFocus = await page.evaluate(() => {
   const nodes = [...document.querySelectorAll('a[href],button')].filter(
@@ -42,7 +42,7 @@ const invisibleFocus = await page.evaluate(() => {
   }
   return bad
 })
-check('聚焦时有可见指示', invisibleFocus === 0, `${invisibleFocus} 个无指示`)
+check('Focused controls have visible indicators', invisibleFocus === 0, `${invisibleFocus} missing indicators`)
 
 const landmarks = await page.evaluate(() => ({
   header: document.querySelectorAll('header').length,
@@ -50,7 +50,42 @@ const landmarks = await page.evaluate(() => ({
   main: document.querySelectorAll('main').length,
   footer: document.querySelectorAll('footer').length,
 }))
-check('地标齐全', landmarks.main === 1 && landmarks.nav >= 1 && landmarks.footer === 1, JSON.stringify(landmarks))
+check('Page landmarks are complete', landmarks.main === 1 && landmarks.nav >= 1 && landmarks.footer === 1, JSON.stringify(landmarks))
+
+await page.goto(`${BASE}/tournaments/2026-nlc/schedule`, { waitUntil: 'domcontentloaded' })
+await page.waitForTimeout(1200)
+const scheduleTeamFilter = page.locator('select[name="team"]')
+await scheduleTeamFilter.focus()
+check(
+  'Schedule team filter accepts focus',
+  await scheduleTeamFilter.evaluate(element => element === document.activeElement),
+)
+await page.keyboard.press('f')
+const selectedTeam = await scheduleTeamFilter.inputValue()
+check('Keyboard changes the schedule team filter', selectedTeam.length > 0, selectedTeam)
+await page.keyboard.press('Tab')
+const scheduleSubmitFocused = await page.getByRole('button', { name: '查看日程' }).evaluate(
+  element => element === document.activeElement,
+)
+check('Tab reaches the schedule filter submit button', scheduleSubmitFocused)
+await Promise.all([
+  page.waitForURL(url => new URL(url).searchParams.get('team') === selectedTeam),
+  page.keyboard.press('Enter'),
+])
+const keyboardScheduleLinks = page.locator('main a[href^="/tournaments/2026-nlc/matches/"]')
+check('Keyboard-filtered schedule exposes match links', (await keyboardScheduleLinks.count()) > 0)
+const firstScheduleLink = keyboardScheduleLinks.first()
+await firstScheduleLink.focus()
+const firstScheduleHref = await firstScheduleLink.getAttribute('href')
+await Promise.all([
+  page.waitForURL(/\/tournaments\/2026-nlc\/matches\/\d+$/),
+  page.keyboard.press('Enter'),
+])
+check(
+  'Keyboard opens a schedule match link',
+  firstScheduleHref !== null && page.url().endsWith(firstScheduleHref),
+  firstScheduleHref ?? 'missing link',
+)
 
 await page.goto(`${BASE}/archive`, { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(1600)
@@ -58,20 +93,20 @@ await page.locator('button[class*="poster"]').first().focus()
 await page.keyboard.press('Enter')
 await page.waitForTimeout(700)
 const dialogOpen = await page.locator('dialog[open]').count()
-check('键盘可打开灯箱', dialogOpen === 1)
+check('Keyboard opens the lightbox', dialogOpen === 1)
 
 const focusInDialog = await page.evaluate(() => {
   const dialog = document.querySelector('dialog[open]')
   return dialog ? dialog.contains(document.activeElement) : false
 })
-check('焦点进入对话框', focusInDialog)
+check('Focus moves into the dialog', focusInDialog)
 
 await page.keyboard.press('Escape')
 await page.waitForTimeout(600)
-check('Esc 关闭灯箱', (await page.locator('dialog[open]').count()) === 0)
+check('Escape closes the lightbox', (await page.locator('dialog[open]').count()) === 0)
 
 const returned = await page.evaluate(() => document.activeElement?.tagName)
-check('关闭后焦点回到页面', returned !== 'BODY', String(returned))
+check('Focus returns after closing', returned !== 'BODY', String(returned))
 
 const mobile = await ctx.newPage()
 await mobile.setViewportSize({ width: 390, height: 760 })
@@ -80,14 +115,14 @@ await mobile.waitForTimeout(1000)
 await mobile.locator('[aria-controls="site-nav"]').focus()
 await mobile.keyboard.press('Enter')
 await mobile.waitForTimeout(600)
-check('键盘可开移动端抽屉', await mobile.locator('#site-nav a').first().isVisible())
+check('Keyboard opens the mobile drawer', await mobile.locator('#site-nav a').first().isVisible())
 check(
-  '抽屉状态已声明',
+  'Drawer exposes its expanded state',
   (await mobile.locator('[aria-controls="site-nav"]').getAttribute('aria-expanded')) === 'true',
 )
 await mobile.close()
 
 await browser.close()
 const failed = results.filter(r => !r).length
-console.log(`\n${results.length - failed}/${results.length} 通过`)
+console.log(`\n${results.length - failed}/${results.length} passed`)
 if (failed) process.exit(1)

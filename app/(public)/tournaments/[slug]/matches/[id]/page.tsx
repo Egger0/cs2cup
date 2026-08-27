@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation'
 import { SectionHead } from '@/components/domain/Sections'
 import { MapVeto } from '@/components/domain/MapVeto'
 import { Versus } from '@/components/domain/Versus'
-import { indexMatches, indexTeams, resolveMatch } from '@/lib/bracket'
+import { indexMatches, indexTeams, isByeMatch, resolveMatch } from '@/lib/bracket'
+import { formatSiteDateTime } from '@/lib/datetime'
 import { getMatchMaps, getMatches, getPublicTeams, getTournament } from '@/lib/queries/public'
 
 export const revalidate = 300
@@ -30,25 +31,25 @@ export default async function MatchPage({
 
   const resolved = resolveMatch(match, indexMatches(matches), indexTeams(teams))
   const maps = await getMatchMaps([match.id])
-
-  const played = new Date(match.scheduledAt ?? '')
+  const bye = isByeMatch(match)
+  const byeTeam = resolved.a ?? resolved.b
 
   return (
     <section className="section">
       <div className="wrap">
         <SectionHead
           eyebrow={`${tournament.season} · ${match.roundLabel}`}
-          title={`${resolved.a?.name ?? '待定'} vs ${resolved.b?.name ?? '待定'}`}
+          title={
+            bye
+              ? `${byeTeam?.name ?? '参赛战队'} · 轮空晋级`
+              : `${resolved.a?.name ?? '待定'} vs ${resolved.b?.name ?? '待定'}`
+          }
           lede={
-            match.scheduledAt
-              ? played.toLocaleString('zh-CN', {
-                  month: 'long',
-                  day: 'numeric',
-                  weekday: 'long',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
-              : '时间待定'
+            bye
+              ? '自动晋级，无需安排比赛'
+              : match.scheduledAt
+                ? (formatSiteDateTime(match.scheduledAt) ?? '时间待定')
+                : '时间待定'
           }
         />
 

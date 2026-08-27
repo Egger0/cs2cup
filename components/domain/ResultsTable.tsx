@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button, Empty } from '@/components/ui'
-import { indexMatches, indexTeams, resolveMatch } from '@/lib/bracket'
+import { indexMatches, indexTeams, isCompletedMatch, resolveMatch } from '@/lib/bracket'
 import type { Match, MatchMap, PublicTeam } from '@/lib/types'
 import styles from './ResultsTable.module.css'
 
@@ -13,7 +13,7 @@ export interface ResultsTableProps {
 }
 
 export function ResultsTable({ matches, teams, maps, slug, limit }: ResultsTableProps) {
-  const all = matches.filter(match => match.winnerTeamId !== null)
+  const all = matches.filter(isCompletedMatch)
   const decided = limit === undefined ? all : all.slice(-limit)
   if (decided.length === 0) {
     return (

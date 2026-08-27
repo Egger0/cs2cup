@@ -7,12 +7,10 @@ import styles from '../../admin.module.css'
 
 export function BracketBuilder({
   tournamentId,
-  teamCap,
   approvedCount,
   existingMatches,
 }: {
   tournamentId: number
-  teamCap: number
   approvedCount: number
   existingMatches: number
 }) {
@@ -22,7 +20,7 @@ export function BracketBuilder({
   return (
     <div>
       <p style={{ color: 'var(--muted)', marginBottom: 18 }}>
-        按种子号生成单败淘汰对阵:1 号对最后一号,2 号对倒数第二,以此类推。
+        按实际通过审核的战队生成标准种子分区，非 2 的幂次队伍会自动安排轮空。
         {existingMatches > 0 ? '重新生成会清空现有对阵、比分和 Ban/Pick 记录。' : ''}
       </p>
       <div className={styles.rowActions}>
@@ -36,8 +34,12 @@ export function BracketBuilder({
                 : `按 ${approvedCount} 支通过审核的战队生成对阵表?`
             if (!confirm(warning)) return
             startTransition(async () => {
-              const result = await buildBracket(tournamentId, teamCap)
-              setMessage(result.ok ? `已生成 ${result.created} 场比赛` : (result.error ?? '失败'))
+              const result = await buildBracket(tournamentId)
+              setMessage(
+                result.ok
+                  ? `已生成 ${result.created} 场比赛${result.byes ? `，含 ${result.byes} 场轮空` : ''}`
+                  : (result.error ?? '失败'),
+              )
             })
           }}
         >

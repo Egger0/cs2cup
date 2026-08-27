@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button, Empty } from '@/components/ui'
-import { groupByRound, indexMatches, indexTeams, resolveMatch } from '@/lib/bracket'
+import { groupByRound, indexMatches, indexTeams, isByeMatch, resolveMatch } from '@/lib/bracket'
+import { formatSiteCompactDateTime } from '@/lib/datetime'
 import type { Match, PublicTeam } from '@/lib/types'
 import styles from './Bracket.module.css'
 
@@ -38,6 +39,7 @@ export function Bracket({ matches, teams, slug }: BracketProps) {
             <div className={styles.roundLabel}>{round.label}</div>
             {round.matches.map(match => {
               const { a, b, winner } = resolveMatch(match, matchIndex, teamIndex)
+              const bye = isByeMatch(match)
               const sideClass = (team: PublicTeam | null) => {
                 if (!winner || !team) return styles.side
                 return team.id === winner.id
@@ -59,28 +61,27 @@ export function Bracket({ matches, teams, slug }: BracketProps) {
                 >
                   <div className={sideClass(a)}>
                     <span className={a ? styles.name : `${styles.name} ${styles.pending}`}>
-                      {a?.name ?? '待定'}
+                      {a?.name ?? (bye ? '轮空' : '待定')}
                     </span>
                     <span className={styles.score}>{match.scoreA ?? '–'}</span>
                   </div>
                   <div className={sideClass(b)}>
                     <span className={b ? styles.name : `${styles.name} ${styles.pending}`}>
-                      {b?.name ?? '待定'}
+                      {b?.name ?? (bye ? '轮空' : '待定')}
                     </span>
                     <span className={styles.score}>{match.scoreB ?? '–'}</span>
                   </div>
                   <div className={styles.meta}>
-                    <span>BO{match.bestOf}</span>
-                    <span>
-                      {match.scheduledAt
-                        ? new Date(match.scheduledAt).toLocaleString('zh-CN', {
-                            month: 'numeric',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })
-                        : '时间待定'}
-                    </span>
+                    <span>{bye ? '轮空晋级' : `BO${match.bestOf}`}</span>
+                    {bye ? (
+                      <span>无需比赛</span>
+                    ) : match.scheduledAt ? (
+                      <time dateTime={match.scheduledAt}>
+                        {formatSiteCompactDateTime(match.scheduledAt) ?? '时间待定'}
+                      </time>
+                    ) : (
+                      <span>时间待定</span>
+                    )}
                   </div>
                 </Link>
               )

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { formatSiteCompactDateTime } from '@/lib/datetime'
 import { TournamentTabs, type TournamentTab } from './TournamentTabs'
 import styles from './TournamentShell.module.css'
 
@@ -99,34 +100,36 @@ export function TournamentHeader({
           </div>
 
           {next && !compact ? (
-            <Link href={`${base}/matches/${next.id}`} className={styles.card}>
-              <div className={styles.cardHead}>
-                <span>下一场</span>
-                <span>{next.roundLabel}</span>
-              </div>
-              <div className={styles.cardSide}>
-                <span className={styles.cardTag}>{next.aTag}</span>
-                <span className={styles.cardName}>{next.aName}</span>
-              </div>
-              <div className={styles.cardVs}>VS</div>
-              <div className={styles.cardSide}>
-                <span className={styles.cardTag}>{next.bTag}</span>
-                <span className={styles.cardName}>{next.bName}</span>
-              </div>
-              <div className={styles.cardFoot}>
-                <span>BO{next.bestOf}</span>
-                <span>
-                  {next.scheduledAt
-                    ? new Date(next.scheduledAt).toLocaleString('zh-CN', {
-                        month: 'numeric',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
-                    : '时间待定'}
-                </span>
-              </div>
-            </Link>
+            <div className={styles.nextBlock}>
+              <Link href={`${base}/matches/${next.id}`} className={styles.card}>
+                <div className={styles.cardHead}>
+                  <span>下一场</span>
+                  <span>{next.roundLabel}</span>
+                </div>
+                <div className={styles.cardSide}>
+                  <span className={styles.cardTag}>{next.aTag}</span>
+                  <span className={styles.cardName}>{next.aName}</span>
+                </div>
+                <div className={styles.cardVs}>VS</div>
+                <div className={styles.cardSide}>
+                  <span className={styles.cardTag}>{next.bTag}</span>
+                  <span className={styles.cardName}>{next.bName}</span>
+                </div>
+                <div className={styles.cardFoot}>
+                  <span>BO{next.bestOf}</span>
+                  {next.scheduledAt ? (
+                    <time dateTime={next.scheduledAt}>
+                      {formatSiteCompactDateTime(next.scheduledAt) ?? '时间待定'}
+                    </time>
+                  ) : (
+                    <span>时间待定</span>
+                  )}
+                </div>
+              </Link>
+              <Link href={`${base}/schedule`} className={styles.scheduleLink}>
+                查看全部赛程 →
+              </Link>
+            </div>
           ) : null}
         </div>
 

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Badge, Button, Empty } from '@/components/ui'
 import type { Team, TeamStatus } from '@/lib/types'
-import { deleteTeam, updateTeamStatus } from './_actions'
+import { deleteTeam, updateTeamSeed, updateTeamStatus } from './_actions'
 import styles from './admin.module.css'
 
 const STATUS_LABEL: Record<TeamStatus, string> = {
@@ -17,6 +17,8 @@ const STATUS_TONE = { pending: 't', approved: 'ct', rejected: 'alert' } as const
 export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId: number }) {
   const [pending, startTransition] = useTransition()
   const [keyword, setKeyword] = useState('')
+  const [seedMessage, setSeedMessage] = useState('')
+  const approvedCount = teams.filter(team => team.status === 'approved').length
 
   const rows = teams.filter(team =>
     keyword
@@ -34,6 +36,7 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
         value={keyword}
         onChange={event => setKeyword(event.target.value)}
       />
+      {seedMessage ? <p className={styles.error}>{seedMessage}</p> : null}
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
@@ -52,7 +55,27 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
           <tbody>
             {rows.map(team => (
               <tr key={team.id}>
-                <td>{team.seed ? `#${team.seed}` : '—'}</td>
+                <td>
+                  <input
+                    key={`${team.id}:${team.seed ?? 'none'}`}
+                    className={styles.seedInput}
+                    type="number"
+                    min={1}
+                    max={approvedCount}
+                    defaultValue={team.seed ?? ''}
+                    placeholder="—"
+                    aria-label={`${team.name} 的种子号`}
+                    disabled={pending || team.status !== 'approved'}
+                    onBlur={event => {
+                      const raw = event.currentTarget.value.trim()
+                      const seed = raw === '' ? null : Number(raw)
+                      startTransition(async () => {
+                        const result = await updateTeamSeed(team.id, seed, tournamentId)
+                        setSeedMessage(result.ok ? '' : (result.error ?? '种子号保存失败'))
+                      })
+                    }}
+                  />
+                </td>
                 <td>
                   <select
                     className={styles.select}
