@@ -1,18 +1,3 @@
-export interface PlannedRound {
-  round: number
-  label: string
-  matches: number
-  bestOf: number
-}
-
-const LABELS: Record<number, string> = {
-  1: '总决赛',
-  2: '半决赛',
-  4: '八强',
-  8: '16 强',
-  16: '32 强',
-}
-
 export function bracketSize(teamCount: number): number {
   if (!Number.isInteger(teamCount) || teamCount < 2) {
     throw new RangeError('teamCount must be an integer greater than or equal to 2')
@@ -54,26 +39,6 @@ export function orderBySeed<T extends { seed: number | null }>(entries: readonly
     { length: entries.length },
     (_, index) => ordered[index] ?? unseeded[nextUnseeded++]!,
   )
-}
-
-export function planRounds(capacity: number, openingBestOf = 3, finalBestOf = 5): PlannedRound[] {
-  const size = bracketSize(Math.max(2, capacity))
-  const rounds: PlannedRound[] = []
-  let matches = size / 2
-  let round = 0
-
-  while (matches >= 1) {
-    rounds.push({
-      round,
-      label: LABELS[matches] ?? `第 ${round + 1} 轮`,
-      matches,
-      bestOf: matches === 1 ? finalBestOf : openingBestOf,
-    })
-    matches /= 2
-    round += 1
-  }
-
-  return rounds
 }
 
 export function firstRoundPairs(size: number): [number, number][] {
