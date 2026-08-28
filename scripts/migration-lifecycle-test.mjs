@@ -12,6 +12,7 @@ const upgradeDatabase = `cs2cup_migration_upgrade_${suffix}`
 const freshDatabase = `cs2cup_migration_fresh_${suffix}`
 const partialDatabase = `cs2cup_migration_partial_${suffix}`
 const unsafeDatabase = `cs2cup_migration_unsafe_${suffix}`
+const identityFailureDatabase = `cs2cup_migration_identity_failure_${suffix}`
 const contractDatabase = `cs2cup_migration_contract_${suffix}`
 const externalDatabase = `cs2cup_migration_external_${suffix}`
 const concurrentDatabase = `cs2cup_migration_concurrent_${suffix}`
@@ -26,6 +27,7 @@ const databases = [
   freshDatabase,
   partialDatabase,
   unsafeDatabase,
+  identityFailureDatabase,
   contractDatabase,
   concurrentDatabase,
   ...(externalPsqlAvailable ? [externalDatabase] : []),
@@ -308,6 +310,31 @@ function ledgerCount(database, phase) {
   )
 }
 
+function assertIdentityFoundationsEmpty(database) {
+  const result = dockerPsql(database, [
+    '-At',
+    '-c',
+    `select
+       not exists (
+         select 1 from app_private.principal
+         union all select 1 from app_private.principal_identity
+         union all select 1 from app_private.principal_profile
+         union all select 1 from app_private.role_assignment
+         union all select 1 from app_private.team_ownership
+         union all select 1 from app_private.audit_event
+       )
+       and not exists (
+         select 1 from public.admin_user where principal_id is not null
+       )
+       and not exists (
+         select 1 from public.player where principal_id is not null
+       )`,
+  ])
+  if (result !== 't') {
+    throw new Error(`identity migration fabricated rows or compatibility links in ${database}`)
+  }
+}
+
 try {
   for (const database of databases) {
     dockerPsql('postgres', ['-q', '-c', `create database ${database}`])
@@ -366,10 +393,93 @@ try {
     throw new Error('insecure-baseline refusal wrote a migration ledger')
   }
 
+  // A late public-wrapper conflict in the additive identity migration must
+  // roll back its private tables, bridge columns, triggers, helper function,
+  // and ledger write while preserving the pre-existing conflicting object.
+  runMigration(identityFailureDatabase, 'expand', { maxVersion: '017' })
+  dockerPsql(
+    identityFailureDatabase,
+    [
+      '-q',
+      '-c',
+      `create function public.ensure_principal_identity(text, text, text)
+       returns text
+       language sql
+       immutable
+       set search_path = pg_catalog
+       as 'select ''preexisting''::text'`,
+    ],
+  )
+  const identityFailure = runMigration(identityFailureDatabase, 'expand', {
+    expectFailure: true,
+  })
+  if (!identityFailure.includes('cannot change return type of existing function')) {
+    throw new Error('identity migration conflict did not report the wrapper return type')
+  }
+  if (
+    dockerPsql(
+      identityFailureDatabase,
+      [
+        '-At',
+        '-c',
+        `select
+           to_regclass('app_private.principal') is null
+           and to_regprocedure(
+             'app_private.ensure_principal_identity(text,text,text)'
+           ) is null
+           and pg_get_function_result(
+             'public.ensure_principal_identity(text,text,text)'::regprocedure
+           ) = 'text'
+           and not exists (
+             select 1
+             from information_schema.columns
+             where table_schema = 'public'
+               and table_name in ('admin_user', 'player')
+               and column_name = 'principal_id'
+           )
+           and not exists (
+             select 1
+             from public.schema_migration
+             where phase = 'expand'
+               and filename like '018\\_%' escape '\\'
+           )`,
+      ],
+    ) !== 't'
+  ) {
+    throw new Error('failed identity migration left partial schema or ledger state')
+  }
+  dockerPsql(identityFailureDatabase, [
+    '-q',
+    '-c',
+    'drop function public.ensure_principal_identity(text, text, text)',
+  ])
+  runMigration(identityFailureDatabase)
+  assertIdentityFoundationsEmpty(identityFailureDatabase)
+  if (
+    dockerPsql(
+      identityFailureDatabase,
+      [
+        '-At',
+        '-c',
+        `select
+           to_regclass('app_private.principal') is not null
+           and exists (
+             select 1
+             from public.schema_migration
+             where phase = 'expand'
+               and filename like '018\\_%' escape '\\'
+           )`,
+      ],
+    ) !== 't'
+  ) {
+    throw new Error('identity migration did not recover after the conflict was removed')
+  }
+
   dockerPsql(upgradeDatabase, ['--single-transaction', '-q', '-f', '-'], legacySql)
 
   const sentinelDescription = `maintainer-owned-description-${suffix}`
   const sentinelFormat = `maintainer-owned-format-${suffix}`
+  const sentinelAdminSubject = `maintainer-owned-admin-${suffix}`
   dockerPsql(
     upgradeDatabase,
     [
@@ -378,6 +488,15 @@ try {
       `update public.game
        set description='${sentinelDescription}', format_note='${sentinelFormat}'
        where slug='cs2'`,
+    ],
+  )
+  dockerPsql(
+    upgradeDatabase,
+    [
+      '-q',
+      '-c',
+      `insert into public.admin_user (user_id, note)
+       values ('${sentinelAdminSubject}', 'identity no-backfill sentinel')`,
     ],
   )
 
@@ -407,6 +526,22 @@ try {
   )
   if (sentinel !== `${sentinelDescription}\t${sentinelFormat}`) {
     throw new Error('baseline adoption replayed historical seed data')
+  }
+  assertIdentityFoundationsEmpty(upgradeDatabase)
+  if (
+    dockerPsql(
+      upgradeDatabase,
+      [
+        '-At',
+        '-c',
+        `select count(*)
+         from public.admin_user
+         where user_id = '${sentinelAdminSubject}'
+           and principal_id is null`,
+      ],
+    ) !== '1'
+  ) {
+    throw new Error('identity migration changed or removed the legacy admin sentinel')
   }
   assertLifecycle(upgradeDatabase, 'expanded')
   assertRpcClaims(upgradeDatabase, 'expanded')
@@ -641,6 +776,7 @@ try {
   assertRpcClaims(contractDatabase, 'contracted')
 
   runMigration(freshDatabase)
+  assertIdentityFoundationsEmpty(freshDatabase)
   assertLifecycle(freshDatabase, 'expanded')
   assertRpcClaims(freshDatabase, 'expanded')
   runMigration(freshDatabase, 'contract')

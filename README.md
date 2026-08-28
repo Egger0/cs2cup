@@ -69,6 +69,7 @@ insert the subject into `admin_user`, then set the token as the
 | `test:rdb-endpoint` | Proves override URLs cannot receive CloudBase bearer credentials |
 | `test:cloudbase-environment` | Proves credentials can reach only a validated official CloudBase gateway origin |
 | `test:registration-rate-limit` | Sequential and concurrent atomic rate-limit tests |
+| `test:identity-foundations` | Private identity schema, constraints, claims boundary, audit immutability and concurrent resolver regressions |
 | `test:migrations` | Fresh install, legacy adoption, tamper, expand/contract, rollback and direct-`psql` lifecycle checks |
 | `smoke:cloudbase` | Staging-only HTTPS proof for CloudBase RPC claims and expand/contract state; requires explicit acknowledgement and secret-store credentials |
 | `a11y` | axe across 15 pages, zero violations expected |
@@ -187,12 +188,23 @@ OFL-1.1 terms ship with every standalone artifact; see
 | `club_member` `post` | Club content |
 | `admin_user` | Allowlist |
 | `registration_attempt` | Rate-limit ledger, hashed fingerprints |
+| `app_private.principal` `principal_identity` `principal_profile` | Provider-neutral subjects, private external identity bindings and private-by-default profiles |
+| `app_private.role_assignment` `team_ownership` | Revocable application-role and tournament-entry relationships; not yet an authorization source |
+| `app_private.audit_event` | Append-only, data-minimized application audit envelope |
 
 Public reads use `team_public`, `player_public`, `match_map_public` and
 `photo_public`. These views exclude records attached to draft tournaments;
 `team_public` also omits `contact` and `note`. Base-table RLS enforces the same
 tournament boundary for matches, match maps and photos. Posts remain private
 until `published_at`.
+
+Migration 018 adds identity foundations without changing current product
+authority. Existing rows are not backfilled: `admin_user.user_id` remains the
+administrator allowlist, anonymous registration behaves as before, and stored
+roles or ownership rows grant no capability until a later reviewed cutover.
+See [ADR 0002](docs/adr/0002-domain-identity-foundations.md) and the
+[identity-foundations rollout runbook](docs/runbooks/identity-foundations-rollout.md)
+for the exact namespace, privacy, authorization and deployment contract.
 
 The server action derives an HMAC fingerprint from the trusted client address,
 and the database checks, records and executes each attempt in one atomic
@@ -219,6 +231,7 @@ After applying the migrations, verify the security boundaries independently:
 
 ```bash
 npm run test:security-boundaries
+npm run test:identity-foundations
 npm run test:registration-fingerprint
 npm run test:registration-rate-limit
 ```
@@ -269,7 +282,9 @@ Do not mix the repository runner with per-file SQL editor execution or a
 provider-managed migration ledger. An applied migration is immutable; add a
 new numbered migration instead of editing it. See the
 [registration rollout runbook](docs/runbooks/registration-rate-limit-rollout.md)
-for the current canary, contract and coordinated rollback procedure. CloudBase
+for its canary, contract and coordinated rollback procedure, and the
+[identity-foundations rollout runbook](docs/runbooks/identity-foundations-rollout.md)
+before applying migration 018. CloudBase
 connection setup is documented in its
 [direct PostgreSQL guide](https://docs.cloudbase.net/database/postgresql/connecting-to-postgresql),
 and its gateway behavior in the

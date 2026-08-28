@@ -181,6 +181,7 @@ jobs:
           npm run test:match-operations
           npm run test:match-schedule
           npm run test:security-boundaries
+          npm run test:identity-foundations
           npm run test:registration-rate-limit
 
       - name: Build production application
