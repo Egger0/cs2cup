@@ -6,6 +6,7 @@ Thumbs.db
 .env*
 !.env.example
 .next/
+.open-next/
 node_modules/
 next-env.d.ts
 *.tsbuildinfo

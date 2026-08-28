@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "start": "node .next/standalone/server.js",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
@@ -70,6 +72,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@opennextjs/cloudflare": "^1.20.4",
     "@types/node": "24.13.3",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
@@ -78,6 +81,7 @@
     "eslint-config-next": "16.3.3",
     "jose": "^6.2.10",
     "playwright": "^1.62.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "wrangler": "^4.127.0"
   }
 }
