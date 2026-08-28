@@ -53,10 +53,29 @@ Migration 019 follows the same additive, forward-only rule for revocable
 application-session foundations. Follow the
 [session-foundations rollout runbook](runbooks/revocable-session-foundations-rollout.md),
 the normative [ADR 0004](adr/0004-revocable-session-foundations.md), and run
-`npm run test:session-token` plus `npm run test:session-foundations`. The
+`npm run test:auth-boundaries` plus `npm run test:session-foundations`. The
 current authentication path does not consume the new schema; application
 rollback leaves migration 019 installed and inert, and any schema correction
 must use migration 020 or later.
+
+Migration 020 adds the atomic administrator Principal bridge and bounded
+application-session admission required by Phase 2B.3. Follow the
+[application-session cutover runbook](runbooks/application-session-cutover.md),
+the normative [ADR 0005](adr/0005-application-session-cutover.md), and run
+`npm run test:application-session-admission` in addition to the identity and
+session foundation suites. That SQL gate exercises missing, malformed, `anon`,
+`authenticated`, and `club_admin` claims and requires only `service_role` to
+reach non-secret input validation. Also run `npm run test:auth-boundaries`:
+the captured suite pins the 5-second default and
+30-second maximum RPC deadline, strict RFC 3339-style calendar/clock and
+microsecond deadline ordering, `0..900` login retry range, and complete
+transport-error remapping. It is the sole CI runner for the sensitive unit
+scripts, scans normal and forced-failure combined stdout/stderr, never replays
+failed child output, and rejects provider password/token/issuer/subject, session
+token/digest/UUID/cookie, fingerprint/IP, and CSRF canaries. The application
+remains in `legacy` mode after this
+expand migration; rollback leaves both guarded RPCs installed and unused, and
+any database correction uses a later forward migration.
 
 ## Release operation
 

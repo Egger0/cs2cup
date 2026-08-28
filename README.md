@@ -69,6 +69,8 @@ insert the subject into `admin_user`, then set the token as the
 | `test:rdb-endpoint` | Proves override URLs cannot receive CloudBase bearer credentials |
 | `test:cache-boundaries` | Proves public revalidation, high-cardinality no-store, private transport no-store, allowlists and canonical protected-response directives |
 | `test:session-token` | Canonical opaque-token generation, parsing, digest vectors and fail-closed Web Crypto regressions |
+| `test:session-store` | Proves session RPC shapes, the 5-second default/30-second maximum deadline, strict RFC 3339-style response parsing and full transport-error remapping |
+| `test:auth-boundaries` | Captures all sensitive authentication unit tests, scans normal and deliberately failed stdout/stderr, and emits diagnostics only after credential/identity canary checks |
 | `test:cloudbase-environment` | Proves credentials can reach only a validated official CloudBase gateway origin |
 | `test:registration-rate-limit` | Sequential and concurrent atomic rate-limit tests |
 | `test:identity-foundations` | Private identity schema, constraints, claims boundary, audit immutability and concurrent resolver regressions |
@@ -231,6 +233,32 @@ remain empty until the separately reviewed authentication cutover. See
 [session-foundations rollout runbook](docs/runbooks/revocable-session-foundations-rollout.md)
 for the exact state machine, lock order, privacy rules and release gates.
 
+Migration 020 atomically binds a verified administrator identity to its stable
+Principal and admits at most five live application-session families. The new
+provider-proof, fingerprint, session, cookie and CSRF adapters remain unwired;
+an absent or exact `SESSION_AUTH_MODE=legacy` preserves the current login and
+cookie behavior. See [ADR 0005](docs/adr/0005-application-session-cutover.md)
+and the [application-session cutover runbook](docs/runbooks/application-session-cutover.md)
+for the staged wiring, Cloudflare evidence, drain, rollback and retirement
+contract.
+
+The inert 2B.3a session adapter gives every RPC a 5-second default deadline,
+accepts only an integer override through 30 seconds, replaces every transport
+or timeout failure with a fresh fixed error, validates session timestamps as
+calendar-valid RFC 3339-style values, and accepts login retry responses only
+within `0..900` seconds with consistent allow/deny semantics. Its CI redaction
+gate is the sole CI runner for the sensitive token, provider, session, cookie,
+fingerprint and CSRF unit scripts. It captures naturally green/failing runs,
+deliberately triggers redaction-path `AssertionError` failures, and rejects
+combined stdout/stderr containing provider password/access-token/issuer/subject,
+application-session token/digest/UUID/cookie, login fingerprint/IP, or CSRF
+canaries. A child failure emits only the fixed gate error and never replays raw
+child stdout/stderr. The migration 020 SQL suite
+also proves that missing, malformed, `anon`,
+`authenticated`, and `club_admin` claims cannot pass the in-body
+`service_role` guard. These are unwired adapter and disposable-database facts,
+not 2B.3b request-path or browser evidence.
+
 The server action derives an HMAC fingerprint from the trusted client address,
 and the database checks, records and executes each attempt in one atomic
 transaction. IPv6 privacy addresses share a `/64` quota, and raw addresses are
@@ -257,8 +285,9 @@ After applying the migrations, verify the security boundaries independently:
 ```bash
 npm run test:security-boundaries
 npm run test:identity-foundations
-npm run test:session-token
 npm run test:session-foundations
+npm run test:auth-boundaries
+npm run test:application-session-admission
 npm run test:registration-fingerprint
 npm run test:registration-rate-limit
 ```
