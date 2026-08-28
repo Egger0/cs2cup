@@ -8,6 +8,18 @@ const check = (name, pass, detail = '') => {
   console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? '  — ' + detail : ''}`)
 }
 
+const cacheDirectives = response => {
+  const value = response.headers()['cache-control'] ?? ''
+  return {
+    value: value || '(missing)',
+    directives: value
+      .toLowerCase()
+      .split(',')
+      .map(directive => directive.trim())
+      .filter(Boolean),
+  }
+}
+
 const browser = await chromium.launch()
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } })
 const page = await ctx.newPage()
@@ -208,10 +220,46 @@ await page.locator('main a[href^="/news/"]').first().click()
 await page.waitForURL(/\/news\/.+/, { timeout: 15000 }).catch(() => {})
 check('News detail is reachable', /\/news\/.+/.test(page.url()))
 
+let feedResponse
 for (const path of ['/sitemap.xml', '/robots.txt', '/feed.xml']) {
   const res = await page.request.get(BASE + path)
   check(`${path} is available`, res.status() === 200, String(res.status()))
+  if (path === '/feed.xml') feedResponse = res
 }
+
+const feedCache = cacheDirectives(feedResponse)
+check(
+  'Public feed uses shared bounded revalidation',
+  feedCache.directives.includes('s-maxage=300') &&
+    !feedCache.directives.includes('private') &&
+    !feedCache.directives.includes('no-store') &&
+    !feedResponse.headers()['set-cookie'],
+  feedCache.value,
+)
+
+const livePublicRoutes = [
+  '/search?q=cache-boundary-probe',
+  '/tournaments/2026-nlc',
+  '/tournaments/2026-nlc/register',
+  '/tournaments/2026-nlc/schedule?state=all',
+]
+const liveCacheFailures = []
+for (const path of livePublicRoutes) {
+  const response = await page.request.get(`${BASE}${path}`)
+  const cache = cacheDirectives(response)
+  if (
+    response.status() !== 200 ||
+    !cache.directives.includes('no-store') ||
+    cache.directives.some(directive => directive.startsWith('s-maxage='))
+  ) {
+    liveCacheFailures.push(`${path}:${response.status()}:${cache.value}`)
+  }
+}
+check(
+  'Live and high-cardinality public routes are never shared-cacheable',
+  liveCacheFailures.length === 0,
+  liveCacheFailures.join(', '),
+)
 
 await page.goto(`${BASE}/search?q=` + encodeURIComponent('宁理'), { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(1200)

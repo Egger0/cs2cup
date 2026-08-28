@@ -1,9 +1,13 @@
 import 'server-only'
 import { requireAdmin } from '../auth'
-import { deleteRows, insertRows, selectRow, selectRows, updateRows } from '../rdb'
+import {
+  deletePrivateRows,
+  insertPrivateRows,
+  selectPrivateRow,
+  selectPrivateRows,
+  updatePrivateRows,
+} from '../rdb'
 import type { ClubMember, Game, Post, Tournament } from '../types'
-
-const ADMIN = { credential: 'admin', revalidate: false } as const
 
 async function adminMutation<Result>(write: () => Promise<Result>) {
   await requireAdmin()
@@ -39,7 +43,7 @@ const toGame = (row: GameRow): Game => ({
 export async function adminListGames(): Promise<Game[]> {
   await requireAdmin()
 
-  const rows = await selectRows<GameRow>('game', { ...ADMIN, order: 'sort_order.asc' })
+  const rows = await selectPrivateRows<GameRow>('game', { order: 'sort_order.asc' })
   return rows.map(toGame)
 }
 
@@ -54,7 +58,7 @@ export function adminSaveGame(id: number, values: Partial<Game>) {
   if (values.sortOrder !== undefined) payload.sort_order = values.sortOrder
   if (values.active !== undefined) payload.active = values.active
   return adminMutation(() =>
-    updateRows('game', payload, { ...ADMIN, filters: { id: `eq.${id}` } }),
+    updatePrivateRows('game', payload, { filters: { id: `eq.${id}` } }),
   )
 }
 
@@ -66,7 +70,7 @@ export function adminCreateGame(values: {
   tagline: string | null
 }) {
   return adminMutation(() =>
-    insertRows(
+    insertPrivateRows(
       'game',
       {
         slug: values.slug,
@@ -77,14 +81,13 @@ export function adminCreateGame(values: {
         sort_order: 99,
         active: true,
       },
-      ADMIN,
     ),
   )
 }
 
 export function adminDeleteGame(id: number) {
   return adminMutation(() =>
-    deleteRows('game', { ...ADMIN, filters: { id: `eq.${id}` } }),
+    deletePrivateRows('game', { filters: { id: `eq.${id}` } }),
   )
 }
 
@@ -113,8 +116,7 @@ const toPost = (row: PostRow): Post => ({
 export async function adminListPosts(): Promise<Post[]> {
   await requireAdmin()
 
-  const rows = await selectRows<PostRow>('post', {
-    ...ADMIN,
+  const rows = await selectPrivateRows<PostRow>('post', {
     order: 'pinned.desc,published_at.desc',
   })
   return rows.map(toPost)
@@ -129,7 +131,7 @@ export function adminCreatePost(values: {
   pinned: boolean
 }) {
   return adminMutation(() =>
-    insertRows(
+    insertPrivateRows(
       'post',
       {
         slug: values.slug,
@@ -139,7 +141,6 @@ export function adminCreatePost(values: {
         game_id: values.gameId,
         pinned: values.pinned,
       },
-      ADMIN,
     ),
   )
 }
@@ -152,13 +153,13 @@ export function adminSavePost(id: number, values: Partial<Post>) {
   if (values.gameId !== undefined) payload.game_id = values.gameId
   if (values.pinned !== undefined) payload.pinned = values.pinned
   return adminMutation(() =>
-    updateRows('post', payload, { ...ADMIN, filters: { id: `eq.${id}` } }),
+    updatePrivateRows('post', payload, { filters: { id: `eq.${id}` } }),
   )
 }
 
 export function adminDeletePost(id: number) {
   return adminMutation(() =>
-    deleteRows('post', { ...ADMIN, filters: { id: `eq.${id}` } }),
+    deletePrivateRows('post', { filters: { id: `eq.${id}` } }),
   )
 }
 
@@ -174,7 +175,7 @@ interface MemberRow {
 export async function adminListMembers(): Promise<ClubMember[]> {
   await requireAdmin()
 
-  const rows = await selectRows<MemberRow>('club_member', { ...ADMIN, order: 'sort_order.asc' })
+  const rows = await selectPrivateRows<MemberRow>('club_member', { order: 'sort_order.asc' })
   return rows.map(row => ({
     id: row.id,
     name: row.name,
@@ -191,7 +192,7 @@ export function adminSaveMember(id: number, values: Partial<ClubMember>) {
   if (values.handle !== undefined) payload.handle = values.handle
   if (values.intro !== undefined) payload.intro = values.intro
   return adminMutation(() =>
-    updateRows('club_member', payload, { ...ADMIN, filters: { id: `eq.${id}` } }),
+    updatePrivateRows('club_member', payload, { filters: { id: `eq.${id}` } }),
   )
 }
 
@@ -222,7 +223,9 @@ interface TournamentRow {
 export async function adminListTournaments(): Promise<Tournament[]> {
   await requireAdmin()
 
-  const rows = await selectRows<TournamentRow>('tournament', { ...ADMIN, order: 'season.desc,edition.desc' })
+  const rows = await selectPrivateRows<TournamentRow>('tournament', {
+    order: 'season.desc,edition.desc',
+  })
   return rows.map(row => ({
     id: row.id,
     slug: row.slug,
@@ -259,7 +262,7 @@ export function adminCreateTournament(values: {
   teamCap: number
 }) {
   return adminMutation(() =>
-    insertRows(
+    insertPrivateRows(
       'tournament',
       {
         slug: values.slug,
@@ -271,14 +274,13 @@ export function adminCreateTournament(values: {
         status: 'draft',
         hero_bottom: values.title,
       },
-      ADMIN,
     ),
   )
 }
 
 export function adminDeleteTournament(id: number) {
   return adminMutation(() =>
-    deleteRows('tournament', { ...ADMIN, filters: { id: `eq.${id}` } }),
+    deletePrivateRows('tournament', { filters: { id: `eq.${id}` } }),
   )
 }
 
@@ -308,8 +310,7 @@ export async function adminListPhotos(): Promise<
 > {
   await requireAdmin()
 
-  const rows = await selectRows<PhotoRow>('photo', {
-    ...ADMIN,
+  const rows = await selectPrivateRows<PhotoRow>('photo', {
     order: 'tournament_id.desc,sort_order.asc',
   })
   return rows.map(toAdminPhoto)
@@ -318,8 +319,7 @@ export async function adminListPhotos(): Promise<
 export async function adminGetPhoto(id: number) {
   await requireAdmin()
 
-  const row = await selectRow<PhotoRow>('photo', {
-    ...ADMIN,
+  const row = await selectPrivateRow<PhotoRow>('photo', {
     filters: { id: `eq.${id}` },
   })
   return row ? toAdminPhoto(row) : null
@@ -334,7 +334,7 @@ export function adminInsertPhoto(values: {
   sortOrder: number
 }) {
   return adminMutation(() =>
-    insertRows(
+    insertPrivateRows(
       'photo',
       {
         tournament_id: values.tournamentId,
@@ -344,27 +344,26 @@ export function adminInsertPhoto(values: {
         caption: values.caption,
         sort_order: values.sortOrder,
       },
-      ADMIN,
     ),
   )
 }
 
 export function adminDeletePhoto(id: number) {
   return adminMutation(() =>
-    deleteRows('photo', { ...ADMIN, filters: { id: `eq.${id}` } }),
+    deletePrivateRows('photo', { filters: { id: `eq.${id}` } }),
   )
 }
 
 export function adminSaveTournament(id: number, values: Record<string, unknown>) {
   return adminMutation(() =>
-    updateRows('tournament', values, { ...ADMIN, filters: { id: `eq.${id}` } }),
+    updatePrivateRows('tournament', values, { filters: { id: `eq.${id}` } }),
   )
 }
 
 export async function adminGetSiteSetting() {
   await requireAdmin()
 
-  const rows = await selectRows<{
+  const rows = await selectPrivateRows<{
     id: number
     club_name: string
     club_name_en: string | null
@@ -373,7 +372,7 @@ export async function adminGetSiteSetting() {
     contact_qq: string | null
     contact_wechat: string | null
     footer_copy: string | null
-  }>('site_setting', { ...ADMIN, limit: 1 })
+  }>('site_setting', { limit: 1 })
   const row = rows[0]
   if (!row) return null
   return {
@@ -390,6 +389,6 @@ export async function adminGetSiteSetting() {
 
 export function adminSaveSiteSetting(values: Record<string, unknown>) {
   return adminMutation(() =>
-    updateRows('site_setting', values, { ...ADMIN, filters: { id: 'eq.1' } }),
+    updatePrivateRows('site_setting', values, { filters: { id: 'eq.1' } }),
   )
 }

@@ -67,6 +67,7 @@ insert the subject into `admin_user`, then set the token as the
 | `test:pack-standalone` | Proves deployment bundles contain public assets but never `.env*` or private `public/photos` files |
 | `test:object-cleanup` | Proves database-first deletion and best-effort private-object cleanup |
 | `test:rdb-endpoint` | Proves override URLs cannot receive CloudBase bearer credentials |
+| `test:cache-boundaries` | Proves public revalidation, high-cardinality no-store, private transport no-store, allowlists and canonical protected-response directives |
 | `test:cloudbase-environment` | Proves credentials can reach only a validated official CloudBase gateway origin |
 | `test:registration-rate-limit` | Sequential and concurrent atomic rate-limit tests |
 | `test:identity-foundations` | Private identity schema, constraints, claims boundary, audit immutability and concurrent resolver regressions |
@@ -197,6 +198,17 @@ Public reads use `team_public`, `player_public`, `match_map_public` and
 `team_public` also omits `contact` and `note`. Base-table RLS enforces the same
 tournament boundary for matches, match maps and photos. Posts remain private
 until `published_at`.
+
+Repository reads use explicit cache capabilities: reviewed anonymous
+projections choose either bounded revalidation or no-store, while private
+reads, every mutation and every privileged RPC are unconditionally no-store.
+All identity-, data- or application-state-dependent responses under
+`/admin/**`, `/media/**` and `/photos/**`—including authentication redirects
+and application errors—send the same private no-store policy. Next.js's
+bodyless, identity-independent trailing-slash 308 is the documented exception.
+See
+[ADR 0003](docs/adr/0003-explicit-cache-boundaries.md) for the agent-readable
+data classification, response rules, tests and Cloudflare constraints.
 
 Migration 018 adds identity foundations without changing current product
 authority. Existing rows are not backfilled: `admin_user.user_id` remains the

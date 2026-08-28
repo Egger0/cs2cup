@@ -12,7 +12,7 @@ import {
 } from '@/lib/schedule'
 import styles from './schedule.module.css'
 
-export const revalidate = 300
+export const dynamic = 'force-dynamic'
 
 type StateFilter = 'upcoming' | 'completed' | 'all'
 

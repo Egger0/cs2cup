@@ -41,7 +41,7 @@ import {
   adminListTournaments,
   adminSaveSiteSetting,
 } from '@/lib/queries/content'
-import { RdbError, selectRows } from '@/lib/rdb'
+import { RdbError, selectPrivateRows } from '@/lib/rdb'
 import type { MatchMapInput, MatchScheduleInput } from '@/lib/queries/admin'
 import type { TeamStatus, VetoAction } from '@/lib/types'
 
@@ -99,10 +99,8 @@ export async function signIn(username: string, password: string) {
   const claims = await verifyToken(token)
   if (!claims) return { ok: false as const, error: '登录凭证无效' }
 
-  const rows = await selectRows<{ user_id: string }>('admin_user', {
+  const rows = await selectPrivateRows<{ user_id: string }>('admin_user', {
     select: 'user_id',
-    credential: 'admin',
-    revalidate: false,
   })
   if (!rows.some(row => row.user_id === claims.sub)) {
     return { ok: false as const, error: '该账号不在管理员白名单中' }

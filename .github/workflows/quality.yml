@@ -55,6 +55,7 @@ jobs:
           npm run test:pack-standalone
           npm run test:object-cleanup
           npm run test:rdb-endpoint
+          npm run test:cache-boundaries
           npm run test:cloudbase-environment
           npm run test:site-config
           npm run test:migration-checksum
@@ -109,6 +110,42 @@ jobs:
             | grep --fixed-strings 'http://127.0.0.1:3100'
           curl --fail --silent http://127.0.0.1:3100/feed.xml \
             | grep --fixed-strings '<link>http://127.0.0.1:3100</link>'
+          node --input-type=module <<'NODE'
+          const expected = new Map([
+            ['/admin', 307],
+            ['/admin/login', 200],
+            ['/media/cache-boundary-missing', 404],
+            ['/photos/cache-boundary-missing', 404],
+          ])
+          const required = ['private', 'no-cache', 'no-store', 'max-age=0', 'must-revalidate']
+          for (const [path, status] of expected) {
+            const response = await fetch(`http://127.0.0.1:3100${path}`, { redirect: 'manual' })
+            if (response.status !== status) {
+              throw new Error(`${path} returned ${response.status}; expected ${status}`)
+            }
+            const value = response.headers.get('cache-control') ?? ''
+            const directives = value.toLowerCase().split(',').map(entry => entry.trim())
+            if (
+              !required.every(directive => directives.includes(directive)) ||
+              directives.includes('public') ||
+              directives.includes('immutable') ||
+              directives.some(directive => directive.startsWith('s-maxage='))
+            ) {
+              throw new Error(`${path} has unsafe Cache-Control: ${value || '(missing)'}`)
+            }
+          }
+          for (const path of [
+            '/admin/',
+            '/media/cache-boundary-missing/',
+            '/photos/cache-boundary-missing/',
+          ]) {
+            const response = await fetch(`http://127.0.0.1:3100${path}`, { redirect: 'manual' })
+            const location = response.headers.get('location')
+            if (response.status !== 308 || new URL(location, response.url).pathname !== path.slice(0, -1)) {
+              throw new Error(`${path} did not preserve its identity-independent canonical redirect`)
+            }
+          }
+          NODE
           docker exec "$container_name" test -r /app/THIRD_PARTY_NOTICES.md
           docker exec "$container_name" test ! -e /app/public/photos
           test -z "$(docker exec "$container_name" find /app -name '.env*' -print -quit)"
