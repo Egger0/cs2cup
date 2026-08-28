@@ -15,6 +15,7 @@ const unsafeDatabase = `cs2cup_migration_unsafe_${suffix}`
 const identityFailureDatabase = `cs2cup_migration_identity_failure_${suffix}`
 const sessionUpgradeDatabase = `cs2cup_migration_session_upgrade_${suffix}`
 const sessionFailureDatabase = `cs2cup_migration_session_failure_${suffix}`
+const admissionUpgradeDatabase = `cs2cup_migration_admission_upgrade_${suffix}`
 const contractDatabase = `cs2cup_migration_contract_${suffix}`
 const externalDatabase = `cs2cup_migration_external_${suffix}`
 const concurrentDatabase = `cs2cup_migration_concurrent_${suffix}`
@@ -34,6 +35,7 @@ const databases = [
   identityFailureDatabase,
   sessionUpgradeDatabase,
   sessionFailureDatabase,
+  admissionUpgradeDatabase,
   contractDatabase,
   concurrentDatabase,
   ...(externalPsqlAvailable ? [externalDatabase] : []),
@@ -43,6 +45,9 @@ const migrationFiles = directory =>
     .filter(file => /^\d{3}_[a-z0-9_]+\.sql$/.test(file))
     .sort()
 const expandMigrationCount = migrationFiles('').length
+const sessionFoundationMigrationCount = migrationFiles('').filter(
+  file => file.slice(0, 3) <= '019',
+).length
 const contractMigrationCount = migrationFiles('post-deploy').length
 
 function dockerPsql(database, args, input) {
@@ -565,6 +570,62 @@ function assertSessionFoundationsEmpty(database) {
   }
 }
 
+function applicationAdmissionSentinel(database) {
+  return dockerPsql(database, [
+    '-At',
+    '-c',
+    `select jsonb_build_object(
+       'principal', (
+         select to_jsonb(principal.*)
+         from app_private.principal principal
+         where principal.id = '02000000-0000-4000-8000-000000000001'
+       ),
+       'identity', (
+         select to_jsonb(identity.*)
+         from app_private.principal_identity identity
+         where identity.principal_id = '02000000-0000-4000-8000-000000000001'
+       ),
+       'admin', (
+         select to_jsonb(admin.*)
+         from public.admin_user admin
+         where admin.principal_id = '02000000-0000-4000-8000-000000000001'
+       ),
+       'sessions', (
+         select coalesce(
+           jsonb_agg(to_jsonb(session_row.*) order by session_row.id),
+           '[]'::jsonb
+         )
+         from app_private.app_session session_row
+         where session_row.principal_id = '02000000-0000-4000-8000-000000000001'
+       ),
+       'tokens', (
+         select coalesce(
+           jsonb_agg(
+             to_jsonb(token.*)
+             order by pg_catalog.encode(token.token_hash, 'hex')
+           ),
+           '[]'::jsonb
+         )
+         from app_private.app_session_token token
+         join app_private.app_session session_row on session_row.id = token.session_id
+         where session_row.principal_id = '02000000-0000-4000-8000-000000000001'
+       ),
+       'audits', (
+         select coalesce(
+           jsonb_agg(to_jsonb(audit.*) order by audit.id),
+           '[]'::jsonb
+         )
+         from app_private.audit_event audit
+         where audit.actor_principal_id = '02000000-0000-4000-8000-000000000001'
+            or (
+              audit.action = 'migration.admission_upgrade'
+              and audit.entity_id = '02000000-0000-4000-8000-000000000001'
+            )
+       )
+     )::text`,
+  ])
+}
+
 try {
   for (const database of databases) {
     dockerPsql('postgres', ['-q', '-c', `create database ${database}`])
@@ -892,7 +953,7 @@ try {
        )
      )::text`,
   ])
-  runMigration(sessionUpgradeDatabase)
+  runMigration(sessionUpgradeDatabase, 'expand', { maxVersion: '019' })
   assertSessionFoundationsEmpty(sessionUpgradeDatabase)
   const upgradedSessionSentinel = dockerPsql(sessionUpgradeDatabase, [
     '-At',
@@ -910,7 +971,7 @@ try {
   if (upgradedSessionSentinel !== sessionUpgradeSentinel) {
     throw new Error('018-to-019 upgrade changed identity or audit sentinel data')
   }
-  runMigration(sessionUpgradeDatabase)
+  runMigration(sessionUpgradeDatabase, 'expand', { maxVersion: '019' })
   assertSessionFoundationsEmpty(sessionUpgradeDatabase)
   const replayedSessionSentinel = dockerPsql(sessionUpgradeDatabase, [
     '-At',
@@ -929,9 +990,181 @@ try {
     throw new Error('019 replay changed identity or audit sentinel data')
   }
   if (
-    ledgerCount(sessionUpgradeDatabase, 'expand') !== expandMigrationCount
+    ledgerCount(sessionUpgradeDatabase, 'expand') !==
+      sessionFoundationMigrationCount
   ) {
     throw new Error('018-to-019 replay produced an incomplete migration ledger')
+  }
+
+  // Exercise the supported 019 -> 020 production upgrade with both a late
+  // wrapper collision and a populated 019 state. The failed runner must leave
+  // the administrator bridge, session/token rows, audit bytes, conflicting
+  // wrapper, and 019 ledger untouched while rolling back every earlier 020
+  // object and its ledger insert. Removing only the conflict must then allow a
+  // clean apply and replay without changing the sentinels.
+  runMigration(admissionUpgradeDatabase, 'expand', { maxVersion: '019' })
+  dockerPsql(
+    admissionUpgradeDatabase,
+    ['-q', '-f', '-'],
+    `insert into app_private.principal (id, status)
+       values ('02000000-0000-4000-8000-000000000001', 'active');
+     insert into app_private.principal_identity (
+       principal_id, provider, issuer, subject
+     ) values (
+       '02000000-0000-4000-8000-000000000001',
+       'migration_test',
+       'https://issuer.example/admission-upgrade',
+       'AdmissionMigrationAdmin-${suffix}'
+     );
+     insert into public.admin_user (user_id, note, principal_id)
+     values (
+       'AdmissionMigrationAdmin-${suffix}',
+       '019-to-020 administrator sentinel',
+       '02000000-0000-4000-8000-000000000001'
+     );
+     set request.jwt.claims = '{"role":"service_role"}';
+     select public.create_app_session(
+       '02000000-0000-4000-8000-000000000001',
+       pg_catalog.sha256(
+         pg_catalog.convert_to('019-to-020-session-${suffix}', 'UTF8')
+       ),
+       '02002000-0000-4000-8000-000000000001'
+     );
+     insert into app_private.audit_event (
+       actor_type, action, entity_type, entity_id, metadata
+     ) values (
+       'system',
+       'migration.admission_upgrade',
+       'principal',
+       '02000000-0000-4000-8000-000000000001',
+       '{"source":"019"}'::jsonb
+     );`,
+  )
+  const admissionUpgradeSentinel = applicationAdmissionSentinel(
+    admissionUpgradeDatabase,
+  )
+
+  dockerPsql(
+    admissionUpgradeDatabase,
+    ['-q', '-f', '-'],
+    `create function public.authorize_admin_principal(uuid)
+     returns text
+     language sql
+     immutable
+     set search_path = pg_catalog
+     as 'select ''preexisting''::text';`,
+  )
+  const admissionFailure = runMigration(admissionUpgradeDatabase, 'expand', {
+    expectFailure: true,
+  })
+  if (
+    !admissionFailure.includes('already exists with same argument types')
+    && !admissionFailure.includes('cannot change return type of existing function')
+  ) {
+    throw new Error(
+      `application-session admission conflict did not report the late wrapper collision: ${admissionFailure}`,
+    )
+  }
+  if (
+    dockerPsql(
+      admissionUpgradeDatabase,
+      [
+        '-At',
+        '-c',
+        `select
+           to_regprocedure(
+             'app_private.admit_admin_app_session(text,text,text,bytea,uuid)'
+           ) is null
+           and to_regprocedure(
+             'app_private.authorize_admin_principal(uuid)'
+           ) is null
+           and to_regprocedure(
+             'public.admit_admin_app_session(text,text,text,bytea,uuid)'
+           ) is null
+           and pg_get_function_result(
+             'public.authorize_admin_principal(uuid)'::regprocedure
+           ) = 'text'
+           and public.authorize_admin_principal(
+             '02000000-0000-4000-8000-000000000001'
+           ) = 'preexisting'
+           and has_function_privilege(
+             'public',
+             'public.authorize_admin_principal(uuid)',
+             'execute'
+           )
+           and to_regprocedure(
+             'public.create_app_session(uuid,bytea,uuid)'
+           ) is not null
+           and exists (
+             select 1
+             from public.schema_migration
+             where phase = 'expand'
+               and filename like '019\\_%' escape '\\'
+           )
+           and not exists (
+             select 1
+             from public.schema_migration
+             where phase = 'expand'
+               and filename like '020\\_%' escape '\\'
+           )`,
+      ],
+    ) !== 't'
+    || applicationAdmissionSentinel(admissionUpgradeDatabase) !==
+      admissionUpgradeSentinel
+  ) {
+    throw new Error(
+      'failed application-session admission migration changed 019 state, conflict, or ledger',
+    )
+  }
+
+  dockerPsql(admissionUpgradeDatabase, [
+    '-q',
+    '-c',
+    'drop function public.authorize_admin_principal(uuid)',
+  ])
+  runMigration(admissionUpgradeDatabase)
+  if (
+    dockerPsql(
+      admissionUpgradeDatabase,
+      [
+        '-At',
+        '-c',
+        `select
+           to_regprocedure(
+             'app_private.admit_admin_app_session(text,text,text,bytea,uuid)'
+           ) is not null
+           and to_regprocedure(
+             'app_private.authorize_admin_principal(uuid)'
+           ) is not null
+           and to_regprocedure(
+             'public.admit_admin_app_session(text,text,text,bytea,uuid)'
+           ) is not null
+           and pg_get_function_result(
+             'public.authorize_admin_principal(uuid)'::regprocedure
+           ) = 'jsonb'
+           and exists (
+             select 1
+             from public.schema_migration
+             where phase = 'expand'
+               and filename like '020\\_%' escape '\\'
+           )`,
+      ],
+    ) !== 't'
+    || applicationAdmissionSentinel(admissionUpgradeDatabase) !==
+      admissionUpgradeSentinel
+  ) {
+    throw new Error(
+      '019-to-020 upgrade did not recover cleanly or preserve its sentinels',
+    )
+  }
+
+  runMigration(admissionUpgradeDatabase)
+  if (
+    ledgerCount(admissionUpgradeDatabase, 'expand') !== expandMigrationCount
+    || applicationAdmissionSentinel(admissionUpgradeDatabase) !==
+      admissionUpgradeSentinel
+  ) {
+    throw new Error('020 replay changed 019 state or produced an incomplete ledger')
   }
 
   dockerPsql(upgradeDatabase, ['--single-transaction', '-q', '-f', '-'], legacySql)
