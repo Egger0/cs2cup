@@ -275,7 +275,7 @@ export async function getMatches(tournamentId: number): Promise<Match[]> {
 }
 
 export async function getPhotos(tournamentId?: number): Promise<Photo[]> {
-  const rows = await selectRows<PhotoRow>('photo', {
+  const rows = await selectRows<PhotoRow>('photo_public', {
     filters: tournamentId ? { tournament_id: `eq.${tournamentId}` } : undefined,
     order: 'sort_order.asc',
     tags: ['photo'],

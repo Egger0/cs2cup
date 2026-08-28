@@ -14,10 +14,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ key
     return new Response('not found', { status: 404 })
   }
 
-  const photo = await selectRow<{ id: number }>('photo', {
+  const photo = await selectRow<{ id: number }>('photo_public', {
     select: 'id',
     filters: { storage_key: `eq.${relative}` },
-    credential: 'admin',
     revalidate: false,
   }).catch(() => null)
   if (!photo) {

@@ -5,7 +5,7 @@ services:
       POSTGRES_PASSWORD: dev
       POSTGRES_DB: cs2cup
     ports:
-      - '55432:5432'
+      - '127.0.0.1:55432:5432'
     volumes:
       - ./migrations:/docker-entrypoint-initdb.d:ro
     healthcheck:
@@ -21,7 +21,7 @@ services:
       PGRST_DB_ANON_ROLE: anon
       PGRST_DB_SCHEMAS: public
     ports:
-      - '53000:3000'
+      - '127.0.0.1:53000:3000'
     depends_on:
       db:
         condition: service_healthy
@@ -30,10 +30,10 @@ services:
     image: postgrest/postgrest:latest
     environment:
       PGRST_DB_URI: postgres://postgres:dev@db:5432/cs2cup
-      PGRST_DB_ANON_ROLE: postgres
+      PGRST_DB_ANON_ROLE: club_admin
       PGRST_DB_SCHEMAS: public
     ports:
-      - '53001:3000'
+      - '127.0.0.1:53001:3000'
     depends_on:
       db:
         condition: service_healthy
