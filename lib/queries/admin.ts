@@ -1,9 +1,13 @@
 import 'server-only'
 import { requireAdmin } from '../auth'
-import { callFunction, deleteRows, insertRows, selectRows, updateRows } from '../rdb'
+import {
+  callPrivateFunction,
+  deletePrivateRows,
+  insertPrivateRows,
+  selectPrivateRows,
+  updatePrivateRows,
+} from '../rdb'
 import type { Match, MatchMap, Photo, Team, TeamStatus, Tournament, VetoAction } from '../types'
-
-const ADMIN = { credential: 'admin', revalidate: false } as const
 
 async function adminMutation<Result>(write: () => Promise<Result>) {
   await requireAdmin()
@@ -35,8 +39,7 @@ interface TeamRow {
 export async function listTeamsWithContact(tournamentId: number): Promise<Team[]> {
   await requireAdmin()
 
-  const rows = await selectRows<TeamRow>('team', {
-    ...ADMIN,
+  const rows = await selectPrivateRows<TeamRow>('team', {
     select: '*,player(*)',
     filters: { tournament_id: `eq.${tournamentId}` },
     order: 'created_at.asc',
@@ -69,17 +72,17 @@ export async function listTeamsWithContact(tournamentId: number): Promise<Team[]
 
 export function setTeamStatus(id: number, status: TeamStatus) {
   return adminMutation(() =>
-    updateRows(
+    updatePrivateRows(
       'team',
       status === 'approved' ? { status } : { status, seed: null },
-      { ...ADMIN, filters: { id: `eq.${id}` } },
+      { filters: { id: `eq.${id}` } },
     ),
   )
 }
 
 export function removeTeam(id: number) {
   return adminMutation(() =>
-    deleteRows('team', { ...ADMIN, filters: { id: `eq.${id}` } }),
+    deletePrivateRows('team', { filters: { id: `eq.${id}` } }),
   )
 }
 
@@ -100,7 +103,7 @@ export function saveTournament(id: number, values: Partial<Tournament>) {
   if (values.lede !== undefined) payload.lede = values.lede
 
   return adminMutation(() =>
-    updateRows('tournament', payload, { ...ADMIN, filters: { id: `eq.${id}` } }),
+    updatePrivateRows('tournament', payload, { filters: { id: `eq.${id}` } }),
   )
 }
 
@@ -111,10 +114,10 @@ export function saveMatchScore(
   winnerTeamId: number | null,
 ) {
   return adminMutation(() =>
-    updateRows(
+    updatePrivateRows(
       'match',
       { score_a: scoreA, score_b: scoreB, winner_team_id: winnerTeamId },
-      { ...ADMIN, filters: { id: `eq.${id}` } },
+      { filters: { id: `eq.${id}` } },
     ),
   )
 }
@@ -122,10 +125,10 @@ export function saveMatchScore(
 export function clearMatches(ids: number[]) {
   return adminMutation(() => {
     if (ids.length === 0) return Promise.resolve([])
-    return updateRows(
+    return updatePrivateRows(
       'match',
       { score_a: null, score_b: null, winner_team_id: null },
-      { ...ADMIN, filters: { id: `in.(${ids.join(',')})` } },
+      { filters: { id: `in.(${ids.join(',')})` } },
     )
   })
 }
@@ -150,8 +153,7 @@ interface MatchRow {
 export async function listAdminMatches(tournamentId: number): Promise<Match[]> {
   await requireAdmin()
 
-  const rows = await selectRows<MatchRow>('match', {
-    ...ADMIN,
+  const rows = await selectPrivateRows<MatchRow>('match', {
     filters: { tournament_id: `eq.${tournamentId}` },
     order: 'round.asc,slot.asc',
   })
@@ -247,8 +249,7 @@ export async function listAdminMatchMaps(matchIds: number[]): Promise<MatchMap[]
     throw new TypeError('matchIds must contain positive safe integers')
   }
 
-  const rows = await selectRows<MatchMapRow>('match_map', {
-    ...ADMIN,
+  const rows = await selectPrivateRows<MatchMapRow>('match_map', {
     filters: { match_id: `in.(${ids.join(',')})` },
     order: 'match_id.asc,pick_order.asc',
   })
@@ -272,14 +273,13 @@ export function replaceBracket(
   seedPositions: number[],
 ): Promise<BracketReplaceResult> {
   return adminMutation(() =>
-    callFunction<BracketReplaceResult>(
+    callPrivateFunction<BracketReplaceResult>(
       'replace_bracket',
       {
         p_tournament_id: tournamentId,
         p_team_ids: teamIds,
         p_seed_positions: seedPositions,
       },
-      'admin',
     ),
   )
 }
@@ -290,10 +290,9 @@ export function assignTeamSeed(
   seed: number | null,
 ): Promise<TeamSeedResult> {
   return adminMutation(() =>
-    callFunction<TeamSeedResult>(
+    callPrivateFunction<TeamSeedResult>(
       'set_team_seed',
       { p_tournament_id: tournamentId, p_team_id: teamId, p_seed: seed },
-      'admin',
     ),
   )
 }
@@ -306,7 +305,7 @@ export function saveAdminMatchScore(
   scoreB: number | null,
 ): Promise<MatchWriteResult> {
   return adminMutation(() =>
-    callFunction<MatchWriteResult>(
+    callPrivateFunction<MatchWriteResult>(
       'save_match_score',
       {
         p_match_id: matchId,
@@ -315,7 +314,6 @@ export function saveAdminMatchScore(
         p_score_a: scoreA,
         p_score_b: scoreB,
       },
-      'admin',
     ),
   )
 }
@@ -327,7 +325,7 @@ export function saveAdminMatchReport(
   maps: MatchMapInput[],
 ): Promise<MatchReportResult> {
   return adminMutation(() =>
-    callFunction<MatchReportResult>(
+    callPrivateFunction<MatchReportResult>(
       'save_match_report',
       {
         p_match_id: matchId,
@@ -335,7 +333,6 @@ export function saveAdminMatchReport(
         p_team_b_id: teamBId,
         p_maps: maps,
       },
-      'admin',
     ),
   )
 }
@@ -345,7 +342,7 @@ export function replaceMatchSchedule(
   matches: MatchScheduleInput[],
 ): Promise<MatchScheduleResult> {
   return adminMutation(() =>
-    callFunction<MatchScheduleResult>(
+    callPrivateFunction<MatchScheduleResult>(
       'replace_match_schedule',
       {
         p_tournament_id: tournamentId,
@@ -353,14 +350,13 @@ export function replaceMatchSchedule(
         p_expected_scheduled_at: matches.map(match => match.expectedScheduledAt),
         p_scheduled_at: matches.map(match => match.scheduledAt),
       },
-      'admin',
     ),
   )
 }
 
 export function addPhoto(values: Omit<Photo, 'id'>) {
   return adminMutation(() =>
-    insertRows(
+    insertPrivateRows(
       'photo',
       {
         tournament_id: values.tournamentId,
@@ -371,13 +367,12 @@ export function addPhoto(values: Omit<Photo, 'id'>) {
         caption: values.caption,
         sort_order: values.sortOrder,
       },
-      ADMIN,
     ),
   )
 }
 
 export function removePhoto(id: number) {
   return adminMutation(() =>
-    deleteRows('photo', { ...ADMIN, filters: { id: `eq.${id}` } }),
+    deletePrivateRows('photo', { filters: { id: `eq.${id}` } }),
   )
 }

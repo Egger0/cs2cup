@@ -3,7 +3,7 @@ import { cache } from 'react'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { verifyToken } from './jwt'
-import { selectRows } from './rdb'
+import { selectPrivateRows } from './rdb'
 
 export const SESSION_COOKIE = 'cs2cup_session'
 
@@ -14,12 +14,10 @@ export interface AdminIdentity {
 }
 
 async function isWhitelisted(uid: string) {
-  const rows = await selectRows<{ user_id: string }>('admin_user', {
+  const rows = await selectPrivateRows<{ user_id: string }>('admin_user', {
     select: 'user_id',
     filters: { user_id: `eq.${uid}` },
     limit: 1,
-    credential: 'admin',
-    revalidate: false,
   })
   return rows[0]?.user_id === uid
 }

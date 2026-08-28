@@ -1,6 +1,6 @@
 'use server'
 
-import { callFunction } from '@/lib/rdb'
+import { callPrivateFunction } from '@/lib/rdb'
 import { clientFingerprint } from '@/lib/ratelimit'
 
 export interface RegisterResult {
@@ -53,13 +53,12 @@ export async function registerTeam(slug: string, form: FormData): Promise<Regist
 
   try {
     const fingerprint = await clientFingerprint()
-    return await callFunction<RegisterResult>(
+    return await callPrivateFunction<RegisterResult>(
       'submit_team_rate_limited',
       {
         p_fingerprint: fingerprint,
         p_payload: payload,
       },
-      'admin',
     )
   } catch (error) {
     console.error('[registration] guarded submission unavailable', error)

@@ -108,6 +108,37 @@ const check = (name, pass, detail = '') => {
   console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? '  — ' + detail : ''}`)
 }
 
+const requiredPrivateCacheDirectives = [
+  'private',
+  'no-cache',
+  'no-store',
+  'max-age=0',
+  'must-revalidate',
+]
+
+const privateCacheResult = response => {
+  const value = response?.headers()['cache-control'] ?? ''
+  const directives = value
+    .toLowerCase()
+    .split(',')
+    .map(directive => directive.trim())
+    .filter(Boolean)
+  const directiveSet = new Set(directives)
+  const forbidden =
+    directiveSet.has('public') ||
+    directiveSet.has('immutable') ||
+    directives.some(directive => directive.startsWith('s-maxage='))
+  return {
+    pass: requiredPrivateCacheDirectives.every(directive => directiveSet.has(directive)) && !forbidden,
+    value: value || '(missing)',
+  }
+}
+
+const checkPrivateCache = (name, response) => {
+  const result = privateCacheResult(response)
+  check(name, result.pass, result.value)
+}
+
 const browser = await chromium.launch()
 const ctx = await browser.newContext({
   viewport: { width: 1440, height: 1000 },
@@ -133,6 +164,65 @@ let uploadTournamentStatus = null
 let uploadTempDir = null
 
 try {
+  const namespaceProbe = await browser.newContext()
+  const invalidSessionProbe = await browser.newContext()
+  try {
+    await invalidSessionProbe.addCookies([
+      { name: 'cs2cup_session', value: 'invalid.cache.probe', url: BASE },
+    ])
+
+    const anonymousAdmin = await namespaceProbe.request.get(`${BASE}/admin`, {
+      maxRedirects: 0,
+    })
+    check(
+      'Anonymous admin response remains a login redirect',
+      anonymousAdmin.status() === 307 &&
+        new URL(anonymousAdmin.headers().location, BASE).pathname === '/admin/login',
+      String(anonymousAdmin.status()),
+    )
+    checkPrivateCache('Anonymous admin redirect is private and non-storable', anonymousAdmin)
+
+    const invalidAdmin = await invalidSessionProbe.request.get(`${BASE}/admin`, {
+      maxRedirects: 0,
+    })
+    check(
+      'Invalid admin session is rejected and cleared',
+      invalidAdmin.status() === 307 &&
+        (invalidAdmin.headers()['set-cookie'] ?? '').includes('cs2cup_session='),
+      String(invalidAdmin.status()),
+    )
+    checkPrivateCache('Invalid-session redirect is private and non-storable', invalidAdmin)
+
+    const loginPage = await namespaceProbe.request.get(`${BASE}/admin/login`, {
+      maxRedirects: 0,
+    })
+    check('Anonymous login page remains available', loginPage.status() === 200, String(loginPage.status()))
+    checkPrivateCache('Login page is private and non-storable', loginPage)
+
+    for (const [path, expectedStatus] of [
+      ['/admin/', 308],
+      ['/media/cache-boundary-missing/', 308],
+      ['/photos/cache-boundary-missing/', 308],
+    ]) {
+      const response = await namespaceProbe.request.get(`${BASE}${path}`, { maxRedirects: 0 })
+      check(
+        `${path} keeps its canonical redirect`,
+        response.status() === expectedStatus &&
+          new URL(response.headers().location, BASE).pathname === path.replace(/\/$/, ''),
+        `${response.status()} → ${response.headers().location ?? '(missing)'}`,
+      )
+    }
+
+    for (const path of ['/media/cache-boundary-missing', '/photos/cache-boundary-missing']) {
+      const response = await namespaceProbe.request.get(`${BASE}${path}`, { maxRedirects: 0 })
+      check(`${path} remains unavailable`, response.status() === 404, String(response.status()))
+      checkPrivateCache(`${path} 404 is private and non-storable`, response)
+    }
+  } finally {
+    await namespaceProbe.close()
+    await invalidSessionProbe.close()
+  }
+
   if (legacyPublicPhotoKey) {
     const guardedMedia = await ctx.request.get(`${BASE}/media/${legacyPublicPhotoKey}`)
     const legacyStaticMedia = await ctx.request.get(`${BASE}/photos/${legacyPublicPhotoKey}`)
@@ -150,6 +240,8 @@ try {
       legacyOptimizer.status() >= 400 && legacyOptimizer.status() < 500,
       String(legacyOptimizer.status()),
     )
+    checkPrivateCache('Published guarded media is private and non-storable', guardedMedia)
+    checkPrivateCache('Legacy photo rejection is private and non-storable', legacyStaticMedia)
   }
 
   db(`
@@ -216,6 +308,7 @@ try {
     )
   }
   check('Admin application endpoint uses the isolated database', true, DB_NAME)
+  checkPrivateCache('Authenticated admin document is private and non-storable', adminProbeResponse)
   isolationVerified = true
 
   const tournamentId = Number(db('select id from tournament order by id limit 1')) || 1
@@ -240,6 +333,7 @@ try {
   ]
   const routeFailures = []
   const piiLeaks = []
+  const privateCacheFailures = []
 
   const redirectsToLogin = (response, body) => {
     const location = response.headers().location ?? response.headers()['x-nextjs-redirect']
@@ -252,6 +346,9 @@ try {
     const body = await response.text()
     if (!redirectsToLogin(response, body)) routeFailures.push(`${route}:${response.status()}`)
     if (body.includes(sensitiveContact)) piiLeaks.push(route)
+    if (!privateCacheResult(response).pass) {
+      privateCacheFailures.push(`${route}:${privateCacheResult(response).value}`)
+    }
   }
 
   check(
@@ -263,6 +360,27 @@ try {
     'Rejected console documents contain no registration contact data',
     piiLeaks.length === 0,
     piiLeaks.join(', '),
+  )
+  check(
+    'Every rejected console document is private and non-storable',
+    privateCacheFailures.length === 0,
+    privateCacheFailures.join(', '),
+  )
+
+  const crossIdentityResponse = await nonAdmin.request.get(
+    `${BASE}/admin/posts?e2e-isolation=${stamp}`,
+    { maxRedirects: 0 },
+  )
+  const crossIdentityBody = await crossIdentityResponse.text()
+  check(
+    'An authenticated admin document is never reused for a non-admin',
+    redirectsToLogin(crossIdentityResponse, crossIdentityBody) &&
+      !crossIdentityBody.includes(adminProbeTitle),
+    String(crossIdentityResponse.status()),
+  )
+  checkPrivateCache(
+    'Cross-identity admin response is private and non-storable',
+    crossIdentityResponse,
   )
 
   const routerState = [
@@ -325,6 +443,7 @@ try {
     'Rejected RSC streams contain no registration contact data',
     !rscBody.includes(sensitiveContact),
   )
+  checkPrivateCache('Rejected RSC response is private and non-storable', rscResponse)
   await nonAdmin.close()
 
   await page.goto(`${BASE}/admin/posts`, { waitUntil: 'domcontentloaded' })
@@ -387,6 +506,7 @@ try {
     maxRedirects: 0,
   })
   check('Unauthenticated admin access is rejected', res.status() === 307, String(res.status()))
+  checkPrivateCache('Unauthenticated admin rejection is private and non-storable', res)
   await anon.close()
 
   // Upload media.
@@ -436,11 +556,19 @@ try {
       '&w=640&q=75'
 
     const initiallyHidden = await publicMediaContext.request.get(mediaUrl)
+    const draftAdminMedia = await ctx.request.get(mediaUrl)
     check(
       'Draft media is hidden before publication',
       initiallyHidden.status() === 404,
       String(initiallyHidden.status()),
     )
+    check(
+      'Draft media remains available to an administrator',
+      draftAdminMedia.status() === 200,
+      String(draftAdminMedia.status()),
+    )
+    checkPrivateCache('Anonymous draft-media rejection is private and non-storable', initiallyHidden)
+    checkPrivateCache('Administrator draft media is private and non-storable', draftAdminMedia)
 
     const optimizerDenied = await publicMediaContext.request.get(optimizedMediaUrl)
     check(
@@ -456,6 +584,7 @@ try {
       warmedPublicMedia.status() === 200,
       String(warmedPublicMedia.status()),
     )
+    checkPrivateCache('Published media response is private and non-storable', warmedPublicMedia)
 
     db(`update tournament set status='draft' where id=${uploadTournamentId}`)
     const hiddenAgain = await publicMediaContext.request.get(mediaUrl)
@@ -465,6 +594,7 @@ try {
       hiddenAgain.status() === 404,
       String(hiddenAgain.status()),
     )
+    checkPrivateCache('Withdrawn media rejection is private and non-storable', hiddenAgain)
     check(
       'The image optimizer cannot bypass media withdrawal',
       optimizerStillDenied.status() >= 400 && optimizerStillDenied.status() < 500,

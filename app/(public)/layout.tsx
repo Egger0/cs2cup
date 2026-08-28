@@ -4,7 +4,10 @@ import { SiteHeader } from '@/components/layout/SiteHeader'
 import { getSiteSetting, safely } from '@/lib/queries/public'
 import styles from './public-theme.module.css'
 
-export const dynamic = 'force-dynamic'
+// Keep the shared HTML shell request-rendered without overriding explicit
+// per-fetch public cache policies. `dynamic = 'force-dynamic'` would force
+// every descendant fetch to no-store.
+export const revalidate = 0
 
 const LINKS = [
   { href: '/games', label: '项目' },
