@@ -3,6 +3,10 @@
 -- authorization, ownership, and audit records remain outside the PostgREST
 -- exposed public schema.
 
+-- Adding nullable bridges and their indexes requires brief locks on two live
+-- tables. Fail instead of waiting indefinitely behind application traffic.
+set local lock_timeout = '5s';
+
 create table app_private.principal (
   id         uuid primary key default gen_random_uuid(),
   status     text not null default 'active',
@@ -266,7 +270,7 @@ security invoker
 set search_path = pg_catalog, app_private
 as $$
 declare
-  v_now          timestamptz := pg_catalog.clock_timestamp();
+  v_now          timestamptz;
   v_principal_id uuid;
 begin
   if p_provider is null
@@ -292,6 +296,10 @@ begin
     )
   );
 
+  -- Sample only after the tuple lock. A caller that waited behind identity
+  -- creation must never write a timestamp older than that new row.
+  v_now := pg_catalog.clock_timestamp();
+
   select identity.principal_id
   into v_principal_id
   from app_private.principal_identity identity
@@ -304,7 +312,7 @@ begin
 
   if found then
     update app_private.principal_identity
-    set last_verified_at = v_now
+    set last_verified_at = greatest(last_verified_at, v_now)
     where provider = p_provider collate "C"
       and issuer = p_issuer collate "C"
       and subject = p_subject collate "C";
