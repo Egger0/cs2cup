@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Button, Empty, Field } from '@/components/ui'
+import { requireAdmin } from '@/lib/auth'
 import { adminListGames, adminListTournaments } from '@/lib/queries/content'
 import { createTournament } from '../_actions'
 import { TournamentDeleteButton } from './TournamentDeleteButton'
@@ -16,6 +17,8 @@ const STATE: Record<string, string> = {
 }
 
 export default async function AdminTournamentsPage() {
+  await requireAdmin()
+
   const [tournaments, games] = await Promise.all([adminListTournaments(), adminListGames()])
   const gameName = (id: number | null) => games.find(game => game.id === id)?.name ?? '未关联'
 

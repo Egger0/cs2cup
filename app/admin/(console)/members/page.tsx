@@ -1,4 +1,5 @@
 import { Empty } from '@/components/ui'
+import { requireAdmin } from '@/lib/auth'
 import { adminListMembers } from '@/lib/queries/content'
 import { MemberEditor } from './MemberEditor'
 import styles from '../admin.module.css'
@@ -6,6 +7,8 @@ import styles from '../admin.module.css'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminMembersPage() {
+  await requireAdmin()
+
   const members = await adminListMembers()
 
   return (

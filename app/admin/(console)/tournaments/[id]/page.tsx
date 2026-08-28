@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { Empty } from '@/components/ui'
+import { requireAdmin } from '@/lib/auth'
 import { adminListGames, adminListTournaments } from '@/lib/queries/content'
 import { listAdminMatches, listTeamsWithContact } from '@/lib/queries/admin'
 import { TournamentEditor } from './TournamentEditor'
@@ -14,6 +15,8 @@ export default async function AdminTournamentPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  await requireAdmin()
+
   const { id } = await params
   const tournamentId = Number(id)
   if (!Number.isInteger(tournamentId)) notFound()

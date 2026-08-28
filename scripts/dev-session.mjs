@@ -5,6 +5,7 @@ import { chmodSync, writeFileSync } from 'node:fs'
 const ISSUER = process.env.DEV_ISSUER ?? 'http://localhost:53100'
 const AUD = process.env.DEV_AUD ?? 'dev-env'
 const SUB = process.env.DEV_SUB ?? 'local-dev-admin'
+const NON_ADMIN_SUB = process.env.DEV_NON_ADMIN_SUB ?? 'local-dev-non-admin'
 const PORT = Number(new URL(ISSUER).port)
 
 const { publicKey, privateKey } = await generateKeyPair('RS256', { extractable: true })
@@ -26,18 +27,26 @@ createServer((request, response) => {
   response.end()
 }).listen(PORT, () => console.error(`dev issuer on ${ISSUER}`))
 
-const token = await new SignJWT({ sub: SUB, aud: AUD })
-  .setProtectedHeader({ alg: 'RS256', kid: 'dev' })
-  .setIssuer(ISSUER)
-  .setAudience(AUD)
-  .setExpirationTime('8h')
-  .sign(privateKey)
+const signToken = sub =>
+  new SignJWT({ sub, aud: AUD })
+    .setProtectedHeader({ alg: 'RS256', kid: 'dev' })
+    .setIssuer(ISSUER)
+    .setAudience(AUD)
+    .setExpirationTime('8h')
+    .sign(privateKey)
+
+const [token, nonAdminToken] = await Promise.all([signToken(SUB), signToken(NON_ADMIN_SUB)])
 
 const tokenFile = process.env.DEV_TOKEN_FILE
 if (tokenFile) {
   writeFileSync(tokenFile, token, { encoding: 'utf8', mode: 0o600 })
   chmodSync(tokenFile, 0o600)
   console.error(`dev token written to ${tokenFile}`)
+
+  const nonAdminTokenFile = process.env.DEV_NON_ADMIN_TOKEN_FILE ?? `${tokenFile}.non-admin`
+  writeFileSync(nonAdminTokenFile, nonAdminToken, { encoding: 'utf8', mode: 0o600 })
+  chmodSync(nonAdminTokenFile, 0o600)
+  console.error(`non-admin dev token written to ${nonAdminTokenFile}`)
 } else {
   console.log(token)
 }

@@ -1,4 +1,5 @@
 import { Button, Empty, Field, TextField } from '@/components/ui'
+import { requireAdmin } from '@/lib/auth'
 import { adminListGames, adminListPosts } from '@/lib/queries/content'
 import { createPost } from '../_actions'
 import { PostEditor } from './PostEditor'
@@ -7,6 +8,8 @@ import styles from '../admin.module.css'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminPostsPage() {
+  await requireAdmin()
+
   const [posts, games] = await Promise.all([adminListPosts(), adminListGames()])
 
   return (

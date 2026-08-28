@@ -5,7 +5,10 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const BASE = (process.env.E2E_BASE_URL ?? 'http://localhost:3000').replace(/\/$/, '')
-const token = readFileSync(process.env.DEV_TOKEN_FILE ?? '/tmp/dev-token.txt', 'utf8').trim()
+const tokenFile = process.env.DEV_TOKEN_FILE ?? '/tmp/dev-token.txt'
+const nonAdminTokenFile = process.env.DEV_NON_ADMIN_TOKEN_FILE ?? `${tokenFile}.non-admin`
+const token = readFileSync(tokenFile, 'utf8').trim()
+const nonAdminToken = readFileSync(nonAdminTokenFile, 'utf8').trim()
 const db = sql =>
   execFileSync(
     'docker',
@@ -47,6 +50,115 @@ const stamp = Date.now()
 let originalTagline = null
 
 try {
+  const tournamentId = Number(db('select id from tournament order by id limit 1')) || 1
+  const matchId = Number(db('select id from match order by id limit 1')) || 1
+  const sensitiveContact = db(
+    "select contact from team where contact is not null and contact <> '' order by id limit 1",
+  )
+  if (!sensitiveContact) throw new Error('Admin authorization test requires a team contact fixture')
+
+  const nonAdmin = await browser.newContext()
+  await nonAdmin.addCookies([{ name: 'cs2cup_session', value: nonAdminToken, url: BASE }])
+  const protectedRoutes = [
+    '/admin',
+    '/admin/games',
+    '/admin/members',
+    '/admin/photos',
+    '/admin/posts',
+    '/admin/settings',
+    '/admin/tournaments',
+    `/admin/tournaments/${tournamentId}`,
+    `/admin/tournaments/${tournamentId}/matches/${matchId}`,
+  ]
+  const routeFailures = []
+  const piiLeaks = []
+
+  const redirectsToLogin = (response, body) => {
+    const location = response.headers().location ?? response.headers()['x-nextjs-redirect']
+    if (location) return new URL(location, BASE).pathname === '/admin/login'
+    return body.includes('NEXT_REDIRECT') && body.includes('/admin/login')
+  }
+
+  for (const route of protectedRoutes) {
+    const response = await nonAdmin.request.get(`${BASE}${route}`, { maxRedirects: 0 })
+    const body = await response.text()
+    if (!redirectsToLogin(response, body)) routeFailures.push(`${route}:${response.status()}`)
+    if (body.includes(sensitiveContact)) piiLeaks.push(route)
+  }
+
+  check(
+    'Valid non-admin sessions are rejected by every console page',
+    routeFailures.length === 0,
+    routeFailures.join(', '),
+  )
+  check(
+    'Rejected console documents contain no registration contact data',
+    piiLeaks.length === 0,
+    piiLeaks.join(', '),
+  )
+
+  const routerState = [
+    '',
+    {
+      children: [
+        'admin',
+        {
+          children: [
+            '(console)',
+            {
+              children: [
+                'posts',
+                { children: ['__PAGE__', {}, null, null, 4096] },
+                null,
+                null,
+                4096,
+              ],
+            },
+            null,
+            null,
+            4096,
+          ],
+        },
+        null,
+        null,
+        4096,
+      ],
+    },
+    null,
+    null,
+    4116,
+  ]
+  const rscHeaders = {
+    RSC: '1',
+    'Next-Router-State-Tree': encodeURIComponent(JSON.stringify(routerState)),
+    'Next-Url': '/admin/posts',
+  }
+  let rscResponse = await nonAdmin.request.get(`${BASE}/admin?_rsc=authorization-boundary`, {
+    headers: rscHeaders,
+    maxRedirects: 0,
+  })
+  const canonicalRscLocation = rscResponse.headers().location
+  if (rscResponse.status() === 307 && canonicalRscLocation) {
+    const canonicalRscUrl = new URL(canonicalRscLocation, BASE)
+    if (canonicalRscUrl.pathname === '/admin' && canonicalRscUrl.searchParams.has('_rsc')) {
+      rscResponse = await nonAdmin.request.get(canonicalRscUrl.toString(), {
+        headers: rscHeaders,
+        maxRedirects: 0,
+      })
+    }
+  }
+  const rscBody = await rscResponse.text()
+  check(
+    'Valid non-admin RSC requests are redirected before rendering',
+    redirectsToLogin(rscResponse, rscBody),
+    String(rscResponse.status()),
+  )
+  check(
+    'Rejected RSC streams contain no registration contact data',
+    !rscBody.includes(sensitiveContact),
+  )
+  await nonAdmin.close()
+
   await page.goto(`${BASE}/admin/posts`, { waitUntil: 'domcontentloaded' })
   await page.waitForTimeout(1000)
   const before = Number(db('select count(*) from post'))

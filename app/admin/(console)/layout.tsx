@@ -1,7 +1,6 @@
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui'
-import { getCurrentAdmin } from '@/lib/auth'
+import { requireAdmin } from '@/lib/auth'
 import { AdminNav } from './AdminNav'
 import { signOut } from './_actions'
 import styles from './admin.module.css'
@@ -11,8 +10,7 @@ export const dynamic = 'force-dynamic'
 export const metadata = { title: '后台管理' }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const admin = await getCurrentAdmin().catch(() => null)
-  if (!admin) redirect('/admin/login')
+  const admin = await requireAdmin()
 
   return (
     <div className={styles.shell}>

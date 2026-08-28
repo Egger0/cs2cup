@@ -1,4 +1,5 @@
 import 'server-only'
+import { requireAdmin } from '../auth'
 import { callFunction, deleteRows, insertRows, selectRows, updateRows } from '../rdb'
 import type { Match, MatchMap, Photo, Team, TeamStatus, Tournament, VetoAction } from '../types'
 
@@ -27,6 +28,8 @@ interface TeamRow {
 }
 
 export async function listTeamsWithContact(tournamentId: number): Promise<Team[]> {
+  await requireAdmin()
+
   const rows = await selectRows<TeamRow>('team', {
     ...ADMIN,
     select: '*,player(*)',
@@ -130,6 +133,8 @@ interface MatchRow {
 }
 
 export async function listAdminMatches(tournamentId: number): Promise<Match[]> {
+  await requireAdmin()
+
   const rows = await selectRows<MatchRow>('match', {
     ...ADMIN,
     filters: { tournament_id: `eq.${tournamentId}` },
@@ -218,6 +223,8 @@ export interface MatchScheduleResult {
 }
 
 export async function listAdminMatchMaps(matchIds: number[]): Promise<MatchMap[]> {
+  await requireAdmin()
+
   if (matchIds.length === 0) return []
 
   const ids = [...new Set(matchIds)]

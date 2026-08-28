@@ -1,4 +1,5 @@
 import { Button, Field } from '@/components/ui'
+import { requireAdmin } from '@/lib/auth'
 import { adminListGames } from '@/lib/queries/content'
 import { createGame } from '../_actions'
 import { GameEditor } from './GameEditor'
@@ -7,6 +8,8 @@ import styles from '../admin.module.css'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminGamesPage() {
+  await requireAdmin()
+
   const games = await adminListGames()
 
   return (

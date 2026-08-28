@@ -1,4 +1,5 @@
 import 'server-only'
+import { requireAdmin } from '../auth'
 import { deleteRows, insertRows, selectRows, updateRows } from '../rdb'
 import type { ClubMember, Game, Post, Tournament } from '../types'
 
@@ -31,6 +32,8 @@ const toGame = (row: GameRow): Game => ({
 })
 
 export async function adminListGames(): Promise<Game[]> {
+  await requireAdmin()
+
   const rows = await selectRows<GameRow>('game', { ...ADMIN, order: 'sort_order.asc' })
   return rows.map(toGame)
 }
@@ -93,6 +96,8 @@ const toPost = (row: PostRow): Post => ({
 })
 
 export async function adminListPosts(): Promise<Post[]> {
+  await requireAdmin()
+
   const rows = await selectRows<PostRow>('post', {
     ...ADMIN,
     order: 'pinned.desc,published_at.desc',
@@ -142,6 +147,8 @@ interface MemberRow {
 }
 
 export async function adminListMembers(): Promise<ClubMember[]> {
+  await requireAdmin()
+
   const rows = await selectRows<MemberRow>('club_member', { ...ADMIN, order: 'sort_order.asc' })
   return rows.map(row => ({
     id: row.id,
@@ -186,6 +193,8 @@ interface TournamentRow {
 }
 
 export async function adminListTournaments(): Promise<Tournament[]> {
+  await requireAdmin()
+
   const rows = await selectRows<TournamentRow>('tournament', { ...ADMIN, order: 'season.desc,edition.desc' })
   return rows.map(row => ({
     id: row.id,
@@ -252,6 +261,8 @@ interface PhotoRow {
 export async function adminListPhotos(): Promise<
   { id: number; tournamentId: number; storageKey: string; width: number; height: number; caption: string | null; sortOrder: number }[]
 > {
+  await requireAdmin()
+
   const rows = await selectRows<PhotoRow>('photo', {
     ...ADMIN,
     order: 'tournament_id.desc,sort_order.asc',
@@ -294,6 +305,8 @@ export function adminSaveTournament(id: number, values: Record<string, unknown>)
 }
 
 export async function adminGetSiteSetting() {
+  await requireAdmin()
+
   const rows = await selectRows<{
     id: number
     club_name: string
