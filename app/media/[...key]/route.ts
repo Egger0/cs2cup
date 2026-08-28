@@ -1,31 +1,30 @@
 import { posix } from 'node:path'
 import { getCurrentAdmin } from '@/lib/auth'
-import { selectRow } from '@/lib/rdb'
+import { PRIVATE_NO_STORE_HEADERS } from '@/lib/http-cache'
+import { selectPrivateRow, selectPublicRow } from '@/lib/rdb'
 import { getObject } from '@/lib/storage'
 
 function notFound() {
   return new Response('not found', {
     status: 404,
-    headers: { 'Cache-Control': 'no-store' },
+    headers: PRIVATE_NO_STORE_HEADERS,
   })
 }
 
 async function canReadPhoto(storageKey: string) {
-  const published = await selectRow<{ id: number }>('photo_public', {
+  const published = await selectPublicRow<{ id: number }>('photo_public', {
     select: 'id',
     filters: { storage_key: `eq.${storageKey}` },
-    revalidate: false,
+    cache: { mode: 'no-store' },
   }).catch(() => null)
   if (published) return true
 
   const admin = await getCurrentAdmin().catch(() => null)
   if (!admin) return false
 
-  const privatePhoto = await selectRow<{ id: number }>('photo', {
+  const privatePhoto = await selectPrivateRow<{ id: number }>('photo', {
     select: 'id',
     filters: { storage_key: `eq.${storageKey}` },
-    credential: 'admin',
-    revalidate: false,
   }).catch(() => null)
   return Boolean(privatePhoto)
 }
@@ -51,7 +50,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ key
     return new Response(new Uint8Array(file.body).buffer, {
       headers: {
         'Content-Type': file.contentType,
-        'Cache-Control': 'no-store',
+        ...PRIVATE_NO_STORE_HEADERS,
       },
     })
   } catch {
