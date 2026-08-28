@@ -1,5 +1,6 @@
 import 'server-only'
-import cloudbase from '@cloudbase/js-sdk'
+import cloudbase from '@cloudbase/js-sdk/app'
+import { registerStorage } from '@cloudbase/js-sdk/storage'
 import {
   resolveCloudBaseEnvironmentId,
   resolveCloudBaseRegion,
@@ -23,6 +24,8 @@ export interface StoredObject {
 
 const LOCAL_ROOT = resolvePhotoLocalRoot()
 const DEFAULT_BUCKET = 'cs2cup-photos'
+
+registerStorage(cloudbase)
 
 export const LOCAL_UPLOAD_ROOT = LOCAL_ROOT
 
