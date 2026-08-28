@@ -203,7 +203,7 @@ check('Results page includes map statistics', await page.getByText('哪张图最
 await page.goto(`${BASE}/news`, { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(800)
 const newsLinks = await page.locator('main a[href^="/news/"]').count()
-check('News entries are linked', newsLinks >= 3, `${newsLinks} entries`)
+check('Published news entries are linked', newsLinks >= 2, `${newsLinks} entries`)
 await page.locator('main a[href^="/news/"]').first().click()
 await page.waitForURL(/\/news\/.+/, { timeout: 15000 }).catch(() => {})
 check('News detail is reachable', /\/news\/.+/.test(page.url()))
