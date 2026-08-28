@@ -25,6 +25,10 @@ export interface PublicQueryOptions extends SelectionOptions {
 
 export type PrivateQueryOptions = SelectionOptions
 
+export interface PrivateFunctionOptions {
+  signal?: AbortSignal
+}
+
 export const PUBLIC_RELATIONS = [
   'club_member',
   'game',
@@ -165,7 +169,12 @@ export function deletePrivateRows(table: string, options: PrivateQueryOptions) {
   return request<void>('DELETE', table, options, 'admin', undefined)
 }
 
-async function callFunction<T>(name: string, args: unknown, credential: Credential) {
+async function callFunction<T>(
+  name: string,
+  args: unknown,
+  credential: Credential,
+  options: PrivateFunctionOptions = {},
+) {
   const endpoint = resolveRdbEndpoint(credential)
   let response: Response
   try {
@@ -177,6 +186,7 @@ async function callFunction<T>(name: string, args: unknown, credential: Credenti
       },
       body: JSON.stringify(args),
       cache: 'no-store',
+      signal: options.signal,
     })
   } catch (error) {
     const detail = error instanceof Error ? error.message : 'network request failed'
@@ -192,6 +202,10 @@ export function callPublicFunction<T>(name: PublicFunction, args: unknown) {
   return callFunction<T>(name, args, 'anon')
 }
 
-export function callPrivateFunction<T>(name: string, args: unknown) {
-  return callFunction<T>(name, args, 'admin')
+export function callPrivateFunction<T>(
+  name: string,
+  args: unknown,
+  options: PrivateFunctionOptions = {},
+) {
+  return callFunction<T>(name, args, 'admin', options)
 }
