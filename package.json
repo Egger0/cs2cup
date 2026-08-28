@@ -24,11 +24,13 @@
     "test:object-cleanup": "node --experimental-strip-types scripts/object-cleanup-test.mjs",
     "test:rdb-endpoint": "node --experimental-strip-types scripts/rdb-endpoint-test.mjs",
     "test:cache-boundaries": "node --conditions=react-server --experimental-strip-types scripts/rdb-cache-boundaries-test.mjs",
+    "test:session-token": "node --conditions=react-server --experimental-strip-types scripts/session-token-test.mjs",
     "test:cloudbase-environment": "node --experimental-strip-types scripts/cloudbase-environment-test.mjs",
     "test:site-config": "node --experimental-strip-types scripts/site-config-test.mjs",
     "test:migration-checksum": "node scripts/migration-checksum-test.mjs",
     "test:migration-state": "node scripts/migration-state-test.mjs",
     "test:identity-foundations": "docker compose exec -T db psql -U postgres -d cs2cup -X -v ON_ERROR_STOP=1 -f - < scripts/identity-foundations-test.sql && node scripts/identity-concurrency-test.mjs",
+    "test:session-foundations": "docker compose exec -T db psql -U postgres -d \"${TEST_DB_NAME:-cs2cup}\" -X -v ON_ERROR_STOP=1 -f - < scripts/session-foundations-test.sql && node scripts/session-concurrency-test.mjs",
     "test:registration-rate-limit": "docker compose exec -T db psql -U postgres -d cs2cup -X -v ON_ERROR_STOP=1 -f - < scripts/registration-rate-limit-test.sql && node scripts/registration-rate-limit-concurrency-test.mjs",
     "test:migrations": "node scripts/migration-lifecycle-test.mjs",
     "smoke:cloudbase": "node --experimental-strip-types scripts/cloudbase-rpc-smoke.mjs",
@@ -47,7 +49,7 @@
     "a11y": "node scripts/a11y.mjs",
     "keyboard": "node scripts/keyboard.mjs",
     "perf": "node scripts/perf.mjs",
-    "check": "npm run typecheck && npm run lint && npm run test:seeding && npm run test:schedule && npm run test:photo-storage-config && npm run test:photo-storage-security && npm run test:pack-standalone && npm run test:object-cleanup && npm run test:rdb-endpoint && npm run test:cache-boundaries && npm run test:cloudbase-environment && npm run test:site-config && npm run test:migration-checksum && npm run test:migration-state && npm run test:migrations && npm run test:match-operations && npm run test:match-schedule && npm run test:security-boundaries && npm run test:identity-foundations && npm run test:registration-fingerprint && npm run test:registration-rate-limit && npm run e2e && npm run e2e:admin && npm run a11y && npm run keyboard && npm run perf"
+    "check": "npm run typecheck && npm run lint && npm run test:seeding && npm run test:schedule && npm run test:photo-storage-config && npm run test:photo-storage-security && npm run test:pack-standalone && npm run test:object-cleanup && npm run test:rdb-endpoint && npm run test:cache-boundaries && npm run test:session-token && npm run test:cloudbase-environment && npm run test:site-config && npm run test:migration-checksum && npm run test:migration-state && npm run test:migrations && npm run test:match-operations && npm run test:match-schedule && npm run test:security-boundaries && npm run test:identity-foundations && npm run test:session-foundations && npm run test:registration-fingerprint && npm run test:registration-rate-limit && npm run e2e && npm run e2e:admin && npm run a11y && npm run keyboard && npm run perf"
   },
   "dependencies": {
     "@cloudbase/js-sdk": "^3.8.2",

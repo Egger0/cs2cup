@@ -63,6 +63,18 @@ const db = sql =>
     { encoding: 'utf8', cwd: ROOT },
   ).trim()
 const sqlString = value => `'${value.replaceAll("'", "''")}'`
+const emptySessionFoundationCounts =
+  'app_session=0, app_session_token=0, login_throttle=0, session_audit_event=0'
+const sessionFoundationCounts = () =>
+  db(`
+    select
+      'app_session=' || (select count(*) from app_private.app_session) || ', ' ||
+      'app_session_token=' || (select count(*) from app_private.app_session_token) || ', ' ||
+      'login_throttle=' || (select count(*) from app_private.login_throttle) || ', ' ||
+      'session_audit_event=' || (
+        select count(*) from app_private.audit_event where action like 'session.%'
+      )
+  `)
 const connectedDatabase = db('select current_database()')
 if (connectedDatabase !== DB_NAME) {
   throw new Error(`psql connected to ${connectedDatabase || '(unknown)'} instead of ${DB_NAME}`)
@@ -309,6 +321,12 @@ try {
   }
   check('Admin application endpoint uses the isolated database', true, DB_NAME)
   checkPrivateCache('Authenticated admin document is private and non-storable', adminProbeResponse)
+  const sessionCountsAfterAuthentication = sessionFoundationCounts()
+  check(
+    'Phase 2B.2 session foundations remain inert after current authentication',
+    sessionCountsAfterAuthentication === emptySessionFoundationCounts,
+    sessionCountsAfterAuthentication,
+  )
   isolationVerified = true
 
   const tournamentId = Number(db('select id from tournament order by id limit 1')) || 1
@@ -846,6 +864,12 @@ try {
     (await page.evaluate(() => document.body.innerText)).includes(champ),
   )
 
+  const sessionCountsAfterActions = sessionFoundationCounts()
+  check(
+    'Current admin actions do not cut over to revocable session state',
+    sessionCountsAfterActions === emptySessionFoundationCounts,
+    sessionCountsAfterActions,
+  )
   check('Pages have no runtime errors', errors.length === 0, errors.slice(0, 1).join())
 } finally {
   if (isolationVerified) {
