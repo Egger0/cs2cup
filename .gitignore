@@ -3,14 +3,14 @@
 .DS_Store
 Thumbs.db
 *.log
-.env
-.env.local
+.env*
+!.env.example
 .next/
 node_modules/
 next-env.d.ts
 *.tsbuildinfo
 cs2-cup.html
-docs/
 egger/
+docs/superpowers/
 migration-output/
 public/photos/

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
+import { resolveSiteOrigin } from '@/lib/site-config'
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://example.invalid'
+const BASE = resolveSiteOrigin()
 
 export default function robots(): MetadataRoute.Robots {
   return {

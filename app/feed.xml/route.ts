@@ -1,6 +1,7 @@
 import { listPosts, safely } from '@/lib/queries/public'
+import { resolveSiteOrigin } from '@/lib/site-config'
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://example.invalid'
+const BASE = resolveSiteOrigin()
 
 const escape = (value: string) =>
   value

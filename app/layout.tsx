@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
-import { display, heavy, mono } from '@/lib/fonts'
+import { display, mono } from '@/lib/fonts'
+import { resolveSiteOrigin } from '@/lib/site-config'
 import './globals.css'
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://example.invalid'
+const SITE = resolveSiteOrigin()
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN" className={`${display.variable} ${heavy.variable} ${mono.variable}`}>
+    <html lang="zh-CN" className={`${display.variable} ${mono.variable}`}>
       <head>
         <noscript>
           <style>{'.reveal{opacity:1 !important;transform:none !important}'}</style>

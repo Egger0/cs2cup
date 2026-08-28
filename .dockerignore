@@ -5,8 +5,8 @@ node_modules
 docs
 migrations
 migration-output
+public/photos
 scripts
 dist
-.env
-.env.local
+.env*
 *.log

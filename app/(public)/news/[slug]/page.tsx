@@ -2,15 +2,10 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { SectionHead } from '@/components/domain/Sections'
-import { getPost, listPosts, safely } from '@/lib/queries/public'
+import { getPost, safely } from '@/lib/queries/public'
 import styles from './post.module.css'
 
 export const revalidate = 300
-
-export async function generateStaticParams() {
-  const posts = await safely(() => listPosts(), [])
-  return posts.map(post => ({ slug: post.slug }))
-}
 
 export async function generateMetadata({
   params,

@@ -1,16 +1,45 @@
 import { chromium } from 'playwright'
-import { readFileSync } from 'node:fs'
-import { execFileSync, execSync } from 'node:child_process'
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { tmpdir } from 'node:os'
+import { isAbsolute, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const BASE = (process.env.E2E_BASE_URL ?? 'http://localhost:3000').replace(/\/$/, '')
-const DB_NAME = process.env.E2E_DB_NAME ?? 'cs2cup'
-if (!/^[a-zA-Z0-9_]+$/.test(DB_NAME)) {
-  throw new Error('E2E_DB_NAME must contain only letters, digits and underscores')
+const DB_NAME = process.env.E2E_DB_NAME
+if (!DB_NAME) {
+  throw new Error(
+    'Admin E2E is destructive and refuses the shared cs2cup database. ' +
+      'Set E2E_DB_NAME to a dedicated cs2cup_e2e database.',
+  )
+}
+if (!/^cs2cup_e2e(?:_[a-zA-Z0-9_]+)?$/.test(DB_NAME)) {
+  throw new Error('E2E_DB_NAME must be cs2cup_e2e or start with cs2cup_e2e_')
+}
+if (process.env.E2E_DB_OWNED !== '1') {
+  throw new Error(
+    'E2E_DB_NAME alone does not prove isolation. Set E2E_DB_OWNED=1 only when ' +
+      'the named database and its fixtures are disposable and owned by this test run.',
+  )
 }
 const tokenFile = process.env.DEV_TOKEN_FILE ?? '/tmp/dev-token.txt'
 const nonAdminTokenFile = process.env.DEV_NON_ADMIN_TOKEN_FILE ?? `${tokenFile}.non-admin`
+const legacyPublicPhotoKey = process.env.E2E_LEGACY_PUBLIC_PHOTO_KEY
+if (legacyPublicPhotoKey && !/^[a-zA-Z0-9][a-zA-Z0-9._/-]*$/.test(legacyPublicPhotoKey)) {
+  throw new Error('E2E_LEGACY_PUBLIC_PHOTO_KEY is unsafe')
+}
+const photoLocalRoot = process.env.E2E_PHOTO_LOCAL_ROOT
+if (photoLocalRoot && !isAbsolute(photoLocalRoot)) {
+  throw new Error('E2E_PHOTO_LOCAL_ROOT must be absolute')
+}
 const token = readFileSync(tokenFile, 'utf8').trim()
 const nonAdminToken = readFileSync(nonAdminTokenFile, 'utf8').trim()
 const db = sql =>
@@ -34,6 +63,44 @@ const db = sql =>
     { encoding: 'utf8', cwd: ROOT },
   ).trim()
 const sqlString = value => `'${value.replaceAll("'", "''")}'`
+const connectedDatabase = db('select current_database()')
+if (connectedDatabase !== DB_NAME) {
+  throw new Error(`psql connected to ${connectedDatabase || '(unknown)'} instead of ${DB_NAME}`)
+}
+
+const seedDatabase = () => {
+  const seedRoot = join(ROOT, 'seeds')
+  const seedFiles = readdirSync(seedRoot)
+    .filter(file => file.endsWith('.sql'))
+    .sort()
+
+  for (const seedFile of seedFiles) {
+    execFileSync(
+      'docker',
+      [
+        'compose',
+        'exec',
+        '-T',
+        'db',
+        'psql',
+        '-U',
+        'postgres',
+        '-d',
+        DB_NAME,
+        '-v',
+        'ON_ERROR_STOP=1',
+        '-q',
+        '-f',
+        '-',
+      ],
+      {
+        cwd: ROOT,
+        input: readFileSync(join(seedRoot, seedFile)),
+        stdio: ['pipe', 'ignore', 'pipe'],
+      },
+    )
+  }
+}
 
 const results = []
 const check = (name, pass, detail = '') => {
@@ -51,9 +118,106 @@ const errors = []
 page.on('pageerror', e => errors.push(e.message))
 
 const stamp = Date.now()
+const publicProbeSlug = `e2e-isolation-public-${stamp}`
+const adminProbeSlug = `e2e-isolation-admin-${stamp}`
+const publicProbeTitle = `E2E public database probe ${stamp}`
+const adminProbeTitle = `E2E admin database probe ${stamp}`
+const uploadCaption = `E2E upload probe ${stamp}`
 let originalTagline = null
+let isolationProbeCreated = false
+let isolationVerified = false
+let createdTournamentId = null
+let uploadedPhotoKey = null
+let uploadTournamentId = null
+let uploadTournamentStatus = null
+let uploadTempDir = null
 
 try {
+  if (legacyPublicPhotoKey) {
+    const guardedMedia = await ctx.request.get(`${BASE}/media/${legacyPublicPhotoKey}`)
+    const legacyStaticMedia = await ctx.request.get(`${BASE}/photos/${legacyPublicPhotoKey}`)
+    const legacyOptimizer = await ctx.request.get(
+      `${BASE}/_next/image?url=${encodeURIComponent(`/photos/${legacyPublicPhotoKey}`)}` +
+        '&w=640&q=75',
+    )
+    check(
+      'Published media is available only through the guarded route',
+      guardedMedia.status() === 200 && legacyStaticMedia.status() === 404,
+      `/media=${guardedMedia.status()} /photos=${legacyStaticMedia.status()}`,
+    )
+    check(
+      'The image optimizer cannot revive the legacy public photo path',
+      legacyOptimizer.status() >= 400 && legacyOptimizer.status() < 500,
+      String(legacyOptimizer.status()),
+    )
+  }
+
+  db(`
+    insert into post (slug, title, summary, body, published_at)
+    values
+      (
+        ${sqlString(publicProbeSlug)},
+        ${sqlString(publicProbeTitle)},
+        'Public endpoint isolation probe',
+        'Public endpoint isolation probe',
+        now() - interval '1 minute'
+      ),
+      (
+        ${sqlString(adminProbeSlug)},
+        ${sqlString(adminProbeTitle)},
+        'Admin endpoint isolation probe',
+        'Admin endpoint isolation probe',
+        now() + interval '1 day'
+      )
+  `)
+  isolationProbeCreated = true
+
+  const publicProbeContext = await browser.newContext()
+  try {
+    const publicProbeResponse = await publicProbeContext.request.get(
+      `${BASE}/news/${publicProbeSlug}?e2e-isolation=${stamp}`,
+    )
+    const publicProbeBody = await publicProbeResponse.text()
+    if (publicProbeResponse.status() !== 200 || !publicProbeBody.includes(publicProbeTitle)) {
+      throw new Error(
+        `Public application endpoint is not reading ${DB_NAME} ` +
+          `(status ${publicProbeResponse.status()})`,
+      )
+    }
+
+    const privateProbeResponse = await publicProbeContext.request.get(
+      `${BASE}/news/${adminProbeSlug}?e2e-isolation=${stamp}`,
+    )
+    const privateProbeBody = await privateProbeResponse.text()
+    if (privateProbeResponse.status() >= 500 || privateProbeBody.includes(adminProbeTitle)) {
+      throw new Error('Public application endpoint exposes the admin-only isolation probe')
+    }
+    check('Public application endpoint uses the isolated database', true, DB_NAME)
+  } finally {
+    await publicProbeContext.close()
+  }
+
+  const adminProbeResponse = await page.goto(`${BASE}/admin/posts?e2e-isolation=${stamp}`, {
+    waitUntil: 'domcontentloaded',
+  })
+  let adminProbeVisible = false
+  try {
+    await page.getByText(adminProbeTitle, { exact: true }).waitFor({ timeout: 10_000 })
+    adminProbeVisible = true
+  } catch {
+    // The diagnostic below distinguishes an auth redirect from a data mismatch.
+  }
+  if (!adminProbeVisible) {
+    const adminProbeBody = await page.locator('body').innerText()
+    throw new Error(
+      `Admin application endpoint is not reading ${DB_NAME}; ` +
+        `status=${adminProbeResponse?.status() ?? 'none'} url=${page.url()} ` +
+        `body=${JSON.stringify(adminProbeBody.slice(0, 240))}`,
+    )
+  }
+  check('Admin application endpoint uses the isolated database', true, DB_NAME)
+  isolationVerified = true
+
   const tournamentId = Number(db('select id from tournament order by id limit 1')) || 1
   const matchId = Number(db('select id from match order by id limit 1')) || 1
   const sensitiveContact = db(
@@ -210,6 +374,12 @@ try {
   await page.waitForTimeout(2500)
   const tAfter = Number(db('select count(*) from tournament'))
   check('Admin creates a tournament', tAfter === tBefore + 1, `${tBefore} → ${tAfter}`)
+  createdTournamentId = Number(
+    db(`select id from tournament where slug=${sqlString(`e2e-cup-${stamp}`)}`),
+  )
+  if (!Number.isSafeInteger(createdTournamentId) || createdTournamentId <= 0) {
+    throw new Error('Admin-created tournament was not written to the isolated database')
+  }
 
   const anon = await browser.newContext()
   const anonPage = await anon.newPage()
@@ -220,37 +390,96 @@ try {
   await anon.close()
 
   // Upload media.
-  const { writeFileSync, mkdirSync } = await import('node:fs')
   const png = Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAGQAAABGCAYAAAA2Vh8vAAAAJUlEQVR4nO3BAQ0AAADCoPdPbQ43oAAAAAAAAAAAAAAAAAAA4M0AKvgAAY0jZuQAAAAASUVORK5CYII=',
     'base64',
   )
-  mkdirSync('/tmp/e2e-upload', { recursive: true })
-  writeFileSync('/tmp/e2e-upload/probe.png', png)
+  uploadTempDir = mkdtempSync(join(tmpdir(), 'cs2cup-admin-e2e-'))
+  const uploadPath = join(uploadTempDir, 'probe.png')
+  writeFileSync(uploadPath, png)
 
   await page.goto(`${BASE}/admin/photos`, { waitUntil: 'domcontentloaded' })
   await page.waitForTimeout(1200)
   const photosBefore = Number(db('select count(*) from photo'))
-  await page.setInputFiles('input[type=file]', '/tmp/e2e-upload/probe.png')
-  await page.fill('#up-caption', 'E2E upload probe')
+  await page.selectOption('select[name=tournamentId]', String(createdTournamentId))
+  await page.setInputFiles('input[type=file]', uploadPath)
+  await page.fill('#up-caption', uploadCaption)
   await page.locator('main form').getByRole('button', { name: '上传' }).click()
   await page.waitForTimeout(3000)
   const photosAfter = Number(db('select count(*) from photo'))
   check('Admin uploads media', photosAfter === photosBefore + 1, `${photosBefore} → ${photosAfter}`)
 
-  const key = db(`select storage_key from photo where caption='E2E upload probe'`)
-  const served = await page.request.get(`${BASE}/media/${key}`)
-  check('Admin can preview draft media', served.status() === 200, `${served.status()} ${key}`)
-
-  const publicMediaContext = await browser.newContext()
-  const hiddenDraftMedia = await publicMediaContext.request.get(`${BASE}/media/${key}`)
-  check(
-    'Draft media remains hidden from public requests',
-    hiddenDraftMedia.status() === 404,
-    String(hiddenDraftMedia.status()),
+  uploadedPhotoKey = db(`select storage_key from photo where caption=${sqlString(uploadCaption)}`)
+  uploadTournamentId = Number(
+    db(`select tournament_id from photo where caption=${sqlString(uploadCaption)}`),
   )
-  await publicMediaContext.close()
-  const dims = db(`select width||'x'||height from photo where caption='E2E upload probe'`)
+  uploadTournamentStatus = db(
+    `select status from tournament where id=${uploadTournamentId}`,
+  )
+  if (
+    !uploadedPhotoKey ||
+    uploadTournamentId !== createdTournamentId ||
+    uploadTournamentStatus !== 'draft'
+  ) {
+    throw new Error('Uploaded media is not attached to the isolated E2E tournament')
+  }
+
+  // Exercise the exact public URL across a publish/unpublish transition. A
+  // positive or negative authorization lookup must not survive a state change.
+  // The shared Next image optimizer is intentionally unavailable for guarded
+  // media, so it cannot retain a previously public object after withdrawal.
+  const publicMediaContext = await browser.newContext()
+  try {
+    const mediaUrl = `${BASE}/media/${uploadedPhotoKey}`
+    const optimizedMediaUrl =
+      `${BASE}/_next/image?url=${encodeURIComponent(`/media/${uploadedPhotoKey}`)}` +
+      '&w=640&q=75'
+
+    const initiallyHidden = await publicMediaContext.request.get(mediaUrl)
+    check(
+      'Draft media is hidden before publication',
+      initiallyHidden.status() === 404,
+      String(initiallyHidden.status()),
+    )
+
+    const optimizerDenied = await publicMediaContext.request.get(optimizedMediaUrl)
+    check(
+      'Guarded media is excluded from the shared image optimizer',
+      optimizerDenied.status() >= 400 && optimizerDenied.status() < 500,
+      String(optimizerDenied.status()),
+    )
+
+    db(`update tournament set status='registration' where id=${uploadTournamentId}`)
+    const warmedPublicMedia = await publicMediaContext.request.get(mediaUrl)
+    check(
+      'Published media can be fetched and warms the authorization path',
+      warmedPublicMedia.status() === 200,
+      String(warmedPublicMedia.status()),
+    )
+
+    db(`update tournament set status='draft' where id=${uploadTournamentId}`)
+    const hiddenAgain = await publicMediaContext.request.get(mediaUrl)
+    const optimizerStillDenied = await publicMediaContext.request.get(optimizedMediaUrl)
+    check(
+      'A warmed media URL returns 404 after its tournament returns to draft',
+      hiddenAgain.status() === 404,
+      String(hiddenAgain.status()),
+    )
+    check(
+      'The image optimizer cannot bypass media withdrawal',
+      optimizerStillDenied.status() >= 400 && optimizerStillDenied.status() < 500,
+      String(optimizerStillDenied.status()),
+    )
+  } finally {
+    db(
+      `update tournament set status=${sqlString(uploadTournamentStatus)} ` +
+        `where id=${uploadTournamentId}`,
+    )
+    await publicMediaContext.close()
+  }
+  const dims = db(
+    `select width||'x'||height from photo where caption=${sqlString(uploadCaption)}`,
+  )
   check('Uploaded dimensions are detected', dims === '100x70', dims)
 
   // Generate the bracket.
@@ -364,9 +593,13 @@ try {
   await page.setViewportSize({ width: 1440, height: 1000 })
 
   await page.getByRole('button', { name: '发布赛程' }).click()
-  await page
-    .getByText(`已发布 ${nonByeMatches} 场，${nonByeMatches} 场已有时间`)
-    .waitFor({ timeout: 10_000 })
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    const scheduled = Number(
+      db(`select count(*) from match m where ${nonByeFilter} and m.scheduled_at is not null`),
+    )
+    if (scheduled === nonByeMatches) break
+    await page.waitForTimeout(250)
+  }
 
   const publishedSchedule = db(`
     select
@@ -485,25 +718,79 @@ try {
 
   check('Pages have no runtime errors', errors.length === 0, errors.slice(0, 1).join())
 } finally {
-  // Bracket and schedule tests replace demo matches; rebuild canonical public fixtures.
-  db(`
-    delete from match
-    where tournament_id = (select id from tournament where slug = '2026-nlc')
-  `)
-  execSync(
-    `for f in seeds/*.sql; do docker compose exec -T db psql -U postgres -d ${DB_NAME} -q -f - < "$f" >/dev/null 2>&1; done`,
-    {
-      shell: '/bin/bash',
-      cwd: ROOT,
-    },
-  )
+  if (isolationVerified) {
+    if (uploadedPhotoKey) {
+      let mediaCleanupSucceeded = false
+      const objectPath = photoLocalRoot
+        ? resolve(photoLocalRoot, uploadedPhotoKey)
+        : null
+      if (objectPath && !objectPath.startsWith(`${resolve(photoLocalRoot)}${sep}`)) {
+        throw new Error('Uploaded media key escapes E2E_PHOTO_LOCAL_ROOT')
+      }
+      try {
+        await page.goto(`${BASE}/admin/photos?e2e-cleanup=${stamp}`, {
+          waitUntil: 'domcontentloaded',
+        })
+        await page.waitForTimeout(1_000)
+        const photoRow = page
+          .getByText(uploadCaption, { exact: true })
+          .locator('xpath=ancestor::div[contains(@class,"listRow")][1]')
+        page.once('dialog', dialog => dialog.accept())
+        await photoRow.getByRole('button', { name: '删除', exact: true }).click()
 
-  db(`delete from photo where caption='E2E upload probe'`)
-  db(`update tournament set champion_name=null where id=3`)
-  db(`delete from post where slug like 'e2e-%'`)
-  db(`delete from tournament where slug like 'e2e-cup-%'`)
-  if (originalTagline !== null) {
-    db(`update game set tagline=${sqlString(originalTagline)} where slug='cs2'`)
+        for (let attempt = 0; attempt < 20; attempt += 1) {
+          const recordRemoved = Number(
+            db(`select count(*) from photo where storage_key=${sqlString(uploadedPhotoKey)}`),
+          ) === 0
+          const objectRemoved = !objectPath || !existsSync(objectPath)
+          if (recordRemoved && objectRemoved) {
+            mediaCleanupSucceeded = true
+            break
+          }
+          await page.waitForTimeout(250)
+        }
+      } catch (error) {
+        console.warn(`Admin media cleanup failed: ${error.message}`)
+      }
+
+      check(
+        'Admin cleanup removes the uploaded media record and object',
+        mediaCleanupSucceeded,
+        `${uploadedPhotoKey}${objectPath ? ` @ ${objectPath}` : ''}`,
+      )
+      if (!mediaCleanupSucceeded) {
+        db(`delete from photo where storage_key=${sqlString(uploadedPhotoKey)}`)
+      }
+    }
+
+    // Bracket and schedule tests replace demo matches. This database passed
+    // the application endpoint probes and is explicitly owned by the suite.
+    db(`
+      delete from match
+      where tournament_id = (select id from tournament where slug = '2026-nlc')
+    `)
+    seedDatabase()
+
+    db(`update tournament set champion_name=null where id=3`)
+    db(
+      `delete from post where slug in (` +
+        `${sqlString(`e2e-${stamp}`)}, ` +
+        `${sqlString(publicProbeSlug)}, ${sqlString(adminProbeSlug)})`,
+    )
+    db(`delete from tournament where slug=${sqlString(`e2e-cup-${stamp}`)}`)
+    if (originalTagline !== null) {
+      db(`update game set tagline=${sqlString(originalTagline)} where slug='cs2'`)
+    }
+  }
+
+  if (isolationProbeCreated) {
+    db(
+      `delete from post where slug in (` +
+        `${sqlString(publicProbeSlug)}, ${sqlString(adminProbeSlug)})`,
+    )
+  }
+  if (uploadTempDir) {
+    rmSync(uploadTempDir, { recursive: true, force: true })
   }
 
   await browser.close()

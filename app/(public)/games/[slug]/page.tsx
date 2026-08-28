@@ -4,15 +4,10 @@ import { Button, Empty } from '@/components/ui'
 import { PostList } from '@/components/domain/PostList'
 import { SectionHead } from '@/components/domain/Sections'
 import { TournamentList } from '@/components/domain/TournamentList'
-import { getGame, listGames, listPosts, listTournaments, safely } from '@/lib/queries/public'
+import { getGame, listPosts, listTournaments, safely } from '@/lib/queries/public'
 import styles from './game.module.css'
 
 export const revalidate = 300
-
-export async function generateStaticParams() {
-  const games = await safely(listGames, [])
-  return games.map(game => ({ slug: game.slug }))
-}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params

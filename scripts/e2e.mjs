@@ -222,12 +222,31 @@ await page.goto(`${BASE}/search?q=zzzznope`, { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(1000)
 check('Empty search shows guidance', (await page.evaluate(() => document.body.innerText)).includes('没有匹配'))
 
-const rpc = await page.request.post(`${RDB_BASE}/rpc/submit_team`, {
+const guardedRpc = await page.request.post(`${RDB_BASE}/rpc/submit_team_rate_limited`, {
+  headers: { 'Content-Type': 'application/json' },
+  data: {
+    p_fingerprint: `v1:${'a'.repeat(64)}`,
+    p_payload: { slug: '2026-nlc' },
+  },
+  failOnStatusCode: false,
+})
+check(
+  'Anonymous guarded registration RPC access is rejected',
+  guardedRpc.status() === 401,
+  String(guardedRpc.status()),
+)
+
+const legacyRpc = await page.request.post(`${RDB_BASE}/rpc/submit_team`, {
   headers: { 'Content-Type': 'application/json' },
   data: { payload: { slug: '2026-nlc', name: 'x', tag: 'XX', captain: 'x', contact: 'y' } },
   failOnStatusCode: false,
 })
-check('Anonymous registration RPC access is rejected', rpc.status() === 401, String(rpc.status()))
+const legacyBody = await legacyRpc.json().catch(() => null)
+check(
+  'Contracted legacy registration RPC is absent',
+  legacyRpc.status() === 404 && legacyBody?.code === 'PGRST202',
+  `${legacyRpc.status()} ${legacyBody?.code ?? 'unknown'}`,
+)
 
 check('Browser console has no errors', errors.length === 0, errors.slice(0, 2).join(' | '))
 
