@@ -4,7 +4,8 @@ begin;
 
 do $test$
 declare
-  v_role pg_roles%rowtype;
+  v_role         pg_roles%rowtype;
+  v_request_role text;
 begin
   select * into v_role from pg_roles where rolname = 'club_admin';
 
@@ -110,6 +111,223 @@ begin
       )
   ) then
     raise exception 'a request identity has direct access to an identity table';
+  end if;
+
+  if to_regprocedure('public.create_app_session(uuid,bytea,uuid)') is null
+    or to_regprocedure('public.use_app_session(bytea,bytea,uuid)') is null
+    or to_regprocedure('public.logout_app_session(bytea,uuid)') is null
+    or to_regprocedure('public.revoke_app_session(uuid,uuid,text,uuid)') is null
+    or to_regprocedure(
+      'public.revoke_principal_sessions(uuid,uuid,uuid,text,uuid)'
+    ) is null
+    or to_regprocedure('public.consume_login_attempt(bytea,bytea)') is null
+    or to_regprocedure('public.clear_login_account_throttle(bytea)') is null
+    or to_regprocedure('public.cleanup_app_sessions(integer,uuid)') is null
+  then
+    raise exception 'the revocable-session RPC boundary is incomplete';
+  end if;
+
+  -- PostgreSQL grants EXECUTE on newly created functions to PUBLIC unless it
+  -- is revoked. Inspect the effective ACL so both a null/default ACL and an
+  -- explicit PUBLIC grant fail this boundary.
+  if exists (
+    select 1
+    from unnest(array[
+      'public.create_app_session(uuid,bytea,uuid)'::regprocedure,
+      'public.use_app_session(bytea,bytea,uuid)'::regprocedure,
+      'public.logout_app_session(bytea,uuid)'::regprocedure,
+      'public.revoke_app_session(uuid,uuid,text,uuid)'::regprocedure,
+      'public.revoke_principal_sessions(uuid,uuid,uuid,text,uuid)'::regprocedure,
+      'public.consume_login_attempt(bytea,bytea)'::regprocedure,
+      'public.clear_login_account_throttle(bytea)'::regprocedure,
+      'public.cleanup_app_sessions(integer,uuid)'::regprocedure
+    ]) expected_rpc(oid)
+    join pg_catalog.pg_proc procedure on procedure.oid = expected_rpc.oid
+    cross join lateral pg_catalog.aclexplode(
+      coalesce(
+        procedure.proacl,
+        pg_catalog.acldefault('f', procedure.proowner)
+      )
+    ) function_acl
+    where function_acl.grantee = 0
+      and function_acl.privilege_type = 'EXECUTE'
+  ) then
+    raise exception 'PUBLIC has default or explicit EXECUTE on a session RPC';
+  end if;
+
+  if exists (
+    select 1
+    from pg_catalog.pg_proc procedure
+    cross join lateral pg_catalog.aclexplode(
+      coalesce(
+        procedure.proacl,
+        pg_catalog.acldefault('f', procedure.proowner)
+      )
+    ) function_acl
+    where procedure.pronamespace = 'app_private'::regnamespace
+      and function_acl.grantee = 0
+      and function_acl.privilege_type = 'EXECUTE'
+  ) then
+    raise exception 'PUBLIC has default or explicit EXECUTE on a private function';
+  end if;
+
+  -- The 019 public surface is deliberately callable only by its owner and the
+  -- two trusted gateway roles. Effective checks below also catch grants gained
+  -- through PUBLIC or future role membership.
+  if exists (
+    select 1
+    from unnest(array[
+      'public.create_app_session(uuid,bytea,uuid)'::regprocedure,
+      'public.use_app_session(bytea,bytea,uuid)'::regprocedure,
+      'public.logout_app_session(bytea,uuid)'::regprocedure,
+      'public.revoke_app_session(uuid,uuid,text,uuid)'::regprocedure,
+      'public.revoke_principal_sessions(uuid,uuid,uuid,text,uuid)'::regprocedure,
+      'public.consume_login_attempt(bytea,bytea)'::regprocedure,
+      'public.clear_login_account_throttle(bytea)'::regprocedure,
+      'public.cleanup_app_sessions(integer,uuid)'::regprocedure
+    ]) expected_rpc(oid)
+    join pg_catalog.pg_proc procedure on procedure.oid = expected_rpc.oid
+    cross join lateral pg_catalog.aclexplode(
+      coalesce(
+        procedure.proacl,
+        pg_catalog.acldefault('f', procedure.proowner)
+      )
+    ) function_acl
+    where function_acl.privilege_type = 'EXECUTE'
+      and function_acl.grantee <> procedure.proowner
+      and not exists (
+        select 1
+        from pg_catalog.pg_roles trusted_role
+        where trusted_role.oid = function_acl.grantee
+          and trusted_role.rolname in ('club_admin', 'service_role')
+      )
+  ) then
+    raise exception 'a session RPC grants EXECUTE outside its trusted allowlist';
+  end if;
+
+  foreach v_request_role in array array['anon', 'authenticated'] loop
+    if has_schema_privilege(v_request_role, 'app_private', 'usage') then
+      raise exception '% has USAGE on the private schema', v_request_role;
+    end if;
+
+    if exists (
+      select 1
+      from unnest(array[
+        'public.create_app_session(uuid,bytea,uuid)'::regprocedure,
+        'public.use_app_session(bytea,bytea,uuid)'::regprocedure,
+        'public.logout_app_session(bytea,uuid)'::regprocedure,
+        'public.revoke_app_session(uuid,uuid,text,uuid)'::regprocedure,
+        'public.revoke_principal_sessions(uuid,uuid,uuid,text,uuid)'::regprocedure,
+        'public.consume_login_attempt(bytea,bytea)'::regprocedure,
+        'public.clear_login_account_throttle(bytea)'::regprocedure,
+        'public.cleanup_app_sessions(integer,uuid)'::regprocedure
+      ]) expected_rpc(oid)
+      where has_function_privilege(v_request_role, expected_rpc.oid, 'execute')
+    ) then
+      raise exception '% can execute a session RPC', v_request_role;
+    end if;
+
+    if exists (
+      select 1
+      from unnest(array[
+        'app_private.app_session'::regclass,
+        'app_private.app_session_token'::regclass,
+        'app_private.login_throttle'::regclass
+      ]) session_table(oid)
+      where has_table_privilege(v_request_role, session_table.oid, 'select')
+        or has_table_privilege(v_request_role, session_table.oid, 'insert')
+        or has_table_privilege(v_request_role, session_table.oid, 'update')
+        or has_table_privilege(v_request_role, session_table.oid, 'delete')
+        or has_table_privilege(v_request_role, session_table.oid, 'truncate')
+        or has_table_privilege(v_request_role, session_table.oid, 'references')
+        or has_table_privilege(v_request_role, session_table.oid, 'trigger')
+        or has_any_column_privilege(v_request_role, session_table.oid, 'select')
+        or has_any_column_privilege(v_request_role, session_table.oid, 'insert')
+        or has_any_column_privilege(v_request_role, session_table.oid, 'update')
+        or has_any_column_privilege(v_request_role, session_table.oid, 'references')
+    ) then
+      raise exception '% has table-level or column-level session data access',
+        v_request_role;
+    end if;
+
+    if exists (
+      select 1
+      from pg_catalog.pg_class private_sequence
+      where private_sequence.relnamespace = 'app_private'::regnamespace
+        and private_sequence.relkind = 'S'
+        and (
+          has_sequence_privilege(v_request_role, private_sequence.oid, 'select')
+          or has_sequence_privilege(v_request_role, private_sequence.oid, 'update')
+          or has_sequence_privilege(v_request_role, private_sequence.oid, 'usage')
+        )
+    ) then
+      raise exception '% has SELECT, UPDATE, or USAGE on a private sequence',
+        v_request_role;
+    end if;
+  end loop;
+
+  if exists (
+    select 1
+    from pg_catalog.pg_roles
+    where rolname = 'service_role'
+  ) and exists (
+    select 1
+    from unnest(array[
+      'public.create_app_session(uuid,bytea,uuid)'::regprocedure,
+      'public.use_app_session(bytea,bytea,uuid)'::regprocedure,
+      'public.logout_app_session(bytea,uuid)'::regprocedure,
+      'public.revoke_app_session(uuid,uuid,text,uuid)'::regprocedure,
+      'public.revoke_principal_sessions(uuid,uuid,uuid,text,uuid)'::regprocedure,
+      'public.consume_login_attempt(bytea,bytea)'::regprocedure,
+      'public.clear_login_account_throttle(bytea)'::regprocedure,
+      'public.cleanup_app_sessions(integer,uuid)'::regprocedure
+    ]) expected_rpc(oid)
+    where not has_function_privilege('service_role', expected_rpc.oid, 'execute')
+  ) then
+    raise exception 'service_role cannot execute every allowlisted session RPC';
+  end if;
+
+  if exists (
+    select 1
+    from (values
+      ('app_session'),
+      ('app_session_token'),
+      ('login_throttle')
+    ) expected_table(relname)
+    left join pg_catalog.pg_class private_table
+      on private_table.relname = expected_table.relname
+     and private_table.relnamespace = 'app_private'::regnamespace
+    where private_table.oid is null
+      or not private_table.relrowsecurity
+      or exists (
+        select 1
+        from pg_catalog.pg_policy policy
+        where policy.polrelid = private_table.oid
+      )
+  ) then
+    raise exception 'a revocable-session table lacks deny-by-default RLS';
+  end if;
+
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'app_private'
+      and table_name in ('app_session', 'app_session_token', 'login_throttle')
+      and column_name ~ '(raw|cookie|provider|issuer|subject|access_token|refresh_token|claims|user_agent|ip_address)'
+  ) then
+    raise exception 'revocable-session schema contains credential or identity payload fields';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_catalog.pg_constraint constraint_definition
+    where constraint_definition.conrelid =
+      'app_private.app_session_token'::regclass
+      and constraint_definition.contype = 'c'
+      and pg_catalog.pg_get_constraintdef(constraint_definition.oid)
+        like '%octet_length(token_hash) = 32%'
+  ) then
+    raise exception 'session token digests are not constrained to 32 bytes';
   end if;
 
   if exists (
@@ -277,6 +495,16 @@ begin
     exception
       when insufficient_privilege then null;
     end;
+
+    begin
+      perform public.cleanup_app_sessions(
+        1,
+        '00000000-0000-4000-8000-000000000001'
+      );
+      raise exception 'database owner reached session cleanup without valid claims';
+    exception
+      when insufficient_privilege then null;
+    end;
   end loop;
 end
 $test$;
@@ -312,6 +540,44 @@ declare
       'cloudbase',
       'https://claims-denied.example',
       'claims-denied'
+    )$sql$,
+    $sql$select public.create_app_session(
+      null::uuid,
+      decode(repeat('1', 64), 'hex'),
+      '00000000-0000-4000-8000-000000000011'
+    )$sql$,
+    $sql$select public.use_app_session(
+      decode(repeat('2', 64), 'hex'),
+      decode(repeat('3', 64), 'hex'),
+      '00000000-0000-4000-8000-000000000012'
+    )$sql$,
+    $sql$select public.logout_app_session(
+      decode(repeat('4', 64), 'hex'),
+      '00000000-0000-4000-8000-000000000013'
+    )$sql$,
+    $sql$select public.revoke_app_session(
+      '00000000-0000-4000-8000-000000000014',
+      null::uuid,
+      'security_event',
+      '00000000-0000-4000-8000-000000000015'
+    )$sql$,
+    $sql$select public.revoke_principal_sessions(
+      '00000000-0000-4000-8000-000000000016',
+      null::uuid,
+      null::uuid,
+      'security_event',
+      '00000000-0000-4000-8000-000000000017'
+    )$sql$,
+    $sql$select public.consume_login_attempt(
+      decode(repeat('5', 64), 'hex'),
+      decode(repeat('6', 64), 'hex')
+    )$sql$,
+    $sql$select public.clear_login_account_throttle(
+      decode(repeat('7', 64), 'hex')
+    )$sql$,
+    $sql$select public.cleanup_app_sessions(
+      1,
+      '00000000-0000-4000-8000-000000000018'
     )$sql$
   ];
 begin
@@ -367,7 +633,7 @@ begin
     'claims-service'
   );
 
-  foreach v_statement in array v_statements[2:7] loop
+  foreach v_statement in array v_statements[2:array_length(v_statements, 1)] loop
     begin
       execute v_statement;
     exception

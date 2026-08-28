@@ -49,6 +49,15 @@ That migration deliberately has no destructive contract or down migration;
 application rollback leaves its unused private tables and nullable bridges in
 place, while a schema defect is repaired by a new forward migration.
 
+Migration 019 follows the same additive, forward-only rule for revocable
+application-session foundations. Follow the
+[session-foundations rollout runbook](runbooks/revocable-session-foundations-rollout.md),
+the normative [ADR 0004](adr/0004-revocable-session-foundations.md), and run
+`npm run test:session-token` plus `npm run test:session-foundations`. The
+current authentication path does not consume the new schema; application
+rollback leaves migration 019 installed and inert, and any schema correction
+must use migration 020 or later.
+
 ## Release operation
 
 Use one reviewed checkout and one dedicated least-privilege migration identity.

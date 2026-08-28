@@ -13,9 +13,13 @@ const freshDatabase = `cs2cup_migration_fresh_${suffix}`
 const partialDatabase = `cs2cup_migration_partial_${suffix}`
 const unsafeDatabase = `cs2cup_migration_unsafe_${suffix}`
 const identityFailureDatabase = `cs2cup_migration_identity_failure_${suffix}`
+const sessionUpgradeDatabase = `cs2cup_migration_session_upgrade_${suffix}`
+const sessionFailureDatabase = `cs2cup_migration_session_failure_${suffix}`
 const contractDatabase = `cs2cup_migration_contract_${suffix}`
 const externalDatabase = `cs2cup_migration_external_${suffix}`
 const concurrentDatabase = `cs2cup_migration_concurrent_${suffix}`
+const MIGRATION_LOCK_CLASS_ID = 1129521731
+const MIGRATION_LOCK_OBJECT_ID = 1296647246
 const externalPsqlAvailable = spawnSync('psql', ['--version'], {
   stdio: 'ignore',
 }).status === 0
@@ -28,6 +32,8 @@ const databases = [
   partialDatabase,
   unsafeDatabase,
   identityFailureDatabase,
+  sessionUpgradeDatabase,
+  sessionFailureDatabase,
   contractDatabase,
   concurrentDatabase,
   ...(externalPsqlAvailable ? [externalDatabase] : []),
@@ -146,7 +152,7 @@ function runMigration(
   }
 }
 
-function runMigrationAsync(database) {
+function startMigrationRunner(database) {
   const environment = { ...process.env, MIGRATION_DB_NAME: database }
   for (const name of [
     'MIGRATION_DATABASE_URL',
@@ -169,10 +175,218 @@ function runMigrationAsync(database) {
   child.stderr.on('data', chunk => {
     output += chunk
   })
-  return new Promise((resolve, reject) => {
+  const completion = new Promise((resolve, reject) => {
     child.once('error', reject)
     child.once('exit', code => resolve({ code, output }))
   })
+  return { child, completion, output: () => output }
+}
+
+function wait(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
+
+async function acquireMigrationTestBarrier(database) {
+  const marker = 'CS2CUP_MIGRATION_TEST_LOCK_ACQUIRED'
+  const child = spawn(
+    'docker',
+    [
+      'compose',
+      'exec',
+      '-T',
+      'db',
+      'psql',
+      '-X',
+      '-q',
+      '-At',
+      '-U',
+      'postgres',
+      '-d',
+      database,
+      '-v',
+      'ON_ERROR_STOP=1',
+    ],
+    { cwd: ROOT, stdio: ['pipe', 'pipe', 'pipe'] },
+  )
+  child.stdout.setEncoding('utf8')
+  child.stderr.setEncoding('utf8')
+
+  let stdout = ''
+  let stderr = ''
+  child.stdout.on('data', chunk => {
+    stdout += chunk
+  })
+  child.stderr.on('data', chunk => {
+    stderr += chunk
+  })
+
+  const acquired = new Promise((resolve, reject) => {
+    let settled = false
+    const timeout = setTimeout(() => {
+      if (settled) return
+      settled = true
+      reject(new Error('timed out acquiring the migration concurrency test barrier'))
+    }, 10_000)
+    const settle = callback => value => {
+      if (settled) return
+      settled = true
+      clearTimeout(timeout)
+      callback(value)
+    }
+    const succeed = settle(resolve)
+    const fail = settle(reject)
+
+    child.stdout.on('data', () => {
+      const match = stdout.match(new RegExp(`${marker}:(\\d+)`))
+      if (match) succeed(Number(match[1]))
+    })
+    child.once('error', fail)
+    child.once('exit', code => {
+      fail(
+        new Error(
+          `migration concurrency test barrier exited with ${code ?? 'unknown status'}` +
+            (stderr ? `: ${stderr.trim()}` : ''),
+        ),
+      )
+    })
+  })
+
+  child.stdin.write(
+    `set statement_timeout = '10s';\n` +
+      `select pg_catalog.pg_advisory_lock(${MIGRATION_LOCK_CLASS_ID}, ${MIGRATION_LOCK_OBJECT_ID});\n` +
+      `reset statement_timeout;\n` +
+      `select '${marker}:' || pg_catalog.pg_backend_pid();\n`,
+  )
+
+  try {
+    const backendPid = await acquired
+    return { backendPid, child, stderr: () => stderr }
+  } catch (error) {
+    child.stdin.destroy()
+    child.kill('SIGKILL')
+    throw error
+  }
+}
+
+async function releaseMigrationTestBarrier(barrier) {
+  if (barrier.child.exitCode !== null || barrier.child.signalCode !== null) return
+
+  const exited = new Promise(resolve => barrier.child.once('exit', resolve))
+  barrier.child.stdin.end(
+    `select pg_catalog.pg_advisory_unlock(${MIGRATION_LOCK_CLASS_ID}, ${MIGRATION_LOCK_OBJECT_ID});\n` +
+      '\\q\n',
+  )
+  const timedOut = Symbol('timed-out')
+  let timeout
+  const result = await Promise.race([
+    exited,
+    new Promise(resolve => {
+      timeout = setTimeout(() => resolve(timedOut), 5_000)
+    }),
+  ])
+  clearTimeout(timeout)
+  if (result === timedOut) {
+    barrier.child.kill('SIGKILL')
+    await exited
+    throw new Error('timed out releasing the migration concurrency test barrier')
+  }
+  if (result !== 0) {
+    throw new Error(
+      `migration concurrency test barrier exited with ${result ?? 'unknown status'}` +
+        (barrier.stderr() ? `: ${barrier.stderr().trim()}` : ''),
+    )
+  }
+}
+
+function migrationLockEvidence(database) {
+  const output = dockerPsql(database, [
+    '-At',
+    '-F',
+    '\t',
+    '-c',
+    `select
+       lock.pid,
+       lock.granted,
+       activity.state,
+       coalesce(activity.wait_event_type, ''),
+       coalesce(activity.wait_event, ''),
+       coalesce(array_to_string(pg_catalog.pg_blocking_pids(lock.pid), ','), '')
+     from pg_catalog.pg_locks lock
+     join pg_catalog.pg_stat_activity activity on activity.pid = lock.pid
+     where lock.locktype = 'advisory'
+       and lock.database = (
+         select oid from pg_catalog.pg_database where datname = pg_catalog.current_database()
+       )
+       and lock.classid = ${MIGRATION_LOCK_CLASS_ID}
+       and lock.objid = ${MIGRATION_LOCK_OBJECT_ID}
+     order by lock.granted desc, lock.pid`,
+  ])
+
+  return output
+    ? output.split('\n').map(row => {
+        const [pid, granted, state, waitEventType, waitEvent, blockingPids] =
+          row.split('\t')
+        return {
+          pid: Number(pid),
+          granted: granted === 't',
+          state,
+          waitEventType,
+          waitEvent,
+          blockingPids: blockingPids
+            ? blockingPids.split(',').map(value => Number(value))
+            : [],
+        }
+      })
+    : []
+}
+
+async function proveMigrationRunnersBlocked(database, barrier, runners) {
+  const deadline = Date.now() + 10_000
+  let evidence = []
+
+  while (Date.now() < deadline) {
+    const exitedRunner = runners.find(runner => runner.child.exitCode !== null)
+    if (exitedRunner) {
+      throw new Error(
+        `migration runner exited before lock-wait evidence was captured: ${exitedRunner.output()}`,
+      )
+    }
+
+    evidence = migrationLockEvidence(database)
+    const holder = evidence.find(
+      lock => lock.pid === barrier.backendPid && lock.granted,
+    )
+    const waiters = evidence.filter(lock => !lock.granted)
+    if (
+      holder &&
+      waiters.length === runners.length &&
+      waiters.every(
+        waiter =>
+          waiter.state === 'active' &&
+          waiter.waitEventType === 'Lock' &&
+          waiter.waitEvent === 'advisory' &&
+          waiter.blockingPids.includes(barrier.backendPid),
+      )
+    ) {
+      console.log(
+        `concurrent migration lock evidence passed: holder=${barrier.backendPid}, ` +
+          `blocked-runners=${waiters.length}, wait=Lock/advisory`,
+      )
+      return
+    }
+    await wait(50)
+  }
+
+  const summary = evidence.map(lock => ({
+    pid: lock.pid,
+    granted: lock.granted,
+    state: lock.state,
+    wait: `${lock.waitEventType}/${lock.waitEvent}`,
+    blockerCount: lock.blockingPids.length,
+  }))
+  throw new Error(
+    `migration runners did not produce advisory-lock wait evidence: ${JSON.stringify(summary)}`,
+  )
 }
 
 function assertLifecycle(database, expected) {
@@ -335,6 +549,22 @@ function assertIdentityFoundationsEmpty(database) {
   }
 }
 
+function assertSessionFoundationsEmpty(database) {
+  const result = dockerPsql(database, [
+    '-At',
+    '-c',
+    `select not exists (
+       select 1 from app_private.app_session
+       union all select 1 from app_private.app_session_token
+       union all select 1 from app_private.login_throttle
+       union all select 1 from app_private.audit_event where action like 'session.%'
+     )`,
+  ])
+  if (result !== 't') {
+    throw new Error(`session migration fabricated state in ${database}`)
+  }
+}
+
 try {
   for (const database of databases) {
     dockerPsql('postgres', ['-q', '-c', `create database ${database}`])
@@ -455,6 +685,7 @@ try {
   ])
   runMigration(identityFailureDatabase)
   assertIdentityFoundationsEmpty(identityFailureDatabase)
+  assertSessionFoundationsEmpty(identityFailureDatabase)
   if (
     dockerPsql(
       identityFailureDatabase,
@@ -473,6 +704,234 @@ try {
     ) !== 't'
   ) {
     throw new Error('identity migration did not recover after the conflict was removed')
+  }
+
+  // The final 019 wrapper is an intentional late-failure fixture. A conflict
+  // there must roll back every private table, helper, wrapper, and ledger row
+  // while preserving both 018 data and the pre-existing object.
+  runMigration(sessionFailureDatabase, 'expand', { maxVersion: '018' })
+  dockerPsql(
+    sessionFailureDatabase,
+    ['-q', '-f', '-'],
+    `insert into app_private.principal (id)
+       values ('01900000-0000-4000-8000-000000000001');
+     insert into app_private.audit_event (
+       actor_type, action, entity_type, entity_id, metadata
+     ) values (
+       'system',
+       'migration.session_sentinel',
+       'principal',
+       '01900000-0000-4000-8000-000000000001',
+       '{"source":"018"}'::jsonb
+     );
+     create function public.cleanup_app_sessions(integer, uuid)
+     returns text
+     language sql
+     immutable
+     set search_path = pg_catalog
+     as 'select ''preexisting''::text';`,
+  )
+  const sessionFailure = runMigration(sessionFailureDatabase, 'expand', {
+    expectFailure: true,
+  })
+  if (
+    !sessionFailure.includes('already exists with same argument types')
+    && !sessionFailure.includes('cannot change return type of existing function')
+  ) {
+    throw new Error(
+      `session migration conflict did not report the wrapper collision: ${sessionFailure}`,
+    )
+  }
+  if (
+    dockerPsql(
+      sessionFailureDatabase,
+      [
+        '-At',
+        '-c',
+        `select
+           to_regclass('app_private.app_session') is null
+           and to_regclass('app_private.app_session_token') is null
+           and to_regclass('app_private.login_throttle') is null
+           and to_regprocedure(
+             'app_private.cleanup_app_sessions(integer,uuid)'
+           ) is null
+           and to_regprocedure('public.create_app_session(uuid,bytea,uuid)') is null
+           and not exists (
+             select 1
+             from pg_catalog.pg_proc procedure
+             join pg_catalog.pg_namespace namespace
+               on namespace.oid = procedure.pronamespace
+             where namespace.nspname = 'app_private'
+               and procedure.proname in (
+                 'require_session_digest',
+                 'require_session_request_id',
+                 'create_app_session',
+                 'use_app_session',
+                 'logout_app_session',
+                 'revoke_app_session',
+                 'revoke_principal_sessions',
+                 'consume_login_throttle_dimension',
+                 'consume_login_attempt',
+                 'clear_login_account_throttle',
+                 'cleanup_app_sessions'
+               )
+           )
+           and not exists (
+             select 1
+             from pg_catalog.pg_proc procedure
+             join pg_catalog.pg_namespace namespace
+               on namespace.oid = procedure.pronamespace
+             where namespace.nspname = 'public'
+               and procedure.proname in (
+                 'create_app_session',
+                 'use_app_session',
+                 'logout_app_session',
+                 'revoke_app_session',
+                 'revoke_principal_sessions',
+                 'consume_login_attempt',
+                 'clear_login_account_throttle'
+               )
+           )
+           and pg_get_function_result(
+             'public.cleanup_app_sessions(integer,uuid)'::regprocedure
+           ) = 'text'
+           and has_function_privilege(
+             'public',
+             'public.cleanup_app_sessions(integer,uuid)',
+             'execute'
+           )
+           and exists (
+             select 1
+             from app_private.audit_event
+             where action = 'migration.session_sentinel'
+               and metadata = '{"source":"018"}'::jsonb
+           )
+           and not exists (
+             select 1
+             from public.schema_migration
+             where phase = 'expand'
+               and filename like '019\\_%' escape '\\'
+           )`,
+      ],
+    ) !== 't'
+  ) {
+    throw new Error('failed session migration left partial schema or ledger state')
+  }
+  dockerPsql(sessionFailureDatabase, [
+    '-q',
+    '-c',
+    'drop function public.cleanup_app_sessions(integer, uuid)',
+  ])
+  runMigration(sessionFailureDatabase)
+  assertSessionFoundationsEmpty(sessionFailureDatabase)
+  if (
+    dockerPsql(
+      sessionFailureDatabase,
+      [
+        '-At',
+        '-c',
+        `select
+           pg_get_function_result(
+             'public.cleanup_app_sessions(integer,uuid)'::regprocedure
+           ) = 'jsonb'
+           and exists (
+             select 1
+             from app_private.audit_event
+             where action = 'migration.session_sentinel'
+               and metadata = '{"source":"018"}'::jsonb
+           )
+           and exists (
+             select 1
+             from public.schema_migration
+             where phase = 'expand'
+               and filename like '019\\_%' escape '\\'
+           )`,
+      ],
+    ) !== 't'
+  ) {
+    throw new Error('session migration did not recover after the conflict was removed')
+  }
+
+  // Exercise the supported 018 -> 019 production upgrade separately from the
+  // legacy 012 adoption path. Existing identity and audit bytes must survive,
+  // and additive session state must remain empty across both apply and replay.
+  runMigration(sessionUpgradeDatabase, 'expand', { maxVersion: '018' })
+  dockerPsql(
+    sessionUpgradeDatabase,
+    ['-q', '-f', '-'],
+    `insert into app_private.principal (id, status)
+       values ('01900000-0000-4000-8000-000000000002', 'active');
+     insert into app_private.principal_identity (
+       principal_id, provider, issuer, subject
+     ) values (
+       '01900000-0000-4000-8000-000000000002',
+       'migration_test',
+       'https://issuer.example/session-upgrade',
+       'subject-${suffix}'
+     );
+     insert into app_private.audit_event (
+       actor_type, action, entity_type, entity_id, metadata
+     ) values (
+       'system',
+       'migration.session_upgrade',
+       'principal',
+       '01900000-0000-4000-8000-000000000002',
+       '{"preserve":true}'::jsonb
+     );`,
+  )
+  const sessionUpgradeSentinel = dockerPsql(sessionUpgradeDatabase, [
+    '-At',
+    '-c',
+    `select jsonb_build_object(
+       'principal', (select to_jsonb(principal.*) from app_private.principal principal),
+       'identity', (select to_jsonb(identity.*) from app_private.principal_identity identity),
+       'audit', (
+         select to_jsonb(audit.*)
+         from app_private.audit_event audit
+         where audit.action = 'migration.session_upgrade'
+       )
+     )::text`,
+  ])
+  runMigration(sessionUpgradeDatabase)
+  assertSessionFoundationsEmpty(sessionUpgradeDatabase)
+  const upgradedSessionSentinel = dockerPsql(sessionUpgradeDatabase, [
+    '-At',
+    '-c',
+    `select jsonb_build_object(
+       'principal', (select to_jsonb(principal.*) from app_private.principal principal),
+       'identity', (select to_jsonb(identity.*) from app_private.principal_identity identity),
+       'audit', (
+         select to_jsonb(audit.*)
+         from app_private.audit_event audit
+         where audit.action = 'migration.session_upgrade'
+       )
+     )::text`,
+  ])
+  if (upgradedSessionSentinel !== sessionUpgradeSentinel) {
+    throw new Error('018-to-019 upgrade changed identity or audit sentinel data')
+  }
+  runMigration(sessionUpgradeDatabase)
+  assertSessionFoundationsEmpty(sessionUpgradeDatabase)
+  const replayedSessionSentinel = dockerPsql(sessionUpgradeDatabase, [
+    '-At',
+    '-c',
+    `select jsonb_build_object(
+       'principal', (select to_jsonb(principal.*) from app_private.principal principal),
+       'identity', (select to_jsonb(identity.*) from app_private.principal_identity identity),
+       'audit', (
+         select to_jsonb(audit.*)
+         from app_private.audit_event audit
+         where audit.action = 'migration.session_upgrade'
+       )
+     )::text`,
+  ])
+  if (replayedSessionSentinel !== sessionUpgradeSentinel) {
+    throw new Error('019 replay changed identity or audit sentinel data')
+  }
+  if (
+    ledgerCount(sessionUpgradeDatabase, 'expand') !== expandMigrationCount
+  ) {
+    throw new Error('018-to-019 replay produced an incomplete migration ledger')
   }
 
   dockerPsql(upgradeDatabase, ['--single-transaction', '-q', '-f', '-'], legacySql)
@@ -528,6 +987,7 @@ try {
     throw new Error('baseline adoption replayed historical seed data')
   }
   assertIdentityFoundationsEmpty(upgradeDatabase)
+  assertSessionFoundationsEmpty(upgradeDatabase)
   if (
     dockerPsql(
       upgradeDatabase,
@@ -551,6 +1011,7 @@ try {
 
   // A second run must verify checksums and skip every recorded migration.
   runMigration(upgradeDatabase)
+  assertSessionFoundationsEmpty(upgradeDatabase)
   assertLifecycle(upgradeDatabase, 'expanded')
   runMigration(upgradeDatabase, 'contract')
   assertLifecycle(upgradeDatabase, 'contracted')
@@ -777,6 +1238,7 @@ try {
 
   runMigration(freshDatabase)
   assertIdentityFoundationsEmpty(freshDatabase)
+  assertSessionFoundationsEmpty(freshDatabase)
   assertLifecycle(freshDatabase, 'expanded')
   assertRpcClaims(freshDatabase, 'expanded')
   runMigration(freshDatabase, 'contract')
@@ -825,10 +1287,25 @@ try {
     ],
   )
 
-  const concurrentResults = await Promise.all([
-    runMigrationAsync(concurrentDatabase),
-    runMigrationAsync(concurrentDatabase),
-  ])
+  runMigration(concurrentDatabase, 'expand', { maxVersion: '018' })
+  const migrationBarrier = await acquireMigrationTestBarrier(concurrentDatabase)
+  const concurrentRunners = [
+    startMigrationRunner(concurrentDatabase),
+    startMigrationRunner(concurrentDatabase),
+  ]
+  let concurrentResults
+  try {
+    await proveMigrationRunnersBlocked(
+      concurrentDatabase,
+      migrationBarrier,
+      concurrentRunners,
+    )
+  } finally {
+    await releaseMigrationTestBarrier(migrationBarrier)
+    concurrentResults = await Promise.all(
+      concurrentRunners.map(runner => runner.completion),
+    )
+  }
   for (const result of concurrentResults) {
     process.stdout.write(result.output)
     if (result.code !== 0) {
@@ -838,9 +1315,11 @@ try {
   if (ledgerCount(concurrentDatabase, 'expand') !== expandMigrationCount) {
     throw new Error('concurrent migration runners produced an incomplete ledger')
   }
+  assertSessionFoundationsEmpty(concurrentDatabase)
 
   if (externalPsqlAvailable) {
     runMigration(externalDatabase, 'expand', { external: true })
+    assertSessionFoundationsEmpty(externalDatabase)
     assertLifecycle(externalDatabase, 'expanded')
     assertRpcClaims(externalDatabase, 'expanded')
     runMigration(externalDatabase, 'contract', { external: true })

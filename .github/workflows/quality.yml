@@ -56,6 +56,7 @@ jobs:
           npm run test:object-cleanup
           npm run test:rdb-endpoint
           npm run test:cache-boundaries
+          npm run test:session-token
           npm run test:cloudbase-environment
           npm run test:site-config
           npm run test:migration-checksum
@@ -222,6 +223,7 @@ jobs:
           npm run test:match-schedule
           npm run test:security-boundaries
           npm run test:identity-foundations
+          npm run test:session-foundations
           npm run test:registration-rate-limit
 
       - name: Build production application

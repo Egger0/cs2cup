@@ -68,9 +68,11 @@ insert the subject into `admin_user`, then set the token as the
 | `test:object-cleanup` | Proves database-first deletion and best-effort private-object cleanup |
 | `test:rdb-endpoint` | Proves override URLs cannot receive CloudBase bearer credentials |
 | `test:cache-boundaries` | Proves public revalidation, high-cardinality no-store, private transport no-store, allowlists and canonical protected-response directives |
+| `test:session-token` | Canonical opaque-token generation, parsing, digest vectors and fail-closed Web Crypto regressions |
 | `test:cloudbase-environment` | Proves credentials can reach only a validated official CloudBase gateway origin |
 | `test:registration-rate-limit` | Sequential and concurrent atomic rate-limit tests |
 | `test:identity-foundations` | Private identity schema, constraints, claims boundary, audit immutability and concurrent resolver regressions |
+| `test:session-foundations` | Revocable-session lifecycle, privacy, rollback, lock-order and concurrent cleanup regressions |
 | `test:migrations` | Fresh install, legacy adoption, tamper, expand/contract, rollback and direct-`psql` lifecycle checks |
 | `smoke:cloudbase` | Staging-only HTTPS proof for CloudBase RPC claims and expand/contract state; requires explicit acknowledgement and secret-store credentials |
 | `a11y` | axe across 15 pages, zero violations expected |
@@ -192,6 +194,8 @@ OFL-1.1 terms ship with every standalone artifact; see
 | `app_private.principal` `principal_identity` `principal_profile` | Provider-neutral subjects, private external identity bindings and private-by-default profiles |
 | `app_private.role_assignment` `team_ownership` | Revocable application-role and tournament-entry relationships; not yet an authorization source |
 | `app_private.audit_event` | Append-only, data-minimized application audit envelope |
+| `app_private.app_session` `app_session_token` | Revocable, hash-only application-session families and token lineage; inert until the reviewed cookie cutover |
+| `app_private.login_throttle` | Keyed account/network login-admission counters; inert until the reviewed authentication cutover |
 
 Public reads use `team_public`, `player_public`, `match_map_public` and
 `photo_public`. These views exclude records attached to draft tournaments;
@@ -217,6 +221,15 @@ roles or ownership rows grant no capability until a later reviewed cutover.
 See [ADR 0002](docs/adr/0002-domain-identity-foundations.md) and the
 [identity-foundations rollout runbook](docs/runbooks/identity-foundations-rollout.md)
 for the exact namespace, privacy, authorization and deployment contract.
+
+Migration 019 adds revocable application-session, rotation/replay detection,
+dual-dimension login-throttle and bounded-cleanup foundations without changing
+the current login, logout, `cs2cup_session` cookie or administrator authority.
+It persists only fixed-size digests and keyed fingerprints; production rows
+remain empty until the separately reviewed authentication cutover. See
+[ADR 0004](docs/adr/0004-revocable-session-foundations.md) and the
+[session-foundations rollout runbook](docs/runbooks/revocable-session-foundations-rollout.md)
+for the exact state machine, lock order, privacy rules and release gates.
 
 The server action derives an HMAC fingerprint from the trusted client address,
 and the database checks, records and executes each attempt in one atomic
@@ -244,6 +257,8 @@ After applying the migrations, verify the security boundaries independently:
 ```bash
 npm run test:security-boundaries
 npm run test:identity-foundations
+npm run test:session-token
+npm run test:session-foundations
 npm run test:registration-fingerprint
 npm run test:registration-rate-limit
 ```
