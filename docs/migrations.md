@@ -41,6 +41,14 @@ concurrent runners and direct `psql`. `MIGRATION_TEST_MAX_VERSION` exists only
 for that suite; the runner rejects it unless `MIGRATION_ENABLE_TEST_CONTROLS=1`
 and refuses it entirely under `NODE_ENV=production`.
 
+Migration-specific evidence belongs with its reviewed rollout procedure. For
+the additive identity foundation in migration 018, follow the
+[identity-foundations rollout runbook](runbooks/identity-foundations-rollout.md)
+and run `npm run test:identity-foundations` in addition to the lifecycle suite.
+That migration deliberately has no destructive contract or down migration;
+application rollback leaves its unused private tables and nullable bridges in
+place, while a schema defect is repaired by a new forward migration.
+
 ## Release operation
 
 Use one reviewed checkout and one dedicated least-privilege migration identity.
