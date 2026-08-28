@@ -63,6 +63,23 @@ begin
     raise exception 'player nullable principal bridge is missing';
   end if;
 
+  if exists (
+    select 1 from app_private.principal
+    union all select 1 from app_private.principal_identity
+    union all select 1 from app_private.principal_profile
+    union all select 1 from app_private.role_assignment
+    union all select 1 from app_private.team_ownership
+    union all select 1 from app_private.audit_event
+  ) then
+    raise exception 'identity migration fabricated foundation rows';
+  end if;
+
+  if exists (select 1 from public.admin_user where principal_id is not null)
+    or exists (select 1 from public.player where principal_id is not null)
+  then
+    raise exception 'identity migration fabricated compatibility links';
+  end if;
+
   if to_regprocedure('app_private.ensure_principal_identity(text,text,text)') is null
     or to_regprocedure('public.ensure_principal_identity(text,text,text)') is null
   then
@@ -125,6 +142,7 @@ declare
   v_role text;
   v_table text;
   v_private_function regprocedure;
+  v_private_sequence regclass;
 begin
   foreach v_role in array array['anon', 'authenticated', 'club_admin', 'service_role'] loop
     continue when not exists (
@@ -162,6 +180,32 @@ begin
         raise exception '% can execute private function %', v_role, v_private_function;
       end if;
     end loop;
+
+    for v_private_sequence in
+      select sequence_relation.oid::regclass
+      from pg_catalog.pg_class sequence_relation
+      join pg_catalog.pg_namespace namespace
+        on namespace.oid = sequence_relation.relnamespace
+      where namespace.nspname = 'app_private'
+        and sequence_relation.relkind = 'S'
+    loop
+      if has_sequence_privilege(v_role, v_private_sequence, 'usage')
+        or has_sequence_privilege(v_role, v_private_sequence, 'select')
+        or has_sequence_privilege(v_role, v_private_sequence, 'update')
+      then
+        raise exception '% can access private sequence %', v_role, v_private_sequence;
+      end if;
+    end loop;
+
+    if v_role in ('club_admin', 'service_role')
+      and not has_function_privilege(
+        v_role,
+        'public.ensure_principal_identity(text,text,text)',
+        'execute'
+      )
+    then
+      raise exception '% cannot reach the guarded public identity resolver', v_role;
+    end if;
   end loop;
 
   if has_function_privilege(
