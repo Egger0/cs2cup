@@ -1,6 +1,27 @@
 import { posix } from 'node:path'
+import { getCurrentAdmin } from '@/lib/auth'
 import { selectRow } from '@/lib/rdb'
 import { getObject } from '@/lib/storage'
+
+async function canReadPhoto(storageKey: string) {
+  const published = await selectRow<{ id: number }>('photo_public', {
+    select: 'id',
+    filters: { storage_key: `eq.${storageKey}` },
+    revalidate: false,
+  }).catch(() => null)
+  if (published) return true
+
+  const admin = await getCurrentAdmin().catch(() => null)
+  if (!admin) return false
+
+  const privatePhoto = await selectRow<{ id: number }>('photo', {
+    select: 'id',
+    filters: { storage_key: `eq.${storageKey}` },
+    credential: 'admin',
+    revalidate: false,
+  }).catch(() => null)
+  return Boolean(privatePhoto)
+}
 
 export async function GET(_request: Request, { params }: { params: Promise<{ key: string[] }> }) {
   const { key } = await params
@@ -14,12 +35,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ key
     return new Response('not found', { status: 404 })
   }
 
-  const photo = await selectRow<{ id: number }>('photo_public', {
-    select: 'id',
-    filters: { storage_key: `eq.${relative}` },
-    revalidate: false,
-  }).catch(() => null)
-  if (!photo) {
+  if (!(await canReadPhoto(relative))) {
     return new Response('not found', { status: 404 })
   }
 

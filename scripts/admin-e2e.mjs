@@ -240,7 +240,16 @@ try {
 
   const key = db(`select storage_key from photo where caption='E2E upload probe'`)
   const served = await page.request.get(`${BASE}/media/${key}`)
-  check('Uploaded media is served over HTTP', served.status() === 200, `${served.status()} ${key}`)
+  check('Admin can preview draft media', served.status() === 200, `${served.status()} ${key}`)
+
+  const publicMediaContext = await browser.newContext()
+  const hiddenDraftMedia = await publicMediaContext.request.get(`${BASE}/media/${key}`)
+  check(
+    'Draft media remains hidden from public requests',
+    hiddenDraftMedia.status() === 404,
+    String(hiddenDraftMedia.status()),
+  )
+  await publicMediaContext.close()
   const dims = db(`select width||'x'||height from photo where caption='E2E upload probe'`)
   check('Uploaded dimensions are detected', dims === '100x70', dims)
 
