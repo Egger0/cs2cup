@@ -14,8 +14,11 @@ cp .env.example .env.local
 npm run dev
 ```
 
-The local stack runs PostgREST twice: port 53000 as `anon`, port 53001 as
-`club_admin`. Point `RDB_BASE_URL` and `RDB_ADMIN_BASE_URL` at them.
+The local stack binds PostgreSQL and both PostgREST endpoints to `127.0.0.1`
+only. Port 53000 serves public requests as `anon`; port 53001 serves trusted
+server-side requests as the non-superuser `club_admin` role. Never expose the
+admin endpoint outside the local machine. Point `RDB_BASE_URL` and
+`RDB_ADMIN_BASE_URL` at the respective endpoints.
 
 For the console, mint a local session:
 
@@ -34,6 +37,9 @@ insert the subject into `admin_user`, then set the token as the
 | `stack:down` | Destroys the local stack |
 | `photos:import` | Decodes legacy base64 photos to files and SQL |
 | `typecheck` `lint` `build` | Pipeline gates |
+| `test:security-boundaries` | Public/private data and local-role regressions |
+| `test:registration-fingerprint` | Trusted-address normalization and HMAC unit tests |
+| `test:registration-rate-limit` | Sequential and concurrent atomic rate-limit tests |
 | `a11y` | axe across 14 pages, zero violations expected |
 | `keyboard` | Focus order, skip link, dialog and drawer |
 | `perf` | Transfer, JS, image, font, LCP and CLS against a budget |
@@ -71,6 +77,8 @@ Open `http://localhost:3100`. The flag uses static fallbacks and displays the ho
 | `PHOTO_UPLOAD_DRIVER` | `local` or `cloudbase`; defaults to `local` |
 | `PHOTO_LOCAL_ROOT` | Where the local driver writes; defaults to a temporary directory |
 | `PHOTO_BUCKET` | CloudBase PG Storage bucket; defaults to `cs2cup-photos` |
+| `REGISTRATION_FINGERPRINT_SECRET` | Dedicated secret of at least 32 bytes used to HMAC client addresses; required outside development |
+| `REGISTRATION_CLIENT_IP_HEADER` | Trusted ingress header: `x-real-ip` or `cf-connecting-ip`; defaults to `x-real-ip` |
 
 ## Layout
 
@@ -110,10 +118,32 @@ where the heavy Chinese title carries the identity. That choice costs about
 | `admin_user` | Allowlist |
 | `registration_attempt` | Rate-limit ledger, hashed fingerprints |
 
-Public reads use `team_public` and `player_public`. Neither exposes `contact`.
+Public reads use `team_public`, `player_public`, `match_map_public` and
+`photo_public`. These views exclude records attached to draft tournaments;
+`team_public` also omits `contact` and `note`. Base-table RLS enforces the same
+tournament boundary for matches, match maps and photos. Posts remain private
+until `published_at`.
 
-`submit_team` is executable only by `club_admin`, so entries must pass through
-the server action, which rate-limits by hashed address and user agent.
+`submit_team_rate_limited` is executable only by `club_admin`. The server action
+derives an HMAC fingerprint from the trusted client address, and the database
+checks, records and executes each attempt in one atomic transaction.
+Development uses a process-local random key and loopback address when ingress
+headers are absent. Production instead fails closed unless the dedicated key
+and configured trusted ingress header are available.
+
+Generate a production secret with a cryptographically secure password manager
+or `openssl rand -base64 32`. Configure only an address header that the trusted
+ingress overwrites; never trust a client-supplied forwarding header. Use
+`cf-connecting-ip` only when the origin accepts traffic exclusively from
+Cloudflare.
+
+After applying the migrations, verify the security boundaries independently:
+
+```bash
+npm run test:security-boundaries
+npm run test:registration-fingerprint
+npm run test:registration-rate-limit
+```
 
 ## Deploy
 
