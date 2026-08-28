@@ -79,6 +79,9 @@ jobs:
             --tag cs2cup:quality \
             .
 
+      - name: Build with CloudBase-compatible defaults
+        run: docker build --tag cs2cup:quality-default .
+
       - name: Start and verify production image
         run: |
           container_name="cs2cup-quality-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
