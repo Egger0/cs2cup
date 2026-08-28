@@ -10,7 +10,10 @@ const config: NextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [{ protocol: 'https', hostname: '**.tcloudbasegateway.com' }],
-    localPatterns: [{ pathname: '/media/**' }, { pathname: '/photos/**' }, { pathname: '/brand/**' }],
+    // `/media/**` is authorization-sensitive and must never enter the shared
+    // image optimizer cache. Media components opt out of optimization and read
+    // the guarded route directly.
+    localPatterns: [{ pathname: '/brand/**' }],
   },
 }
 

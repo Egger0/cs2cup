@@ -51,6 +51,7 @@ export function PosterWall({ editions }: { editions: Edition[] }) {
                 <Image
                   src={photoUrl(poster.storageKey)}
                   alt={poster.caption ?? `${edition.name} 海报`}
+                  unoptimized
                   width={poster.width}
                   height={poster.height}
                   sizes="(max-width: 720px) 100vw, 380px" 
@@ -82,6 +83,7 @@ export function PosterWall({ editions }: { editions: Edition[] }) {
             <Image
               src={photoUrl(active.storageKey)}
               alt={active.caption ?? ''}
+              unoptimized
               width={active.width}
               height={active.height}
               sizes="94vw"

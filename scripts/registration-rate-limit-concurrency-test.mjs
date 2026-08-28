@@ -1,8 +1,14 @@
 import assert from 'node:assert/strict'
-import { randomUUID } from 'node:crypto'
+import { randomBytes, randomUUID } from 'node:crypto'
 import { spawn } from 'node:child_process'
 
+const database = process.env.TEST_DB_NAME ?? process.env.E2E_DB_NAME ?? 'cs2cup'
+if (!/^[a-zA-Z0-9_]+$/.test(database)) {
+  throw new Error('TEST_DB_NAME must contain only letters, digits and underscores')
+}
+
 function runPsql(sql) {
+  const guardedSql = `set request.jwt.claims = '{"role":"service_role"}';\n${sql}`
   return new Promise((resolve, reject) => {
     const child = spawn(
       'docker',
@@ -15,7 +21,7 @@ function runPsql(sql) {
         '-U',
         'postgres',
         '-d',
-        'cs2cup',
+        database,
         '-v',
         'ON_ERROR_STOP=1',
         '-At',
@@ -39,7 +45,7 @@ function runPsql(sql) {
       if (code === 0) resolve(stdout.trim())
       else reject(new Error(`psql exited with ${code}: ${stderr.trim()}`))
     })
-    child.stdin.end(sql)
+    child.stdin.end(guardedSql)
   })
 }
 
@@ -49,7 +55,7 @@ function sqlLiteral(value) {
 
 const suffix = randomUUID().replaceAll('-', '').slice(0, 16)
 const slug = `registration-concurrency-${suffix}`
-const fingerprint = `v1:${'d'.repeat(64)}`
+const fingerprint = `v1:${randomBytes(32).toString('hex')}`
 
 await runPsql(`
   with inserted_game as (

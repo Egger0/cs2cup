@@ -4,7 +4,7 @@ import { headers } from 'next/headers'
 import {
   fingerprintFromHeaders,
   MIN_FINGERPRINT_SECRET_BYTES,
-  registrationClientIpHeader,
+  registrationClientIpSource,
 } from './ratelimit-fingerprint'
 
 let developmentSecret: string | undefined
@@ -18,13 +18,20 @@ function fingerprintSecret() {
   return developmentSecret
 }
 
+function fingerprintSource() {
+  return registrationClientIpSource(
+    process.env.REGISTRATION_CLIENT_IP_SOURCE,
+    process.env.NODE_ENV !== 'development',
+  )
+}
+
 export async function clientFingerprint() {
+  const source = fingerprintSource()
+  const secret = fingerprintSecret()
   const store = await headers()
   return fingerprintFromHeaders(store, {
-    clientIpHeader: registrationClientIpHeader(
-      process.env.REGISTRATION_CLIENT_IP_HEADER,
-    ),
-    secret: fingerprintSecret(),
+    clientIpSource: source,
+    secret,
     fallbackAddress: process.env.NODE_ENV === 'development' ? '127.0.0.1' : undefined,
   })
 }

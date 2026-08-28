@@ -46,7 +46,7 @@ export function PhotoRow({
             if (!confirm('删除这张图片?文件也会一并移除。')) return
             startTransition(async () => {
               setError('')
-              const result = await deletePhotoAndFile(photo.id, photo.storageKey)
+              const result = await deletePhotoAndFile(photo.id)
               if (!result.ok) setError(result.error)
             })
           }}

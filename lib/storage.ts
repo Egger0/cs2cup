@@ -1,8 +1,16 @@
 import 'server-only'
 import cloudbase from '@cloudbase/js-sdk'
-import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import {
+  resolveCloudBaseEnvironmentId,
+  resolveCloudBaseRegion,
+} from './cloudbase-environment'
+import { resolvePhotoLocalRoot } from './photo-storage-config'
+import {
+  assertStorageKey,
+  getLocalObject,
+  putLocalObject,
+  removeLocalObject,
+} from './local-object-storage'
 
 export interface StoredFile {
   key: string
@@ -13,7 +21,7 @@ export interface StoredObject {
   contentType: string
 }
 
-const LOCAL_ROOT = process.env.PHOTO_LOCAL_ROOT ?? join(tmpdir(), 'cs2cup-photos')
+const LOCAL_ROOT = resolvePhotoLocalRoot()
 const DEFAULT_BUCKET = 'cs2cup-photos'
 
 export const LOCAL_UPLOAD_ROOT = LOCAL_ROOT
@@ -28,12 +36,6 @@ function bucketName() {
   return process.env.PHOTO_BUCKET ?? DEFAULT_BUCKET
 }
 
-function assertStorageKey(key: string) {
-  if (!key || key.startsWith('/') || key.split('/').some(part => !part || part === '.' || part === '..')) {
-    throw new Error('Invalid photo storage key')
-  }
-}
-
 function contentTypeFor(key: string) {
   const extension = key.split('.').pop()?.toLowerCase()
   if (extension === 'jpg' || extension === 'jpeg') return 'image/jpeg'
@@ -43,26 +45,24 @@ function contentTypeFor(key: string) {
 }
 
 function cloudBucket() {
-  const env = process.env.CLOUDBASE_ENV_ID
+  const env = resolveCloudBaseEnvironmentId()
   const accessKey = process.env.CLOUDBASE_ADMIN_KEY
   if (!env || !accessKey) throw new Error('CloudBase storage is not configured')
 
   return cloudbase
-    .init({ env, region: process.env.CLOUDBASE_REGION, accessKey })
+    .init({ env, region: resolveCloudBaseRegion(), accessKey })
     .storage.from(bucketName())
 }
 
 export function uploadsEnabled() {
   if (driver() === 'local') return true
-  return Boolean(process.env.CLOUDBASE_ENV_ID && process.env.CLOUDBASE_ADMIN_KEY)
+  return Boolean(resolveCloudBaseEnvironmentId() && process.env.CLOUDBASE_ADMIN_KEY)
 }
 
 export async function putObject(key: string, body: Buffer, contentType: string): Promise<StoredFile> {
   assertStorageKey(key)
   if (driver() === 'local') {
-    const target = join(LOCAL_ROOT, key)
-    await mkdir(dirname(target), { recursive: true })
-    await writeFile(target, body)
+    await putLocalObject(LOCAL_ROOT, key, body)
     return { key }
   }
 
@@ -75,7 +75,7 @@ export async function getObject(key: string): Promise<StoredObject> {
   assertStorageKey(key)
   if (driver() === 'local') {
     return {
-      body: new Uint8Array(await readFile(join(LOCAL_ROOT, key))),
+      body: new Uint8Array(await getLocalObject(LOCAL_ROOT, key)),
       contentType: contentTypeFor(key),
     }
   }
@@ -91,7 +91,7 @@ export async function getObject(key: string): Promise<StoredObject> {
 export async function removeObject(key: string) {
   assertStorageKey(key)
   if (driver() === 'local') {
-    await unlink(join(LOCAL_ROOT, key))
+    await removeLocalObject(LOCAL_ROOT, key)
     return
   }
 

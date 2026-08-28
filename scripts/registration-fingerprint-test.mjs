@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import {
   fingerprintAddress,
   fingerprintFromHeaders,
-  registrationClientIpHeader,
+  registrationClientIpSource,
 } from '../lib/ratelimit-fingerprint.ts'
 
 const secret = 'registration-test-secret-32-bytes-minimum'
@@ -19,6 +19,18 @@ assert.equal(
   fingerprintAddress('2001:0db8:0:0:0:0:0:1', secret),
   fingerprintAddress('2001:db8::1', secret),
 )
+assert.equal(
+  fingerprintAddress('2001:db8:abcd:12::1', secret),
+  fingerprintAddress('2001:db8:abcd:12:ffff:ffff:ffff:ffff', secret),
+)
+assert.notEqual(
+  fingerprintAddress('2001:db8:abcd:12::1', secret),
+  fingerprintAddress('2001:db8:abcd:13::1', secret),
+)
+assert.equal(
+  fingerprintAddress('::ffff:192.0.2.7', secret),
+  fingerprintAddress('192.0.2.7', secret),
+)
 
 const realIpHeaders = new Headers({
   'x-real-ip': '198.51.100.4',
@@ -29,14 +41,14 @@ const changedAgentHeaders = new Headers({
   'user-agent': 'different-attacker-controlled-value',
 })
 assert.equal(
-  fingerprintFromHeaders(realIpHeaders, { clientIpHeader: 'x-real-ip', secret }),
-  fingerprintFromHeaders(changedAgentHeaders, { clientIpHeader: 'x-real-ip', secret }),
+  fingerprintFromHeaders(realIpHeaders, { clientIpSource: 'x-real-ip', secret }),
+  fingerprintFromHeaders(changedAgentHeaders, { clientIpSource: 'x-real-ip', secret }),
 )
 
 const cloudflareHeaders = new Headers({ 'cf-connecting-ip': '192.0.2.7' })
 assert.equal(
   fingerprintFromHeaders(cloudflareHeaders, {
-    clientIpHeader: 'cf-connecting-ip',
+    clientIpSource: 'cf-connecting-ip',
     secret,
   }),
   fingerprintAddress('192.0.2.7', secret),
@@ -60,8 +72,17 @@ assert.equal(
     secret,
   }),
 )
+assert.equal(registrationClientIpSource('cf-connecting-ip'), 'cf-connecting-ip')
 assert.throws(
-  () => registrationClientIpHeader('x-forwarded-for'),
+  () => registrationClientIpSource(undefined, true),
+  /required outside development/,
+)
+assert.throws(
+  () => registrationClientIpSource('cloudbase'),
+  /must be x-real-ip or cf-connecting-ip/,
+)
+assert.throws(
+  () => registrationClientIpSource('x-forwarded-for'),
   /must be x-real-ip or cf-connecting-ip/,
 )
 

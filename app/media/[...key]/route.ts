@@ -3,6 +3,13 @@ import { getCurrentAdmin } from '@/lib/auth'
 import { selectRow } from '@/lib/rdb'
 import { getObject } from '@/lib/storage'
 
+function notFound() {
+  return new Response('not found', {
+    status: 404,
+    headers: { 'Cache-Control': 'no-store' },
+  })
+}
+
 async function canReadPhoto(storageKey: string) {
   const published = await selectRow<{ id: number }>('photo_public', {
     select: 'id',
@@ -32,11 +39,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ key
     relative.startsWith('../') ||
     relative.startsWith('/')
   ) {
-    return new Response('not found', { status: 404 })
+    return notFound()
   }
 
   if (!(await canReadPhoto(relative))) {
-    return new Response('not found', { status: 404 })
+    return notFound()
   }
 
   try {
@@ -48,6 +55,6 @@ export async function GET(_request: Request, { params }: { params: Promise<{ key
       },
     })
   } catch {
-    return new Response('not found', { status: 404 })
+    return notFound()
   }
 }

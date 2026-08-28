@@ -67,7 +67,8 @@ begin
   select id
   into v_tournament_id
   from public.tournament
-  where slug = p_payload ->> 'slug';
+  where slug = p_payload ->> 'slug'
+    and status <> 'draft';
 
   insert into public.registration_attempt (
     fingerprint,
@@ -81,6 +82,13 @@ begin
     v_now
   )
   returning id into v_attempt_id;
+
+  if v_tournament_id is null then
+    return jsonb_build_object(
+      'ok', false,
+      'error', '当前赛事不存在或不可报名'
+    );
+  end if;
 
   begin
     v_result := public.submit_team(p_payload);
@@ -111,17 +119,23 @@ revoke execute on function public.submit_team_rate_limited(text, jsonb)
 do $migration$
 begin
   if exists (select 1 from pg_roles where rolname = 'club_admin') then
-    revoke all on table public.registration_attempt from club_admin;
-    revoke all on sequence public.registration_attempt_id_seq from club_admin;
-    revoke execute on function public.submit_team(jsonb) from club_admin;
+    -- Expand phase: keep the old app's submit + ledger path available until
+    -- every old instance has drained. The post-deploy contraction migration
+    -- removes these grants after the new RPC is serving all traffic.
+    grant select, insert on table public.registration_attempt to club_admin;
+    grant usage, select on sequence public.registration_attempt_id_seq to club_admin;
+    grant execute on function public.submit_team(jsonb) to club_admin;
+    grant execute on function public.recent_registration_attempts(text, integer) to club_admin;
     grant execute on function public.submit_team_rate_limited(text, jsonb) to club_admin;
+
+    drop policy if exists registration_attempt_admin on public.registration_attempt;
+    create policy registration_attempt_admin on public.registration_attempt
+      for insert to club_admin with check (true);
   end if;
 end
 $migration$;
 
-drop policy if exists registration_attempt_admin on public.registration_attempt;
-
 comment on function public.recent_registration_attempts(text, integer) is
-  'Deprecated compatibility RPC for rolling deployments; remove in a later contraction migration.';
+  'Deprecated compatibility RPC for rolling deployments; revoke via the post-deploy contraction after old instances drain.';
 
 notify pgrst, 'reload schema';

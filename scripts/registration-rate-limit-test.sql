@@ -2,6 +2,8 @@
 
 begin;
 
+set local request.jwt.claims = '{"role":"service_role"}';
+
 do $test$
 declare
   v_game_id       bigint;
@@ -41,12 +43,8 @@ begin
     if not has_function_privilege('club_admin', v_function, 'execute') then
       raise exception 'club_admin is missing execute privilege on %', v_function;
     end if;
-    if has_function_privilege(
-      'club_admin',
-      'public.submit_team(jsonb)',
-      'execute'
-    ) then
-      raise exception 'club_admin can bypass the rate limiter through submit_team';
+    if to_regprocedure('public.submit_team(jsonb)') is not null then
+      raise exception 'legacy submit_team RPC still exists after contraction';
     end if;
     if has_table_privilege('club_admin', 'public.registration_attempt', 'select')
       or has_table_privilege('club_admin', 'public.registration_attempt', 'insert')
@@ -199,6 +197,34 @@ begin
     where fingerprint = 'v1:' || repeat('b', 64)
   ) then
     raise exception 'expired fingerprint ledger row was not removed';
+  end if;
+
+  insert into public.tournament (
+    slug,
+    title,
+    game_id,
+    season,
+    edition,
+    status,
+    team_cap
+  ) values (
+    v_slug || '-draft',
+    'Private draft registration test',
+    v_game_id,
+    '2099',
+    2,
+    'draft',
+    16
+  );
+
+  if public.submit_team_rate_limited(
+    'v1:' || repeat('d', 64),
+    jsonb_build_object('slug', v_slug || '-draft')
+  ) ->> 'error' is distinct from public.submit_team_rate_limited(
+    'v1:' || repeat('e', 64),
+    jsonb_build_object('slug', v_slug || '-missing')
+  ) ->> 'error' then
+    raise exception 'registration response reveals whether a draft slug exists';
   end if;
 
   begin

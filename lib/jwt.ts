@@ -1,3 +1,8 @@
+import {
+  fetchCloudBaseGateway,
+  resolveCloudBaseEnvironmentId,
+} from './cloudbase-environment'
+
 export interface TokenClaims {
   sub: string
 }
@@ -17,12 +22,6 @@ const KEY_TTL = 10 * 60 * 1000
 let cachedIssuer = ''
 let cachedKeys: Map<string, CryptoKey> | null = null
 let cachedAt = 0
-
-function userInfoUrl() {
-  const env = process.env.CLOUDBASE_ENV_ID
-  if (!env) return null
-  return `https://${env}.api.tcloudbasegateway.com/auth/v1/user/me`
-}
 
 function tokenSubject(token: string) {
   const payload = token.split('.')[1]
@@ -90,7 +89,7 @@ async function loadOidcKeys(issuer: string) {
 }
 
 async function verifyOidcToken(token: string, issuer: string): Promise<TokenClaims | null> {
-  const expectedAudience = process.env.CLOUDBASE_ENV_ID
+  const expectedAudience = resolveCloudBaseEnvironmentId()
   if (!expectedAudience) return null
 
   const parts = token.split('.')
@@ -127,15 +126,14 @@ export async function verifyToken(token: string): Promise<TokenClaims | null> {
   const issuer = process.env.CLOUDBASE_ISSUER?.replace(/\/$/, '')
   if (issuer) return verifyOidcToken(token, issuer)
 
-  const url = userInfoUrl()
-  if (!url || !token) return null
+  if (!token) return null
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchCloudBaseGateway('/auth/v1/user/me', {
       headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',
     })
-    if (!response.ok) return null
+    if (!response?.ok) return null
 
     const profile = (await response.json()) as { status?: string }
     const sub = tokenSubject(token)

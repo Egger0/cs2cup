@@ -1,6 +1,11 @@
 import 'server-only'
+import {
+  rdbAuthorizationHeader,
+  resolveRdbEndpoint,
+} from './rdb-endpoint'
+import type { RdbCredential } from './rdb-endpoint'
 
-type Credential = 'anon' | 'admin'
+type Credential = RdbCredential
 
 export interface QueryOptions {
   select?: string
@@ -24,23 +29,6 @@ export class RdbError extends Error {
   }
 }
 
-function endpoint(credential: Credential = 'anon') {
-  const override =
-    credential === 'admin'
-      ? (process.env.RDB_ADMIN_BASE_URL ?? process.env.RDB_BASE_URL)
-      : process.env.RDB_BASE_URL
-  if (override) return override.replace(/\/$/, '')
-  const env = process.env.CLOUDBASE_ENV_ID
-  if (!env) throw new Error('CLOUDBASE_ENV_ID or RDB_BASE_URL must be set')
-  return `https://${env}.api.tcloudbasegateway.com/v1/rdb/rest`
-}
-
-function keyFor(credential: Credential) {
-  return credential === 'admin'
-    ? process.env.CLOUDBASE_ADMIN_KEY
-    : process.env.CLOUDBASE_ANON_KEY
-}
-
 function search({ select, filters, order, limit }: QueryOptions) {
   const params = new URLSearchParams()
   params.set('select', select ?? '*')
@@ -59,21 +47,27 @@ async function request<T>(
   body?: unknown,
 ): Promise<T> {
   const credential = options.credential ?? 'anon'
-  const url = `${endpoint(credential)}/${table}?${search(options)}`
+  const endpoint = resolveRdbEndpoint(credential)
+  const url = `${endpoint.baseUrl}/${table}?${search(options)}`
 
-  const key = keyFor(credential)
-  const response = await fetch(url, {
-    method,
-    headers: {
-      ...(key ? { Authorization: `Bearer ${key}` } : {}),
-      'Content-Type': 'application/json',
-      ...(body !== undefined ? { Prefer: 'return=representation' } : {}),
-    },
-    body: body === undefined ? undefined : JSON.stringify(body),
-    ...(method === 'GET' && credential !== 'admin'
-      ? { next: { tags: options.tags, revalidate: options.revalidate } }
-      : { cache: 'no-store' as const }),
-  })
+  let response: Response
+  try {
+    response = await fetch(url, {
+      method,
+      headers: {
+        ...rdbAuthorizationHeader(endpoint, credential),
+        'Content-Type': 'application/json',
+        ...(body !== undefined ? { Prefer: 'return=representation' } : {}),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      ...(method === 'GET' && credential !== 'admin' && options.revalidate !== false
+        ? { next: { tags: options.tags, revalidate: options.revalidate } }
+        : { cache: 'no-store' as const }),
+    })
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : 'network request failed'
+    throw new RdbError(503, table, `request to ${new URL(url).origin} failed: ${detail}`)
+  }
 
   if (!response.ok) {
     throw new RdbError(response.status, table, await response.text())
@@ -104,11 +98,11 @@ export function deleteRows(table: string, options: QueryOptions) {
 }
 
 export function callFunction<T>(name: string, args: unknown, credential: Credential = 'anon') {
-  const key = keyFor(credential)
-  return fetch(`${endpoint(credential)}/rpc/${name}`, {
+  const endpoint = resolveRdbEndpoint(credential)
+  return fetch(`${endpoint.baseUrl}/rpc/${name}`, {
     method: 'POST',
     headers: {
-      ...(key ? { Authorization: `Bearer ${key}` } : {}),
+      ...rdbAuthorizationHeader(endpoint, credential),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(args),

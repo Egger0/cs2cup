@@ -1,6 +1,6 @@
 import 'server-only'
 import { requireAdmin } from '../auth'
-import { deleteRows, insertRows, selectRows, updateRows } from '../rdb'
+import { deleteRows, insertRows, selectRow, selectRows, updateRows } from '../rdb'
 import type { ClubMember, Game, Post, Tournament } from '../types'
 
 const ADMIN = { credential: 'admin', revalidate: false } as const
@@ -293,6 +293,16 @@ interface PhotoRow {
   sort_order: number
 }
 
+const toAdminPhoto = (row: PhotoRow) => ({
+  id: row.id,
+  tournamentId: row.tournament_id,
+  storageKey: row.storage_key,
+  width: row.width,
+  height: row.height,
+  caption: row.caption,
+  sortOrder: row.sort_order,
+})
+
 export async function adminListPhotos(): Promise<
   { id: number; tournamentId: number; storageKey: string; width: number; height: number; caption: string | null; sortOrder: number }[]
 > {
@@ -302,15 +312,17 @@ export async function adminListPhotos(): Promise<
     ...ADMIN,
     order: 'tournament_id.desc,sort_order.asc',
   })
-  return rows.map(row => ({
-    id: row.id,
-    tournamentId: row.tournament_id,
-    storageKey: row.storage_key,
-    width: row.width,
-    height: row.height,
-    caption: row.caption,
-    sortOrder: row.sort_order,
-  }))
+  return rows.map(toAdminPhoto)
+}
+
+export async function adminGetPhoto(id: number) {
+  await requireAdmin()
+
+  const row = await selectRow<PhotoRow>('photo', {
+    ...ADMIN,
+    filters: { id: `eq.${id}` },
+  })
+  return row ? toAdminPhoto(row) : null
 }
 
 export function adminInsertPhoto(values: {

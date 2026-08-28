@@ -75,7 +75,7 @@ returns jsonb
 language sql
 stable
 security definer
-set search_path = public
+set search_path = pg_catalog, public
 as $$
   select jsonb_build_object(
     'cap', tr.team_cap,
@@ -93,6 +93,7 @@ as $$
 $$;
 
 grant select on public.photo_public to anon, authenticated;
+revoke create on schema public from public, anon, authenticated;
 
 -- CloudBase managed PostgreSQL does not permit CREATE ROLE. In that
 -- environment the admin API key supplies its own database identity, so role
@@ -140,6 +141,7 @@ begin
   end;
 
   grant usage on schema public to club_admin;
+  revoke create on schema public from club_admin;
 
   revoke all on table
     public.site_setting,
@@ -153,7 +155,6 @@ begin
     public.match_map,
     public.club_member,
     public.post,
-    public.registration_attempt,
     public.team_public,
     public.player_public,
     public.match_map_public,
@@ -166,7 +167,6 @@ begin
   grant select, update, delete on public.team to club_admin;
   grant select on public.player, public.match_map, public.admin_user to club_admin;
   grant select, update on public.match, public.club_member to club_admin;
-  grant select, insert on public.registration_attempt to club_admin;
   grant select on public.team_public, public.player_public, public.match_map_public,
     public.photo_public to club_admin;
 
@@ -174,20 +174,25 @@ begin
     public.game_id_seq,
     public.tournament_id_seq,
     public.photo_id_seq,
-    public.post_id_seq,
-    public.registration_attempt_id_seq
+    public.post_id_seq
   to club_admin;
 
   grant execute on function public.registration_status(text) to club_admin;
-  if to_regprocedure('public.recent_registration_attempts(text,integer)') is not null then
-    grant execute on function public.recent_registration_attempts(text, integer) to club_admin;
-  end if;
-
   if to_regprocedure('public.submit_team_rate_limited(text,jsonb)') is not null then
-    revoke execute on function public.submit_team(jsonb) from club_admin;
+    -- 014 owns the temporary compatibility grants and their later contraction.
+    -- Do not alter them when this security migration is inspected or replayed.
     grant execute on function public.submit_team_rate_limited(text, jsonb) to club_admin;
   else
+    grant select, insert on public.registration_attempt to club_admin;
+    grant usage, select on sequence public.registration_attempt_id_seq to club_admin;
     grant execute on function public.submit_team(jsonb) to club_admin;
+    if to_regprocedure('public.recent_registration_attempts(text,integer)') is not null then
+      grant execute on function public.recent_registration_attempts(text, integer) to club_admin;
+    end if;
+
+    drop policy if exists registration_attempt_admin on public.registration_attempt;
+    create policy registration_attempt_admin on public.registration_attempt
+      for insert to club_admin with check (true);
   end if;
   grant execute on function public.set_team_seed(bigint, bigint, integer) to club_admin;
   grant execute on function public.replace_bracket(bigint, bigint[], integer[]) to club_admin;
@@ -246,9 +251,6 @@ begin
   create policy post_admin_write on public.post
     for all to club_admin using (true) with check (true);
 
-  drop policy if exists registration_attempt_admin on public.registration_attempt;
-  create policy registration_attempt_admin on public.registration_attempt
-    for insert to club_admin with check (true);
 end
 $migration$;
 

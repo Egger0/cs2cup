@@ -48,6 +48,7 @@ export function PhotoGrid({ groups }: { groups: PhotoGroup[] }) {
                 <Image
                   src={photoUrl(photo.storageKey)}
                   alt={photo.caption ?? ''}
+                  unoptimized
                   width={photo.width}
                   height={photo.height}
                   sizes="(max-width: 700px) 50vw, 280px"
@@ -74,6 +75,7 @@ export function PhotoGrid({ groups }: { groups: PhotoGroup[] }) {
             <Image
               src={photoUrl(active.storageKey)}
               alt={active.caption ?? ''}
+              unoptimized
               width={active.width}
               height={active.height}
               sizes="92vw"

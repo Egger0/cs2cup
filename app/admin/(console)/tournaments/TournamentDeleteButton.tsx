@@ -21,6 +21,7 @@ export function TournamentDeleteButton({ id, title }: { id: number; title: strin
             setError('')
             const result = await removeTournament(id)
             if (!result.ok) setError(result.error)
+            else if (result.warning) setError(result.warning)
           })
         }}
       >

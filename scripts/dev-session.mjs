@@ -6,7 +6,13 @@ const ISSUER = process.env.DEV_ISSUER ?? 'http://localhost:53100'
 const AUD = process.env.DEV_AUD ?? 'dev-env'
 const SUB = process.env.DEV_SUB ?? 'local-dev-admin'
 const NON_ADMIN_SUB = process.env.DEV_NON_ADMIN_SUB ?? 'local-dev-non-admin'
-const PORT = Number(new URL(ISSUER).port)
+const issuerUrl = new URL(ISSUER)
+const PORT = Number(issuerUrl.port)
+const HOST = process.env.DEV_HOST ?? issuerUrl.hostname
+
+if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
+  throw new Error('DEV_ISSUER must include a valid TCP port')
+}
 
 const { publicKey, privateKey } = await generateKeyPair('RS256', { extractable: true })
 const jwk = await exportJWK(publicKey)
@@ -25,7 +31,7 @@ createServer((request, response) => {
   if (request.url === '/certs') return send({ keys: [jwk] })
   response.writeHead(404)
   response.end()
-}).listen(PORT, () => console.error(`dev issuer on ${ISSUER}`))
+}).listen(PORT, HOST, () => console.error(`dev issuer on ${ISSUER}`))
 
 const signToken = sub =>
   new SignJWT({ sub, aud: AUD })
