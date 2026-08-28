@@ -45,14 +45,6 @@ export function winsNeeded(bestOf: number) {
   return Math.floor(bestOf / 2) + 1
 }
 
-export function decideWinner(match: Match): number | null {
-  if (match.scoreA === null || match.scoreB === null) return null
-  const target = winsNeeded(match.bestOf)
-  if (match.scoreA >= target && match.scoreA > match.scoreB) return match.teamAId
-  if (match.scoreB >= target && match.scoreB > match.scoreA) return match.teamBId
-  return null
-}
-
 export function isCompletedMatch(match: Match) {
   return match.winnerTeamId !== null && match.scoreA !== null && match.scoreB !== null
 }
@@ -67,22 +59,6 @@ export function isByeMatch(match: Match) {
     match.scoreB === null &&
     ((match.teamAId === null) !== (match.teamBId === null))
   )
-}
-
-export function downstreamOf(matchId: number, matches: Match[]): number[] {
-  const affected: number[] = []
-  const queue = [matchId]
-  while (queue.length > 0) {
-    const current = queue.shift()
-    if (current === undefined) break
-    for (const match of matches) {
-      if (match.sourceMatchAId === current || match.sourceMatchBId === current) {
-        affected.push(match.id)
-        queue.push(match.id)
-      }
-    }
-  }
-  return affected
 }
 
 export function groupByRound(matches: Match[]) {

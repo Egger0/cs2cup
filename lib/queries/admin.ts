@@ -1,7 +1,7 @@
 import 'server-only'
 import { requireAdmin } from '../auth'
-import { callFunction, deleteRows, insertRows, selectRows, updateRows } from '../rdb'
-import type { Match, MatchMap, Photo, Team, TeamStatus, Tournament, VetoAction } from '../types'
+import { callFunction, deleteRows, selectRows, updateRows } from '../rdb'
+import type { Match, MatchMap, Team, TeamStatus, VetoAction } from '../types'
 
 const ADMIN = { credential: 'admin', revalidate: false } as const
 
@@ -81,53 +81,6 @@ export function removeTeam(id: number) {
   return adminMutation(() =>
     deleteRows('team', { ...ADMIN, filters: { id: `eq.${id}` } }),
   )
-}
-
-export function saveTournament(id: number, values: Partial<Tournament>) {
-  const payload: Record<string, unknown> = {}
-  if (values.title !== undefined) payload.title = values.title
-  if (values.status !== undefined) payload.status = values.status
-  if (values.teamCap !== undefined) payload.team_cap = values.teamCap
-  if (values.regDeadline !== undefined) payload.reg_deadline = values.regDeadline
-  if (values.startsAt !== undefined) payload.starts_at = values.startsAt
-  if (values.accentColor !== undefined) payload.accent_color = values.accentColor
-  if (values.mapPool !== undefined) payload.map_pool = values.mapPool
-  if (values.rules !== undefined) payload.rules = values.rules
-  if (values.faqs !== undefined) payload.faqs = values.faqs
-  if (values.heroEyebrow !== undefined) payload.hero_eyebrow = values.heroEyebrow
-  if (values.heroTop !== undefined) payload.hero_top = values.heroTop
-  if (values.heroBottom !== undefined) payload.hero_bottom = values.heroBottom
-  if (values.lede !== undefined) payload.lede = values.lede
-
-  return adminMutation(() =>
-    updateRows('tournament', payload, { ...ADMIN, filters: { id: `eq.${id}` } }),
-  )
-}
-
-export function saveMatchScore(
-  id: number,
-  scoreA: number | null,
-  scoreB: number | null,
-  winnerTeamId: number | null,
-) {
-  return adminMutation(() =>
-    updateRows(
-      'match',
-      { score_a: scoreA, score_b: scoreB, winner_team_id: winnerTeamId },
-      { ...ADMIN, filters: { id: `eq.${id}` } },
-    ),
-  )
-}
-
-export function clearMatches(ids: number[]) {
-  return adminMutation(() => {
-    if (ids.length === 0) return Promise.resolve([])
-    return updateRows(
-      'match',
-      { score_a: null, score_b: null, winner_team_id: null },
-      { ...ADMIN, filters: { id: `in.(${ids.join(',')})` } },
-    )
-  })
 }
 
 interface MatchRow {
@@ -354,24 +307,6 @@ export function replaceMatchSchedule(
         p_scheduled_at: matches.map(match => match.scheduledAt),
       },
       'admin',
-    ),
-  )
-}
-
-export function addPhoto(values: Omit<Photo, 'id'>) {
-  return adminMutation(() =>
-    insertRows(
-      'photo',
-      {
-        tournament_id: values.tournamentId,
-        storage_key: values.storageKey,
-        width: values.width,
-        height: values.height,
-        blur_data_url: values.blurDataUrl,
-        caption: values.caption,
-        sort_order: values.sortOrder,
-      },
-      ADMIN,
     ),
   )
 }
