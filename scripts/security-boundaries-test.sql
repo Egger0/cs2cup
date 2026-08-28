@@ -57,6 +57,61 @@ begin
     raise exception 'a request identity can access the private RPC implementation';
   end if;
 
+  -- Every table introduced by the identity foundation is private. Check the
+  -- delta from the pre-018 public schema rather than coupling this boundary to
+  -- one particular table-name spelling.
+  if exists (
+    select 1
+    from (values
+      ('anon'),
+      ('authenticated'),
+      ('club_admin'),
+      ('service_role')
+    ) request_role(rolname)
+    join pg_catalog.pg_roles database_role
+      on database_role.rolname = request_role.rolname
+    cross join pg_catalog.pg_class private_table
+    join pg_catalog.pg_namespace namespace
+      on namespace.oid = private_table.relnamespace
+    where private_table.relkind in ('r', 'p')
+      and (
+        namespace.nspname = 'app_private'
+        or (
+          namespace.nspname = 'public'
+          and private_table.relname not in (
+            'site_setting',
+            'game',
+            'tournament',
+            'team',
+            'player',
+            'match',
+            'photo',
+            'admin_user',
+            'match_map',
+            'club_member',
+            'post',
+            'registration_attempt',
+            'schema_migration'
+          )
+        )
+      )
+      and (
+        has_table_privilege(database_role.rolname, private_table.oid, 'select')
+        or has_table_privilege(database_role.rolname, private_table.oid, 'insert')
+        or has_table_privilege(database_role.rolname, private_table.oid, 'update')
+        or has_table_privilege(database_role.rolname, private_table.oid, 'delete')
+        or has_table_privilege(database_role.rolname, private_table.oid, 'truncate')
+        or has_table_privilege(database_role.rolname, private_table.oid, 'references')
+        or has_table_privilege(database_role.rolname, private_table.oid, 'trigger')
+        or has_any_column_privilege(database_role.rolname, private_table.oid, 'select')
+        or has_any_column_privilege(database_role.rolname, private_table.oid, 'insert')
+        or has_any_column_privilege(database_role.rolname, private_table.oid, 'update')
+        or has_any_column_privilege(database_role.rolname, private_table.oid, 'references')
+      )
+  ) then
+    raise exception 'a request identity has direct access to an identity table';
+  end if;
+
   if exists (
     select 1
     from pg_proc procedure
@@ -122,6 +177,43 @@ begin
     raise exception 'a legacy registration RPC still exists after contraction';
   end if;
 
+  if to_regprocedure('public.ensure_principal_identity(text,text,text)') is null
+    or to_regprocedure('app_private.ensure_principal_identity(text,text,text)') is null
+  then
+    raise exception 'the principal identity RPC boundary is incomplete';
+  end if;
+
+  if exists (
+    select 1
+    from pg_catalog.pg_proc procedure
+    where procedure.oid = to_regprocedure(
+      'app_private.ensure_principal_identity(text,text,text)'
+    )
+      and procedure.prosecdef
+  ) then
+    raise exception 'the private principal identity implementation uses definer rights';
+  end if;
+
+  if exists (
+    select 1
+    from pg_catalog.pg_proc procedure
+    where procedure.oid = to_regprocedure(
+      'public.ensure_principal_identity(text,text,text)'
+    )
+      and (
+        not procedure.prosecdef
+        or not (
+          'search_path=pg_catalog, app_private' = any(
+            coalesce(procedure.proconfig, array[]::text[])
+          )
+        )
+        or position('require_rpc_role' in procedure.prosrc) = 0
+        or position('app_private.ensure_principal_identity' in procedure.prosrc) = 0
+      )
+  ) then
+    raise exception 'the public principal identity wrapper is not claims-guarded';
+  end if;
+
   if exists (
     select 1
     from information_schema.columns
@@ -130,6 +222,26 @@ begin
       and column_name in ('contact', 'note')
   ) then
     raise exception 'team_public exposes private registration fields';
+  end if;
+
+  if exists (
+    select 1
+    from pg_catalog.pg_class view_relation
+    join pg_catalog.pg_namespace namespace
+      on namespace.oid = view_relation.relnamespace
+    join pg_catalog.pg_attribute column_definition
+      on column_definition.attrelid = view_relation.oid
+    where namespace.nspname = 'public'
+      and view_relation.relkind in ('v', 'm')
+      and column_definition.attnum > 0
+      and not column_definition.attisdropped
+      and column_definition.attname ~ '(principal|subject)'
+      and (
+        has_table_privilege('anon', view_relation.oid, 'select')
+        or has_table_privilege('authenticated', view_relation.oid, 'select')
+      )
+  ) then
+    raise exception 'a public view exposes a principal or identity subject';
   end if;
 end
 $test$;
@@ -154,6 +266,17 @@ begin
     exception
       when insufficient_privilege then null;
     end;
+
+    begin
+      perform public.ensure_principal_identity(
+        'cloudbase',
+        'https://owner-no-claims.example',
+        'owner-no-claims'
+      );
+      raise exception 'database owner reached principal provisioning without valid claims';
+    exception
+      when insufficient_privilege then null;
+    end;
   end loop;
 end
 $test$;
@@ -167,6 +290,7 @@ set session authorization anon_authenticator;
 
 do $test$
 declare
+  v_claims text;
   v_request_role text;
   v_statement text;
   v_statements text[] := array[
@@ -183,9 +307,34 @@ declare
       array[]::bigint[],
       array[]::timestamptz[],
       array[]::timestamptz[]
+    )$sql$,
+    $sql$select public.ensure_principal_identity(
+      'cloudbase',
+      'https://claims-denied.example',
+      'claims-denied'
     )$sql$
   ];
 begin
+  foreach v_claims in array array[
+    '',
+    '{malformed-json',
+    '{}',
+    '{"role":"club_admin"}',
+    '{"role":"service-role"}'
+  ] loop
+    perform set_config('request.jwt.claims', v_claims, true);
+    begin
+      perform public.ensure_principal_identity(
+        'cloudbase',
+        'https://forged-claims.example',
+        'forged-claims'
+      );
+      raise exception 'invalid claims reached principal provisioning: %', v_claims;
+    exception
+      when insufficient_privilege then null;
+    end;
+  end loop;
+
   foreach v_request_role in array array['anon', 'authenticated'] loop
     perform set_config(
       'request.jwt.claims',
@@ -212,7 +361,13 @@ begin
     raise exception 'service_role claims did not reach the guarded registration RPC';
   end if;
 
-  foreach v_statement in array v_statements[2:6] loop
+  perform public.ensure_principal_identity(
+    'cloudbase',
+    'https://claims-service.example',
+    'claims-service'
+  );
+
+  foreach v_statement in array v_statements[2:7] loop
     begin
       execute v_statement;
     exception

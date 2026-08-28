@@ -12,6 +12,7 @@ const upgradeDatabase = `cs2cup_migration_upgrade_${suffix}`
 const freshDatabase = `cs2cup_migration_fresh_${suffix}`
 const partialDatabase = `cs2cup_migration_partial_${suffix}`
 const unsafeDatabase = `cs2cup_migration_unsafe_${suffix}`
+const identityFailureDatabase = `cs2cup_migration_identity_failure_${suffix}`
 const contractDatabase = `cs2cup_migration_contract_${suffix}`
 const externalDatabase = `cs2cup_migration_external_${suffix}`
 const concurrentDatabase = `cs2cup_migration_concurrent_${suffix}`
@@ -26,6 +27,7 @@ const databases = [
   freshDatabase,
   partialDatabase,
   unsafeDatabase,
+  identityFailureDatabase,
   contractDatabase,
   concurrentDatabase,
   ...(externalPsqlAvailable ? [externalDatabase] : []),
@@ -364,6 +366,63 @@ try {
     ) !== 't'
   ) {
     throw new Error('insecure-baseline refusal wrote a migration ledger')
+  }
+
+  // A late object conflict in the additive identity migration must roll back
+  // every earlier object from that file as well as its ledger write.
+  runMigration(identityFailureDatabase, 'expand', { maxVersion: '017' })
+  dockerPsql(
+    identityFailureDatabase,
+    ['-q', '-c', 'create table app_private.audit_event (id integer primary key)'],
+  )
+  const identityFailure = runMigration(identityFailureDatabase, 'expand', {
+    expectFailure: true,
+  })
+  if (!identityFailure.includes('audit_event') || !identityFailure.includes('already exists')) {
+    throw new Error('identity migration conflict did not report the colliding object')
+  }
+  if (
+    dockerPsql(
+      identityFailureDatabase,
+      [
+        '-At',
+        '-c',
+        `select
+           to_regclass('app_private.principal') is null
+           and not exists (
+             select 1
+             from public.schema_migration
+             where phase = 'expand'
+               and filename like '018\\_%' escape '\\'
+           )`,
+      ],
+    ) !== 't'
+  ) {
+    throw new Error('failed identity migration left partial schema or ledger state')
+  }
+  dockerPsql(
+    identityFailureDatabase,
+    ['-q', '-c', 'drop table app_private.audit_event'],
+  )
+  runMigration(identityFailureDatabase)
+  if (
+    dockerPsql(
+      identityFailureDatabase,
+      [
+        '-At',
+        '-c',
+        `select
+           to_regclass('app_private.principal') is not null
+           and exists (
+             select 1
+             from public.schema_migration
+             where phase = 'expand'
+               and filename like '018\\_%' escape '\\'
+           )`,
+      ],
+    ) !== 't'
+  ) {
+    throw new Error('identity migration did not recover after the conflict was removed')
   }
 
   dockerPsql(upgradeDatabase, ['--single-transaction', '-q', '-f', '-'], legacySql)
