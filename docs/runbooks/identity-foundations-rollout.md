@@ -68,6 +68,10 @@ identity tuple, contact, row dump, or audit metadata.
 6. Confirm capacity for the backup, six new tables, indexes, and normal write
    traffic. Agree on a canary, observation window, abort owner, and previous
    application image digest.
+7. Rehearse migration 018 on the restored, production-sized copy. Record the
+   `admin_user`/`player` row counts and sizes, migration duration, longest write
+   pause, and whether a maintenance window is required. “Additive” is not a
+   promise of lock-free DDL.
 
 The general requirements in [`docs/migrations.md`](../migrations.md) remain
 mandatory.
@@ -185,6 +189,31 @@ applicable for a fresh target. After migration, require empty foundation tables
 and zero non-null bridge links, but do not invent a before/after business-row
 comparison.
 
+### Size and lock-window decision
+
+On both fresh and upgrade targets, record the live-table scale before applying
+018 when the relations exist:
+
+```sql
+select c.relname,
+       c.reltuples::bigint as estimated_rows,
+       pg_catalog.pg_total_relation_size(c.oid) as total_bytes
+from pg_catalog.pg_class c
+join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public'
+  and c.relname in ('admin_user', 'player')
+order by c.relname;
+```
+
+Adding nullable columns is metadata-only on supported PostgreSQL, but the
+unique constraint/index creation still scans these tables and can briefly
+block writes. Migration 018 sets `lock_timeout` locally to five seconds so it
+fails instead of waiting indefinitely to acquire a conflicting lock. Use the
+restore rehearsal—not an invented universal row threshold—to choose normal
+traffic or an announced maintenance window. If the measured write pause is not
+acceptable, stop and redesign the index rollout in a separately reviewed
+migration; do not remove the constraint or increase timeouts ad hoc.
+
 Do not export `admin_user.user_id`, captain, contact, notes, nickname, or token
 claims. Record this explicit data decision:
 
@@ -224,6 +253,12 @@ No contract file corresponds to 018. Do not invent or expect an 018 contract.
 If the release also has an independently approved contract from an earlier
 migration, apply it only after that migration's canary/drain gates and runbook;
 otherwise Phase 2A adds no contract operation.
+
+If lock acquisition exceeds five seconds, PostgreSQL returns `55P03`, the
+runner rolls back the whole file, and no 018 ledger row is written. Keep the old
+application serving, verify that no partial 018 object exists, and retry only
+in the rehearsed lower-traffic or maintenance window. Do not edit the applied
+SQL, ledger, or timeout during incident response.
 
 Run `npm run stack:migrate` a second time from the same checkout. It must report
 no pending expand migration, add no second ledger row, and change no business
@@ -509,8 +544,11 @@ behaviors:
 
 1. Repeating `public.ensure_principal_identity` with the same exact valid tuple
    returns the same `principalId`; only the first result has `created = true`.
-2. Eight concurrent first resolutions of that tuple leave exactly one
-   Principal, one AuthIdentity, and one `principal.created` audit event.
+2. A persistent connection holds the tuple advisory lock while eight named
+   resolver connections reach a proven PostgreSQL advisory-wait barrier. The
+   holder then creates the identity before releasing them; all eight repeats
+   return the same Principal without a timestamp regression, leaving exactly
+   one Principal, one AuthIdentity, and one `principal.created` audit event.
 3. A different issuer and a case-variant subject remain distinct; malformed,
    padded, or control-character namespace input is rejected.
 4. Missing, malformed, and unauthorized gateway claims cannot reach the

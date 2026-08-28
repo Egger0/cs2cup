@@ -121,6 +121,13 @@ The migration creates no profile automatically. It stores no password, access
 token, refresh token, cookie, JWT, full claims document, registration contact,
 or provider profile response.
 
+“Additive” describes application/schema compatibility, not lock-free DDL. The
+nullable bridge columns and their uniqueness indexes briefly lock the existing
+`admin_user` and `player` tables. Migration 018 uses a five-second local lock
+timeout; production rollout requires a production-sized restore rehearsal and
+the maintenance-window decision in the runbook rather than a zero-downtime
+assumption.
+
 The following role names and scopes are the complete Phase 2A storage enum:
 
 - global only: `platform_admin`, `content_editor`;
@@ -145,8 +152,8 @@ entry point added by Phase 2A. Its contract is deliberately narrow:
   concurrent resolution of the same tuple converge on one Principal and one
   AuthIdentity;
 - a first resolution creates the Principal and AuthIdentity and appends one
-  minimal `principal.created` system audit event; a repeat updates only
-  `last_verified_at`; and
+  minimal `principal.created` system audit event; a repeat monotonically
+  advances only `last_verified_at`; and
 - success returns only `{"ok":true,"principalId":"<uuid>","created":<boolean>}`.
 
 Resolution is not authorization or session admission. The implemented lookup
