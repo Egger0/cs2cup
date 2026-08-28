@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getCurrentAdmin } from '@/lib/auth'
 import { LoginForm } from './LoginForm'
+import { resolveCloudBaseEnvironmentId } from '@/lib/cloudbase-environment'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,7 +10,7 @@ export const metadata = { title: '后台登录 · 宁波理工电竞社' }
 export default async function LoginPage() {
   if (await getCurrentAdmin().catch(() => null)) redirect('/admin')
 
-  const env = process.env.CLOUDBASE_ENV_ID
+  const env = resolveCloudBaseEnvironmentId()
 
   return (
     <main className="wrap section">

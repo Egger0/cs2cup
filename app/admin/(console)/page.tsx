@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/auth'
 import { listAdminMatches, listTeamsWithContact } from '@/lib/queries/admin'
 import { getCurrentTournament, getPublicTeams } from '@/lib/queries/public'
 import { ScheduleEditor } from './ScheduleEditor'
@@ -7,6 +8,8 @@ import styles from './admin.module.css'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminPage() {
+  await requireAdmin()
+
   const tournament = await getCurrentTournament()
 
   if (!tournament) {

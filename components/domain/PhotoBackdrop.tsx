@@ -11,6 +11,7 @@ export function PhotoBackdrop({ photo }: { photo: Photo | null }) {
       <Image
         src={photoUrl(photo.storageKey)}
         alt=""
+        unoptimized
         fill
         priority
         sizes="100vw"

@@ -1,8 +1,14 @@
 import 'server-only'
+import { requireAdmin } from '../auth'
 import { callFunction, deleteRows, insertRows, selectRows, updateRows } from '../rdb'
 import type { Match, MatchMap, Photo, Team, TeamStatus, Tournament, VetoAction } from '../types'
 
 const ADMIN = { credential: 'admin', revalidate: false } as const
+
+async function adminMutation<Result>(write: () => Promise<Result>) {
+  await requireAdmin()
+  return write()
+}
 
 interface TeamRow {
   id: number
@@ -27,6 +33,8 @@ interface TeamRow {
 }
 
 export async function listTeamsWithContact(tournamentId: number): Promise<Team[]> {
+  await requireAdmin()
+
   const rows = await selectRows<TeamRow>('team', {
     ...ADMIN,
     select: '*,player(*)',
@@ -60,15 +68,19 @@ export async function listTeamsWithContact(tournamentId: number): Promise<Team[]
 }
 
 export function setTeamStatus(id: number, status: TeamStatus) {
-  return updateRows(
-    'team',
-    status === 'approved' ? { status } : { status, seed: null },
-    { ...ADMIN, filters: { id: `eq.${id}` } },
+  return adminMutation(() =>
+    updateRows(
+      'team',
+      status === 'approved' ? { status } : { status, seed: null },
+      { ...ADMIN, filters: { id: `eq.${id}` } },
+    ),
   )
 }
 
 export function removeTeam(id: number) {
-  return deleteRows('team', { ...ADMIN, filters: { id: `eq.${id}` } })
+  return adminMutation(() =>
+    deleteRows('team', { ...ADMIN, filters: { id: `eq.${id}` } }),
+  )
 }
 
 export function saveTournament(id: number, values: Partial<Tournament>) {
@@ -87,7 +99,9 @@ export function saveTournament(id: number, values: Partial<Tournament>) {
   if (values.heroBottom !== undefined) payload.hero_bottom = values.heroBottom
   if (values.lede !== undefined) payload.lede = values.lede
 
-  return updateRows('tournament', payload, { ...ADMIN, filters: { id: `eq.${id}` } })
+  return adminMutation(() =>
+    updateRows('tournament', payload, { ...ADMIN, filters: { id: `eq.${id}` } }),
+  )
 }
 
 export function saveMatchScore(
@@ -96,20 +110,24 @@ export function saveMatchScore(
   scoreB: number | null,
   winnerTeamId: number | null,
 ) {
-  return updateRows(
-    'match',
-    { score_a: scoreA, score_b: scoreB, winner_team_id: winnerTeamId },
-    { ...ADMIN, filters: { id: `eq.${id}` } },
+  return adminMutation(() =>
+    updateRows(
+      'match',
+      { score_a: scoreA, score_b: scoreB, winner_team_id: winnerTeamId },
+      { ...ADMIN, filters: { id: `eq.${id}` } },
+    ),
   )
 }
 
 export function clearMatches(ids: number[]) {
-  if (ids.length === 0) return Promise.resolve([])
-  return updateRows(
-    'match',
-    { score_a: null, score_b: null, winner_team_id: null },
-    { ...ADMIN, filters: { id: `in.(${ids.join(',')})` } },
-  )
+  return adminMutation(() => {
+    if (ids.length === 0) return Promise.resolve([])
+    return updateRows(
+      'match',
+      { score_a: null, score_b: null, winner_team_id: null },
+      { ...ADMIN, filters: { id: `in.(${ids.join(',')})` } },
+    )
+  })
 }
 
 interface MatchRow {
@@ -130,6 +148,8 @@ interface MatchRow {
 }
 
 export async function listAdminMatches(tournamentId: number): Promise<Match[]> {
+  await requireAdmin()
+
   const rows = await selectRows<MatchRow>('match', {
     ...ADMIN,
     filters: { tournament_id: `eq.${tournamentId}` },
@@ -218,6 +238,8 @@ export interface MatchScheduleResult {
 }
 
 export async function listAdminMatchMaps(matchIds: number[]): Promise<MatchMap[]> {
+  await requireAdmin()
+
   if (matchIds.length === 0) return []
 
   const ids = [...new Set(matchIds)]
@@ -249,14 +271,16 @@ export function replaceBracket(
   teamIds: number[],
   seedPositions: number[],
 ): Promise<BracketReplaceResult> {
-  return callFunction<BracketReplaceResult>(
-    'replace_bracket',
-    {
-      p_tournament_id: tournamentId,
-      p_team_ids: teamIds,
-      p_seed_positions: seedPositions,
-    },
-    'admin',
+  return adminMutation(() =>
+    callFunction<BracketReplaceResult>(
+      'replace_bracket',
+      {
+        p_tournament_id: tournamentId,
+        p_team_ids: teamIds,
+        p_seed_positions: seedPositions,
+      },
+      'admin',
+    ),
   )
 }
 
@@ -265,10 +289,12 @@ export function assignTeamSeed(
   teamId: number,
   seed: number | null,
 ): Promise<TeamSeedResult> {
-  return callFunction<TeamSeedResult>(
-    'set_team_seed',
-    { p_tournament_id: tournamentId, p_team_id: teamId, p_seed: seed },
-    'admin',
+  return adminMutation(() =>
+    callFunction<TeamSeedResult>(
+      'set_team_seed',
+      { p_tournament_id: tournamentId, p_team_id: teamId, p_seed: seed },
+      'admin',
+    ),
   )
 }
 
@@ -279,16 +305,18 @@ export function saveAdminMatchScore(
   scoreA: number | null,
   scoreB: number | null,
 ): Promise<MatchWriteResult> {
-  return callFunction<MatchWriteResult>(
-    'save_match_score',
-    {
-      p_match_id: matchId,
-      p_team_a_id: teamAId,
-      p_team_b_id: teamBId,
-      p_score_a: scoreA,
-      p_score_b: scoreB,
-    },
-    'admin',
+  return adminMutation(() =>
+    callFunction<MatchWriteResult>(
+      'save_match_score',
+      {
+        p_match_id: matchId,
+        p_team_a_id: teamAId,
+        p_team_b_id: teamBId,
+        p_score_a: scoreA,
+        p_score_b: scoreB,
+      },
+      'admin',
+    ),
   )
 }
 
@@ -298,15 +326,17 @@ export function saveAdminMatchReport(
   teamBId: number,
   maps: MatchMapInput[],
 ): Promise<MatchReportResult> {
-  return callFunction<MatchReportResult>(
-    'save_match_report',
-    {
-      p_match_id: matchId,
-      p_team_a_id: teamAId,
-      p_team_b_id: teamBId,
-      p_maps: maps,
-    },
-    'admin',
+  return adminMutation(() =>
+    callFunction<MatchReportResult>(
+      'save_match_report',
+      {
+        p_match_id: matchId,
+        p_team_a_id: teamAId,
+        p_team_b_id: teamBId,
+        p_maps: maps,
+      },
+      'admin',
+    ),
   )
 }
 
@@ -314,30 +344,40 @@ export function replaceMatchSchedule(
   tournamentId: number,
   matches: MatchScheduleInput[],
 ): Promise<MatchScheduleResult> {
-  return callFunction<MatchScheduleResult>(
-    'replace_match_schedule',
-    {
-      p_tournament_id: tournamentId,
-      p_match_ids: matches.map(match => match.id),
-      p_expected_scheduled_at: matches.map(match => match.expectedScheduledAt),
-      p_scheduled_at: matches.map(match => match.scheduledAt),
-    },
-    'admin',
+  return adminMutation(() =>
+    callFunction<MatchScheduleResult>(
+      'replace_match_schedule',
+      {
+        p_tournament_id: tournamentId,
+        p_match_ids: matches.map(match => match.id),
+        p_expected_scheduled_at: matches.map(match => match.expectedScheduledAt),
+        p_scheduled_at: matches.map(match => match.scheduledAt),
+      },
+      'admin',
+    ),
   )
 }
 
 export function addPhoto(values: Omit<Photo, 'id'>) {
-  return insertRows('photo', {
-    tournament_id: values.tournamentId,
-    storage_key: values.storageKey,
-    width: values.width,
-    height: values.height,
-    blur_data_url: values.blurDataUrl,
-    caption: values.caption,
-    sort_order: values.sortOrder,
-  }, ADMIN)
+  return adminMutation(() =>
+    insertRows(
+      'photo',
+      {
+        tournament_id: values.tournamentId,
+        storage_key: values.storageKey,
+        width: values.width,
+        height: values.height,
+        blur_data_url: values.blurDataUrl,
+        caption: values.caption,
+        sort_order: values.sortOrder,
+      },
+      ADMIN,
+    ),
+  )
 }
 
 export function removePhoto(id: number) {
-  return deleteRows('photo', { ...ADMIN, filters: { id: `eq.${id}` } })
+  return adminMutation(() =>
+    deleteRows('photo', { ...ADMIN, filters: { id: `eq.${id}` } }),
+  )
 }

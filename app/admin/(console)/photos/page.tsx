@@ -1,4 +1,5 @@
 import { Empty } from '@/components/ui'
+import { requireAdmin } from '@/lib/auth'
 import { adminListPhotos, adminListTournaments } from '@/lib/queries/content'
 import { PhotoRow } from './PhotoRow'
 import { Uploader } from './Uploader'
@@ -7,6 +8,8 @@ import styles from '../admin.module.css'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminPhotosPage() {
+  await requireAdmin()
+
   const [photos, tournaments] = await Promise.all([adminListPhotos(), adminListTournaments()])
   const label = (id: number) => {
     const found = tournaments.find(entry => entry.id === id)

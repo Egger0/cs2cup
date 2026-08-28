@@ -4,6 +4,16 @@ import { verifyToken } from '@/lib/jwt'
 const SESSION_COOKIE = 'cs2cup_session'
 
 export async function proxy(request: NextRequest) {
+  if (
+    request.nextUrl.pathname === '/photos' ||
+    request.nextUrl.pathname.startsWith('/photos/')
+  ) {
+    return new NextResponse('not found', {
+      status: 404,
+      headers: { 'Cache-Control': 'no-store' },
+    })
+  }
+
   const token = request.cookies.get(SESSION_COOKIE)?.value
   const login = request.nextUrl.clone()
   login.pathname = '/admin/login'
@@ -20,5 +30,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin', '/admin/((?!login).*)'],
+  matcher: ['/photos/:path*', '/admin', '/admin/((?!login).*)'],
 }

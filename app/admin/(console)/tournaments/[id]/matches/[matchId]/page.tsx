@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { indexMatches, indexTeams, resolveMatch } from '@/lib/bracket'
 import { formatSiteDateTime } from '@/lib/datetime'
+import { requireAdmin } from '@/lib/auth'
 import { listAdminMatchMaps, listAdminMatches, listTeamsWithContact } from '@/lib/queries/admin'
 import { adminListTournaments } from '@/lib/queries/content'
 import { MatchReportEditor } from './MatchReportEditor'
@@ -15,6 +16,8 @@ export default async function AdminMatchReportPage({
 }: {
   params: Promise<{ id: string; matchId: string }>
 }) {
+  await requireAdmin()
+
   const { id, matchId: rawMatchId } = await params
   const tournamentId = Number(id)
   const matchId = Number(rawMatchId)

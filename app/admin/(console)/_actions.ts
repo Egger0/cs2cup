@@ -20,6 +20,9 @@ import { MIME_TO_EXT, imageSize, sniffMime } from '@/lib/image'
 import { isIsoInstant } from '@/lib/datetime'
 import { bracketSize, orderBySeed, seedPositions } from '@/lib/seeding'
 import { putObject, removeObject, uploadsEnabled } from '@/lib/storage'
+import { deleteRecordThenObjects } from '@/lib/object-cleanup'
+import { createPhotoStorageKey } from '@/lib/photo-storage-key'
+import { fetchCloudBaseGateway } from '@/lib/cloudbase-environment'
 import {
   adminCreateGame,
   adminCreatePost,
@@ -32,6 +35,7 @@ import {
   adminSavePost,
   adminSaveTournament,
   adminDeletePhoto,
+  adminGetPhoto,
   adminInsertPhoto,
   adminListPhotos,
   adminListTournaments,
@@ -72,17 +76,14 @@ function scheduleError(error: unknown) {
 }
 
 async function passwordToken(username: string, password: string) {
-  const env = process.env.CLOUDBASE_ENV_ID
-  if (!env) return null
-
   try {
-    const response = await fetch(`https://${env}.api.tcloudbasegateway.com/auth/v1/signin`, {
+    const response = await fetchCloudBaseGateway('/auth/v1/signin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
       cache: 'no-store',
     })
-    if (!response.ok) return null
+    if (!response?.ok) return null
 
     const payload = (await response.json()) as { access_token?: unknown }
     return typeof payload.access_token === 'string' ? payload.access_token : null
@@ -417,26 +418,41 @@ export async function createTournament(form: FormData) {
 
 export async function removeTournament(id: number) {
   await requireAdmin()
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return { ok: false as const, error: '赛事编号无效。' }
+  }
 
   const tournaments = await adminListTournaments()
   const tournament = tournaments.find(entry => entry.id === id)
   if (!tournament) return { ok: false as const, error: '赛事不存在或已删除。' }
 
   const photos = (await adminListPhotos()).filter(photo => photo.tournamentId === id)
-  for (const photo of photos) {
-    try {
-      await removeObject(photo.storageKey)
-    } catch (error) {
-      console.error('tournament photo delete failed', error)
-      return { ok: false as const, error: '云存储图片删除失败，赛事未删除。' }
-    }
+  let cleanupFailures
+  try {
+    cleanupFailures = await deleteRecordThenObjects(
+      photos.map(photo => photo.storageKey),
+      () => adminDeleteTournament(id),
+      removeObject,
+    )
+  } catch (error) {
+    console.error('tournament delete failed before object cleanup', error)
+    return { ok: false as const, error: '赛事删除失败，存储对象未改动。' }
   }
 
-  await adminDeleteTournament(id)
   updateTag('tournament')
   updateTag('photo')
   updateTag(`teams:${id}`)
   updateTag(`matches:${id}`)
+  if (cleanupFailures.length > 0) {
+    console.error(
+      'tournament deleted with orphaned photo objects',
+      cleanupFailures,
+    )
+    return {
+      ok: true as const,
+      warning: `赛事已删除；${cleanupFailures.length} 个私有存储对象需要维护者清理。`,
+    }
+  }
   return { ok: true as const }
 }
 
@@ -473,9 +489,10 @@ export async function uploadPhoto(form: FormData) {
 
   const existing = await adminListPhotos()
   const mine = existing.filter(photo => photo.tournamentId === tournamentId)
-  const key = `${tournament.slug}/${Date.now()}.${MIME_TO_EXT[mime] ?? 'bin'}`
+  let key: string | null = null
 
   try {
+    key = createPhotoStorageKey(tournament.slug, MIME_TO_EXT[mime] ?? 'bin')
     await putObject(key, buffer, mime)
     await adminInsertPhoto({
       tournamentId,
@@ -487,7 +504,10 @@ export async function uploadPhoto(form: FormData) {
     })
   } catch (error) {
     console.error('photo upload failed', error)
-    await removeObject(key).catch(cleanupError => console.error('photo upload cleanup failed', cleanupError))
+    if (key) {
+      await removeObject(key)
+        .catch(cleanupError => console.error('photo upload cleanup failed', cleanupError))
+    }
     return { ok: false as const, error: '图片保存失败，请稍后重试' }
   }
 
@@ -495,20 +515,30 @@ export async function uploadPhoto(form: FormData) {
   return { ok: true as const, key, width: size.width, height: size.height }
 }
 
-export async function deletePhotoAndFile(id: number, storageKey: string) {
+export async function deletePhotoAndFile(id: number) {
   await requireAdmin()
-  try {
-    await removeObject(storageKey)
-  } catch (error) {
-    console.error('photo delete failed', error)
-    return { ok: false as const, error: '云存储删除失败，未移除照片记录' }
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return { ok: false as const, error: '照片编号无效' }
   }
 
+  const photo = await adminGetPhoto(id)
+  if (!photo) return { ok: false as const, error: '照片不存在或已被删除' }
+
+  // The database row is authoritative: remove it first so the guarded media
+  // route denies access even if external object cleanup must be retried.
   try {
     await adminDeletePhoto(id)
   } catch (error) {
     console.error('photo record delete failed', error)
-    return { ok: false as const, error: '图片已从云存储删除，但照片记录未移除' }
+    return { ok: false as const, error: '照片记录删除失败，存储对象未改动' }
+  }
+
+  try {
+    await removeObject(photo.storageKey)
+  } catch (error) {
+    console.error(`orphaned photo object requires cleanup: ${photo.storageKey}`, error)
+    updateTag('photo')
+    return { ok: false as const, error: '照片已停止公开，但存储对象清理失败，请联系维护者' }
   }
 
   updateTag('photo')

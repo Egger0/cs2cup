@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next'
 import { listGames, listPosts, listTournaments, safely } from '@/lib/queries/public'
+import { resolveSiteOrigin } from '@/lib/site-config'
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://example.invalid'
+const BASE = resolveSiteOrigin()
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [games, tournaments, posts] = await Promise.all([

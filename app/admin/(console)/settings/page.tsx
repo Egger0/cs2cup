@@ -1,4 +1,5 @@
 import { Empty } from '@/components/ui'
+import { requireAdmin } from '@/lib/auth'
 import { adminGetSiteSetting } from '@/lib/queries/content'
 import { SettingsForm } from './SettingsForm'
 import styles from '../admin.module.css'
@@ -6,6 +7,8 @@ import styles from '../admin.module.css'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminSettingsPage() {
+  await requireAdmin()
+
   const setting = await adminGetSiteSetting()
 
   return (

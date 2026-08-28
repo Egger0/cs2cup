@@ -1,6 +1,34 @@
 import { posix } from 'node:path'
+import { getCurrentAdmin } from '@/lib/auth'
 import { selectRow } from '@/lib/rdb'
 import { getObject } from '@/lib/storage'
+
+function notFound() {
+  return new Response('not found', {
+    status: 404,
+    headers: { 'Cache-Control': 'no-store' },
+  })
+}
+
+async function canReadPhoto(storageKey: string) {
+  const published = await selectRow<{ id: number }>('photo_public', {
+    select: 'id',
+    filters: { storage_key: `eq.${storageKey}` },
+    revalidate: false,
+  }).catch(() => null)
+  if (published) return true
+
+  const admin = await getCurrentAdmin().catch(() => null)
+  if (!admin) return false
+
+  const privatePhoto = await selectRow<{ id: number }>('photo', {
+    select: 'id',
+    filters: { storage_key: `eq.${storageKey}` },
+    credential: 'admin',
+    revalidate: false,
+  }).catch(() => null)
+  return Boolean(privatePhoto)
+}
 
 export async function GET(_request: Request, { params }: { params: Promise<{ key: string[] }> }) {
   const { key } = await params
@@ -11,17 +39,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ key
     relative.startsWith('../') ||
     relative.startsWith('/')
   ) {
-    return new Response('not found', { status: 404 })
+    return notFound()
   }
 
-  const photo = await selectRow<{ id: number }>('photo', {
-    select: 'id',
-    filters: { storage_key: `eq.${relative}` },
-    credential: 'admin',
-    revalidate: false,
-  }).catch(() => null)
-  if (!photo) {
-    return new Response('not found', { status: 404 })
+  if (!(await canReadPhoto(relative))) {
+    return notFound()
   }
 
   try {
@@ -33,6 +55,6 @@ export async function GET(_request: Request, { params }: { params: Promise<{ key
       },
     })
   } catch {
-    return new Response('not found', { status: 404 })
+    return notFound()
   }
 }

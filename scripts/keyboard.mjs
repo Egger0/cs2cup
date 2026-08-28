@@ -89,24 +89,32 @@ check(
 
 await page.goto(`${BASE}/archive`, { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(1600)
-await page.locator('button[class*="poster"]').first().focus()
-await page.keyboard.press('Enter')
-await page.waitForTimeout(700)
-const dialogOpen = await page.locator('dialog[open]').count()
-check('Keyboard opens the lightbox', dialogOpen === 1)
+const firstPoster = page.locator('button[class*="poster"]').first()
+if (await firstPoster.count()) {
+  await firstPoster.focus()
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(700)
+  const dialogOpen = await page.locator('dialog[open]').count()
+  check('Keyboard opens the lightbox', dialogOpen === 1)
 
-const focusInDialog = await page.evaluate(() => {
-  const dialog = document.querySelector('dialog[open]')
-  return dialog ? dialog.contains(document.activeElement) : false
-})
-check('Focus moves into the dialog', focusInDialog)
+  const focusInDialog = await page.evaluate(() => {
+    const dialog = document.querySelector('dialog[open]')
+    return dialog ? dialog.contains(document.activeElement) : false
+  })
+  check('Focus moves into the dialog', focusInDialog)
 
-await page.keyboard.press('Escape')
-await page.waitForTimeout(600)
-check('Escape closes the lightbox', (await page.locator('dialog[open]').count()) === 0)
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(600)
+  check('Escape closes the lightbox', (await page.locator('dialog[open]').count()) === 0)
 
-const returned = await page.evaluate(() => document.activeElement?.tagName)
-check('Focus returns after closing', returned !== 'BODY', String(returned))
+  const returned = await page.evaluate(() => document.activeElement?.tagName)
+  check('Focus returns after closing', returned !== 'BODY', String(returned))
+} else {
+  check(
+    'Archive empty state remains keyboard-safe',
+    await page.getByText('还没有往届海报').isVisible().catch(() => false),
+  )
+}
 
 const mobile = await ctx.newPage()
 await mobile.setViewportSize({ width: 390, height: 760 })

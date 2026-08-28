@@ -2,6 +2,8 @@
 
 begin;
 
+set local request.jwt.claims = '{"role":"service_role"}';
+
 do $test$
 declare
   v_function                regprocedure;

@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { resolvePhotoLocalRoot } from '../lib/photo-storage-config'
 
 interface LegacyPhoto {
   id: number
@@ -64,7 +65,9 @@ async function readLegacyPhotos(baseUrl: string, key: string) {
 
 async function main() {
   const dryRun = process.argv.includes('--dry-run')
-  const outputDir = process.env.PHOTO_OUTPUT_DIR ?? 'migration-output/photos'
+  const outputDir = resolvePhotoLocalRoot()
+  const sqlOutput =
+    process.env.PHOTO_SQL_OUTPUT?.trim() || 'migration-output/004_photos.sql'
   const baseUrl = process.env.LEGACY_RDB_BASE_URL
   const key = process.env.LEGACY_ANON_KEY
 
@@ -73,7 +76,7 @@ async function main() {
   }
 
   const photos = await readLegacyPhotos(baseUrl, key)
-  await mkdir(outputDir, { recursive: true })
+  if (!dryRun) await mkdir(outputDir, { recursive: true })
 
   const ordered = [...photos].sort(
     (x, y) => (x.data.sort ?? x.id) - (y.data.sort ?? y.id) || x.id - y.id,
@@ -131,7 +134,8 @@ async function main() {
   }
 
   if (!dryRun) {
-    await writeFile(join(outputDir, '..', '004_photos.sql'), `${statements.join('\n\n')}\n`)
+    await mkdir(dirname(sqlOutput), { recursive: true })
+    await writeFile(sqlOutput, `${statements.join('\n\n')}\n`)
   }
 
   console.log(`\nmigrated ${migrated}, skipped ${skipped}${dryRun ? ' (dry run)' : ''}`)

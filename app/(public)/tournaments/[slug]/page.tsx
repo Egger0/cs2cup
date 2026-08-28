@@ -12,18 +12,12 @@ import {
   getRegistrationStatus,
   getTournament,
   listPosts,
-  listTournaments,
   safely,
 } from '@/lib/queries/public'
 import styles from './page.module.css'
 
 export const revalidate = 300
 export const dynamicParams = true
-
-export async function generateStaticParams() {
-  const tournaments = await safely(listTournaments, [])
-  return tournaments.map(tournament => ({ slug: tournament.slug }))
-}
 
 export default async function OverviewPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
