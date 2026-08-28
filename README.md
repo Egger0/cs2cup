@@ -50,6 +50,8 @@ insert the subject into `admin_user`, then set the token as the
 
 For a server that is not running on port 3000, set `E2E_BASE_URL` before `npm run e2e`.
 For example, in PowerShell: `$env:E2E_BASE_URL = 'http://127.0.0.1:3100'; npm run e2e`.
+Use `E2E_DB_NAME` to run the admin suite against an isolated database and
+`E2E_RDB_BASE_URL` when the public PostgREST test endpoint uses another port.
 
 ### Visual preview without data
 

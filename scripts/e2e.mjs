@@ -1,6 +1,7 @@
 import { chromium } from 'playwright'
 
 const BASE = (process.env.E2E_BASE_URL ?? 'http://localhost:3000').replace(/\/$/, '')
+const RDB_BASE = (process.env.E2E_RDB_BASE_URL ?? 'http://localhost:53000').replace(/\/$/, '')
 const results = []
 const check = (name, pass, detail = '') => {
   results.push({ name, pass, detail })
@@ -221,7 +222,7 @@ await page.goto(`${BASE}/search?q=zzzznope`, { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(1000)
 check('Empty search shows guidance', (await page.evaluate(() => document.body.innerText)).includes('没有匹配'))
 
-const rpc = await page.request.post('http://localhost:53000/rpc/submit_team', {
+const rpc = await page.request.post(`${RDB_BASE}/rpc/submit_team`, {
   headers: { 'Content-Type': 'application/json' },
   data: { payload: { slug: '2026-nlc', name: 'x', tag: 'XX', captain: 'x', contact: 'y' } },
   failOnStatusCode: false,

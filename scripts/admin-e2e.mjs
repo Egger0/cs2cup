@@ -5,6 +5,10 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const BASE = (process.env.E2E_BASE_URL ?? 'http://localhost:3000').replace(/\/$/, '')
+const DB_NAME = process.env.E2E_DB_NAME ?? 'cs2cup'
+if (!/^[a-zA-Z0-9_]+$/.test(DB_NAME)) {
+  throw new Error('E2E_DB_NAME must contain only letters, digits and underscores')
+}
 const tokenFile = process.env.DEV_TOKEN_FILE ?? '/tmp/dev-token.txt'
 const nonAdminTokenFile = process.env.DEV_NON_ADMIN_TOKEN_FILE ?? `${tokenFile}.non-admin`
 const token = readFileSync(tokenFile, 'utf8').trim()
@@ -21,7 +25,7 @@ const db = sql =>
       '-U',
       'postgres',
       '-d',
-      'cs2cup',
+      DB_NAME,
       '-v',
       'ON_ERROR_STOP=1',
       '-Atc',
@@ -478,7 +482,7 @@ try {
     where tournament_id = (select id from tournament where slug = '2026-nlc')
   `)
   execSync(
-    'for f in seeds/*.sql; do docker compose exec -T db psql -U postgres -d cs2cup -q -f - < "$f" >/dev/null 2>&1; done',
+    `for f in seeds/*.sql; do docker compose exec -T db psql -U postgres -d ${DB_NAME} -q -f - < "$f" >/dev/null 2>&1; done`,
     {
       shell: '/bin/bash',
       cwd: ROOT,
