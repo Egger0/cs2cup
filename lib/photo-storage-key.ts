@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 
-import { assertStorageKey } from './local-object-storage.ts'
+import { assertStorageKey } from './storage-key.ts'
 
 export function createPhotoStorageKey(tournamentSlug: string, extension: string) {
   const key = `${tournamentSlug}/${randomUUID()}.${extension}`

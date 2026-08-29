@@ -223,7 +223,7 @@ export async function getSiteSetting(): Promise<SiteSetting | null> {
 }
 
 export async function listTournaments(): Promise<Tournament[]> {
-  const rows = await selectPublicRows<TournamentRow>('tournament', {
+  const rows = await selectPublicRows<TournamentRow>('tournament_public', {
     select: TOURNAMENT_SELECT,
     order: 'season.desc,edition.desc',
     ...cached('tournament'),
@@ -232,7 +232,7 @@ export async function listTournaments(): Promise<Tournament[]> {
 }
 
 export async function getTournament(slug: string): Promise<Tournament | null> {
-  const row = await selectPublicRow<TournamentRow>('tournament', {
+  const row = await selectPublicRow<TournamentRow>('tournament_public', {
     select: TOURNAMENT_SELECT,
     filters: { slug: `eq.${slug}` },
     ...cached('tournament', `tournament:${slug}`),
@@ -241,7 +241,7 @@ export async function getTournament(slug: string): Promise<Tournament | null> {
 }
 
 export async function getCurrentTournament(): Promise<Tournament | null> {
-  const rows = await selectPublicRows<TournamentRow>('tournament', {
+  const rows = await selectPublicRows<TournamentRow>('tournament_public', {
     select: TOURNAMENT_SELECT,
     filters: { status: 'neq.finished' },
     order: 'season.desc,edition.desc',
@@ -287,7 +287,7 @@ export async function getPublicTeams(tournamentId: number): Promise<PublicTeam[]
 }
 
 export async function getMatches(tournamentId: number): Promise<Match[]> {
-  const rows = await selectPublicRows<MatchRow>('match', {
+  const rows = await selectPublicRows<MatchRow>('match_public', {
     select: MATCH_SELECT,
     filters: { tournament_id: `eq.${tournamentId}` },
     order: 'round.asc,slot.asc',
@@ -511,7 +511,7 @@ export async function search(query: string): Promise<SearchHit[]> {
       filters: { or: `(name.${like},name_en.${like})` },
       limit: 8,
     }),
-    selectPublicRows<TournamentRow>('tournament', {
+    selectPublicRows<TournamentRow>('tournament_public', {
       ...NO_STORE,
       select: TOURNAMENT_SELECT,
       filters: { or: `(title.${like},season.${like})` },

@@ -1,211 +1,53 @@
 import 'server-only'
-import {
-  rdbAuthorizationHeader,
-  resolveRdbEndpoint,
-} from './rdb-endpoint.ts'
-import type { RdbCredential } from './rdb-endpoint.ts'
-import {
-  publicDataFetchOptions,
-  type PublicDataCache,
-} from './rdb-cache-policy.ts'
+import { cloudflareBindings } from './cloudflare-bindings'
+import type { PublicDataCache } from './rdb-cache-policy'
 
-type Credential = RdbCredential
-
-interface SelectionOptions {
-  select?: string
-  filters?: Record<string, string>
-  order?: string
-  limit?: number
-}
-
-export interface PublicQueryOptions extends SelectionOptions {
-  select: string
-  cache: PublicDataCache
-}
-
+type SelectionOptions = { select?: string; filters?: Record<string, string>; order?: string; limit?: number }
+export interface PublicQueryOptions extends SelectionOptions { select: string; cache: PublicDataCache }
 export type PrivateQueryOptions = SelectionOptions
-
-export interface PrivateFunctionOptions {
-  signal?: AbortSignal
-}
-
-export const PUBLIC_RELATIONS = [
-  'club_member',
-  'game',
-  'match',
-  'match_map_public',
-  'photo_public',
-  'player_public',
-  'post',
-  'site_setting',
-  'team_public',
-  'tournament',
-] as const
-
+export const PUBLIC_RELATIONS = ['club_member','game','match_map_public','match_public','photo_public','player_public','post','site_setting','team_public','tournament_public'] as const
 export type PublicRelation = (typeof PUBLIC_RELATIONS)[number]
 export type PublicFunction = 'registration_status'
-
-const publicRelations = new Set<string>(PUBLIC_RELATIONS)
-
-function assertPublicRelation(table: string): asserts table is PublicRelation {
-  if (!publicRelations.has(table)) {
-    throw new TypeError(`${table} is not an approved public relation`)
+export class RdbError extends Error { constructor(readonly status: number, readonly table: string, message: string) { super(`${table}: ${message}`); this.name = 'RdbError' } }
+const identifier = /^[a-z_]+$/
+function name(value: string) { if (!identifier.test(value)) throw new TypeError('invalid SQL identifier'); return value }
+function predicate(column: string, value: string, values: unknown[]) { const [operator, raw = ''] = value.split('.', 2); if (operator === 'eq' || operator === 'neq') { values.push(raw); return `${name(column)} ${operator === 'eq' ? '=' : '!='} ?` } if (operator === 'in') { const entries = raw.replace(/^\(|\)$/g, '').split(',').filter(Boolean); if (!entries.length) return '0'; values.push(...entries); return `${name(column)} IN (${entries.map(() => '?').join(',')})` } if (operator === 'ilike') { values.push(raw.replaceAll('*', '%')); return `LOWER(${name(column)}) LIKE LOWER(?)` } throw new TypeError(`unsupported filter operator: ${operator}`) }
+function where(filters: Record<string, string> | undefined, values: unknown[]) { if (!filters) return ''; const clauses = Object.entries(filters).filter(([column]) => column !== 'or').map(([column, value]) => predicate(column, value, values)); const disjunction = filters.or?.replace(/^\(|\)$/g, '').split(',').filter(Boolean).map(entry => { const [column, operator, ...rest] = entry.split('.'); return predicate(column ?? '', `${operator ?? ''}.${rest.join('.')}`, values) }) ?? []; if (disjunction.length) clauses.push(`(${disjunction.join(' OR ')})`); return clauses.length ? ` WHERE ${clauses.join(' AND ')}` : '' }
+function ordering(order: string | undefined) {
+  if (!order) return ''
+  return ` ORDER BY ${order.split(',').flatMap(part => {
+    const [column = '', direction = 'asc', nulls] = part.split('.')
+    const safeColumn = name(column)
+    const sqlDirection = direction === 'desc' ? 'DESC' : 'ASC'
+    if (nulls === 'nullslast') return [`${safeColumn} IS NULL ASC`, `${safeColumn} ${sqlDirection}`]
+    if (nulls === 'nullsfirst') return [`${safeColumn} IS NOT NULL ASC`, `${safeColumn} ${sqlDirection}`]
+    return `${safeColumn} ${sqlDirection}`
+  }).join(', ')}`
+}
+function normalize<Row>(row: Row): Row {
+  if (!row || typeof row !== 'object') return row
+  const record = row as Record<string, unknown>
+  for (const key of ['map_pool', 'rules', 'faqs']) {
+    if (typeof record[key] === 'string') {
+      try { record[key] = JSON.parse(record[key]) } catch { record[key] = [] }
+    }
   }
-}
-
-function assertPublicFunction(name: string): asserts name is PublicFunction {
-  if (name !== 'registration_status') {
-    throw new TypeError(`${name} is not an approved public function`)
+  if (typeof record.game === 'string') {
+    try { record.game = JSON.parse(record.game) } catch { record.game = null }
   }
-}
-
-function assertPublicProjection(select: string) {
-  if (select.trim().length === 0 || select.includes('*')) {
-    throw new TypeError('public reads require an explicit projection without wildcards')
+  for (const key of ['active', 'is_substitute', 'played', 'pinned']) {
+    if (typeof record[key] === 'number') record[key] = record[key] === 1
   }
+  return row
 }
-
-export class RdbError extends Error {
-  readonly status: number
-  readonly table: string
-
-  constructor(
-    status: number,
-    table: string,
-    message: string,
-  ) {
-    super(`${table}: ${message}`)
-    this.status = status
-    this.table = table
-    this.name = 'RdbError'
-  }
-}
-
-function search({ select, filters, order, limit }: SelectionOptions) {
-  const params = new URLSearchParams()
-  params.set('select', select ?? '*')
-  for (const [column, predicate] of Object.entries(filters ?? {})) {
-    params.append(column, predicate)
-  }
-  if (order) params.set('order', order)
-  if (limit !== undefined) params.set('limit', String(limit))
-  return params
-}
-
-async function request<T>(
-  method: string,
-  table: string,
-  options: SelectionOptions,
-  credential: Credential,
-  cache: PublicDataCache | undefined,
-  body?: unknown,
-): Promise<T> {
-  const endpoint = resolveRdbEndpoint(credential)
-  const url = `${endpoint.baseUrl}/${table}?${search(options)}`
-
-  let response: Response
-  try {
-    response = await fetch(url, {
-      method,
-      headers: {
-        ...rdbAuthorizationHeader(endpoint, credential),
-        'Content-Type': 'application/json',
-        ...(body !== undefined ? { Prefer: 'return=representation' } : {}),
-      },
-      body: body === undefined ? undefined : JSON.stringify(body),
-      ...(method === 'GET' && credential === 'anon' && cache
-        ? publicDataFetchOptions(cache)
-        : { cache: 'no-store' as const }),
-    })
-  } catch (error) {
-    const detail = error instanceof Error ? error.message : 'network request failed'
-    throw new RdbError(503, table, `request to ${new URL(url).origin} failed: ${detail}`)
-  }
-
-  if (!response.ok) {
-    throw new RdbError(response.status, table, await response.text())
-  }
-
-  return response.status === 204 ? (undefined as T) : ((await response.json()) as T)
-}
-
-export function selectPublicRows<Row>(table: PublicRelation, options: PublicQueryOptions) {
-  assertPublicRelation(table)
-  assertPublicProjection(options.select)
-  return request<Row[]>('GET', table, options, 'anon', options.cache)
-}
-
-export async function selectPublicRow<Row>(table: PublicRelation, options: PublicQueryOptions) {
-  const rows = await selectPublicRows<Row>(table, { ...options, limit: 1 })
-  return rows[0] ?? null
-}
-
-export function selectPrivateRows<Row>(table: string, options: PrivateQueryOptions = {}) {
-  return request<Row[]>('GET', table, options, 'admin', undefined)
-}
-
-export async function selectPrivateRow<Row>(table: string, options: PrivateQueryOptions = {}) {
-  const rows = await selectPrivateRows<Row>(table, { ...options, limit: 1 })
-  return rows[0] ?? null
-}
-
-export function insertPrivateRows<Row>(
-  table: string,
-  values: unknown,
-  options: PrivateQueryOptions = {},
-) {
-  return request<Row[]>('POST', table, options, 'admin', undefined, values)
-}
-
-export function updatePrivateRows<Row>(
-  table: string,
-  values: unknown,
-  options: PrivateQueryOptions,
-) {
-  return request<Row[]>('PATCH', table, options, 'admin', undefined, values)
-}
-
-export function deletePrivateRows(table: string, options: PrivateQueryOptions) {
-  return request<void>('DELETE', table, options, 'admin', undefined)
-}
-
-async function callFunction<T>(
-  name: string,
-  args: unknown,
-  credential: Credential,
-  options: PrivateFunctionOptions = {},
-) {
-  const endpoint = resolveRdbEndpoint(credential)
-  let response: Response
-  try {
-    response = await fetch(`${endpoint.baseUrl}/rpc/${name}`, {
-      method: 'POST',
-      headers: {
-        ...rdbAuthorizationHeader(endpoint, credential),
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(args),
-      cache: 'no-store',
-      signal: options.signal,
-    })
-  } catch (error) {
-    const detail = error instanceof Error ? error.message : 'network request failed'
-    throw new RdbError(503, name, `request to ${new URL(endpoint.baseUrl).origin} failed: ${detail}`)
-  }
-
-  if (!response.ok) throw new RdbError(response.status, name, await response.text())
-  return (await response.json()) as T
-}
-
-export function callPublicFunction<T>(name: PublicFunction, args: unknown) {
-  assertPublicFunction(name)
-  return callFunction<T>(name, args, 'anon')
-}
-
-export function callPrivateFunction<T>(
-  name: string,
-  args: unknown,
-  options: PrivateFunctionOptions = {},
-) {
-  return callFunction<T>(name, args, 'admin', options)
-}
+async function rows<T>(table: string, options: SelectionOptions) { const values: unknown[] = []; const source = name(table); const tournamentSource = source === 'tournament' || source === 'tournament_public'; const select = tournamentSource ? "t.*, (SELECT json_object('slug', g.slug, 'name', g.name) FROM game g WHERE g.id = t.game_id) AS game" : '*'; const from = tournamentSource ? `${source} t` : source; const statement = `SELECT ${select} FROM ${from}${where(options.filters, values)}${ordering(options.order)}${options.limit === undefined ? '' : ` LIMIT ${Number(options.limit)}`}`; try { return (await cloudflareBindings().db.prepare(statement).bind(...values).all<T>()).results.map(normalize) } catch (error) { throw new RdbError(503, table, error instanceof Error ? error.message : 'D1 request failed') } }
+export function selectPublicRows<Row>(table: PublicRelation, options: PublicQueryOptions) { return rows<Row>(table, options) }
+export async function selectPublicRow<Row>(table: PublicRelation, options: PublicQueryOptions) { return (await rows<Row>(table, { ...options, limit: 1 }))[0] ?? null }
+export function selectPrivateRows<Row>(table: string, options: PrivateQueryOptions = {}) { return rows<Row>(table, options) }
+export async function selectPrivateRow<Row>(table: string, options: PrivateQueryOptions = {}) { return (await rows<Row>(table, { ...options, limit: 1 }))[0] ?? null }
+function fieldValue(value: unknown) { return Array.isArray(value) || (value && typeof value === 'object') ? JSON.stringify(value) : typeof value === 'boolean' ? Number(value) : value }
+function fields(values: Record<string, unknown>) { const keys = Object.keys(values).map(name); return { keys, values: keys.map(key => fieldValue(values[key])) } }
+export async function insertPrivateRows<Row>(table: string, values: unknown) { const record = values as Record<string, unknown>; const data = fields(record); const sql = `INSERT INTO ${name(table)} (${data.keys.join(',')}) VALUES (${data.keys.map(() => '?').join(',')}) RETURNING *`; return (await cloudflareBindings().db.prepare(sql).bind(...data.values).all<Row>()).results }
+export async function updatePrivateRows<Row>(table: string, values: unknown, options: PrivateQueryOptions) { const record = values as Record<string, unknown>; const data = fields(record); const params = [...data.values]; const sql = `UPDATE ${name(table)} SET ${data.keys.map(key => `${key} = ?`).join(',')}${where(options.filters, params)} RETURNING *`; return (await cloudflareBindings().db.prepare(sql).bind(...params).all<Row>()).results }
+export async function deletePrivateRows(table: string, options: PrivateQueryOptions) { const params: unknown[] = []; await cloudflareBindings().db.prepare(`DELETE FROM ${name(table)}${where(options.filters, params)}`).bind(...params).run() }
+export async function callPublicFunction<T>(name: PublicFunction, args: unknown): Promise<T> { if (name !== 'registration_status') throw new TypeError('unsupported public function'); const slug = (args as { p_slug?: unknown }).p_slug; const row = await cloudflareBindings().db.prepare("SELECT t.team_cap AS cap, COUNT(team.id) AS taken, t.status IN ('registration', 'postponed') AND (t.reg_deadline IS NULL OR t.reg_deadline > CURRENT_TIMESTAMP) AS open FROM tournament t LEFT JOIN team ON team.tournament_id = t.id AND team.status != 'rejected' WHERE t.slug = ? GROUP BY t.id").bind(slug).first<T>(); if (!row) throw new RdbError(404, name, 'tournament not found'); return row }

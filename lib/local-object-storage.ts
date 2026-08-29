@@ -1,16 +1,6 @@
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { dirname, resolve, sep } from 'node:path'
-
-const STORAGE_KEY_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._/-]*$/
-
-export function assertStorageKey(key: string) {
-  if (
-    !STORAGE_KEY_PATTERN.test(key)
-    || key.split('/').some(part => !part || part === '.' || part === '..')
-  ) {
-    throw new Error('Invalid photo storage key')
-  }
-}
+import { assertStorageKey } from './storage-key.ts'
 
 export function resolveLocalObjectPath(root: string, key: string) {
   assertStorageKey(key)

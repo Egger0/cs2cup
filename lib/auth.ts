@@ -1,40 +1,23 @@
 import 'server-only'
 import { cache } from 'react'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
-import { verifyToken } from './jwt'
-import { selectPrivateRows } from './rdb'
+import { headers } from 'next/headers'
+import { notFound } from 'next/navigation'
+import { cloudflareEnvironment } from './cloudflare-bindings'
 
-export const SESSION_COOKIE = 'cs2cup_session'
-
-export { verifyToken }
-
-export interface AdminIdentity {
-  uid: string
-}
-
-async function isWhitelisted(uid: string) {
-  const rows = await selectPrivateRows<{ user_id: string }>('admin_user', {
-    select: 'user_id',
-    filters: { user_id: `eq.${uid}` },
-    limit: 1,
-  })
-  return rows[0]?.user_id === uid
-}
+export interface AdminIdentity { uid: string }
 
 export const getCurrentAdmin = cache(async (): Promise<AdminIdentity | null> => {
-  const token = (await cookies()).get(SESSION_COOKIE)?.value
-  if (!token) return null
-
-  const claims = await verifyToken(token)
-  if (!claims) return null
-  if (!(await isWhitelisted(claims.sub))) return null
-
-  return { uid: claims.sub }
+  const email = (await headers()).get('cf-access-authenticated-user-email')?.trim().toLowerCase()
+  const allowlist = cloudflareEnvironment().CF_ACCESS_ALLOWED_EMAILS
+    ?.split(',')
+    .map(value => value.trim().toLowerCase())
+    .filter(Boolean) ?? []
+  if (!email || !allowlist.includes(email)) return null
+  return { uid: email }
 })
 
 export async function requireAdmin(): Promise<AdminIdentity> {
   const admin = await getCurrentAdmin()
-  if (!admin) redirect('/admin/login')
+  if (!admin) notFound()
   return admin
 }

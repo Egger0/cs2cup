@@ -11,12 +11,23 @@ CREATE TABLE photo (id INTEGER PRIMARY KEY, tournament_id INTEGER NOT NULL REFER
 CREATE TABLE club_member (id INTEGER PRIMARY KEY, name TEXT NOT NULL, role TEXT NOT NULL UNIQUE, handle TEXT, intro TEXT, sort_order INTEGER NOT NULL DEFAULT 0);
 CREATE TABLE post (id INTEGER PRIMARY KEY, game_id INTEGER REFERENCES game(id) ON DELETE SET NULL, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, summary TEXT NOT NULL, body TEXT NOT NULL, published_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, pinned INTEGER NOT NULL DEFAULT 0 CHECK (pinned IN (0, 1)));
 CREATE TABLE registration_attempt (id INTEGER PRIMARY KEY, fingerprint TEXT NOT NULL, tournament_id INTEGER REFERENCES tournament(id) ON DELETE CASCADE, accepted INTEGER NOT NULL DEFAULT 0 CHECK (accepted IN (0, 1)), created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
-CREATE TABLE admin_account (id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, password_salt TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1)), created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
-CREATE TABLE admin_session (id INTEGER PRIMARY KEY, account_id INTEGER NOT NULL REFERENCES admin_account(id) ON DELETE CASCADE, token_hash TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, idle_expires_at TEXT NOT NULL, absolute_expires_at TEXT NOT NULL, revoked_at TEXT);
-CREATE TABLE login_attempt (id INTEGER PRIMARY KEY, account_fingerprint TEXT NOT NULL, network_fingerprint TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
 CREATE INDEX tournament_status_idx ON tournament(status);
 CREATE INDEX team_tournament_status_idx ON team(tournament_id, status);
 CREATE INDEX match_tournament_idx ON match(tournament_id, round, slot);
 CREATE INDEX photo_tournament_idx ON photo(tournament_id, sort_order);
 CREATE INDEX registration_attempt_window_idx ON registration_attempt(fingerprint, created_at DESC);
-CREATE INDEX login_attempt_window_idx ON login_attempt(account_fingerprint, network_fingerprint, created_at DESC);
+CREATE TRIGGER registration_attempt_limit_before_insert BEFORE INSERT ON registration_attempt
+WHEN (SELECT COUNT(*) FROM registration_attempt WHERE fingerprint = NEW.fingerprint AND created_at > datetime('now', '-1 hour')) >= 3
+BEGIN SELECT RAISE(ABORT, '提交太频繁'); END;
+CREATE TRIGGER team_capacity_before_insert BEFORE INSERT ON team
+WHEN NEW.status != 'rejected' AND (SELECT COUNT(*) FROM team WHERE tournament_id = NEW.tournament_id AND status != 'rejected') >= (SELECT team_cap FROM tournament WHERE id = NEW.tournament_id)
+BEGIN SELECT RAISE(ABORT, '席位已满'); END;
+CREATE TRIGGER team_capacity_before_update BEFORE UPDATE OF status ON team
+WHEN NEW.status != 'rejected' AND OLD.status = 'rejected' AND (SELECT COUNT(*) FROM team WHERE tournament_id = NEW.tournament_id AND status != 'rejected') >= (SELECT team_cap FROM tournament WHERE id = NEW.tournament_id)
+BEGIN SELECT RAISE(ABORT, '席位已满'); END;
+CREATE VIEW tournament_public AS SELECT * FROM tournament WHERE status != 'draft';
+CREATE VIEW team_public AS SELECT id, tournament_id, name, tag, captain, dept, seed FROM team WHERE status = 'approved';
+CREATE VIEW player_public AS SELECT p.id, p.team_id, p.nickname, p.role, p.is_substitute, p.sort_order, t.tournament_id FROM player p JOIN team t ON t.id = p.team_id WHERE t.status = 'approved';
+CREATE VIEW match_public AS SELECT m.* FROM match m JOIN tournament t ON t.id = m.tournament_id WHERE t.status != 'draft';
+CREATE VIEW photo_public AS SELECT p.* FROM photo p JOIN tournament t ON t.id = p.tournament_id WHERE t.status != 'draft';
+CREATE VIEW match_map_public AS SELECT mm.* FROM match_map mm JOIN match m ON m.id = mm.match_id JOIN tournament t ON t.id = m.tournament_id WHERE t.status != 'draft';

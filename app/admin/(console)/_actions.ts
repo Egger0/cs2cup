@@ -1,9 +1,8 @@
 'use server'
 
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { updateTag } from 'next/cache'
-import { SESSION_COOKIE, requireAdmin, verifyToken } from '@/lib/auth'
+import { requireAdmin } from '@/lib/auth'
 import {
   assignTeamSeed,
   listAdminMatches,
@@ -22,7 +21,6 @@ import { bracketSize, orderBySeed, seedPositions } from '@/lib/seeding'
 import { putObject, removeObject, uploadsEnabled } from '@/lib/storage'
 import { deleteRecordThenObjects } from '@/lib/object-cleanup'
 import { createPhotoStorageKey } from '@/lib/photo-storage-key'
-import { fetchCloudBaseGateway } from '@/lib/cloudbase-environment'
 import {
   adminCreateGame,
   adminCreatePost,
@@ -41,11 +39,9 @@ import {
   adminListTournaments,
   adminSaveSiteSetting,
 } from '@/lib/queries/content'
-import { RdbError, selectPrivateRows } from '@/lib/rdb'
+import { RdbError } from '@/lib/rdb'
 import type { MatchMapInput, MatchScheduleInput } from '@/lib/queries/admin'
 import type { TeamStatus, VetoAction } from '@/lib/types'
-
-const SESSION_MAX_AGE = 60 * 60 * 8
 
 function readRdbPayload(error: RdbError) {
   const raw = error.message.slice(error.message.indexOf(':') + 1).trim()
@@ -75,53 +71,8 @@ function scheduleError(error: unknown) {
   return writeError(error, '发布赛程失败')
 }
 
-async function passwordToken(username: string, password: string) {
-  try {
-    const response = await fetchCloudBaseGateway('/auth/v1/signin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-      cache: 'no-store',
-    })
-    if (!response?.ok) return null
-
-    const payload = (await response.json()) as { access_token?: unknown }
-    return typeof payload.access_token === 'string' ? payload.access_token : null
-  } catch {
-    return null
-  }
-}
-
-export async function signIn(username: string, password: string) {
-  const token = await passwordToken(username, password)
-  if (!token) return { ok: false as const, error: '登录凭证无效' }
-
-  const claims = await verifyToken(token)
-  if (!claims) return { ok: false as const, error: '登录凭证无效' }
-
-  const rows = await selectPrivateRows<{ user_id: string }>('admin_user', {
-    select: 'user_id',
-  })
-  if (!rows.some(row => row.user_id === claims.sub)) {
-    return { ok: false as const, error: '该账号不在管理员白名单中' }
-  }
-
-  const store = await cookies()
-  store.set(SESSION_COOKIE, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: SESSION_MAX_AGE,
-  })
-
-  return { ok: true as const }
-}
-
 export async function signOut() {
-  const store = await cookies()
-  store.delete(SESSION_COOKIE)
-  redirect('/admin/login')
+  redirect('/')
 }
 
 export async function updateTeamStatus(id: number, status: TeamStatus, tournamentId: number) {
