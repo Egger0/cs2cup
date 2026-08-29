@@ -1,0 +1,13 @@
+services:
+  db:
+    image: postgres:17.11@sha256:67f41722b7a8cbdb868a44a4995c846eddfdc2973bccb291ce937dce88ad5675
+    environment:
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: cs2cup
+    ports:
+      - '127.0.0.1:55432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d cs2cup']
+      interval: 3s
+      timeout: 3s
+      retries: 20

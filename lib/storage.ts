@@ -1,40 +1,66 @@
 import 'server-only'
-import { cloudflareBindings } from './cloudflare-bindings'
-import { assertStorageKey } from './storage-key'
 
-export interface StoredFile { key: string }
-export interface StoredObject { body: Uint8Array; contentType: string }
+import { requireMediaBucket } from './cloudflare-bindings.ts'
+import type {
+  ObjectStore,
+  StoredFile,
+  StoredObject,
+} from './object-storage/contracts.ts'
+import { assertStorageKey } from './object-storage/key.ts'
 
-function contentTypeFor(key: string) {
-  const extension = key.split('.').pop()?.toLowerCase()
-  if (extension === 'jpg' || extension === 'jpeg') return 'image/jpeg'
-  if (extension === 'png') return 'image/png'
-  if (extension === 'webp') return 'image/webp'
-  return 'application/octet-stream'
+export type { StoredFile, StoredObject }
+
+export const STORAGE_DRIVERS = ['local', 'r2'] as const
+export type StorageDriver = (typeof STORAGE_DRIVERS)[number]
+
+interface StorageEnvironment {
+  [name: string]: string | undefined
+  NODE_ENV?: string
+  PHOTO_UPLOAD_DRIVER?: string
 }
 
-export function uploadsEnabled() {
-  try { return Boolean(cloudflareBindings().media) } catch { return false }
+export function resolveStorageDriver(
+  environment: StorageEnvironment = process.env,
+): StorageDriver {
+  const configured = environment.PHOTO_UPLOAD_DRIVER
+  if (!configured && environment.NODE_ENV === 'production') {
+    throw new Error('PHOTO_UPLOAD_DRIVER is required in production')
+  }
+  if (!configured) return 'local'
+  if ((STORAGE_DRIVERS as readonly string[]).includes(configured)) {
+    return configured as StorageDriver
+  }
+  throw new Error('PHOTO_UPLOAD_DRIVER must be local or r2')
 }
 
-export async function putObject(key: string, body: Buffer, contentType: string): Promise<StoredFile> {
+async function objectStore(): Promise<ObjectStore> {
+  const selected = resolveStorageDriver()
+  if (selected === 'r2') {
+    const { createR2ObjectStore } = await import('./object-storage/r2.ts')
+    return createR2ObjectStore(requireMediaBucket())
+  }
+  const [{ createLocalObjectStore }, { resolvePhotoLocalRoot }] = await Promise.all([
+    import('./object-storage/local.ts'),
+    import('./photo-storage-config.ts'),
+  ])
+  return createLocalObjectStore(resolvePhotoLocalRoot())
+}
+
+export async function putObject(
+  key: string,
+  body: Uint8Array,
+  contentType: string,
+): Promise<StoredFile> {
   assertStorageKey(key)
-  await cloudflareBindings().media.put(key, body, { httpMetadata: { contentType } })
-  return { key }
+  return (await objectStore()).put(key, body, contentType)
 }
 
-export async function getObject(key: string): Promise<StoredObject> {
+export async function getObject(key: string): Promise<StoredObject | null> {
   assertStorageKey(key)
-  const object = await cloudflareBindings().media.get(key) as {
-    body?: ReadableStream<Uint8Array>
-    httpMetadata?: { contentType?: string }
-  } | null
-  if (!object?.body) throw new Error('R2 object not found')
-  const response = new Response(object.body)
-  return { body: new Uint8Array(await response.arrayBuffer()), contentType: object.httpMetadata?.contentType || contentTypeFor(key) }
+  return (await objectStore()).get(key)
 }
 
 export async function removeObject(key: string) {
   assertStorageKey(key)
-  await cloudflareBindings().media.delete(key)
+  await (await objectStore()).delete(key)
 }

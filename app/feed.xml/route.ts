@@ -10,7 +10,7 @@ const escape = (value: string) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
 
-export const revalidate = 900
+export const revalidate = 300
 
 export async function GET() {
   const posts = await safely(() => listPosts(30), [])

@@ -13,6 +13,5 @@ next-env.d.ts
 *.tsbuildinfo
 cs2-cup.html
 egger/
-docs/superpowers/
 migration-output/
 public/photos/

@@ -1,6 +1,9 @@
 import { defineCloudflareConfig } from '@opennextjs/cloudflare'
-import staticAssetsIncrementalCache from '@opennextjs/cloudflare/overrides/incremental-cache/static-assets-incremental-cache'
 
 export default defineCloudflareConfig({
-  incrementalCache: staticAssetsIncrementalCache,
+  // Dynamic content must stay correct before dedicated cache resources exist.
+  // The static-assets cache is read-only and cannot honor runtime revalidation.
+  incrementalCache: 'dummy',
+  tagCache: 'dummy',
+  queue: 'dummy',
 })

@@ -2,18 +2,32 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "nbt",
   "main": ".open-next/worker.js",
+  "workers_dev": false,
+  "preview_urls": false,
+  "keep_vars": true,
   "compatibility_date": "2026-08-28",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
-  "d1_databases": [
+  "vars": {
+    "PHOTO_UPLOAD_DRIVER": "r2",
+    "REGISTRATION_CLIENT_IP_SOURCE": "cf-connecting-ip"
+  },
+  "secrets": {
+    "required": [
+      "CF_ACCESS_ISSUER",
+      "CF_ACCESS_AUDIENCE",
+      "REGISTRATION_FINGERPRINT_SECRET"
+    ]
+  },
+  // @Egger0 replaces this marker with the Hyperdrive configuration created in
+  // the target Cloudflare account before the first deployment.
+  "hyperdrive": [
     {
-      "binding": "CS2CUP_DB",
-      "database_name": "cs2cup-preview-db",
-      "database_id": "eb3b131a-657d-431c-8ffc-05b7796ede29",
-      "migrations_dir": "cloudflare/d1"
+      "binding": "CS2CUP_DATABASE",
+      "id": "SET_BY_EGGER0_IN_TARGET_CLOUDFLARE_ACCOUNT"
     }
   ],
   "r2_buckets": [

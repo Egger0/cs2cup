@@ -1,58 +1,23 @@
-import { posix } from 'node:path'
-import { getCurrentAdmin } from '@/lib/auth'
-import { PRIVATE_NO_STORE_HEADERS } from '@/lib/http-cache'
-import { selectPrivateRow, selectPublicRow } from '@/lib/rdb'
-import { getObject } from '@/lib/storage'
+import { database, databaseOperation } from '@/lib/database'
+import { servePhotoObject } from '@/lib/photo-media-response'
 
-function notFound() {
-  return new Response('not found', {
-    status: 404,
-    headers: PRIVATE_NO_STORE_HEADERS,
+async function isPublishedPhoto(storageKey: string) {
+  return databaseOperation('media:find-public-photo', async () => {
+    const sql = database()
+    const rows = await sql<{ found: boolean }[]>`
+      select exists (
+        select 1
+        from public.photo_public photo
+        join public.tournament tournament on tournament.id = photo.tournament_id
+        where photo.storage_key = ${storageKey}
+          and tournament.status <> 'draft'
+      ) as found
+    `
+    return rows[0]?.found === true
   })
-}
-
-async function canReadPhoto(storageKey: string) {
-  const published = await selectPublicRow<{ id: number }>('photo_public', {
-    select: 'id',
-    filters: { storage_key: `eq.${storageKey}` },
-  }).catch(() => null)
-  if (published) return true
-
-  const admin = await getCurrentAdmin().catch(() => null)
-  if (!admin) return false
-
-  const privatePhoto = await selectPrivateRow<{ id: number }>('photo', {
-    select: 'id',
-    filters: { storage_key: `eq.${storageKey}` },
-  }).catch(() => null)
-  return Boolean(privatePhoto)
 }
 
 export async function GET(_request: Request, { params }: { params: Promise<{ key: string[] }> }) {
   const { key } = await params
-  const relative = posix.normalize(key.join('/'))
-  if (
-    relative === '.' ||
-    relative === '..' ||
-    relative.startsWith('../') ||
-    relative.startsWith('/')
-  ) {
-    return notFound()
-  }
-
-  if (!(await canReadPhoto(relative))) {
-    return notFound()
-  }
-
-  try {
-    const file = await getObject(relative)
-    return new Response(new Uint8Array(file.body).buffer, {
-      headers: {
-        'Content-Type': file.contentType,
-        ...PRIVATE_NO_STORE_HEADERS,
-      },
-    })
-  } catch {
-    return notFound()
-  }
+  return servePhotoObject(key, isPublishedPhoto)
 }

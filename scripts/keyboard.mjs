@@ -72,19 +72,22 @@ await Promise.all([
   page.waitForURL(url => new URL(url).searchParams.get('team') === selectedTeam),
   page.keyboard.press('Enter'),
 ])
+await page.waitForFunction(team => {
+  const links = [...document.querySelectorAll('main a[href*="/matches/"]')]
+  return links.length > 0 && links.every(link => link.textContent?.includes(team))
+}, selectedTeam)
 const keyboardScheduleLinks = page.locator('main a[href^="/tournaments/2026-nlc/matches/"]')
 check('Keyboard-filtered schedule exposes match links', (await keyboardScheduleLinks.count()) > 0)
 const firstScheduleLink = keyboardScheduleLinks.first()
+await page.waitForTimeout(300)
 await firstScheduleLink.focus()
 const firstScheduleHref = await firstScheduleLink.getAttribute('href')
-await Promise.all([
-  page.waitForURL(/\/tournaments\/2026-nlc\/matches\/\d+$/),
-  page.keyboard.press('Enter'),
-])
+await page.keyboard.press('Enter')
+await page.waitForTimeout(1000)
 check(
   'Keyboard opens a schedule match link',
   firstScheduleHref !== null && page.url().endsWith(firstScheduleHref),
-  firstScheduleHref ?? 'missing link',
+  `${firstScheduleHref ?? 'missing link'} → ${page.url().replace(BASE, '')}`,
 )
 
 await page.goto(`${BASE}/archive`, { waitUntil: 'domcontentloaded' })

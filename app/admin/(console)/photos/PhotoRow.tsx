@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui'
-import { photoUrl } from '@/lib/media'
+import { adminPhotoUrl } from '@/lib/media'
 import { deletePhotoAndFile } from '../_actions'
 import styles from '../admin.module.css'
 
@@ -22,7 +22,7 @@ export function PhotoRow({
       <div className={styles.photoRow}>
         <span className={styles.thumb}>
           <Image
-            src={photoUrl(photo.storageKey)}
+            src={adminPhotoUrl(photo.storageKey)}
             alt=""
             width={96}
             height={64}

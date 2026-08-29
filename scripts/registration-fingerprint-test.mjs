@@ -78,7 +78,7 @@ assert.throws(
   /required outside development/,
 )
 assert.throws(
-  () => registrationClientIpSource('cloudbase'),
+  () => registrationClientIpSource('untrusted-ingress'),
   /must be x-real-ip or cf-connecting-ip/,
 )
 assert.throws(

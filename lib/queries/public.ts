@@ -1,9 +1,17 @@
 import 'server-only'
-import { callPublicFunction, selectPublicRow, selectPublicRows } from '../rdb'
+
+import {
+  DatabaseError,
+  database,
+  databaseOperation,
+  isoDatabaseTimestamp,
+  nullableIsoDatabaseTimestamp,
+  safeDatabaseInteger,
+} from '../database'
 import type {
   ClubMember,
-  Game,
   FaqItem,
+  Game,
   Match,
   MatchMap,
   Photo,
@@ -17,29 +25,11 @@ import type {
   VetoAction,
 } from '../types'
 
-const SITE_SETTING_SELECT =
-  'id,club_name,club_name_en,school,logo_url,contact_qq,contact_wechat,footer_copy'
-const TOURNAMENT_SELECT =
-  'id,slug,title,game_id,game(slug,name),season,edition,status,format,team_cap,' +
-  'reg_deadline,starts_at,accent_color,map_pool,rules,faqs,hero_eyebrow,hero_top,' +
-  'hero_bottom,lede,champion_name,champion_note'
-const TEAM_SELECT = 'id,tournament_id,name,tag,captain,dept,seed'
-const PLAYER_SELECT =
-  'id,team_id,tournament_id,nickname,role,is_substitute,sort_order'
-const MATCH_SELECT =
-  'id,tournament_id,round,slot,round_label,best_of,team_a_id,team_b_id,' +
-  'source_match_a_id,source_match_b_id,score_a,score_b,winner_team_id,scheduled_at'
-const PHOTO_SELECT =
-  'id,tournament_id,storage_key,width,height,blur_data_url,caption,sort_order'
-const MATCH_MAP_SELECT =
-  'id,match_id,pick_order,map_name,action,chosen_by,score_a,score_b,played'
-const MEMBER_SELECT = 'id,name,role,handle,intro,sort_order'
-const POST_SELECT = 'id,game_id,slug,title,summary,body,published_at,pinned'
-const GAME_SELECT =
-  'id,slug,name,name_en,accent_color,tagline,description,format_note,sort_order,active'
+type DatabaseInteger = number | string | bigint
+type DatabaseTimestamp = string | Date
 
 interface SiteSettingRow {
-  id: number
+  id: DatabaseInteger
   club_name: string
   club_name_en: string | null
   school: string
@@ -50,22 +40,23 @@ interface SiteSettingRow {
 }
 
 interface TournamentRow {
-  id: number
+  id: DatabaseInteger
   slug: string
   title: string
-  game_id: number | null
-  game: { slug: string; name: string } | null
+  game_id: DatabaseInteger | null
+  game_slug: string | null
+  game_name: string | null
   season: string
-  edition: number
+  edition: DatabaseInteger
   status: TournamentStatus
   format: string
-  team_cap: number
-  reg_deadline: string | null
-  starts_at: string | null
+  team_cap: DatabaseInteger
+  reg_deadline: DatabaseTimestamp | null
+  starts_at: DatabaseTimestamp | null
   accent_color: string | null
-  map_pool: string[]
-  rules: RuleItem[]
-  faqs: FaqItem[]
+  map_pool: string[] | null
+  rules: RuleItem[] | null
+  faqs: FaqItem[] | null
   hero_eyebrow: string
   hero_top: string
   hero_bottom: string
@@ -75,55 +66,103 @@ interface TournamentRow {
 }
 
 interface TeamRow {
-  id: number
-  tournament_id: number
+  id: DatabaseInteger
+  tournament_id: DatabaseInteger
   name: string
   tag: string
   captain: string
   dept: string | null
-  seed: number | null
+  seed: DatabaseInteger | null
 }
 
 interface PlayerRow {
-  id: number
-  team_id: number
-  tournament_id: number
+  id: DatabaseInteger
+  team_id: DatabaseInteger
+  tournament_id: DatabaseInteger
   nickname: string
   role: string | null
   is_substitute: boolean
-  sort_order: number
+  sort_order: DatabaseInteger
 }
 
 interface MatchRow {
-  id: number
-  tournament_id: number
-  round: number
-  slot: number
+  id: DatabaseInteger
+  tournament_id: DatabaseInteger
+  round: DatabaseInteger
+  slot: DatabaseInteger
   round_label: string
-  best_of: number
-  team_a_id: number | null
-  team_b_id: number | null
-  source_match_a_id: number | null
-  source_match_b_id: number | null
-  score_a: number | null
-  score_b: number | null
-  winner_team_id: number | null
-  scheduled_at: string | null
+  best_of: DatabaseInteger
+  team_a_id: DatabaseInteger | null
+  team_b_id: DatabaseInteger | null
+  source_match_a_id: DatabaseInteger | null
+  source_match_b_id: DatabaseInteger | null
+  score_a: DatabaseInteger | null
+  score_b: DatabaseInteger | null
+  winner_team_id: DatabaseInteger | null
+  scheduled_at: DatabaseTimestamp | null
 }
 
 interface PhotoRow {
-  id: number
-  tournament_id: number
+  id: DatabaseInteger
+  tournament_id: DatabaseInteger
   storage_key: string
-  width: number
-  height: number
+  width: DatabaseInteger
+  height: DatabaseInteger
   blur_data_url: string | null
   caption: string | null
-  sort_order: number
+  sort_order: DatabaseInteger
 }
 
+interface MatchMapRow {
+  id: DatabaseInteger
+  match_id: DatabaseInteger
+  pick_order: DatabaseInteger
+  map_name: string
+  action: VetoAction
+  chosen_by: 'a' | 'b' | null
+  score_a: DatabaseInteger | null
+  score_b: DatabaseInteger | null
+  played: boolean
+}
+
+interface MemberRow {
+  id: DatabaseInteger
+  name: string
+  role: string
+  handle: string | null
+  intro: string | null
+  sort_order: DatabaseInteger
+}
+
+interface PostRow {
+  id: DatabaseInteger
+  game_id: DatabaseInteger | null
+  slug: string
+  title: string
+  summary: string
+  body: string
+  published_at: DatabaseTimestamp
+  pinned: boolean
+}
+
+interface GameRow {
+  id: DatabaseInteger
+  slug: string
+  name: string
+  name_en: string | null
+  accent_color: string | null
+  tagline: string | null
+  description: string | null
+  format_note: string | null
+  sort_order: DatabaseInteger
+  active: boolean
+}
+
+const nullableDatabaseInteger = (value: unknown, field: string) =>
+  value === null ? null : safeDatabaseInteger(value, field)
+
 const toSiteSetting = (row: SiteSettingRow): SiteSetting => ({
-  id: row.id,
+  id: safeDatabaseInteger(row.id, 'site-setting.id'),
   clubName: row.club_name,
   clubNameEn: row.club_name_en,
   school: row.school,
@@ -134,19 +173,19 @@ const toSiteSetting = (row: SiteSettingRow): SiteSetting => ({
 })
 
 const toTournament = (row: TournamentRow): Tournament => ({
-  id: row.id,
+  id: safeDatabaseInteger(row.id, 'tournament.id'),
   slug: row.slug,
   title: row.title,
-  gameId: row.game_id,
-  gameSlug: row.game?.slug ?? null,
-  gameName: row.game?.name ?? null,
+  gameId: nullableDatabaseInteger(row.game_id, 'tournament.game-id'),
+  gameSlug: row.game_slug,
+  gameName: row.game_name,
   season: row.season,
-  edition: row.edition,
+  edition: safeDatabaseInteger(row.edition, 'tournament.edition'),
   status: row.status,
   format: row.format,
-  teamCap: row.team_cap,
-  regDeadline: row.reg_deadline,
-  startsAt: row.starts_at,
+  teamCap: safeDatabaseInteger(row.team_cap, 'tournament.team-cap'),
+  regDeadline: nullableIsoDatabaseTimestamp(row.reg_deadline, 'tournament.reg-deadline'),
+  startsAt: nullableIsoDatabaseTimestamp(row.starts_at, 'tournament.starts-at'),
   accentColor: row.accent_color,
   mapPool: row.map_pool ?? [],
   rules: row.rules ?? [],
@@ -160,41 +199,72 @@ const toTournament = (row: TournamentRow): Tournament => ({
 })
 
 const toPlayer = (row: PlayerRow): Player => ({
-  id: row.id,
-  teamId: row.team_id,
+  id: safeDatabaseInteger(row.id, 'player.id'),
+  teamId: safeDatabaseInteger(row.team_id, 'player.team-id'),
   nickname: row.nickname,
   role: row.role,
   isSubstitute: row.is_substitute,
-  sortOrder: row.sort_order,
+  sortOrder: safeDatabaseInteger(row.sort_order, 'player.sort-order'),
 })
 
 const toMatch = (row: MatchRow): Match => ({
-  id: row.id,
-  tournamentId: row.tournament_id,
-  round: row.round,
-  slot: row.slot,
+  id: safeDatabaseInteger(row.id, 'match.id'),
+  tournamentId: safeDatabaseInteger(row.tournament_id, 'match.tournament-id'),
+  round: safeDatabaseInteger(row.round, 'match.round'),
+  slot: safeDatabaseInteger(row.slot, 'match.slot'),
   roundLabel: row.round_label,
-  bestOf: row.best_of,
-  teamAId: row.team_a_id,
-  teamBId: row.team_b_id,
-  sourceMatchAId: row.source_match_a_id,
-  sourceMatchBId: row.source_match_b_id,
-  scoreA: row.score_a,
-  scoreB: row.score_b,
-  winnerTeamId: row.winner_team_id,
-  scheduledAt: row.scheduled_at,
+  bestOf: safeDatabaseInteger(row.best_of, 'match.best-of'),
+  teamAId: nullableDatabaseInteger(row.team_a_id, 'match.team-a-id'),
+  teamBId: nullableDatabaseInteger(row.team_b_id, 'match.team-b-id'),
+  sourceMatchAId: nullableDatabaseInteger(row.source_match_a_id, 'match.source-match-a-id'),
+  sourceMatchBId: nullableDatabaseInteger(row.source_match_b_id, 'match.source-match-b-id'),
+  scoreA: nullableDatabaseInteger(row.score_a, 'match.score-a'),
+  scoreB: nullableDatabaseInteger(row.score_b, 'match.score-b'),
+  winnerTeamId: nullableDatabaseInteger(row.winner_team_id, 'match.winner-team-id'),
+  scheduledAt: nullableIsoDatabaseTimestamp(row.scheduled_at, 'match.scheduled-at'),
 })
 
 const toPhoto = (row: PhotoRow): Photo => ({
-  id: row.id,
-  tournamentId: row.tournament_id,
+  id: safeDatabaseInteger(row.id, 'photo.id'),
+  tournamentId: safeDatabaseInteger(row.tournament_id, 'photo.tournament-id'),
   storageKey: row.storage_key,
-  width: row.width,
-  height: row.height,
+  width: safeDatabaseInteger(row.width, 'photo.width'),
+  height: safeDatabaseInteger(row.height, 'photo.height'),
   blurDataUrl: row.blur_data_url,
   caption: row.caption,
-  sortOrder: row.sort_order,
+  sortOrder: safeDatabaseInteger(row.sort_order, 'photo.sort-order'),
 })
+
+const toPost = (row: PostRow): Post => ({
+  id: safeDatabaseInteger(row.id, 'post.id'),
+  gameId: nullableDatabaseInteger(row.game_id, 'post.game-id'),
+  slug: row.slug,
+  title: row.title,
+  summary: row.summary,
+  body: row.body,
+  publishedAt: isoDatabaseTimestamp(row.published_at, 'post.published-at'),
+  pinned: row.pinned,
+})
+
+const toGame = (row: GameRow): Game => ({
+  id: safeDatabaseInteger(row.id, 'game.id'),
+  slug: row.slug,
+  name: row.name,
+  nameEn: row.name_en,
+  accentColor: row.accent_color,
+  tagline: row.tagline,
+  description: row.description,
+  formatNote: row.format_note,
+  sortOrder: safeDatabaseInteger(row.sort_order, 'game.sort-order'),
+  active: row.active,
+})
+
+function databaseLimit(value: number) {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new DatabaseError('decode:query-limit', null, false)
+  }
+  return value
+}
 
 export async function safely<T>(work: () => Promise<T>, fallback: T): Promise<T> {
   try {
@@ -208,173 +278,376 @@ export async function safely<T>(work: () => Promise<T>, fallback: T): Promise<T>
   }
 }
 
-export async function getSiteSetting(): Promise<SiteSetting | null> {
-  const row = await selectPublicRow<SiteSettingRow>('site_setting', {
-    select: SITE_SETTING_SELECT,
+export function getSiteSetting(): Promise<SiteSetting | null> {
+  return databaseOperation('public:get-site-setting', async () => {
+    const sql = database()
+    const rows = await sql<SiteSettingRow[]>`
+      select
+        setting.id,
+        setting.club_name,
+        setting.club_name_en,
+        setting.school,
+        setting.logo_url,
+        setting.contact_qq,
+        setting.contact_wechat,
+        setting.footer_copy
+      from public.site_setting setting
+      order by setting.id
+      limit 1
+    `
+    return rows[0] ? toSiteSetting(rows[0]) : null
   })
-  return row ? toSiteSetting(row) : null
 }
 
-export async function listTournaments(): Promise<Tournament[]> {
-  const rows = await selectPublicRows<TournamentRow>('tournament_public', {
-    select: TOURNAMENT_SELECT,
-    order: 'season.desc,edition.desc',
+export function listTournaments(): Promise<Tournament[]> {
+  return databaseOperation('public:list-tournaments', async () => {
+    const sql = database()
+    const rows = await sql<TournamentRow[]>`
+      select
+        tournament.id,
+        tournament.slug,
+        tournament.title,
+        tournament.game_id,
+        game.slug as game_slug,
+        game.name as game_name,
+        tournament.season,
+        tournament.edition,
+        tournament.status,
+        tournament.format,
+        tournament.team_cap,
+        tournament.reg_deadline,
+        tournament.starts_at,
+        tournament.accent_color,
+        tournament.map_pool,
+        tournament.rules,
+        tournament.faqs,
+        tournament.hero_eyebrow,
+        tournament.hero_top,
+        tournament.hero_bottom,
+        tournament.lede,
+        tournament.champion_name,
+        tournament.champion_note
+      from public.tournament tournament
+      left join public.game game
+        on game.id = tournament.game_id
+       and game.active is true
+      where tournament.status <> 'draft'
+      order by tournament.season desc, tournament.edition desc
+    `
+    return rows.map(toTournament)
   })
-  return rows.map(toTournament)
 }
 
-export async function getTournament(slug: string): Promise<Tournament | null> {
-  const row = await selectPublicRow<TournamentRow>('tournament_public', {
-    select: TOURNAMENT_SELECT,
-    filters: { slug: `eq.${slug}` },
+export function getTournament(slug: string): Promise<Tournament | null> {
+  return databaseOperation('public:get-tournament', async () => {
+    const sql = database()
+    const rows = await sql<TournamentRow[]>`
+      select
+        tournament.id,
+        tournament.slug,
+        tournament.title,
+        tournament.game_id,
+        game.slug as game_slug,
+        game.name as game_name,
+        tournament.season,
+        tournament.edition,
+        tournament.status,
+        tournament.format,
+        tournament.team_cap,
+        tournament.reg_deadline,
+        tournament.starts_at,
+        tournament.accent_color,
+        tournament.map_pool,
+        tournament.rules,
+        tournament.faqs,
+        tournament.hero_eyebrow,
+        tournament.hero_top,
+        tournament.hero_bottom,
+        tournament.lede,
+        tournament.champion_name,
+        tournament.champion_note
+      from public.tournament tournament
+      left join public.game game
+        on game.id = tournament.game_id
+       and game.active is true
+      where tournament.slug = ${slug}
+        and tournament.status <> 'draft'
+      limit 1
+    `
+    return rows[0] ? toTournament(rows[0]) : null
   })
-  return row ? toTournament(row) : null
 }
 
-export async function getCurrentTournament(): Promise<Tournament | null> {
-  const rows = await selectPublicRows<TournamentRow>('tournament_public', {
-    select: TOURNAMENT_SELECT,
-    filters: { status: 'neq.finished' },
-    order: 'season.desc,edition.desc',
-    limit: 1,
+export function getCurrentTournament(): Promise<Tournament | null> {
+  return databaseOperation('public:get-current-tournament', async () => {
+    const sql = database()
+    const rows = await sql<TournamentRow[]>`
+      select
+        tournament.id,
+        tournament.slug,
+        tournament.title,
+        tournament.game_id,
+        game.slug as game_slug,
+        game.name as game_name,
+        tournament.season,
+        tournament.edition,
+        tournament.status,
+        tournament.format,
+        tournament.team_cap,
+        tournament.reg_deadline,
+        tournament.starts_at,
+        tournament.accent_color,
+        tournament.map_pool,
+        tournament.rules,
+        tournament.faqs,
+        tournament.hero_eyebrow,
+        tournament.hero_top,
+        tournament.hero_bottom,
+        tournament.lede,
+        tournament.champion_name,
+        tournament.champion_note
+      from public.tournament tournament
+      left join public.game game
+        on game.id = tournament.game_id
+       and game.active is true
+      where tournament.status not in ('draft', 'finished')
+      order by tournament.season desc, tournament.edition desc
+      limit 1
+    `
+    return rows[0] ? toTournament(rows[0]) : null
   })
-  return rows[0] ? toTournament(rows[0]) : null
 }
 
-export async function getPublicTeams(tournamentId: number): Promise<PublicTeam[]> {
-  const [teams, players] = await Promise.all([
-    selectPublicRows<TeamRow>('team_public', {
-      select: TEAM_SELECT,
-      filters: { tournament_id: `eq.${tournamentId}` },
-      order: 'seed.asc.nullslast',
-    }),
-    selectPublicRows<PlayerRow>('player_public', {
-      select: PLAYER_SELECT,
-      filters: { tournament_id: `eq.${tournamentId}` },
-      order: 'sort_order.asc',
-    }),
-  ])
+export function getPublicTeams(tournamentId: number): Promise<PublicTeam[]> {
+  return databaseOperation('public:get-tournament-teams', async () => {
+    const sql = database()
+    const id = safeDatabaseInteger(tournamentId, 'tournament-id')
+    const [teams, players] = await Promise.all([
+      sql<TeamRow[]>`
+        select
+          team.id,
+          team.tournament_id,
+          team.name,
+          team.tag,
+          team.captain,
+          team.dept,
+          team.seed
+        from public.team_public team
+        join public.tournament tournament on tournament.id = team.tournament_id
+        where team.tournament_id = ${id}
+          and tournament.status <> 'draft'
+        order by team.seed asc nulls last, team.id asc
+      `,
+      sql<PlayerRow[]>`
+        select
+          player.id,
+          player.team_id,
+          player.tournament_id,
+          player.nickname,
+          player.role,
+          player.is_substitute,
+          player.sort_order
+        from public.player_public player
+        join public.tournament tournament on tournament.id = player.tournament_id
+        where player.tournament_id = ${id}
+          and tournament.status <> 'draft'
+        order by player.team_id asc, player.sort_order asc, player.id asc
+      `,
+    ])
 
-  const byTeam = new Map<number, Player[]>()
-  for (const row of players) {
-    const list = byTeam.get(row.team_id)
-    if (list) list.push(toPlayer(row))
-    else byTeam.set(row.team_id, [toPlayer(row)])
-  }
+    const byTeam = new Map<number, Player[]>()
+    for (const row of players) {
+      const player = toPlayer(row)
+      const list = byTeam.get(player.teamId)
+      if (list) list.push(player)
+      else byTeam.set(player.teamId, [player])
+    }
 
-  return teams.map(row => ({
-    id: row.id,
-    tournamentId: row.tournament_id,
-    name: row.name,
-    tag: row.tag,
-    captain: row.captain,
-    dept: row.dept,
-    seed: row.seed,
-    players: byTeam.get(row.id) ?? [],
-  }))
-}
-
-export async function getMatches(tournamentId: number): Promise<Match[]> {
-  const rows = await selectPublicRows<MatchRow>('match_public', {
-    select: MATCH_SELECT,
-    filters: { tournament_id: `eq.${tournamentId}` },
-    order: 'round.asc,slot.asc',
+    return teams.map(row => {
+      const teamId = safeDatabaseInteger(row.id, 'team.id')
+      return {
+        id: teamId,
+        tournamentId: safeDatabaseInteger(row.tournament_id, 'team.tournament-id'),
+        name: row.name,
+        tag: row.tag,
+        captain: row.captain,
+        dept: row.dept,
+        seed: nullableDatabaseInteger(row.seed, 'team.seed'),
+        players: byTeam.get(teamId) ?? [],
+      }
+    })
   })
-  return rows.map(toMatch)
 }
 
-export async function getPhotos(tournamentId?: number): Promise<Photo[]> {
-  const rows = await selectPublicRows<PhotoRow>('photo_public', {
-    select: PHOTO_SELECT,
-    filters: tournamentId ? { tournament_id: `eq.${tournamentId}` } : undefined,
-    order: 'sort_order.asc',
+export function getMatches(tournamentId: number): Promise<Match[]> {
+  return databaseOperation('public:get-tournament-matches', async () => {
+    const sql = database()
+    const id = safeDatabaseInteger(tournamentId, 'tournament-id')
+    const rows = await sql<MatchRow[]>`
+      select
+        match.id,
+        match.tournament_id,
+        match.round,
+        match.slot,
+        match.round_label,
+        match.best_of,
+        match.team_a_id,
+        match.team_b_id,
+        match.source_match_a_id,
+        match.source_match_b_id,
+        match.score_a,
+        match.score_b,
+        match.winner_team_id,
+        match.scheduled_at
+      from public.match match
+      join public.tournament tournament on tournament.id = match.tournament_id
+      where match.tournament_id = ${id}
+        and tournament.status <> 'draft'
+      order by match.round asc, match.slot asc
+    `
+    return rows.map(toMatch)
   })
-  return rows.map(toPhoto)
 }
 
-interface MatchMapRow {
-  id: number
-  match_id: number
-  pick_order: number
-  map_name: string
-  action: VetoAction
-  chosen_by: 'a' | 'b' | null
-  score_a: number | null
-  score_b: number | null
-  played: boolean
-}
-
-export async function getMatchMaps(matchIds: number[]): Promise<MatchMap[]> {
-  if (matchIds.length === 0) return []
-  const rows = await selectPublicRows<MatchMapRow>('match_map_public', {
-    select: MATCH_MAP_SELECT,
-    filters: { match_id: `in.(${matchIds.join(',')})` },
-    order: 'match_id.asc,pick_order.asc',
+export function getPhotos(tournamentId?: number): Promise<Photo[]> {
+  return databaseOperation('public:get-photos', async () => {
+    const sql = database()
+    const rows = tournamentId === undefined
+      ? await sql<PhotoRow[]>`
+          select
+            photo.id,
+            photo.tournament_id,
+            photo.storage_key,
+            photo.width,
+            photo.height,
+            photo.blur_data_url,
+            photo.caption,
+            photo.sort_order
+          from public.photo_public photo
+          join public.tournament tournament on tournament.id = photo.tournament_id
+          where tournament.status <> 'draft'
+          order by photo.sort_order asc, photo.id asc
+        `
+      : await sql<PhotoRow[]>`
+          select
+            photo.id,
+            photo.tournament_id,
+            photo.storage_key,
+            photo.width,
+            photo.height,
+            photo.blur_data_url,
+            photo.caption,
+            photo.sort_order
+          from public.photo_public photo
+          join public.tournament tournament on tournament.id = photo.tournament_id
+          where photo.tournament_id = ${safeDatabaseInteger(tournamentId, 'tournament-id')}
+            and tournament.status <> 'draft'
+          order by photo.sort_order asc, photo.id asc
+        `
+    return rows.map(toPhoto)
   })
-  return rows.map(row => ({
-    id: row.id,
-    matchId: row.match_id,
-    pickOrder: row.pick_order,
-    mapName: row.map_name,
-    action: row.action,
-    chosenBy: row.chosen_by,
-    scoreA: row.score_a,
-    scoreB: row.score_b,
-    played: row.played,
-  }))
 }
 
-interface MemberRow {
-  id: number
-  name: string
-  role: string
-  handle: string | null
-  intro: string | null
-  sort_order: number
-}
+export function getMatchMaps(matchIds: number[]): Promise<MatchMap[]> {
+  if (matchIds.length === 0) return Promise.resolve([])
 
-export async function listMembers(): Promise<ClubMember[]> {
-  const rows = await selectPublicRows<MemberRow>('club_member', {
-    select: MEMBER_SELECT,
-    order: 'sort_order.asc',
+  return databaseOperation('public:get-match-maps', async () => {
+    const sql = database()
+    const ids = Array.from(new Set(
+      matchIds.map(id => safeDatabaseInteger(id, 'match-id')),
+    ))
+    const rows = await sql<MatchMapRow[]>`
+      select
+        map.id,
+        map.match_id,
+        map.pick_order,
+        map.map_name,
+        map.action,
+        map.chosen_by,
+        map.score_a,
+        map.score_b,
+        map.played
+      from public.match_map_public map
+      join public.match match on match.id = map.match_id
+      join public.tournament tournament on tournament.id = match.tournament_id
+      where map.match_id in ${sql(ids)}
+        and tournament.status <> 'draft'
+      order by map.match_id asc, map.pick_order asc
+    `
+    return rows.map(row => ({
+      id: safeDatabaseInteger(row.id, 'match-map.id'),
+      matchId: safeDatabaseInteger(row.match_id, 'match-map.match-id'),
+      pickOrder: safeDatabaseInteger(row.pick_order, 'match-map.pick-order'),
+      mapName: row.map_name,
+      action: row.action,
+      chosenBy: row.chosen_by,
+      scoreA: nullableDatabaseInteger(row.score_a, 'match-map.score-a'),
+      scoreB: nullableDatabaseInteger(row.score_b, 'match-map.score-b'),
+      played: row.played,
+    }))
   })
-  return rows.map(row => ({
-    id: row.id,
-    name: row.name,
-    role: row.role,
-    handle: row.handle,
-    intro: row.intro,
-    sortOrder: row.sort_order,
-  }))
 }
 
-interface PostRow {
-  id: number
-  game_id: number | null
-  slug: string
-  title: string
-  summary: string
-  body: string
-  published_at: string
-  pinned: boolean
-}
-
-export async function listPosts(limit?: number): Promise<Post[]> {
-  const rows = await selectPublicRows<PostRow>('post', {
-    select: POST_SELECT,
-    order: 'pinned.desc,published_at.desc',
-    limit,
+export function listMembers(): Promise<ClubMember[]> {
+  return databaseOperation('public:list-members', async () => {
+    const sql = database()
+    const rows = await sql<MemberRow[]>`
+      select
+        member.id,
+        member.name,
+        member.role,
+        member.handle,
+        member.intro,
+        member.sort_order
+      from public.club_member member
+      order by member.sort_order asc, member.id asc
+    `
+    return rows.map(row => ({
+      id: safeDatabaseInteger(row.id, 'club-member.id'),
+      name: row.name,
+      role: row.role,
+      handle: row.handle,
+      intro: row.intro,
+      sortOrder: safeDatabaseInteger(row.sort_order, 'club-member.sort-order'),
+    }))
   })
-  return rows.map(row => ({
-    id: row.id,
-    gameId: row.game_id,
-    slug: row.slug,
-    title: row.title,
-    summary: row.summary,
-    body: row.body,
-    publishedAt: row.published_at,
-    pinned: row.pinned,
-  }))
+}
+
+export function listPosts(limit?: number): Promise<Post[]> {
+  return databaseOperation('public:list-posts', async () => {
+    const sql = database()
+    const rows = limit === undefined
+      ? await sql<PostRow[]>`
+          select
+            post.id,
+            post.game_id,
+            post.slug,
+            post.title,
+            post.summary,
+            post.body,
+            post.published_at,
+            post.pinned
+          from public.post post
+          where post.published_at <= current_timestamp
+          order by post.pinned desc, post.published_at desc
+        `
+      : await sql<PostRow[]>`
+          select
+            post.id,
+            post.game_id,
+            post.slug,
+            post.title,
+            post.summary,
+            post.body,
+            post.published_at,
+            post.pinned
+          from public.post post
+          where post.published_at <= current_timestamp
+          order by post.pinned desc, post.published_at desc
+          limit ${databaseLimit(limit)}
+        `
+    return rows.map(toPost)
+  })
 }
 
 export interface RegistrationStatus {
@@ -383,68 +656,99 @@ export interface RegistrationStatus {
   open: boolean
 }
 
-export function getRegistrationStatus(slug: string) {
-  return callPublicFunction<RegistrationStatus>('registration_status', { p_slug: slug })
+interface RegistrationStatusRow {
+  result: {
+    cap?: unknown
+    taken?: unknown
+    open?: unknown
+  } | null
 }
 
-interface GameRow {
-  id: number
-  slug: string
-  name: string
-  name_en: string | null
-  accent_color: string | null
-  tagline: string | null
-  description: string | null
-  format_note: string | null
-  sort_order: number
-  active: boolean
-}
-
-const toGame = (row: GameRow): Game => ({
-  id: row.id,
-  slug: row.slug,
-  name: row.name,
-  nameEn: row.name_en,
-  accentColor: row.accent_color,
-  tagline: row.tagline,
-  description: row.description,
-  formatNote: row.format_note,
-  sortOrder: row.sort_order,
-  active: row.active,
-})
-
-export async function listGames(): Promise<Game[]> {
-  const rows = await selectPublicRows<GameRow>('game', {
-    select: GAME_SELECT,
-    order: 'sort_order.asc',
+export function getRegistrationStatus(slug: string): Promise<RegistrationStatus> {
+  return databaseOperation('public:get-registration-status', async () => {
+    const sql = database()
+    const rows = await sql<RegistrationStatusRow[]>`
+      select public.registration_status(${slug}::text) as result
+    `
+    const result = rows[0]?.result
+    if (!result || typeof result.open !== 'boolean') {
+      throw new DatabaseError('decode:registration-status', null, false)
+    }
+    return {
+      cap: safeDatabaseInteger(result.cap, 'registration-status.cap'),
+      taken: safeDatabaseInteger(result.taken, 'registration-status.taken'),
+      open: result.open,
+    }
   })
-  return rows.map(toGame)
 }
 
-export async function getGame(slug: string): Promise<Game | null> {
-  const row = await selectPublicRow<GameRow>('game', {
-    select: GAME_SELECT,
-    filters: { slug: `eq.${slug}` },
+export function listGames(): Promise<Game[]> {
+  return databaseOperation('public:list-games', async () => {
+    const sql = database()
+    const rows = await sql<GameRow[]>`
+      select
+        game.id,
+        game.slug,
+        game.name,
+        game.name_en,
+        game.accent_color,
+        game.tagline,
+        game.description,
+        game.format_note,
+        game.sort_order,
+        game.active
+      from public.game game
+      where game.active is true
+      order by game.sort_order asc, game.id asc
+    `
+    return rows.map(toGame)
   })
-  return row ? toGame(row) : null
 }
 
-export async function getPost(slug: string): Promise<Post | null> {
-  const row = await selectPublicRow<PostRow>('post', {
-    select: POST_SELECT,
-    filters: { slug: `eq.${slug}` },
+export function getGame(slug: string): Promise<Game | null> {
+  return databaseOperation('public:get-game', async () => {
+    const sql = database()
+    const rows = await sql<GameRow[]>`
+      select
+        game.id,
+        game.slug,
+        game.name,
+        game.name_en,
+        game.accent_color,
+        game.tagline,
+        game.description,
+        game.format_note,
+        game.sort_order,
+        game.active
+      from public.game game
+      where game.slug = ${slug}
+        and game.active is true
+      limit 1
+    `
+    return rows[0] ? toGame(rows[0]) : null
   })
-  if (!row) return null
-  return {
-    id: row.id,
-    gameId: row.game_id,
-    slug: row.slug,
-    title: row.title,
-    summary: row.summary,
-    body: row.body,
-    publishedAt: row.published_at,
-    pinned: row.pinned,
-  }
+}
+
+export function getPost(slug: string): Promise<Post | null> {
+  return databaseOperation('public:get-post', async () => {
+    const sql = database()
+    const rows = await sql<PostRow[]>`
+      select
+        post.id,
+        post.game_id,
+        post.slug,
+        post.title,
+        post.summary,
+        post.body,
+        post.published_at,
+        post.pinned
+      from public.post post
+      where post.slug = ${slug}
+        and post.published_at <= current_timestamp
+      limit 1
+    `
+    return rows[0] ? toPost(rows[0]) : null
+  })
 }
 
 export async function listHonours() {
@@ -479,74 +783,106 @@ export interface SearchHit {
   href: string
 }
 
-export async function search(query: string): Promise<SearchHit[]> {
+interface SearchGameRow {
+  slug: string
+  name: string
+  name_en: string | null
+}
+
+interface SearchTournamentRow {
+  slug: string
+  title: string
+  season: string
+  edition: DatabaseInteger
+}
+
+interface SearchPostRow {
+  slug: string
+  title: string
+  published_at: DatabaseTimestamp
+}
+
+interface SearchTeamRow {
+  name: string
+  tag: string
+  tournament_slug: string
+  tournament_title: string
+}
+
+export function search(query: string): Promise<SearchHit[]> {
   const term = query.trim()
-  if (term.length === 0) return []
-  const like = `ilike.*${term}*`
+  if (term.length === 0 || term.length > 100) return Promise.resolve([])
 
-  const [games, tournaments, posts] = await Promise.all([
-    selectPublicRows<GameRow>('game', {
-      select: GAME_SELECT,
-      filters: { or: `(name.${like},name_en.${like})` },
-      limit: 8,
-    }),
-    selectPublicRows<TournamentRow>('tournament_public', {
-      select: TOURNAMENT_SELECT,
-      filters: { or: `(title.${like},season.${like})` },
-      limit: 8,
-    }),
-    selectPublicRows<PostRow>('post', {
-      select: POST_SELECT,
-      filters: { or: `(title.${like},summary.${like},body.${like})` },
-      limit: 8,
-    }),
-  ])
+  return databaseOperation('public:search', async () => {
+    const sql = database()
+    const pattern = `%${term}%`
+    const [games, tournaments, posts, teams] = await Promise.all([
+      sql<SearchGameRow[]>`
+        select game.slug, game.name, game.name_en
+        from public.game game
+        where game.active is true
+          and (game.name ilike ${pattern} or game.name_en ilike ${pattern})
+        limit 8
+      `,
+      sql<SearchTournamentRow[]>`
+        select tournament.slug, tournament.title, tournament.season, tournament.edition
+        from public.tournament tournament
+        where tournament.status <> 'draft'
+          and (tournament.title ilike ${pattern} or tournament.season ilike ${pattern})
+        limit 8
+      `,
+      sql<SearchPostRow[]>`
+        select post.slug, post.title, post.published_at
+        from public.post post
+        where post.published_at <= current_timestamp
+          and (
+            post.title ilike ${pattern}
+            or post.summary ilike ${pattern}
+            or post.body ilike ${pattern}
+          )
+        limit 8
+      `,
+      sql<SearchTeamRow[]>`
+        select
+          team.name,
+          team.tag,
+          tournament.slug as tournament_slug,
+          tournament.title as tournament_title
+        from public.team_public team
+        join public.tournament tournament on tournament.id = team.tournament_id
+        where tournament.status <> 'draft'
+          and (team.name ilike ${pattern} or team.tag ilike ${pattern})
+        limit 10
+      `,
+    ])
 
-  const teamHits: SearchHit[] = []
-  const allTournaments = await listTournaments()
-  const teams = await selectPublicRows<{
-    id: number
-    tournament_id: number
-    name: string
-    tag: string
-  }>(
-    'team_public',
-    {
-      select: 'id,tournament_id,name,tag',
-      filters: { or: `(name.${like},tag.${like})` },
-      limit: 10,
-    },
-  )
-  for (const team of teams) {
-    const tournament = allTournaments.find(entry => entry.id === team.tournament_id)
-    if (!tournament) continue
-    teamHits.push({
-      kind: 'team',
-      title: team.name,
-      subtitle: `${team.tag} · ${tournament.title}`,
-      href: `/tournaments/${tournament.slug}/teams/${team.tag}`,
-    })
-  }
-
-  return [
-    ...games.map(row => ({
-      kind: 'game' as const,
-      title: row.name,
-      subtitle: row.name_en ?? '项目',
-      href: `/games/${row.slug}`,
-    })),
-    ...tournaments.map(row => ({
-      kind: 'tournament' as const,
-      title: row.title,
-      subtitle: `${row.season} · 第 ${row.edition} 届`,
-      href: `/tournaments/${row.slug}`,
-    })),
-    ...teamHits,
-    ...posts.map(row => ({
-      kind: 'post' as const,
-      title: row.title,
-      subtitle: new Date(row.published_at).toLocaleDateString('zh-CN'),
-      href: `/news/${row.slug}`,
-    })),
-  ]
+    return [
+      ...games.map(row => ({
+        kind: 'game' as const,
+        title: row.name,
+        subtitle: row.name_en ?? '项目',
+        href: `/games/${row.slug}`,
+      })),
+      ...tournaments.map(row => ({
+        kind: 'tournament' as const,
+        title: row.title,
+        subtitle: `${row.season} · 第 ${safeDatabaseInteger(row.edition, 'tournament.edition')} 届`,
+        href: `/tournaments/${row.slug}`,
+      })),
+      ...teams.map(row => ({
+        kind: 'team' as const,
+        title: row.name,
+        subtitle: `${row.tag} · ${row.tournament_title}`,
+        href: `/tournaments/${row.tournament_slug}/teams/${row.tag}`,
+      })),
+      ...posts.map(row => ({
+        kind: 'post' as const,
+        title: row.title,
+        subtitle: new Date(
+          isoDatabaseTimestamp(row.published_at, 'post.published-at'),
+        ).toLocaleDateString('zh-CN'),
+        href: `/news/${row.slug}`,
+      })),
+    ]
+  })
 }

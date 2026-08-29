@@ -4,8 +4,7 @@ name: Quality
 on:
   pull_request:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -16,19 +15,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  cloudflare:
-    name: Cloudflare checks
+  static:
+    name: Static, unit, and Worker checks
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
         with:
           node-version: 24
           cache: npm
@@ -44,15 +46,137 @@ jobs:
           npm run typecheck
           npm run lint
 
-      - name: Run D1 and deterministic checks
+      - name: Run deterministic unit tests
         run: |
-          npm run test:cloudflare-d1
-          npm run test:csrf
           npm run test:seeding
           npm run test:schedule
-          npm run test:object-cleanup
+          npm run test:cloudflare-access
+          npm run test:csrf
           npm run test:registration-fingerprint
+          npm run test:photo-storage-config
+          npm run test:photo-storage-security
+          npm run test:r2-storage
+          npm run test:pack-standalone
+          npm run test:object-cleanup
           npm run test:site-config
+          npm run test:migration-checksum
+          npm run test:migration-state
 
-      - name: Build Cloudflare Worker
-        run: npm run cf:build
+      - name: Build and enforce Cloudflare Worker budget
+        run: npm run cf:check
+
+  integration:
+    name: PostgreSQL and browser checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      CI: "1"
+      NEXT_TELEMETRY_DISABLED: "1"
+      DATABASE_URL: postgresql://postgres:dev@127.0.0.1:55432/cs2cup
+      E2E_DATABASE_URL: postgresql://postgres:dev@127.0.0.1:55432/cs2cup
+      E2E_BASE_URL: http://127.0.0.1:3000
+      BASE_URL: http://127.0.0.1:3000
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      PHOTO_UPLOAD_DRIVER: local
+      PHOTO_LOCAL_ROOT: /tmp/cs2cup-photos
+      REGISTRATION_FINGERPRINT_SECRET: ci-only-registration-fingerprint-secret-2026
+      REGISTRATION_CLIENT_IP_SOURCE: x-real-ip
+      MIGRATION_REQUIRE_EXTERNAL_TEST: "1"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Ensure PostgreSQL client is available
+        run: |
+          if ! command -v psql >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install --yes postgresql-client
+          fi
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start and seed PostgreSQL
+        run: |
+          npm run stack:up
+          npm run stack:seed
+
+      - name: Verify migration lifecycle and database behavior
+        run: |
+          npm run test:migrations
+          npm run test:match-operations
+          npm run test:match-schedule
+          npm run test:hyperdrive-runtime
+          npm run test:registration-rate-limit
+
+      - name: Build production application
+        run: |
+          npm run build
+          node scripts/pack-standalone.mjs
+
+      - name: Run isolated admin end-to-end tests
+        run: npm run e2e:admin
+
+      - name: Start production application
+        run: |
+          mkdir -p "${RUNNER_TEMP}/quality-artifacts"
+          node .next/standalone/server.js \
+            >"${RUNNER_TEMP}/quality-artifacts/application.log" 2>&1 &
+          echo "$!" >"${RUNNER_TEMP}/quality-application.pid"
+
+          for _ in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:3000/ >/dev/null; then
+              exit 0
+            fi
+            if ! kill -0 "$(cat "${RUNNER_TEMP}/quality-application.pid")" 2>/dev/null; then
+              cat "${RUNNER_TEMP}/quality-artifacts/application.log"
+              exit 1
+            fi
+            sleep 1
+          done
+
+          cat "${RUNNER_TEMP}/quality-artifacts/application.log"
+          exit 1
+
+      - name: Run public browser checks
+        run: |
+          npm run e2e
+          npm run a11y
+          npm run keyboard
+          npm run perf
+
+      - name: Collect failure diagnostics
+        if: failure()
+        run: |
+          mkdir -p "${RUNNER_TEMP}/quality-artifacts"
+          docker compose ps --all >"${RUNNER_TEMP}/quality-artifacts/docker-compose-ps.txt" || true
+          docker compose logs --no-color >"${RUNNER_TEMP}/quality-artifacts/docker-compose.log" 2>&1 || true
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: quality-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/quality-artifacts
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Stop local services
+        if: always()
+        run: |
+          if [[ -f "${RUNNER_TEMP}/quality-application.pid" ]]; then
+            kill "$(cat "${RUNNER_TEMP}/quality-application.pid")" 2>/dev/null || true
+          fi
+          docker compose down -v --remove-orphans

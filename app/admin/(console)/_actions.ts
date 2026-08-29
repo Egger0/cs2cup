@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { updateTag } from 'next/cache'
-import { endAdminSession, requireAdmin } from '@/lib/auth'
+import { requireAdmin } from '@/lib/auth'
 import {
   assignTeamSeed,
   listAdminMatches,
@@ -13,14 +13,14 @@ import {
   saveAdminMatchReport,
   saveAdminMatchScore,
   setTeamStatus,
-  removePhoto,
 } from '@/lib/queries/admin'
 import { MIME_TO_EXT, imageSize, sniffMime } from '@/lib/image'
 import { isIsoInstant } from '@/lib/datetime'
 import { bracketSize, orderBySeed, seedPositions } from '@/lib/seeding'
-import { putObject, removeObject, uploadsEnabled } from '@/lib/storage'
+import { putObject, removeObject } from '@/lib/storage'
 import { deleteRecordThenObjects } from '@/lib/object-cleanup'
 import { createPhotoStorageKey } from '@/lib/photo-storage-key'
+import { DatabaseError } from '@/lib/database'
 import {
   adminCreateGame,
   adminCreatePost,
@@ -39,41 +39,35 @@ import {
   adminListTournaments,
   adminSaveSiteSetting,
 } from '@/lib/queries/content'
-import { RdbError } from '@/lib/rdb'
 import type { MatchMapInput, MatchScheduleInput } from '@/lib/queries/admin'
 import type { TeamStatus, VetoAction } from '@/lib/types'
 
-function readRdbPayload(error: RdbError) {
-  const raw = error.message.slice(error.message.indexOf(':') + 1).trim()
-  try {
-    return JSON.parse(raw) as { code?: unknown; message?: unknown }
-  } catch {
-    return null
-  }
-}
-
 function writeError(error: unknown, fallback: string) {
-  if (!(error instanceof RdbError)) {
-    console.error(fallback, error)
-    return fallback
+  if (error instanceof DatabaseError) {
+    if (error.retryable) console.error(fallback, error)
+    if (error.operation === 'admin:save-match-score' && error.code === '22023') {
+      return '本场已有逐图战报，请在战报编辑器中修改比分'
+    }
+    if (error.code === '23505') return '记录已存在，请检查唯一字段后重试'
+    if (error.code === '23503') return '记录仍被其他内容引用，无法删除'
+  } else {
+    console.error(fallback)
   }
-  if (error.status >= 500) console.error(fallback, error)
-
-  const payload = readRdbPayload(error)
-  return typeof payload?.message === 'string' ? payload.message : fallback
+  return fallback
 }
 
 function scheduleError(error: unknown) {
-  if (!(error instanceof RdbError)) return writeError(error, '发布赛程失败')
-  const payload = readRdbPayload(error)
-  if (payload?.code === '40001') return '赛程已被其他管理员或新签表更新，请刷新后重试'
-  if (payload?.code === '22023') return '赛程时间顺序或场次范围无效，请检查后重试'
+  if (error instanceof DatabaseError) {
+    if (error.code === '40001') return '赛程已被其他管理员或新签表更新，请刷新后重试'
+    if (error.code === '22023') return '赛程时间顺序或场次范围无效，请检查后重试'
+    return writeError(error, '发布赛程失败')
+  }
   return writeError(error, '发布赛程失败')
 }
 
 export async function signOut() {
-  await endAdminSession()
-  redirect('/')
+  await requireAdmin()
+  redirect('/cdn-cgi/access/logout')
 }
 
 export async function updateTeamStatus(id: number, status: TeamStatus, tournamentId: number) {
@@ -260,12 +254,6 @@ export async function saveMatchReport(
   return result
 }
 
-export async function deletePhoto(id: number) {
-  await requireAdmin()
-  await removePhoto(id)
-  updateTag('photo')
-}
-
 export async function createPost(form: FormData) {
   await requireAdmin()
   const gameId = String(form.get('gameId') ?? '')
@@ -409,10 +397,6 @@ export async function removeTournament(id: number) {
 export async function uploadPhoto(form: FormData) {
   await requireAdmin()
 
-  if (!uploadsEnabled()) {
-    return { ok: false as const, error: '没有配置上传存储' }
-  }
-
   const file = form.get('file')
   if (!(file instanceof File) || file.size === 0) {
     return { ok: false as const, error: '请选择一张图片' }
@@ -426,7 +410,7 @@ export async function uploadPhoto(form: FormData) {
     return { ok: false as const, error: '请选择赛事' }
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer())
+  const buffer = new Uint8Array(await file.arrayBuffer())
   const mime = sniffMime(buffer)
   if (!mime) return { ok: false as const, error: '只支持 JPEG、PNG 或 WebP' }
 

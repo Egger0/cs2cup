@@ -1,9 +1,18 @@
 import type { NextConfig } from 'next'
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
 import { PRIVATE_NO_STORE } from './lib/http-cache'
+
+if (
+  process.env.NEXT_PHASE === 'phase-development-server' &&
+  process.env.CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_CS2CUP_DATABASE
+) {
+  void initOpenNextCloudflareForDev()
+}
 
 const PRIVATE_ROUTE_SOURCES = ['/admin/:path*', '/media/:path*', '/photos/:path*']
 
 const config: NextConfig = {
+  output: 'standalone',
   expireTime: 600,
   async headers() {
     return PRIVATE_ROUTE_SOURCES.map(source => ({

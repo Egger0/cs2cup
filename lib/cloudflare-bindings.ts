@@ -1,37 +1,36 @@
 import 'server-only'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 
-export interface CloudflareD1Statement {
-  all<T>(): Promise<{ results: T[] }>
-  first<T>(): Promise<T | null>
-  run(): Promise<unknown>
-}
-export interface CloudflareD1 {
-  prepare(query: string): { bind(...values: unknown[]): CloudflareD1Statement }
-  batch(statements: CloudflareD1Statement[]): Promise<unknown[]>
-}
+type R2Binding = NonNullable<CloudflareEnv['NEXT_INC_CACHE_R2_BUCKET']>
 
-export interface CloudflareR2 {
-  get(key: string): Promise<unknown>
-  put(key: string, value: ReadableStream | ArrayBuffer | ArrayBufferView | string | null, options?: unknown): Promise<unknown>
-  delete(keys: string | string[]): Promise<void>
+interface HyperdriveBinding {
+  connectionString: string
 }
 
 declare global {
   interface CloudflareEnv {
-    CS2CUP_DB?: CloudflareD1
-    CS2CUP_MEDIA?: CloudflareR2
+    CS2CUP_DATABASE?: HyperdriveBinding
+    CS2CUP_MEDIA?: R2Binding
   }
 }
 
-export function cloudflareEnvironment() {
-  return getCloudflareContext().env
+export class MissingCloudflareBindingError extends Error {
+  readonly binding: 'CS2CUP_DATABASE' | 'CS2CUP_MEDIA'
+
+  constructor(binding: 'CS2CUP_DATABASE' | 'CS2CUP_MEDIA') {
+    super(`Cloudflare binding ${binding} is not configured`)
+    this.binding = binding
+    this.name = 'MissingCloudflareBindingError'
+  }
 }
 
-export function cloudflareBindings() {
-  const env = cloudflareEnvironment()
-  if (!env.CS2CUP_DB || !env.CS2CUP_MEDIA) {
-    throw new Error('Cloudflare D1 and R2 bindings are not configured')
-  }
-  return { db: env.CS2CUP_DB, media: env.CS2CUP_MEDIA }
+function environment() {
+  const { env } = getCloudflareContext()
+  return env
+}
+
+export function requireMediaBucket() {
+  const bucket = environment().CS2CUP_MEDIA
+  if (!bucket) throw new MissingCloudflareBindingError('CS2CUP_MEDIA')
+  return bucket
 }
