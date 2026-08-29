@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { updateTag } from 'next/cache'
-import { requireAdmin } from '@/lib/auth'
+import { endAdminSession, requireAdmin } from '@/lib/auth'
 import {
   assignTeamSeed,
   listAdminMatches,
@@ -72,6 +72,7 @@ function scheduleError(error: unknown) {
 }
 
 export async function signOut() {
+  await endAdminSession()
   redirect('/')
 }
 

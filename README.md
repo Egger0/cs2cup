@@ -5,7 +5,7 @@
 - 应用：Cloudflare Workers + OpenNext
 - 数据库：Cloudflare D1
 - 图片：Cloudflare R2
-- 后台访问：Cloudflare Access
+- 后台访问：Worker 密钥 + 签名会话
 
 它不读取、不写入、也不需要任何 CloudBase 环境变量、密钥或 SDK。CloudBase 旧站和数据保持原样，既不是本分支的依赖，也不会被本分支修改。
 
@@ -26,7 +26,9 @@ npm run cf:preview
 | `NEXT_PUBLIC_SITE_URL` | 站点的绝对 HTTP(S) 地址；本地默认可用 `http://localhost:3000` |
 | `REGISTRATION_FINGERPRINT_SECRET` | 报名限流所需的至少 32 字节随机密钥；Cloudflare Worker Secret |
 | `REGISTRATION_CLIENT_IP_SOURCE` | 生产环境填 `cf-connecting-ip` |
-| `CF_ACCESS_ALLOWED_EMAILS` | 可访问 `/admin` 的邮箱白名单，逗号分隔；Cloudflare Worker Secret |
+| `ADMIN_USERNAME` | 后台管理员账号；Cloudflare Worker Variable 或 Secret |
+| `ADMIN_PASSWORD` | 后台管理员密码；Cloudflare Worker Secret |
+| `ADMIN_SESSION_SECRET` | 至少 32 字节随机会话签名密钥；Cloudflare Worker Secret |
 
 ## 初始化全新预览数据库
 
@@ -36,7 +38,7 @@ npx wrangler d1 migrations apply cs2cup-preview-db --remote
 npx wrangler deploy
 ```
 
-随后在 Cloudflare Access 创建保护 `/admin*` 的应用，并把可用管理员邮箱写入 `CF_ACCESS_ALLOWED_EMAILS`。这套新站从空 D1 开始；不会导入历史赛事、相册或后台内容。
+随后在 Worker 的运行时变量中配置 `ADMIN_USERNAME`，并把 `ADMIN_PASSWORD`、`ADMIN_SESSION_SECRET` 作为 Secret 写入。访问 `/admin` 会跳转到账号密码登录页。这套新站从空 D1 开始；不会导入历史赛事、相册或后台内容。
 
 ## 验证
 
