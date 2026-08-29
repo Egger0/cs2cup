@@ -61,6 +61,11 @@ function workerEnvironment(bindingName) {
   delete environment.CF_ACCOUNT_ID
   delete environment.ADMIN_AUTH_PEPPER
   delete environment.REGISTRATION_FINGERPRINT_SECRET
+  // Wrangler 4.127 always merges process.env for config files that declare
+  // required secrets, even when CLOUDFLARE_INCLUDE_PROCESS_ENV is false. Keep
+  // integration-job defaults from overriding the Worker's production vars.
+  delete environment.PHOTO_UPLOAD_DRIVER
+  delete environment.REGISTRATION_CLIENT_IP_SOURCE
   for (const name of Object.keys(environment)) {
     if (name.startsWith('CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_')) {
       delete environment[name]
@@ -167,7 +172,12 @@ async function startWorker({
     '--show-interactive-dev-session', 'false',
     '--log-level', 'error',
   ]
-  for (const [name, value] of Object.entries(variables)) {
+  const effectiveVariables = {
+    ...variables,
+    PHOTO_UPLOAD_DRIVER: 'r2',
+    REGISTRATION_CLIENT_IP_SOURCE: 'cf-connecting-ip',
+  }
+  for (const [name, value] of Object.entries(effectiveVariables)) {
     arguments_.push('--var', `${name}:${value}`)
   }
   const child = spawn(process.execPath, arguments_, {
