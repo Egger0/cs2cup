@@ -21,9 +21,6 @@ declare global {
   interface CloudflareEnv {
     CS2CUP_DB?: CloudflareD1
     CS2CUP_MEDIA?: CloudflareR2
-    ADMIN_USERNAME?: string
-    ADMIN_PASSWORD?: string
-    ADMIN_SESSION_SECRET?: string
   }
 }
 

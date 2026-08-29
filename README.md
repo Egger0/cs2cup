@@ -26,9 +26,6 @@ npm run cf:preview
 | `NEXT_PUBLIC_SITE_URL` | 站点的绝对 HTTP(S) 地址；本地默认可用 `http://localhost:3000` |
 | `REGISTRATION_FINGERPRINT_SECRET` | 报名限流所需的至少 32 字节随机密钥；Cloudflare Worker Secret |
 | `REGISTRATION_CLIENT_IP_SOURCE` | 生产环境填 `cf-connecting-ip` |
-| `ADMIN_USERNAME` | 后台管理员账号；Cloudflare Worker Variable 或 Secret |
-| `ADMIN_PASSWORD` | 后台管理员密码；Cloudflare Worker Secret |
-| `ADMIN_SESSION_SECRET` | 至少 32 字节随机会话签名密钥；Cloudflare Worker Secret |
 
 ## 初始化全新预览数据库
 
@@ -38,7 +35,7 @@ npx wrangler d1 migrations apply cs2cup-preview-db --remote
 npx wrangler deploy
 ```
 
-随后在 Worker 的运行时变量中配置 `ADMIN_USERNAME`，并把 `ADMIN_PASSWORD`、`ADMIN_SESSION_SECRET` 作为 Secret 写入。访问 `/admin` 会跳转到账号密码登录页。这套新站从空 D1 开始；不会导入历史赛事、相册或后台内容。
+管理员账号、密码校验和登录会话存储在 D1，不依赖 CloudBase 或 Worker Secret。访问 `/admin` 会跳转到账号密码登录页。这套新站从空 D1 开始；不会导入历史赛事、相册或后台内容。
 
 ## 验证
 

@@ -2,9 +2,18 @@ import 'server-only'
 import { cache } from 'react'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { cloudflareEnvironment } from './cloudflare-bindings'
+import { cloudflareBindings } from './cloudflare-bindings'
 
 export interface AdminIdentity { uid: string }
+
+interface AdminAccount {
+  id: number
+  username: string
+  password_salt: string
+  password_hash: string
+}
+
+interface AdminSession { username: string }
 
 const COOKIE_NAME = 'cs2cup_admin'
 const SESSION_MAX_AGE = 60 * 60 * 8
@@ -15,28 +24,6 @@ function base64Url(bytes: Uint8Array) {
   return btoa(value).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '')
 }
 
-function fromBase64Url(value: string) {
-  const padded = value.replaceAll('-', '+').replaceAll('_', '/') + '='.repeat((4 - value.length % 4) % 4)
-  const decoded = atob(padded)
-  return Uint8Array.from(decoded, character => character.charCodeAt(0))
-}
-
-async function signingKey(secret: string) {
-  return crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify'])
-}
-
-async function sign(payload: string, secret: string) {
-  return base64Url(new Uint8Array(await crypto.subtle.sign('HMAC', await signingKey(secret), new TextEncoder().encode(payload))))
-}
-
-function configuredAdmin() {
-  const env = cloudflareEnvironment()
-  const username = env.ADMIN_USERNAME?.trim() || process.env.ADMIN_USERNAME?.trim()
-  const password = env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD
-  const sessionSecret = env.ADMIN_SESSION_SECRET || process.env.ADMIN_SESSION_SECRET
-  return username && password && sessionSecret ? { username, password, sessionSecret } : null
-}
-
 function sameValue(left: Uint8Array, right: Uint8Array) {
   if (left.length !== right.length) return false
   let difference = 0
@@ -44,31 +31,42 @@ function sameValue(left: Uint8Array, right: Uint8Array) {
   return difference === 0
 }
 
+async function hash(value: string) {
+  return new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))
+}
+
+function hex(bytes: Uint8Array) {
+  return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
+}
+
+async function getAdminAccount() {
+  return cloudflareBindings().db
+    .prepare('SELECT id, username, password_salt, password_hash FROM admin_account WHERE id = 1')
+    .bind()
+    .first<AdminAccount>()
+}
+
 export async function credentialsAccepted(username: string, password: string) {
-  const configured = configuredAdmin()
-  if (!configured) {
-    console.warn('admin-login', { configured: false })
-    return false
-  }
-  const encoder = new TextEncoder()
+  const admin = await getAdminAccount()
+  if (!admin) return false
   const [submittedUsername, expectedUsername, submittedPassword, expectedPassword] = await Promise.all([
-    crypto.subtle.digest('SHA-256', encoder.encode(username)),
-    crypto.subtle.digest('SHA-256', encoder.encode(configured.username)),
-    crypto.subtle.digest('SHA-256', encoder.encode(password)),
-    crypto.subtle.digest('SHA-256', encoder.encode(configured.password)),
+    hash(username), hash(admin.username), hash(`${admin.password_salt}\0${password}`), hash(admin.password_hash),
   ])
-  const usernameMatches = sameValue(new Uint8Array(submittedUsername), new Uint8Array(expectedUsername))
-  const passwordMatches = sameValue(new Uint8Array(submittedPassword), new Uint8Array(expectedPassword))
-  console.warn('admin-login', { configured: true, usernameMatches, passwordMatches })
-  return usernameMatches && passwordMatches
+  return sameValue(submittedUsername, expectedUsername) && sameValue(submittedPassword, expectedPassword)
 }
 
 export async function startAdminSession(username: string) {
-  const configured = configuredAdmin()
-  if (!configured || username !== configured.username) throw new Error('Admin login is not configured')
-  const payload = base64Url(new TextEncoder().encode(JSON.stringify({ username, expiresAt: Date.now() + SESSION_MAX_AGE * 1000 })))
-  const signature = await sign(payload, configured.sessionSecret)
-  ;(await cookies()).set(COOKIE_NAME, `${payload}.${signature}`, {
+  const admin = await getAdminAccount()
+  if (!admin || !sameValue(await hash(username), await hash(admin.username))) throw new Error('Admin login is not configured')
+  const tokenBytes = new Uint8Array(32)
+  crypto.getRandomValues(tokenBytes)
+  const token = base64Url(tokenBytes)
+  const db = cloudflareBindings().db
+  await db.batch([
+    db.prepare('DELETE FROM admin_session WHERE expires_at <= ?').bind(Date.now()),
+    db.prepare('INSERT INTO admin_session (token_hash, admin_id, expires_at) VALUES (?, ?, ?)').bind(hex(await hash(token)), admin.id, Date.now() + SESSION_MAX_AGE * 1000),
+  ])
+  ;(await cookies()).set(COOKIE_NAME, token, {
     httpOnly: true,
     maxAge: SESSION_MAX_AGE,
     path: '/',
@@ -78,36 +76,19 @@ export async function startAdminSession(username: string) {
 }
 
 export async function endAdminSession() {
+  const token = (await cookies()).get(COOKIE_NAME)?.value
+  if (token) await cloudflareBindings().db.prepare('DELETE FROM admin_session WHERE token_hash = ?').bind(hex(await hash(token))).run()
   ;(await cookies()).delete(COOKIE_NAME)
 }
 
 export const getCurrentAdmin = cache(async (): Promise<AdminIdentity | null> => {
-  const configured = configuredAdmin()
-  const session = (await cookies()).get(COOKIE_NAME)?.value
-  if (!configured || !session) return null
-
-  const [payload, signature] = session.split('.')
-  if (!payload || !signature) return null
-
-  try {
-    const valid = await crypto.subtle.verify(
-      'HMAC',
-      await signingKey(configured.sessionSecret),
-      fromBase64Url(signature),
-      new TextEncoder().encode(payload),
-    )
-    if (!valid) return null
-    const parsed = JSON.parse(new TextDecoder().decode(fromBase64Url(payload))) as { username?: unknown; expiresAt?: unknown }
-    if (
-      parsed.username !== configured.username ||
-      typeof parsed.expiresAt !== 'number' ||
-      !Number.isSafeInteger(parsed.expiresAt) ||
-      parsed.expiresAt <= Date.now()
-    ) return null
-    return { uid: configured.username }
-  } catch {
-    return null
-  }
+  const token = (await cookies()).get(COOKIE_NAME)?.value
+  if (!token) return null
+  const session = await cloudflareBindings().db
+    .prepare('SELECT a.username FROM admin_session s JOIN admin_account a ON a.id = s.admin_id WHERE s.token_hash = ? AND s.expires_at > ?')
+    .bind(hex(await hash(token)), Date.now())
+    .first<AdminSession>()
+  return session ? { uid: session.username } : null
 })
 
 export async function requireAdmin(): Promise<AdminIdentity> {
