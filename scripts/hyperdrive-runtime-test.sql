@@ -5,6 +5,7 @@ begin;
 do $test$
 declare
   v_runtime_function regprocedure;
+  v_retired_rpc text;
 begin
   if to_regclass('app_private.transaction_lock_slot') is null
     or to_regprocedure('app_private.acquire_transaction_lock(text,text)') is null
@@ -40,14 +41,23 @@ begin
     raise exception 'the private transaction-lock boundary is publicly reachable';
   end if;
 
-  if to_regprocedure('public.admit_admin_app_session(text,text,text,bytea,uuid)') is not null
-    or to_regprocedure('public.authorize_admin_principal(uuid)') is not null
-    or to_regprocedure('public.create_app_session(uuid,bytea,uuid)') is not null
-    or to_regprocedure('public.use_app_session(bytea,bytea,uuid)') is not null
-    or to_regprocedure('public.logout_app_session(bytea,uuid)') is not null
-  then
-    raise exception 'an application-session RPC remains after the Access cutover';
-  end if;
+  foreach v_retired_rpc in array array[
+    'public.admit_admin_app_session(text,text,text,bytea,uuid)',
+    'public.authorize_admin_principal(uuid)',
+    'public.create_app_session(uuid,bytea,uuid)',
+    'public.use_app_session(bytea,bytea,uuid)',
+    'public.logout_app_session(bytea,uuid)',
+    'public.revoke_app_session(uuid,uuid,text,uuid)',
+    'public.revoke_principal_sessions(uuid,uuid,uuid,text,uuid)',
+    'public.consume_login_attempt(bytea,bytea)',
+    'public.clear_login_account_throttle(bytea)',
+    'public.cleanup_app_sessions(integer,uuid)',
+    'public.ensure_principal_identity(text,text,text)'
+  ] loop
+    if to_regprocedure(v_retired_rpc) is not null then
+      raise exception 'retired RPC % remains after the Access cutover', v_retired_rpc;
+    end if;
+  end loop;
 end
 $test$;
 
