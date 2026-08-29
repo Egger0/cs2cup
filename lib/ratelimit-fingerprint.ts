@@ -8,7 +8,7 @@ export type RegistrationClientIpSource = 'x-real-ip' | 'cf-connecting-ip'
 
 const FINGERPRINT_CONTEXT = 'cs2cup:registration-rate-limit'
 
-function normalizeIpAddress(value: string) {
+export function normalizeIpAddress(value: string) {
   let address = value.trim()
 
   if (address.startsWith('[') && address.endsWith(']')) {

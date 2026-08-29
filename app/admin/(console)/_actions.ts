@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { updateTag } from 'next/cache'
-import { requireAdmin } from '@/lib/auth'
+import { endAdminSession, requireAdmin } from '@/lib/auth'
 import {
   assignTeamSeed,
   listAdminMatches,
@@ -66,8 +66,8 @@ function scheduleError(error: unknown) {
 }
 
 export async function signOut() {
-  await requireAdmin()
-  redirect('/cdn-cgi/access/logout')
+  await endAdminSession()
+  redirect('/admin/login')
 }
 
 export async function updateTeamStatus(id: number, status: TeamStatus, tournamentId: number) {

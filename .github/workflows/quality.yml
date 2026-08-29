@@ -50,7 +50,7 @@ jobs:
         run: |
           npm run test:seeding
           npm run test:schedule
-          npm run test:cloudflare-access
+          npm run test:admin-auth
           npm run test:csrf
           npm run test:registration-fingerprint
           npm run test:photo-storage-config
@@ -119,15 +119,42 @@ jobs:
           npm run test:match-operations
           npm run test:match-schedule
           npm run test:hyperdrive-runtime
+          npm run test:local-admin-auth
+          npm run test:local-admin-auth-concurrency
           npm run test:registration-rate-limit
 
       - name: Smoke-test the local Cloudflare Worker runtime
         env:
-          CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_CS2CUP_DATABASE: >-
-            postgresql://postgres:dev@127.0.0.1:55432/cs2cup
+          ADMIN_AUTH_PEPPER: AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8
+          CLOUDFLARE_WORKER_SMOKE_ADMIN_USERNAME: worker-smoke-admin
+          CLOUDFLARE_WORKER_SMOKE_ADMIN_PASSWORD: worker-smoke-password-2026
           CLOUDFLARE_WORKER_SMOKE_EXPECTED_DATABASE: cs2cup
           CLOUDFLARE_WORKER_SMOKE_ALLOW_DATABASE_MUTATION: "1"
         run: |
+          SMOKE_DATABASE_ROLE=cs2cup_worker_smoke_login
+          SMOKE_DATABASE_PASSWORD=ci-worker-smoke-database-password-2026
+          cleanup_smoke_role() {
+            docker compose exec -T db psql -U postgres -d cs2cup \
+              -X -v ON_ERROR_STOP=1 \
+              -c 'drop role if exists cs2cup_worker_smoke_login'
+          }
+          trap cleanup_smoke_role EXIT
+          docker compose exec -T db psql -U postgres -d cs2cup \
+            -X -v ON_ERROR_STOP=1 \
+            -v smoke_password="$SMOKE_DATABASE_PASSWORD" <<'SQL'
+          create role cs2cup_worker_smoke_login
+            login password :'smoke_password'
+            nosuperuser nocreatedb nocreaterole inherit noreplication nobypassrls;
+          grant club_admin to cs2cup_worker_smoke_login;
+          SQL
+          export CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_CS2CUP_DATABASE="postgresql://${SMOKE_DATABASE_ROLE}:${SMOKE_DATABASE_PASSWORD}@127.0.0.1:55432/cs2cup"
+          ADMIN_CREDENTIAL_ALLOW_MUTATION=1 \
+          MIGRATION_DATABASE_URL="$DATABASE_URL" \
+          MIGRATION_EXPECT_DATABASE=cs2cup \
+          npm run admin:credential -- \
+            --username "$CLOUDFLARE_WORKER_SMOKE_ADMIN_USERNAME" \
+            --password-stdin \
+            <<<"$CLOUDFLARE_WORKER_SMOKE_ADMIN_PASSWORD"
           npm run cf:build
           npm run test:cloudflare-worker
 

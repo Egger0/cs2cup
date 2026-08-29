@@ -17,8 +17,7 @@
   },
   "secrets": {
     "required": [
-      "CF_ACCESS_ISSUER",
-      "CF_ACCESS_AUDIENCE",
+      "ADMIN_AUTH_PEPPER",
       "REGISTRATION_FINGERPRINT_SECRET"
     ]
   },

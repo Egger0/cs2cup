@@ -1,0 +1,30 @@
+.shell {
+  display: grid;
+  min-height: min(720px, calc(100vh - 80px));
+  place-items: center;
+}
+
+.card {
+  width: min(100%, 420px);
+  padding: clamp(28px, 6vw, 48px);
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
+}
+
+.title {
+  margin: 8px 0 28px;
+  font-family: var(--font-display), var(--font-heavy);
+  font-size: clamp(2rem, 8vw, 3rem);
+  line-height: 1;
+}
+
+.form {
+  display: grid;
+  gap: 18px;
+}
+
+.error {
+  color: var(--c4);
+  font-size: 0.88rem;
+}

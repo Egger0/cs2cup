@@ -126,19 +126,23 @@ if (posters > 0) {
   check('Archive empty state renders', await page.getByText('还没有往届海报').isVisible().catch(() => false))
 }
 
-const anonymousAdmin = await page.request.get(`${BASE}/admin`)
+await page.goto(`${BASE}/admin`, { waitUntil: 'domcontentloaded' })
+await page.waitForURL(url => url.pathname === '/admin/login', { timeout: 15000 }).catch(() => {})
 check(
-  'Unauthenticated admin access is rejected by the Worker',
-  anonymousAdmin.status() === 403,
-  String(anonymousAdmin.status()),
+  'Unauthenticated admin access redirects to the application login',
+  new URL(page.url()).pathname === '/admin/login' &&
+    await page.getByRole('heading', { name: '后台登录' }).isVisible().catch(() => false),
+  new URL(page.url()).pathname,
 )
 
 await ctx.addCookies([{ name: 'cs2cup_session', value: 'retired-cookie', url: BASE }])
-const retiredCookieAdmin = await page.request.get(`${BASE}/admin`)
+await page.goto(`${BASE}/admin`, { waitUntil: 'domcontentloaded' })
+await page.waitForURL(url => url.pathname === '/admin/login', { timeout: 15000 }).catch(() => {})
 check(
   'Retired application session cookies grant no access',
-  retiredCookieAdmin.status() === 403,
-  String(retiredCookieAdmin.status()),
+  new URL(page.url()).pathname === '/admin/login' &&
+    await page.getByRole('heading', { name: '后台登录' }).isVisible().catch(() => false),
+  new URL(page.url()).pathname,
 )
 await ctx.clearCookies()
 await page.goto(BASE, { waitUntil: 'domcontentloaded' })

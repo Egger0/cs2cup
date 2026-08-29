@@ -30,10 +30,10 @@ if (process.env.E2E_DB_OWNED !== '1') {
       'the named database and its fixtures are disposable and owned by this test run.',
   )
 }
-const accessTokenFile = process.env.E2E_ACCESS_TOKEN_FILE
-const invalidAccessTokenFile = process.env.E2E_INVALID_ACCESS_TOKEN_FILE
-if (!accessTokenFile || !invalidAccessTokenFile) {
-  throw new Error('Cloudflare Access E2E token files are required')
+const adminUsername = process.env.E2E_ADMIN_USERNAME
+const adminPassword = process.env.E2E_ADMIN_PASSWORD
+if (!adminUsername || !adminPassword) {
+  throw new Error('E2E_ADMIN_USERNAME and E2E_ADMIN_PASSWORD are required')
 }
 const legacyPublicPhotoKey = process.env.E2E_LEGACY_PUBLIC_PHOTO_KEY
 if (legacyPublicPhotoKey && !/^[a-zA-Z0-9][a-zA-Z0-9._/-]*$/.test(legacyPublicPhotoKey)) {
@@ -43,11 +43,8 @@ const photoLocalRoot = process.env.E2E_PHOTO_LOCAL_ROOT
 if (photoLocalRoot && !isAbsolute(photoLocalRoot)) {
   throw new Error('E2E_PHOTO_LOCAL_ROOT must be absolute')
 }
-const accessToken = readFileSync(accessTokenFile, 'utf8').trim()
-const invalidAccessToken = readFileSync(invalidAccessTokenFile, 'utf8').trim()
-const accessHeaders = {
-  'Cf-Access-Jwt-Assertion': accessToken,
-}
+const ADMIN_COOKIE_NAME = 'cs2cup_admin'
+const PRIMARY_CLIENT_IP = '198.51.100.42'
 const db = sql =>
   execFileSync(
     'docker',
@@ -69,18 +66,50 @@ const db = sql =>
     { encoding: 'utf8', cwd: ROOT },
   ).trim()
 const sqlString = value => `'${value.replaceAll("'", "''")}'`
-const emptySessionFoundationCounts =
-  'app_session=0, app_session_token=0, login_throttle=0, session_audit_event=0'
-const sessionFoundationCounts = () =>
-  db(`
-    select
-      'app_session=' || (select count(*) from app_private.app_session) || ', ' ||
-      'app_session_token=' || (select count(*) from app_private.app_session_token) || ', ' ||
-      'login_throttle=' || (select count(*) from app_private.login_throttle) || ', ' ||
-      'session_audit_event=' || (
-        select count(*) from app_private.audit_event where action like 'session.%'
+const sessionSnapshot = () => {
+  const fields = db(`
+    select pg_catalog.concat_ws(
+      ':',
+      (select count(*) from app_private.app_session),
+      (
+        select count(*)
+        from app_private.app_session
+        where revoked_at is null
+          and idle_expires_at > pg_catalog.clock_timestamp()
+          and absolute_expires_at > pg_catalog.clock_timestamp()
+      ),
+      (select count(*) from app_private.app_session_token),
+      (
+        select count(*)
+        from app_private.audit_event
+        where action = 'session.created'
+      ),
+      (
+        select count(*)
+        from app_private.app_session
+        where revoke_reason = 'logout'
+      ),
+      (
+        select count(*)
+        from app_private.audit_event
+        where action = 'session.revoked'
+          and metadata ->> 'reason' = 'logout'
       )
-  `)
+    )
+  `).split(':').map(Number)
+  if (fields.length !== 6 || fields.some(value => !Number.isSafeInteger(value))) {
+    throw new Error('Administrator session snapshot is invalid')
+  }
+  return {
+    total: fields[0],
+    live: fields[1],
+    tokens: fields[2],
+    createdEvents: fields[3],
+    logoutSessions: fields[4],
+    logoutEvents: fields[5],
+  }
+}
+const sessionDetail = snapshot => JSON.stringify(snapshot)
 const connectedDatabase = db('select current_database()')
 if (connectedDatabase !== DB_NAME) {
   throw new Error(`psql connected to ${connectedDatabase || '(unknown)'} instead of ${DB_NAME}`)
@@ -157,9 +186,57 @@ const checkPrivateCache = (name, response) => {
   check(name, result.pass, result.value)
 }
 
+const loginRedirectResult = (response, body = '') => {
+  const status = response.status()
+  const location = response.headers().location
+  const nextRedirect = response.headers()['x-nextjs-redirect']
+  let path = ''
+  let nextPath = ''
+  try {
+    path = location ? new URL(location, BASE).pathname : ''
+  } catch {
+    // The result remains false below.
+  }
+  try {
+    nextPath = nextRedirect ? new URL(nextRedirect, BASE).pathname : ''
+  } catch {
+    // The result remains false below.
+  }
+  const encodedRedirect = status === 200 &&
+    body.includes('/admin/login') &&
+    (
+      body.includes('NEXT_REDIRECT') ||
+      body.includes('__next-page-redirect') ||
+      body.includes('http-equiv="refresh"')
+    )
+  return {
+    pass: (
+      [302, 303, 307, 308].includes(status) && path === '/admin/login'
+    ) || nextPath === '/admin/login' || encodedRedirect,
+    detail: `${status} → ${location ?? nextRedirect ?? (encodedRedirect ? 'encoded /admin/login' : '(missing)')}`,
+  }
+}
+
+const submitLoginForm = async (loginPage, password) => {
+  await loginPage.goto(`${BASE}/admin/login`, { waitUntil: 'domcontentloaded' })
+  await loginPage.fill('#admin-username', adminUsername)
+  await loginPage.fill('#admin-password', password)
+  const responsePromise = loginPage.waitForResponse(response =>
+    response.request().method() === 'POST' &&
+    new URL(response.url()).pathname === '/admin/session',
+  )
+  await loginPage.getByRole('button', { name: '登录后台' }).click()
+  return responsePromise
+}
+
+const adminCookie = async context =>
+  (await context.cookies(BASE)).find(cookie => cookie.name === ADMIN_COOKIE_NAME)
+
 const browser = await chromium.launch()
 const ctx = await browser.newContext({
-  extraHTTPHeaders: accessHeaders,
+  extraHTTPHeaders: {
+    'x-real-ip': PRIMARY_CLIENT_IP,
+  },
   viewport: { width: 1440, height: 1000 },
 })
 const page = await ctx.newPage()
@@ -182,49 +259,174 @@ let uploadTournamentStatus = null
 let uploadTempDir = null
 
 try {
-  const namespaceProbe = await browser.newContext()
-  const invalidAccessProbe = await browser.newContext({
+  const namespaceProbe = await browser.newContext({
     extraHTTPHeaders: {
-      'Cf-Access-Jwt-Assertion': invalidAccessToken,
+      'x-real-ip': '198.51.100.43',
+    },
+  })
+  const forgedAssertionProbe = await browser.newContext({
+    extraHTTPHeaders: {
+      'Cf-Access-Jwt-Assertion': 'forged-e2e-assertion',
+      'x-real-ip': '198.51.100.44',
     },
   })
   try {
     const anonymousAdmin = await namespaceProbe.request.get(`${BASE}/admin`, {
       maxRedirects: 0,
     })
+    const anonymousAdminBody = await anonymousAdmin.text()
+    const anonymousRedirect = loginRedirectResult(anonymousAdmin, anonymousAdminBody)
     check(
-      'Anonymous admin requests are rejected by the Access boundary',
-      anonymousAdmin.status() === 403,
-      String(anonymousAdmin.status()),
+      'Anonymous admin GET redirects to the application login',
+      anonymousRedirect.pass,
+      anonymousRedirect.detail,
     )
-    checkPrivateCache('Anonymous admin rejection is private and non-storable', anonymousAdmin)
+    checkPrivateCache('Anonymous admin redirect is private and non-storable', anonymousAdmin)
 
-    const invalidAdmin = await invalidAccessProbe.request.get(`${BASE}/admin`, {
+    const forgedAssertionAdmin = await forgedAssertionProbe.request.get(`${BASE}/admin`, {
+      maxRedirects: 0,
+    })
+    const forgedAssertionBody = await forgedAssertionAdmin.text()
+    const forgedAssertionRedirect = loginRedirectResult(
+      forgedAssertionAdmin,
+      forgedAssertionBody,
+    )
+    check(
+      'A forged Cf-Access-Jwt-Assertion cannot authenticate an administrator',
+      forgedAssertionRedirect.pass,
+      forgedAssertionRedirect.detail,
+    )
+    checkPrivateCache('Forged-assertion redirect is private and non-storable', forgedAssertionAdmin)
+
+    const loginPageResponse = await namespaceProbe.request.get(`${BASE}/admin/login`, {
       maxRedirects: 0,
     })
     check(
-      'A token for another Access application is rejected',
-      invalidAdmin.status() === 403,
-      String(invalidAdmin.status()),
+      'The application login page is available without a session',
+      loginPageResponse.status() === 200,
+      String(loginPageResponse.status()),
     )
-    checkPrivateCache('Invalid Access rejection is private and non-storable', invalidAdmin)
+    checkPrivateCache('The login page is private and non-storable', loginPageResponse)
 
-    const loginPage = await ctx.request.get(`${BASE}/admin/login`, {
+    const crossOriginLogin = await namespaceProbe.request.post(`${BASE}/admin/session`, {
+      form: {
+        username: adminUsername,
+        password: adminPassword,
+      },
+      headers: {
+        origin: 'https://attacker.example',
+        referer: 'https://attacker.example/login',
+        'sec-fetch-site': 'cross-site',
+        'x-real-ip': '198.51.100.43',
+      },
       maxRedirects: 0,
     })
-    check('The application login page has been removed', loginPage.status() === 404, String(loginPage.status()))
+    check(
+      'Cross-origin login POST is rejected before authentication',
+      crossOriginLogin.status() === 403 && !crossOriginLogin.headers()['set-cookie'],
+      String(crossOriginLogin.status()),
+    )
+    checkPrivateCache('Cross-origin login rejection is private and non-storable', crossOriginLogin)
 
-    const logoutProbe = await browser.newContext({ extraHTTPHeaders: accessHeaders })
+    const sessionsBeforeBadPassword = sessionSnapshot()
+    const badPasswordProbe = await browser.newContext({
+      extraHTTPHeaders: {
+        'x-real-ip': '198.51.100.45',
+      },
+    })
     try {
-      const logoutPage = await logoutProbe.newPage()
-      await logoutPage.goto(`${BASE}/admin`, { waitUntil: 'domcontentloaded' })
-      await logoutPage.getByRole('button', { name: '退出' }).click()
-      await logoutPage.waitForURL(url => url.pathname === '/cdn-cgi/access/logout')
-      check(
-        'Admin logout delegates to Cloudflare Access',
-        new URL(logoutPage.url()).pathname === '/cdn-cgi/access/logout',
-        logoutPage.url(),
+      const badPasswordPage = await badPasswordProbe.newPage()
+      const badPasswordResponse = await submitLoginForm(
+        badPasswordPage,
+        `${adminPassword}-incorrect`,
       )
+      await badPasswordPage.waitForURL(url =>
+        url.pathname === '/admin/login' && url.searchParams.get('error') === 'invalid',
+      )
+      const badPasswordCookie = await adminCookie(badPasswordProbe)
+      check(
+        'An incorrect password returns to login without issuing an admin cookie',
+        badPasswordResponse.status() === 303 &&
+          !badPasswordResponse.headers()['set-cookie'] &&
+          !badPasswordCookie,
+        `${badPasswordResponse.status()} → ${badPasswordPage.url()}`,
+      )
+      checkPrivateCache('Incorrect-password response is private and non-storable', badPasswordResponse)
+      const sessionsAfterBadPassword = sessionSnapshot()
+      check(
+        'An incorrect password creates no administrator session state',
+        sessionDetail(sessionsAfterBadPassword) === sessionDetail(sessionsBeforeBadPassword),
+        sessionDetail(sessionsAfterBadPassword),
+      )
+    } finally {
+      await badPasswordProbe.close()
+    }
+
+    const logoutProbe = await browser.newContext({
+      extraHTTPHeaders: {
+        'x-real-ip': '198.51.100.46',
+      },
+    })
+    try {
+      const sessionsBeforeLogoutProbe = sessionSnapshot()
+      const logoutPage = await logoutProbe.newPage()
+      const logoutProbeLoginResponse = await submitLoginForm(logoutPage, adminPassword)
+      await logoutPage.waitForURL(url => url.pathname === '/admin')
+      const logoutProbeCookie = await adminCookie(logoutProbe)
+      const sessionsAfterLogoutProbeLogin = sessionSnapshot()
+      check(
+        'A valid login form submission creates one revocable administrator session',
+        logoutProbeLoginResponse.status() === 303 &&
+          Boolean(logoutProbeCookie) &&
+          sessionsAfterLogoutProbeLogin.total === sessionsBeforeLogoutProbe.total + 1 &&
+          sessionsAfterLogoutProbeLogin.live === sessionsBeforeLogoutProbe.live + 1 &&
+          sessionsAfterLogoutProbeLogin.tokens === sessionsBeforeLogoutProbe.tokens + 1 &&
+          sessionsAfterLogoutProbeLogin.createdEvents ===
+            sessionsBeforeLogoutProbe.createdEvents + 1,
+        sessionDetail(sessionsAfterLogoutProbeLogin),
+      )
+      checkPrivateCache('Successful login response is private and non-storable', logoutProbeLoginResponse)
+
+      await logoutPage.getByRole('button', { name: '退出' }).click()
+      await logoutPage.waitForURL(url => url.pathname === '/admin/login')
+      const sessionsAfterLogout = sessionSnapshot()
+      check(
+        'Logout clears the browser cookie and revokes its server-side session',
+        !(await adminCookie(logoutProbe)) &&
+          sessionsAfterLogout.total === sessionsAfterLogoutProbeLogin.total &&
+          sessionsAfterLogout.live === sessionsAfterLogoutProbeLogin.live - 1 &&
+          sessionsAfterLogout.logoutSessions ===
+            sessionsAfterLogoutProbeLogin.logoutSessions + 1 &&
+          sessionsAfterLogout.logoutEvents === sessionsAfterLogoutProbeLogin.logoutEvents + 1,
+        sessionDetail(sessionsAfterLogout),
+      )
+
+      if (!logoutProbeCookie) throw new Error('Logout probe did not receive an admin cookie')
+      const revokedCookieReplay = await browser.newContext({
+        extraHTTPHeaders: {
+          'x-real-ip': '198.51.100.47',
+        },
+      })
+      try {
+        await revokedCookieReplay.addCookies([{
+          name: ADMIN_COOKIE_NAME,
+          value: logoutProbeCookie.value,
+          url: BASE,
+        }])
+        const replayResponse = await revokedCookieReplay.request.get(`${BASE}/admin`, {
+          maxRedirects: 0,
+        })
+        const replayBody = await replayResponse.text()
+        const replayRedirect = loginRedirectResult(replayResponse, replayBody)
+        check(
+          'A logged-out session cookie cannot be replayed',
+          replayRedirect.pass,
+          replayRedirect.detail,
+        )
+        checkPrivateCache('Revoked-cookie replay is private and non-storable', replayResponse)
+      } finally {
+        await revokedCookieReplay.close()
+      }
     } finally {
       await logoutProbe.close()
     }
@@ -250,7 +452,7 @@ try {
     }
   } finally {
     await namespaceProbe.close()
-    await invalidAccessProbe.close()
+    await forgedAssertionProbe.close()
   }
 
   if (legacyPublicPhotoKey) {
@@ -319,6 +521,25 @@ try {
     await publicProbeContext.close()
   }
 
+  const sessionsBeforePrimaryLogin = sessionSnapshot()
+  const primaryLoginResponse = await submitLoginForm(page, adminPassword)
+  await page.waitForURL(url => url.pathname === '/admin')
+  const primaryCookie = await adminCookie(ctx)
+  const sessionsAfterPrimaryLogin = sessionSnapshot()
+  check(
+    'The primary login form establishes a secure application-owned session',
+    primaryLoginResponse.status() === 303 &&
+      primaryCookie?.httpOnly === true &&
+      primaryCookie.sameSite === 'Strict' &&
+      sessionsAfterPrimaryLogin.total === sessionsBeforePrimaryLogin.total + 1 &&
+      sessionsAfterPrimaryLogin.live === sessionsBeforePrimaryLogin.live + 1 &&
+      sessionsAfterPrimaryLogin.tokens === sessionsBeforePrimaryLogin.tokens + 1 &&
+      sessionsAfterPrimaryLogin.createdEvents ===
+        sessionsBeforePrimaryLogin.createdEvents + 1,
+    sessionDetail(sessionsAfterPrimaryLogin),
+  )
+  checkPrivateCache('Primary login response is private and non-storable', primaryLoginResponse)
+
   const adminProbeResponse = await page.goto(`${BASE}/admin/posts?e2e-isolation=${stamp}`, {
     waitUntil: 'domcontentloaded',
   })
@@ -327,7 +548,7 @@ try {
     await page.getByText(adminProbeTitle, { exact: true }).waitFor({ timeout: 10_000 })
     adminProbeVisible = true
   } catch {
-    // The diagnostic below distinguishes an Access rejection from a data mismatch.
+    // The diagnostic below distinguishes a session rejection from a data mismatch.
   }
   if (!adminProbeVisible) {
     const adminProbeBody = await page.locator('body').innerText()
@@ -339,12 +560,6 @@ try {
   }
   check('Admin application endpoint uses the isolated database', true, DB_NAME)
   checkPrivateCache('Authenticated admin document is private and non-storable', adminProbeResponse)
-  const sessionCountsAfterAuthentication = sessionFoundationCounts()
-  check(
-    'Cloudflare Access authentication creates no application-session state',
-    sessionCountsAfterAuthentication === emptySessionFoundationCounts,
-    sessionCountsAfterAuthentication,
-  )
   isolationVerified = true
 
   const tournamentId = Number(db('select id from tournament order by id limit 1')) || 1
@@ -354,9 +569,10 @@ try {
   )
   if (!sensitiveContact) throw new Error('Admin authorization test requires a team contact fixture')
 
-  const invalidAccess = await browser.newContext({
+  const forgedSession = await browser.newContext({
     extraHTTPHeaders: {
-      'Cf-Access-Jwt-Assertion': invalidAccessToken,
+      'Cf-Access-Jwt-Assertion': 'forged-e2e-assertion-after-login',
+      'x-real-ip': '198.51.100.48',
     },
   })
   const protectedRoutes = [
@@ -374,100 +590,106 @@ try {
   const piiLeaks = []
   const privateCacheFailures = []
 
-  for (const route of protectedRoutes) {
-    const response = await invalidAccess.request.get(`${BASE}${route}`, { maxRedirects: 0 })
-    const body = await response.text()
-    if (response.status() !== 403) routeFailures.push(`${route}:${response.status()}`)
-    if (body.includes(sensitiveContact)) piiLeaks.push(route)
-    if (!privateCacheResult(response).pass) {
-      privateCacheFailures.push(`${route}:${privateCacheResult(response).value}`)
+  try {
+    for (const route of protectedRoutes) {
+      const response = await forgedSession.request.get(`${BASE}${route}`, { maxRedirects: 0 })
+      const body = await response.text()
+      const redirectResult = loginRedirectResult(response, body)
+      if (!redirectResult.pass) routeFailures.push(`${route}:${redirectResult.detail}`)
+      if (body.includes(sensitiveContact)) piiLeaks.push(route)
+      if (!privateCacheResult(response).pass) {
+        privateCacheFailures.push(`${route}:${privateCacheResult(response).value}`)
+      }
     }
+
+    check(
+      'A forged assertion cannot enter any administrator console page',
+      routeFailures.length === 0,
+      routeFailures.join(', '),
+    )
+    check(
+      'Unauthenticated console redirects contain no registration contact data',
+      piiLeaks.length === 0,
+      piiLeaks.join(', '),
+    )
+    check(
+      'Every unauthenticated console redirect is private and non-storable',
+      privateCacheFailures.length === 0,
+      privateCacheFailures.join(', '),
+    )
+
+    const forgedCacheResponse = await forgedSession.request.get(
+      `${BASE}/admin/posts?e2e-isolation=${stamp}`,
+      { maxRedirects: 0 },
+    )
+    const forgedCacheBody = await forgedCacheResponse.text()
+    const forgedCacheRedirect = loginRedirectResult(forgedCacheResponse, forgedCacheBody)
+    check(
+      'An authenticated admin document is never reused for a forged assertion',
+      forgedCacheRedirect.pass && !forgedCacheBody.includes(adminProbeTitle),
+      forgedCacheRedirect.detail,
+    )
+    checkPrivateCache(
+      'Forged-assertion admin response is private and non-storable',
+      forgedCacheResponse,
+    )
+
+    const routerState = [
+      '',
+      {
+        children: [
+          'admin',
+          {
+            children: [
+              '(console)',
+              {
+                children: [
+                  'posts',
+                  { children: ['__PAGE__', {}, null, null, 4096] },
+                  null,
+                  null,
+                  4096,
+                ],
+              },
+              null,
+              null,
+              4096,
+            ],
+          },
+          null,
+          null,
+          4096,
+        ],
+      },
+      null,
+      null,
+      4116,
+    ]
+    const rscHeaders = {
+      RSC: '1',
+      'Next-Router-State-Tree': encodeURIComponent(JSON.stringify(routerState)),
+      'Next-Url': '/admin/posts',
+    }
+    const rscResponse = await forgedSession.request.get(
+      `${BASE}/admin?_rsc=authorization-boundary`,
+      {
+        headers: rscHeaders,
+        maxRedirects: 0,
+      },
+    )
+    const rscBody = await rscResponse.text()
+    check(
+      'Unauthenticated RSC streams expose no administrator-only data or session cookie',
+      rscResponse.status() < 500 &&
+        !rscBody.includes(sensitiveContact) &&
+        !rscBody.includes(adminProbeTitle) &&
+        !rscResponse.headers()['set-cookie'],
+      String(rscResponse.status()),
+    )
+    checkPrivateCache('Unauthenticated RSC response is private and non-storable', rscResponse)
+  } finally {
+    await forgedSession.close()
   }
-
-  check(
-    'Tokens for another Access application are rejected by every console page',
-    routeFailures.length === 0,
-    routeFailures.join(', '),
-  )
-  check(
-    'Rejected console documents contain no registration contact data',
-    piiLeaks.length === 0,
-    piiLeaks.join(', '),
-  )
-  check(
-    'Every rejected console document is private and non-storable',
-    privateCacheFailures.length === 0,
-    privateCacheFailures.join(', '),
-  )
-
-  const crossIdentityResponse = await invalidAccess.request.get(
-    `${BASE}/admin/posts?e2e-isolation=${stamp}`,
-    { maxRedirects: 0 },
-  )
-  const crossIdentityBody = await crossIdentityResponse.text()
-  check(
-    'An authenticated admin document is never reused for an invalid Access token',
-    crossIdentityResponse.status() === 403 &&
-      !crossIdentityBody.includes(adminProbeTitle),
-    String(crossIdentityResponse.status()),
-  )
-  checkPrivateCache(
-    'Cross-identity admin response is private and non-storable',
-    crossIdentityResponse,
-  )
-
-  const routerState = [
-    '',
-    {
-      children: [
-        'admin',
-        {
-          children: [
-            '(console)',
-            {
-              children: [
-                'posts',
-                { children: ['__PAGE__', {}, null, null, 4096] },
-                null,
-                null,
-                4096,
-              ],
-            },
-            null,
-            null,
-            4096,
-          ],
-        },
-        null,
-        null,
-        4096,
-      ],
-    },
-    null,
-    null,
-    4116,
-  ]
-  const rscHeaders = {
-    RSC: '1',
-    'Next-Router-State-Tree': encodeURIComponent(JSON.stringify(routerState)),
-    'Next-Url': '/admin/posts',
-  }
-  const rscResponse = await invalidAccess.request.get(`${BASE}/admin?_rsc=authorization-boundary`, {
-    headers: rscHeaders,
-    maxRedirects: 0,
-  })
-  const rscBody = await rscResponse.text()
-  check(
-    'Invalid Access RSC requests are rejected before rendering',
-    rscResponse.status() === 403,
-    String(rscResponse.status()),
-  )
-  check(
-    'Rejected RSC streams contain no registration contact data',
-    !rscBody.includes(sensitiveContact),
-  )
-  checkPrivateCache('Rejected RSC response is private and non-storable', rscResponse)
-  await invalidAccess.close()
 
   await page.goto(`${BASE}/admin/posts`, { waitUntil: 'domcontentloaded' })
   await page.waitForTimeout(1000)
@@ -528,8 +750,14 @@ try {
   const res = await anonPage.request.get(`${BASE}/admin/posts`, {
     maxRedirects: 0,
   })
-  check('Unauthenticated admin access is rejected', res.status() === 403, String(res.status()))
-  checkPrivateCache('Unauthenticated admin rejection is private and non-storable', res)
+  const anonymousPostsBody = await res.text()
+  const anonymousPostsRedirect = loginRedirectResult(res, anonymousPostsBody)
+  check(
+    'Unauthenticated admin access redirects to login',
+    anonymousPostsRedirect.pass,
+    anonymousPostsRedirect.detail,
+  )
+  checkPrivateCache('Unauthenticated admin redirect is private and non-storable', res)
   await anon.close()
 
   // Upload media.
@@ -568,7 +796,7 @@ try {
   }
 
   // Exercise the exact public URL across a publish/unpublish transition. Draft
-  // previews use the Access-protected administrator route; the public route
+  // previews use the session-protected administrator route; the public route
   // never changes behavior based on an assertion header. The shared Next image
   // optimizer is intentionally unavailable for guarded media, so it cannot
   // retain a previously public object after withdrawal.
@@ -882,11 +1110,11 @@ try {
     (await page.evaluate(() => document.body.innerText)).includes(champ),
   )
 
-  const sessionCountsAfterActions = sessionFoundationCounts()
+  const sessionsAfterActions = sessionSnapshot()
   check(
-    'Cloudflare Access admin actions create no application-session state',
-    sessionCountsAfterActions === emptySessionFoundationCounts,
-    sessionCountsAfterActions,
+    'Administrator actions reuse the established application-owned session',
+    sessionDetail(sessionsAfterActions) === sessionDetail(sessionsAfterPrimaryLogin),
+    sessionDetail(sessionsAfterActions),
   )
   check('Pages have no runtime errors', errors.length === 0, errors.slice(0, 1).join())
 } finally {

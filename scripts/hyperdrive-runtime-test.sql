@@ -55,9 +55,19 @@ begin
     'public.ensure_principal_identity(text,text,text)'
   ] loop
     if to_regprocedure(v_retired_rpc) is not null then
-      raise exception 'retired RPC % remains after the Access cutover', v_retired_rpc;
+      raise exception 'retired provider-neutral RPC % remains exposed', v_retired_rpc;
     end if;
   end loop;
+
+  if to_regprocedure('public.begin_local_admin_login(bytea,bytea,text)') is null
+    or to_regprocedure(
+      'public.create_local_admin_session(uuid,bigint,bytea,bytea,uuid)'
+    ) is null
+    or to_regprocedure('public.use_local_admin_session(bytea,uuid)') is null
+    or to_regprocedure('public.end_local_admin_session(bytea,uuid)') is null
+  then
+    raise exception 'the local administrator authentication RPC boundary is incomplete';
+  end if;
 end
 $test$;
 
@@ -89,6 +99,21 @@ begin
   end;
 
   perform count(*) from public.tournament;
+
+  if not coalesce((public.begin_local_admin_login(
+    pg_catalog.sha256(pg_catalog.convert_to('hyperdrive-account', 'UTF8')),
+    pg_catalog.sha256(pg_catalog.convert_to('hyperdrive-network', 'UTF8')),
+    'hyperdrive-missing-administrator'
+  ) ->> 'allowed')::boolean, false) then
+    raise exception 'the Hyperdrive login could not reach local login admission';
+  end if;
+
+  begin
+    perform count(*) from app_private.local_admin_credential;
+    raise exception 'the Hyperdrive login reached private credential rows';
+  exception
+    when insufficient_privilege then null;
+  end;
 
   if has_table_privilege(session_user, 'public.admin_user', 'select')
     or has_table_privilege(session_user, 'public.registration_attempt', 'select')

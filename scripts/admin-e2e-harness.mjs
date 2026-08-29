@@ -9,40 +9,28 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs'
-import { createServer as createHttpServer } from 'node:http'
 import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
-import {
-  SignJWT,
-  exportJWK,
-  generateKeyPair,
-} from 'jose'
 
 import { packStandalone } from './pack-standalone.mjs'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const suffix = `${process.pid}_${randomBytes(6).toString('hex')}`
-const dnsSuffix = suffix.replaceAll('_', '-')
 const database = `cs2cup_e2e_${suffix}`
 const databaseUrl = `postgres://postgres:dev@127.0.0.1:55432/${database}`
 const tempRoot = mkdtempSync(join(tmpdir(), 'cs2cup-admin-e2e-harness-'))
 const appRoot = join(tempRoot, 'app')
 const photoRoot = join(tempRoot, 'photos')
-const accessTokenFile = join(tempRoot, 'access.token')
-const invalidAccessTokenFile = join(tempRoot, 'invalid-access.token')
-const accessFetchPreload = join(tempRoot, 'access-fetch-preload.mjs')
-const adminSubject = `admin-e2e-${suffix}`
-const audience = `cs2cup-admin-e2e-${dnsSuffix}`
+const adminUsername = `admin-e2e-${suffix}`
+const adminPassword = `E2E-password-${randomBytes(24).toString('base64url')}`
+const adminAuthPepper = randomBytes(32).toString('base64url')
 const legacyPublicPhotoKey = '2025-nlc/11.jpg'
 
 if (!/^cs2cup_e2e_[a-zA-Z0-9_]+$/.test(database)) {
   throw new Error('Generated E2E database name is unsafe')
-}
-if (!/^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/.test(audience)) {
-  throw new Error('Generated E2E audience is unsafe')
 }
 
 const abortController = new AbortController()
@@ -250,76 +238,6 @@ async function waitForHttp(url, label, service, timeoutMs = 120_000) {
   throw new Error(`${label} did not become ready: ${lastError}`)
 }
 
-async function startAccessFixture(port, issuer) {
-  const { publicKey, privateKey } = await generateKeyPair('RS256', {
-    extractable: true,
-  })
-  const jwk = await exportJWK(publicKey)
-  Object.assign(jwk, { alg: 'RS256', kid: 'admin-e2e-access', use: 'sig' })
-
-  const sign = tokenAudience => new SignJWT({
-    email: 'admin-e2e@example.test',
-  })
-    .setProtectedHeader({ alg: 'RS256', kid: 'admin-e2e-access' })
-    .setIssuer(issuer)
-    .setAudience([tokenAudience])
-    .setSubject(adminSubject)
-    .setIssuedAt()
-    .setExpirationTime('2h')
-    .sign(privateKey)
-
-  const [accessToken, invalidAccessToken] = await Promise.all([
-    sign(audience),
-    sign(`${audience}-other-application`),
-  ])
-  writeFileSync(accessTokenFile, accessToken, { mode: 0o600 })
-  writeFileSync(invalidAccessTokenFile, invalidAccessToken, { mode: 0o600 })
-
-  const jwks = JSON.stringify({ keys: [jwk] })
-  const server = createHttpServer((request, response) => {
-    const pathname = new URL(request.url ?? '/', 'http://access-fixture.invalid').pathname
-    if (request.method === 'GET' && pathname === '/cdn-cgi/access/certs') {
-      response.writeHead(200, {
-        'Cache-Control': 'no-store',
-        'Content-Type': 'application/json',
-      })
-      response.end(jwks)
-      return
-    }
-    response.writeHead(404, { 'Content-Type': 'text/plain' })
-    response.end('not found')
-  })
-  await new Promise((resolve, reject) => {
-    server.once('error', reject)
-    server.listen(port, '127.0.0.1', resolve)
-  })
-  return server
-}
-
-function writeAccessFetchFixture(issuer, fixtureOrigin) {
-  writeFileSync(
-    accessFetchPreload,
-    `const accessIssuer = ${JSON.stringify(issuer)}\n` +
-      `const fixtureOrigin = ${JSON.stringify(fixtureOrigin)}\n` +
-      'const nativeFetch = globalThis.fetch.bind(globalThis)\n' +
-      'globalThis.fetch = (input, init) => {\n' +
-      '  const url = new URL(input instanceof Request ? input.url : input)\n' +
-      "  if (url.origin === accessIssuer && url.pathname === '/cdn-cgi/access/certs') {\n" +
-      '    return nativeFetch(new URL(`${url.pathname}${url.search}`, fixtureOrigin), init)\n' +
-      '  }\n' +
-      '  return nativeFetch(input, init)\n' +
-      '}\n',
-    { mode: 0o600 },
-  )
-}
-
-async function stopHttpServer(server) {
-  if (!server?.listening) return
-  await new Promise((resolve, reject) => {
-    server.close(error => (error ? reject(error) : resolve()))
-  })
-}
-
 function copyApplication() {
   mkdirSync(appRoot, { recursive: true })
   const directories = ['app', 'components', 'lib', 'public']
@@ -352,19 +270,13 @@ function copyApplication() {
 async function main() {
   const services = []
   const cleanupErrors = []
-  let accessServer = null
   let databaseCreated = false
   let primaryError = null
 
   try {
     const usedPorts = new Set()
-    const [issuerPort, appPort] = await Promise.all([
-      freePort(usedPorts),
-      freePort(usedPorts),
-    ])
-    const issuer = `https://cs2cup-e2e-${dnsSuffix}.cloudflareaccess.com:${issuerPort}`
-    const accessFixtureOrigin = `http://127.0.0.1:${issuerPort}`
-    const appUrl = `http://127.0.0.1:${appPort}`
+    const appPort = await freePort(usedPorts)
+    const appUrl = `http://localhost:${appPort}`
 
     const dbContainerId = docker(['compose', 'ps', '--quiet', 'db'], { print: false })
     if (!dbContainerId) {
@@ -418,6 +330,26 @@ async function main() {
     runSync('database seed', process.execPath, ['scripts/seed.mjs'], {
       env: childEnvironment({ SEED_DB_NAME: database }),
     })
+    runSync(
+      'administrator credential',
+      process.execPath,
+      [
+        '--experimental-strip-types',
+        'scripts/admin-credential.mjs',
+        '--username',
+        adminUsername,
+        '--password-stdin',
+      ],
+      {
+        input: `${adminPassword}\n`,
+        env: childEnvironment({
+          ADMIN_AUTH_PEPPER: adminAuthPepper,
+          ADMIN_CREDENTIAL_ALLOW_MUTATION: '1',
+          MIGRATION_DATABASE_URL: databaseUrl,
+          MIGRATION_EXPECT_DATABASE: database,
+        }),
+      },
+    )
 
     psql(
       database,
@@ -440,15 +372,6 @@ async function main() {
        where slug = '2025-nlc';`,
     )
 
-    accessServer = await startAccessFixture(issuerPort, issuer)
-    writeAccessFetchFixture(issuer, accessFixtureOrigin)
-    await waitForHttp(
-      `${accessFixtureOrigin}/cdn-cgi/access/certs`,
-      'Cloudflare Access JWKS fixture',
-      null,
-      30_000,
-    )
-
     copyApplication()
     mkdirSync(photoRoot, { recursive: true })
     const mediaProbe = Buffer.from('isolated media authorization probe')
@@ -461,8 +384,7 @@ async function main() {
       NEXT_TELEMETRY_DISABLED: '1',
       TZ: 'Asia/Shanghai',
       DATABASE_URL: databaseUrl,
-      CF_ACCESS_ISSUER: issuer,
-      CF_ACCESS_AUDIENCE: audience,
+      ADMIN_AUTH_PEPPER: adminAuthPepper,
       NEXT_PUBLIC_SITE_URL: appUrl,
       PHOTO_UPLOAD_DRIVER: 'local',
       PHOTO_LOCAL_ROOT: photoRoot,
@@ -485,7 +407,7 @@ async function main() {
     const nextService = await startProcess(
       'next',
       process.execPath,
-      ['--import', accessFetchPreload, 'server.js'],
+      ['server.js'],
       {
         cwd: standaloneRoot,
         env: childEnvironment({
@@ -506,8 +428,8 @@ async function main() {
         E2E_DB_OWNED: '1',
         E2E_BASE_URL: appUrl,
         DATABASE_URL: databaseUrl,
-        E2E_ACCESS_TOKEN_FILE: accessTokenFile,
-        E2E_INVALID_ACCESS_TOKEN_FILE: invalidAccessTokenFile,
+        E2E_ADMIN_USERNAME: adminUsername,
+        E2E_ADMIN_PASSWORD: adminPassword,
         E2E_LEGACY_PUBLIC_PHOTO_KEY: legacyPublicPhotoKey,
         E2E_PHOTO_LOCAL_ROOT: photoRoot,
       }),
@@ -522,14 +444,6 @@ async function main() {
         await stopProcess(service)
       } catch (error) {
         cleanupErrors.push(new Error(`Failed to stop ${service.label}: ${error.message}`))
-      }
-    }
-
-    if (accessServer) {
-      try {
-        await stopHttpServer(accessServer)
-      } catch (error) {
-        cleanupErrors.push(new Error(`Failed to stop Access JWKS fixture: ${error.message}`))
       }
     }
 
