@@ -40,7 +40,7 @@ function configuredAdmin() {
 function sameValue(left: Uint8Array, right: Uint8Array) {
   if (left.length !== right.length) return false
   let difference = 0
-  for (let index = 0; index < left.length; index += 1) difference |= left[index] ^ right[index]
+  for (let index = 0; index < left.length; index += 1) difference |= (left[index] ?? 0) ^ (right[index] ?? 0)
   return difference === 0
 }
 
@@ -90,7 +90,12 @@ export const getCurrentAdmin = cache(async (): Promise<AdminIdentity | null> => 
     )
     if (!valid) return null
     const parsed = JSON.parse(new TextDecoder().decode(fromBase64Url(payload))) as { username?: unknown; expiresAt?: unknown }
-    if (parsed.username !== configured.username || !Number.isSafeInteger(parsed.expiresAt) || parsed.expiresAt <= Date.now()) return null
+    if (
+      parsed.username !== configured.username ||
+      typeof parsed.expiresAt !== 'number' ||
+      !Number.isSafeInteger(parsed.expiresAt) ||
+      parsed.expiresAt <= Date.now()
+    ) return null
     return { uid: configured.username }
   } catch {
     return null
