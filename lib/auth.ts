@@ -31,9 +31,9 @@ async function sign(payload: string, secret: string) {
 
 function configuredAdmin() {
   const env = cloudflareEnvironment()
-  const username = env.ADMIN_USERNAME?.trim()
-  const password = env.ADMIN_PASSWORD
-  const sessionSecret = env.ADMIN_SESSION_SECRET
+  const username = env.ADMIN_USERNAME?.trim() || process.env.ADMIN_USERNAME?.trim()
+  const password = env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD
+  const sessionSecret = env.ADMIN_SESSION_SECRET || process.env.ADMIN_SESSION_SECRET
   return username && password && sessionSecret ? { username, password, sessionSecret } : null
 }
 
