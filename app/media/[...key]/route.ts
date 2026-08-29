@@ -15,7 +15,6 @@ async function canReadPhoto(storageKey: string) {
   const published = await selectPublicRow<{ id: number }>('photo_public', {
     select: 'id',
     filters: { storage_key: `eq.${storageKey}` },
-    cache: { mode: 'no-store' },
   }).catch(() => null)
   if (published) return true
 

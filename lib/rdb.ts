@@ -1,9 +1,8 @@
 import 'server-only'
 import { cloudflareBindings } from './cloudflare-bindings'
-import type { PublicDataCache } from './rdb-cache-policy'
 
 type SelectionOptions = { select?: string; filters?: Record<string, string>; order?: string; limit?: number }
-export interface PublicQueryOptions extends SelectionOptions { select: string; cache: PublicDataCache }
+export interface PublicQueryOptions extends SelectionOptions { select: string }
 export type PrivateQueryOptions = SelectionOptions
 export const PUBLIC_RELATIONS = ['club_member','game','match_map_public','match_public','photo_public','player_public','post','site_setting','team_public','tournament_public'] as const
 export type PublicRelation = (typeof PUBLIC_RELATIONS)[number]

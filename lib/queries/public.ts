@@ -17,12 +17,6 @@ import type {
   VetoAction,
 } from '../types'
 
-const REVALIDATE = 300
-const NO_STORE = { cache: { mode: 'no-store' } } as const
-const cached = (...tags: string[]) => ({
-  cache: { mode: 'revalidate' as const, seconds: REVALIDATE, tags },
-})
-
 const SITE_SETTING_SELECT =
   'id,club_name,club_name_en,school,logo_url,contact_qq,contact_wechat,footer_copy'
 const TOURNAMENT_SELECT =
@@ -217,7 +211,6 @@ export async function safely<T>(work: () => Promise<T>, fallback: T): Promise<T>
 export async function getSiteSetting(): Promise<SiteSetting | null> {
   const row = await selectPublicRow<SiteSettingRow>('site_setting', {
     select: SITE_SETTING_SELECT,
-    ...cached('site_setting'),
   })
   return row ? toSiteSetting(row) : null
 }
@@ -226,7 +219,6 @@ export async function listTournaments(): Promise<Tournament[]> {
   const rows = await selectPublicRows<TournamentRow>('tournament_public', {
     select: TOURNAMENT_SELECT,
     order: 'season.desc,edition.desc',
-    ...cached('tournament'),
   })
   return rows.map(toTournament)
 }
@@ -235,7 +227,6 @@ export async function getTournament(slug: string): Promise<Tournament | null> {
   const row = await selectPublicRow<TournamentRow>('tournament_public', {
     select: TOURNAMENT_SELECT,
     filters: { slug: `eq.${slug}` },
-    ...cached('tournament', `tournament:${slug}`),
   })
   return row ? toTournament(row) : null
 }
@@ -246,7 +237,6 @@ export async function getCurrentTournament(): Promise<Tournament | null> {
     filters: { status: 'neq.finished' },
     order: 'season.desc,edition.desc',
     limit: 1,
-    ...cached('tournament'),
   })
   return rows[0] ? toTournament(rows[0]) : null
 }
@@ -257,13 +247,11 @@ export async function getPublicTeams(tournamentId: number): Promise<PublicTeam[]
       select: TEAM_SELECT,
       filters: { tournament_id: `eq.${tournamentId}` },
       order: 'seed.asc.nullslast',
-      ...cached(`teams:${tournamentId}`),
     }),
     selectPublicRows<PlayerRow>('player_public', {
       select: PLAYER_SELECT,
       filters: { tournament_id: `eq.${tournamentId}` },
       order: 'sort_order.asc',
-      ...cached(`teams:${tournamentId}`),
     }),
   ])
 
@@ -291,7 +279,6 @@ export async function getMatches(tournamentId: number): Promise<Match[]> {
     select: MATCH_SELECT,
     filters: { tournament_id: `eq.${tournamentId}` },
     order: 'round.asc,slot.asc',
-    ...cached(`matches:${tournamentId}`),
   })
   return rows.map(toMatch)
 }
@@ -301,7 +288,6 @@ export async function getPhotos(tournamentId?: number): Promise<Photo[]> {
     select: PHOTO_SELECT,
     filters: tournamentId ? { tournament_id: `eq.${tournamentId}` } : undefined,
     order: 'sort_order.asc',
-    ...cached('photo'),
   })
   return rows.map(toPhoto)
 }
@@ -324,7 +310,6 @@ export async function getMatchMaps(matchIds: number[]): Promise<MatchMap[]> {
     select: MATCH_MAP_SELECT,
     filters: { match_id: `in.(${matchIds.join(',')})` },
     order: 'match_id.asc,pick_order.asc',
-    ...cached('match_map'),
   })
   return rows.map(row => ({
     id: row.id,
@@ -352,7 +337,6 @@ export async function listMembers(): Promise<ClubMember[]> {
   const rows = await selectPublicRows<MemberRow>('club_member', {
     select: MEMBER_SELECT,
     order: 'sort_order.asc',
-    ...cached('club_member'),
   })
   return rows.map(row => ({
     id: row.id,
@@ -380,7 +364,6 @@ export async function listPosts(limit?: number): Promise<Post[]> {
     select: POST_SELECT,
     order: 'pinned.desc,published_at.desc',
     limit,
-    ...cached('post'),
   })
   return rows.map(row => ({
     id: row.id,
@@ -434,7 +417,6 @@ export async function listGames(): Promise<Game[]> {
   const rows = await selectPublicRows<GameRow>('game', {
     select: GAME_SELECT,
     order: 'sort_order.asc',
-    ...cached('game'),
   })
   return rows.map(toGame)
 }
@@ -443,7 +425,6 @@ export async function getGame(slug: string): Promise<Game | null> {
   const row = await selectPublicRow<GameRow>('game', {
     select: GAME_SELECT,
     filters: { slug: `eq.${slug}` },
-    ...cached('game', `game:${slug}`),
   })
   return row ? toGame(row) : null
 }
@@ -452,7 +433,6 @@ export async function getPost(slug: string): Promise<Post | null> {
   const row = await selectPublicRow<PostRow>('post', {
     select: POST_SELECT,
     filters: { slug: `eq.${slug}` },
-    ...cached('post', `post:${slug}`),
   })
   if (!row) return null
   return {
@@ -506,19 +486,16 @@ export async function search(query: string): Promise<SearchHit[]> {
 
   const [games, tournaments, posts] = await Promise.all([
     selectPublicRows<GameRow>('game', {
-      ...NO_STORE,
       select: GAME_SELECT,
       filters: { or: `(name.${like},name_en.${like})` },
       limit: 8,
     }),
     selectPublicRows<TournamentRow>('tournament_public', {
-      ...NO_STORE,
       select: TOURNAMENT_SELECT,
       filters: { or: `(title.${like},season.${like})` },
       limit: 8,
     }),
     selectPublicRows<PostRow>('post', {
-      ...NO_STORE,
       select: POST_SELECT,
       filters: { or: `(title.${like},summary.${like},body.${like})` },
       limit: 8,
@@ -535,7 +512,6 @@ export async function search(query: string): Promise<SearchHit[]> {
   }>(
     'team_public',
     {
-      ...NO_STORE,
       select: 'id,tournament_id,name,tag',
       filters: { or: `(name.${like},tag.${like})` },
       limit: 10,
