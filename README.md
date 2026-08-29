@@ -47,6 +47,7 @@ header; the app intentionally has no local password bypass.
 | `npm run stack:adopt` | One-time verified adoption of an unledgered migration-012 database |
 | `npm run typecheck` / `lint` / `build` | Static and Next.js gates |
 | `npm run cf:check` | OpenNext build plus compressed Worker size budget |
+| `npm run test:cloudflare-worker` | Local Wrangler/OpenNext, Hyperdrive, and R2 runtime smoke |
 | `npm run test:cloudflare-access` | Access JWT, JWKS, header, cookie, and failure boundaries |
 | `npm run test:hyperdrive-runtime` | Direct-runtime role, RPC, row-lock, and retired-session boundaries |
 | `npm run test:r2-storage` | Private R2 object-store contract |
@@ -59,6 +60,13 @@ header; the app intentionally has no local password bypass.
 database, an application process, a local JWKS server, an object root, and a
 temporary build context. It validates the database name before the first write
 and removes only those exact resources in `finally` cleanup.
+
+`test:cloudflare-worker` requires a current `cf:build` and a disposable,
+seeded PostgreSQL database. Set the local Hyperdrive connection variable shown
+in `.env.example`, `CLOUDFLARE_WORKER_SMOKE_EXPECTED_DATABASE` to the exact
+database name, and `CLOUDFLARE_WORKER_SMOKE_ALLOW_DATABASE_MUTATION=1`.
+The temporary photo fixture and local Wrangler/R2 state are removed on exit.
+Never point this smoke test at production.
 
 ## Environment
 

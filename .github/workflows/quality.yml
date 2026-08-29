@@ -121,10 +121,18 @@ jobs:
           npm run test:hyperdrive-runtime
           npm run test:registration-rate-limit
 
-      - name: Build production application
+      - name: Smoke-test the local Cloudflare Worker runtime
+        env:
+          CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_CS2CUP_DATABASE: >-
+            postgresql://postgres:dev@127.0.0.1:55432/cs2cup
+          CLOUDFLARE_WORKER_SMOKE_EXPECTED_DATABASE: cs2cup
+          CLOUDFLARE_WORKER_SMOKE_ALLOW_DATABASE_MUTATION: "1"
         run: |
-          npm run build
-          node scripts/pack-standalone.mjs
+          npm run cf:build
+          npm run test:cloudflare-worker
+
+      - name: Pack the production application
+        run: node scripts/pack-standalone.mjs
 
       - name: Run isolated admin end-to-end tests
         run: npm run e2e:admin

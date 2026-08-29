@@ -20,6 +20,7 @@
     "test:match-operations": "docker compose exec -T db psql -U postgres -d \"${TEST_DB_NAME:-cs2cup}\" -q -f - < scripts/match-operations-test.sql",
     "test:match-schedule": "docker compose exec -T db psql -U postgres -d \"${TEST_DB_NAME:-cs2cup}\" -q -f - < scripts/match-schedule-test.sql",
     "test:hyperdrive-runtime": "docker compose exec -T db psql -U postgres -d \"${TEST_DB_NAME:-cs2cup}\" -X -v ON_ERROR_STOP=1 -f - < scripts/hyperdrive-runtime-test.sql",
+    "test:cloudflare-worker": "node scripts/cloudflare-worker-smoke.mjs",
     "test:registration-fingerprint": "node --experimental-strip-types scripts/registration-fingerprint-test.mjs",
     "test:photo-storage-config": "node --experimental-strip-types scripts/photo-storage-config-test.mjs",
     "test:photo-storage-security": "node --experimental-strip-types scripts/photo-storage-security-test.mjs",
