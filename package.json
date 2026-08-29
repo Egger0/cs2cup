@@ -34,10 +34,6 @@
     "test:application-session-admission": "docker compose exec -T db psql -U postgres -d \"${TEST_DB_NAME:-cs2cup}\" -X -v ON_ERROR_STOP=1 -f - < scripts/application-session-admission-test.sql && node scripts/application-session-admission-concurrency-test.mjs",
     "test:registration-rate-limit": "docker compose exec -T db psql -U postgres -d cs2cup -X -v ON_ERROR_STOP=1 -f - < scripts/registration-rate-limit-test.sql && node scripts/registration-rate-limit-concurrency-test.mjs",
     "test:migrations": "node scripts/migration-lifecycle-test.mjs",
-    "export:cloudbase": "node scripts/export-cloudbase-readonly.mjs",
-    "export:cloudbase-media": "node scripts/export-cloudbase-media.mjs",
-    "upload:r2-media": "node scripts/upload-r2-media.mjs",
-    "prepare:d1-import": "node scripts/prepare-d1-import.mjs",
     "stack:up": "docker compose stop rest rest-admin && docker compose up -d db --wait && npm run stack:migrate && npm run stack:configure && npm run stack:contract && docker compose up -d rest rest-admin --wait",
     "stack:migrate": "node scripts/migrate.mjs",
     "stack:adopt": "node scripts/migrate.mjs --baseline 012",
@@ -64,7 +60,6 @@
     "server-only": "0.0.1"
   },
   "devDependencies": {
-    "@cloudbase/js-sdk": "^3.8.2",
     "@axe-core/playwright": "^4.13.0",
     "@opennextjs/cloudflare": "^1.20.4",
     "@types/node": "24.13.3",

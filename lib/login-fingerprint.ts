@@ -85,8 +85,8 @@ export async function fingerprintLoginAccount(
   environment: LoginFingerprintEnvironment = process.env,
   implementation?: Crypto,
 ) {
-  // The exact case-sensitive candidate is intentional. CloudBase usernames
-  // are case-sensitive; trimming or case folding would merge distinct account
+  // The exact case-sensitive candidate is intentional. Trimming or case
+  // folding would merge distinct account
   // throttle buckets. Invalid or oversized values still consume a shared
   // account bucket before the provider is called; the validity predicate is
   // returned separately to the login orchestrator and no raw value escapes.
