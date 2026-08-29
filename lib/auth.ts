@@ -49,13 +49,13 @@ async function getAdminAccount() {
 export async function credentialsAccepted(username: string, password: string) {
   const admin = await getAdminAccount()
   if (!admin) return false
-  const [submittedUsername, expectedUsername, submittedPassword, expectedPassword] = await Promise.all([
-    hash(username), hash(admin.username), hash(`${admin.password_salt}\0${password}`), hash(admin.password_hash),
+  const [submittedUsername, expectedUsername, submittedPassword] = await Promise.all([
+    hash(username), hash(admin.username), hash(`${admin.password_salt}\0${password}`),
   ])
-  return sameValue(submittedUsername, expectedUsername) && sameValue(submittedPassword, expectedPassword)
+  return sameValue(submittedUsername, expectedUsername) && sameValue(new TextEncoder().encode(hex(submittedPassword)), new TextEncoder().encode(admin.password_hash))
 }
 
-export async function startAdminSession(username: string) {
+export async function createAdminSession(username: string) {
   const admin = await getAdminAccount()
   if (!admin || !sameValue(await hash(username), await hash(admin.username))) throw new Error('Admin login is not configured')
   const tokenBytes = new Uint8Array(32)
@@ -66,13 +66,13 @@ export async function startAdminSession(username: string) {
     db.prepare('DELETE FROM admin_session WHERE expires_at <= ?').bind(Date.now()),
     db.prepare('INSERT INTO admin_session (token_hash, admin_id, expires_at) VALUES (?, ?, ?)').bind(hex(await hash(token)), admin.id, Date.now() + SESSION_MAX_AGE * 1000),
   ])
-  ;(await cookies()).set(COOKIE_NAME, token, {
-    httpOnly: true,
-    maxAge: SESSION_MAX_AGE,
-    path: '/',
-    sameSite: 'lax',
-    secure: true,
-  })
+  return token
+}
+
+export const adminSessionCookie = {
+  name: COOKIE_NAME,
+  maxAge: SESSION_MAX_AGE,
+  options: { httpOnly: true, path: '/', sameSite: 'lax' as const, secure: true },
 }
 
 export async function endAdminSession() {
