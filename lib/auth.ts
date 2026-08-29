@@ -46,13 +46,21 @@ function sameValue(left: Uint8Array, right: Uint8Array) {
 
 export async function credentialsAccepted(username: string, password: string) {
   const configured = configuredAdmin()
-  if (!configured) return false
+  if (!configured) {
+    console.warn('admin-login', { configured: false })
+    return false
+  }
   const encoder = new TextEncoder()
-  const [submitted, expected] = await Promise.all([
-    crypto.subtle.digest('SHA-256', encoder.encode(`${username}\u0000${password}`)),
-    crypto.subtle.digest('SHA-256', encoder.encode(`${configured.username}\u0000${configured.password}`)),
+  const [submittedUsername, expectedUsername, submittedPassword, expectedPassword] = await Promise.all([
+    crypto.subtle.digest('SHA-256', encoder.encode(username)),
+    crypto.subtle.digest('SHA-256', encoder.encode(configured.username)),
+    crypto.subtle.digest('SHA-256', encoder.encode(password)),
+    crypto.subtle.digest('SHA-256', encoder.encode(configured.password)),
   ])
-  return sameValue(new Uint8Array(submitted), new Uint8Array(expected))
+  const usernameMatches = sameValue(new Uint8Array(submittedUsername), new Uint8Array(expectedUsername))
+  const passwordMatches = sameValue(new Uint8Array(submittedPassword), new Uint8Array(expectedPassword))
+  console.warn('admin-login', { configured: true, usernameMatches, passwordMatches })
+  return usernameMatches && passwordMatches
 }
 
 export async function startAdminSession(username: string) {
