@@ -14,9 +14,11 @@ registerHooks({
 
 const {
   dateTimeLocalToIso,
+  d1UtcTimestampToIso,
   formatSiteCompactDateTime,
   formatSiteDate,
   formatSiteDateTime,
+  formatSiteNumericDate,
   formatSiteTime,
   isIsoInstant,
   isoToDateTimeLocal,
@@ -69,6 +71,8 @@ assert.equal(isIsoInstant('2026-11-14T16:30:00.123456Z'), true)
 assert.equal(isIsoInstant('2026-11-14T16:30:00'), false)
 assert.equal(siteDayKey('2026-11-14T16:30:00Z'), '2026-11-15')
 assert.equal(formatSiteDate('2026-11-14T16:30:00Z'), '2026年11月15日 · 周日')
+assert.equal(d1UtcTimestampToIso('2026-08-30 21:43:52'), '2026-08-30T21:43:52Z')
+assert.equal(formatSiteNumericDate('2026-08-30T21:43:52Z'), '2026/8/31')
 assert.equal(formatSiteTime('2026-11-14T16:30:00Z'), '00:30')
 assert.equal(formatSiteCompactDateTime('2026-11-14T16:30:00Z'), '11月15日 00:30')
 assert.equal(

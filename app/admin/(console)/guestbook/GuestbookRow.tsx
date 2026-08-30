@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui'
+import { SITE_TIME_ZONE } from '@/lib/datetime'
 import type { GuestbookMessage, GuestbookMessageStatus } from '@/lib/types'
 import { removeGuestbookMessage, setGuestbookMessageStatus } from '../_actions'
 import styles from '../admin.module.css'
@@ -38,7 +39,9 @@ export function GuestbookRow({ message }: { message: GuestbookMessage }) {
       <div>
         <div className={styles.listTitle}>{message.name}</div>
         <div className={styles.listMeta}>
-          {STATUS_LABEL[message.status]} · {new Date(message.createdAt).toLocaleString('zh-CN')}
+          {STATUS_LABEL[message.status]} · {new Date(message.createdAt).toLocaleString('zh-CN', {
+            timeZone: SITE_TIME_ZONE,
+          })}
         </div>
         <p className={styles.messageBody}>{message.body}</p>
       </div>

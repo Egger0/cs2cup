@@ -3,6 +3,7 @@ export const SITE_TIME_ZONE = 'Asia/Shanghai'
 export type DateTimeValue = string | number | Date
 
 const LOCAL_DATE_TIME = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/
+const D1_UTC_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/
 const ISO_INSTANT =
   /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|([+-])(\d{2}):(\d{2}))$/
 
@@ -97,6 +98,15 @@ export function isIsoInstant(value: unknown): value is string {
   return typeof value === 'string' && parseDateTimeValue(value) !== null
 }
 
+export function d1UtcTimestampToIso(value: string): string | null {
+  const match = D1_UTC_TIMESTAMP.exec(value)
+  if (!match) return null
+
+  const [, year, month, day, hour, minute, second] = match
+  const iso = `${year}-${month}-${day}T${hour}:${minute}:${second}Z`
+  return isIsoInstant(iso) ? iso : null
+}
+
 function siteParts(value: DateTimeValue) {
   const date = parseDateTimeValue(value)
   if (!date) return null
@@ -167,6 +177,12 @@ export function formatSiteDate(value: DateTimeValue): string | null {
   if (!parts) return null
   const weekday = siteWeekdayFormatter.format(parts.date)
   return `${parts.year}年${Number(parts.month)}月${Number(parts.day)}日 · ${weekday}`
+}
+
+export function formatSiteNumericDate(value: DateTimeValue): string | null {
+  const parts = siteParts(value)
+  if (!parts) return null
+  return `${parts.year}/${Number(parts.month)}/${Number(parts.day)}`
 }
 
 export function formatSiteTime(value: DateTimeValue): string | null {

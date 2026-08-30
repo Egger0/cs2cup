@@ -1,5 +1,6 @@
 import 'server-only'
 import { callPublicFunction, selectPublicRow, selectPublicRows } from '../rdb'
+import { d1UtcTimestampToIso } from '../datetime'
 import type {
   ClubMember,
   GuestbookMessage,
@@ -368,7 +369,7 @@ export async function listGuestbookMessages(limit = 50): Promise<GuestbookMessag
     name: row.name,
     body: row.body,
     status: 'published',
-    createdAt: row.created_at,
+    createdAt: d1UtcTimestampToIso(row.created_at) ?? row.created_at,
   }))
 }
 

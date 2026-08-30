@@ -1,5 +1,6 @@
 import { Empty } from '@/components/ui'
 import { SectionHead } from '@/components/domain/Sections'
+import { formatSiteNumericDate } from '@/lib/datetime'
 import { listGuestbookMessages, safely } from '@/lib/queries/public'
 import { GuestbookForm } from './GuestbookForm'
 import styles from './guestbook.module.css'
@@ -37,7 +38,7 @@ export default async function GuestbookPage() {
                     <header>
                       <strong>{message.name}</strong>
                       <time dateTime={message.createdAt}>
-                        {new Date(message.createdAt).toLocaleDateString('zh-CN')}
+                        {formatSiteNumericDate(message.createdAt) ?? message.createdAt}
                       </time>
                     </header>
                     <p>{message.body}</p>

@@ -8,6 +8,7 @@ import {
   updatePrivateRows,
 } from '../rdb'
 import type { ClubMember, Game, GuestbookMessage, GuestbookMessageStatus, Post, Tournament } from '../types'
+import { d1UtcTimestampToIso } from '../datetime'
 
 async function adminMutation<Result>(write: () => Promise<Result>) {
   await requireAdmin()
@@ -229,7 +230,7 @@ const toGuestbookMessage = (row: GuestbookRow): GuestbookMessage => ({
   name: row.name,
   body: row.body,
   status: row.status,
-  createdAt: row.created_at,
+  createdAt: d1UtcTimestampToIso(row.created_at) ?? row.created_at,
 })
 
 export async function adminListGuestbookMessages(): Promise<GuestbookMessage[]> {
