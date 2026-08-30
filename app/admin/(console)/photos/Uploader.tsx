@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button, Field } from '@/components/ui'
+import { normalizeImageFile } from '@/lib/client-image'
 import type { Tournament } from '@/lib/types'
 import { uploadPhoto } from '../_actions'
 import styles from '../admin.module.css'
@@ -20,10 +21,27 @@ export function Uploader({ tournaments }: { tournaments: Tournament[] }) {
       action={formData =>
         startTransition(async () => {
           setError('')
-          setMessage('')
+          setMessage('正在优化图片…')
+          const file = formData.get('file')
+          if (!(file instanceof File)) {
+            setMessage('')
+            setError('请选择一张图片')
+            return
+          }
+          try {
+            formData.set('file', await normalizeImageFile(file))
+          } catch {
+            setMessage('')
+            setError('图片预处理失败，请换一张图片重试')
+            return
+          }
+          setMessage('正在上传…')
           const result = await uploadPhoto(formData)
           if (result.ok) setMessage(`已上传 ${result.width}×${result.height}`)
-          else setError(result.error)
+          else {
+            setMessage('')
+            setError(result.error)
+          }
         })
       }
     >
