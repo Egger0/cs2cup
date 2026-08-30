@@ -179,10 +179,10 @@ export function formatSiteDate(value: DateTimeValue): string | null {
   return `${parts.year}年${Number(parts.month)}月${Number(parts.day)}日 · ${weekday}`
 }
 
-export function formatSiteNumericDate(value: DateTimeValue): string | null {
+export function formatSiteNumericDateTime(value: DateTimeValue): string | null {
   const parts = siteParts(value)
   if (!parts) return null
-  return `${parts.year}/${Number(parts.month)}/${Number(parts.day)}`
+  return `${parts.year}/${Number(parts.month)}/${Number(parts.day)} ${parts.hour}:${parts.minute}`
 }
 
 export function formatSiteTime(value: DateTimeValue): string | null {
