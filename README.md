@@ -5,6 +5,7 @@
 **正式站点：<https://cn.nbtesportsclub.online>**
 
 [![宁波理工电竞社官网首页](docs/images/homepage.png)](https://cn.nbtesportsclub.online)
+（点击图片跳转官网）
 
 ## 网站功能
 
