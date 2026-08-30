@@ -4,6 +4,9 @@
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-08-28",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "vars": {
+    "REGISTRATION_CLIENT_IP_SOURCE": "cf-connecting-ip"
+  },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
