@@ -16,6 +16,7 @@
     "test:seeding": "node --experimental-strip-types scripts/seeding-test.mjs",
     "test:schedule": "node --experimental-strip-types scripts/schedule-test.mjs",
     "test:cloudflare-d1": "node scripts/cloudflare-d1-schema-test.mjs",
+    "test:rdb-filter": "node --experimental-strip-types scripts/rdb-filter-test.mjs",
     "test:csrf": "node --conditions=react-server --experimental-strip-types scripts/csrf-test.mjs",
     "test:registration-fingerprint": "node --experimental-strip-types scripts/registration-fingerprint-test.mjs",
     "test:object-cleanup": "node --experimental-strip-types scripts/object-cleanup-test.mjs",
@@ -23,7 +24,7 @@
     "a11y": "node scripts/a11y.mjs",
     "keyboard": "node scripts/keyboard.mjs",
     "perf": "node scripts/perf.mjs",
-    "check": "npm run typecheck && npm run lint && npm run test:seeding && npm run test:schedule && npm run test:cloudflare-d1 && npm run test:csrf && npm run test:object-cleanup && npm run test:registration-fingerprint && npm run test:site-config"
+    "check": "npm run typecheck && npm run lint && npm run test:seeding && npm run test:schedule && npm run test:cloudflare-d1 && npm run test:rdb-filter && npm run test:csrf && npm run test:object-cleanup && npm run test:registration-fingerprint && npm run test:site-config"
   },
   "dependencies": {
     "@fontsource-variable/big-shoulders": "5.3.0",

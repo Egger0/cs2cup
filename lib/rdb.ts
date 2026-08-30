@@ -1,5 +1,6 @@
 import 'server-only'
 import { cloudflareBindings } from './cloudflare-bindings'
+import { splitFilter } from './rdb-filter'
 
 type SelectionOptions = { select?: string; filters?: Record<string, string>; order?: string; limit?: number }
 export interface PublicQueryOptions extends SelectionOptions { select: string }
@@ -10,7 +11,7 @@ export type PublicFunction = 'registration_status'
 export class RdbError extends Error { constructor(readonly status: number, readonly table: string, message: string) { super(`${table}: ${message}`); this.name = 'RdbError' } }
 const identifier = /^[a-z_]+$/
 function name(value: string) { if (!identifier.test(value)) throw new TypeError('invalid SQL identifier'); return value }
-function predicate(column: string, value: string, values: unknown[]) { const [operator, raw = ''] = value.split('.', 2); if (operator === 'eq' || operator === 'neq') { values.push(raw); return `${name(column)} ${operator === 'eq' ? '=' : '!='} ?` } if (operator === 'in') { const entries = raw.replace(/^\(|\)$/g, '').split(',').filter(Boolean); if (!entries.length) return '0'; values.push(...entries); return `${name(column)} IN (${entries.map(() => '?').join(',')})` } if (operator === 'ilike') { values.push(raw.replaceAll('*', '%')); return `LOWER(${name(column)}) LIKE LOWER(?)` } throw new TypeError(`unsupported filter operator: ${operator}`) }
+function predicate(column: string, value: string, values: unknown[]) { const [operator, raw] = splitFilter(value); if (operator === 'eq' || operator === 'neq') { values.push(raw); return `${name(column)} ${operator === 'eq' ? '=' : '!='} ?` } if (operator === 'in') { const entries = raw.replace(/^\(|\)$/g, '').split(',').filter(Boolean); if (!entries.length) return '0'; values.push(...entries); return `${name(column)} IN (${entries.map(() => '?').join(',')})` } if (operator === 'ilike') { values.push(raw.replaceAll('*', '%')); return `LOWER(${name(column)}) LIKE LOWER(?)` } throw new TypeError(`unsupported filter operator: ${operator}`) }
 function where(filters: Record<string, string> | undefined, values: unknown[]) { if (!filters) return ''; const clauses = Object.entries(filters).filter(([column]) => column !== 'or').map(([column, value]) => predicate(column, value, values)); const disjunction = filters.or?.replace(/^\(|\)$/g, '').split(',').filter(Boolean).map(entry => { const [column, operator, ...rest] = entry.split('.'); return predicate(column ?? '', `${operator ?? ''}.${rest.join('.')}`, values) }) ?? []; if (disjunction.length) clauses.push(`(${disjunction.join(' OR ')})`); return clauses.length ? ` WHERE ${clauses.join(' AND ')}` : '' }
 function ordering(order: string | undefined) {
   if (!order) return ''
