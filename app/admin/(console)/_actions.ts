@@ -37,6 +37,7 @@ import {
   adminSavePost,
   adminSaveTournament,
   adminSetGuestbookMessageStatus,
+  adminSetGuestbookMessagePinned,
   adminDeletePhoto,
   adminGetPhoto,
   adminInsertPhoto,
@@ -386,6 +387,19 @@ export async function setGuestbookMessageStatus(id: number, status: GuestbookMes
     return { ok: false as const, error: '留言状态无效' }
   }
   await adminSetGuestbookMessageStatus(id, status)
+  updateTag('guestbook')
+  return { ok: true as const }
+}
+
+export async function setGuestbookMessagePinned(id: number, pinned: boolean) {
+  await requireAdmin()
+  if (!Number.isSafeInteger(id) || id <= 0) return { ok: false as const, error: '留言编号无效' }
+  try {
+    await adminSetGuestbookMessagePinned(id, pinned)
+  } catch (error) {
+    console.error('[guestbook] pin update failed', error)
+    return { ok: false as const, error: '只有主留言可以置顶' }
+  }
   updateTag('guestbook')
   return { ok: true as const }
 }

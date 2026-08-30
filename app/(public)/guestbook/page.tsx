@@ -44,7 +44,10 @@ export default async function GuestbookPage() {
                 {roots.map(message => (
                   <article key={message.id} className={styles.message}>
                     <header>
-                      <strong>{message.name}</strong>
+                      <strong>
+                        {message.name}
+                        {message.pinned ? <span className={styles.pinned}>置顶</span> : null}
+                      </strong>
                       <time dateTime={message.createdAt}>
                         {formatSiteNumericDateTime(message.createdAt) ?? message.createdAt}
                       </time>

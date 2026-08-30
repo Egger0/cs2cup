@@ -223,6 +223,7 @@ interface GuestbookRow {
   body: string
   parent_id: number | null
   is_official: boolean
+  pinned: boolean
   status: GuestbookMessageStatus
   created_at: string
 }
@@ -233,6 +234,7 @@ const toGuestbookMessage = (row: GuestbookRow): GuestbookMessage => ({
   body: row.body,
   parentId: row.parent_id,
   official: row.is_official,
+  pinned: row.pinned,
   status: row.status,
   createdAt: d1UtcTimestampToIso(row.created_at) ?? row.created_at,
 })
@@ -249,6 +251,12 @@ export async function adminListGuestbookMessages(): Promise<GuestbookMessage[]> 
 export function adminSetGuestbookMessageStatus(id: number, status: GuestbookMessageStatus) {
   return adminMutation(() =>
     updatePrivateRows('guestbook_message', { status }, { filters: { id: `eq.${id}` } }),
+  )
+}
+
+export function adminSetGuestbookMessagePinned(id: number, pinned: boolean) {
+  return adminMutation(() =>
+    updatePrivateRows('guestbook_message', { pinned }, { filters: { id: `eq.${id}` } }),
   )
 }
 

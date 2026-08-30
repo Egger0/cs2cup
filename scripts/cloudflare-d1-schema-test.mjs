@@ -23,11 +23,25 @@ try {
     "INSERT INTO registration_attempt (fingerprint,tournament_id) VALUES ('test',2),('test',2),('test',2);",
     "INSERT INTO guestbook_message (id,name,body,status) VALUES (1,'公开访客','公开留言','published'),(2,'待审核访客','待审核留言','pending');",
     "INSERT INTO guestbook_message (id,name,body,parent_id,status) VALUES (3,'公开回复','公开回复',1,'published'),(4,'待审核回复','待审核回复',1,'pending');",
+    'UPDATE guestbook_message SET pinned = 1 WHERE id = 1;',
     "INSERT INTO guestbook_attempt (fingerprint) VALUES ('guestbook-test'),('guestbook-test'),('guestbook-test'),('guestbook-test'),('guestbook-test');",
-    "SELECT (SELECT COUNT(*) FROM tournament_public) AS visible_tournaments, (SELECT COUNT(*) FROM match_public) AS visible_matches, (SELECT COUNT(*) FROM guestbook_public) AS visible_guestbook_messages;",
+    "SELECT (SELECT COUNT(*) FROM tournament_public) AS visible_tournaments, (SELECT COUNT(*) FROM match_public) AS visible_matches, (SELECT COUNT(*) FROM guestbook_public) AS visible_guestbook_messages, (SELECT id FROM guestbook_public ORDER BY pinned DESC, created_at DESC, id DESC LIMIT 1) AS first_guestbook_id;",
   ].join(' ')])
-  if (!stdout.includes('"visible_tournaments": 1') || !stdout.includes('"visible_matches": 1') || !stdout.includes('"visible_guestbook_messages": 2')) {
+  if (!stdout.includes('"visible_tournaments": 1') || !stdout.includes('"visible_matches": 1') || !stdout.includes('"visible_guestbook_messages": 2') || !stdout.includes('"first_guestbook_id": 1')) {
     throw new Error('public D1 views exposed non-public records')
+  }
+
+  for (const sql of [
+    'UPDATE guestbook_message SET pinned = 1 WHERE id = 3;',
+    "INSERT INTO guestbook_message (name,body,parent_id,pinned,status) VALUES ('访客','置顶回复',1,1,'published');",
+  ]) {
+    try {
+      await wrangler([...common, '--command', sql])
+      throw new Error('guestbook accepted a pinned reply')
+    } catch (error) {
+      const output = `${error.stdout ?? ''}\n${error.stderr ?? ''}`
+      if (!output.includes('只能置顶主留言')) throw error
+    }
   }
 
   for (const [label, sql] of [

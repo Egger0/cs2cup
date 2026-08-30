@@ -101,6 +101,16 @@
   letter-spacing: 0.08em;
 }
 
+.pinned {
+  margin-left: 8px;
+  padding: 2px 6px;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+
 .replyComposer {
   margin-top: 14px;
 }
