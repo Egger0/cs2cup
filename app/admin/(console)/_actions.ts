@@ -23,6 +23,7 @@ import { deleteRecordThenObjects } from '@/lib/object-cleanup'
 import { createPhotoStorageKey } from '@/lib/photo-storage-key'
 import {
   adminCreateGame,
+  adminCreateOfficialGuestbookReply,
   adminCreateMember,
   adminCreatePost,
   adminCreateTournament,
@@ -385,6 +386,25 @@ export async function setGuestbookMessageStatus(id: number, status: GuestbookMes
     return { ok: false as const, error: '留言状态无效' }
   }
   await adminSetGuestbookMessageStatus(id, status)
+  updateTag('guestbook')
+  return { ok: true as const }
+}
+
+export async function createOfficialGuestbookReply(parentId: number, body: string) {
+  await requireAdmin()
+  const content = body.trim()
+  if (!Number.isSafeInteger(parentId) || parentId <= 0) {
+    return { ok: false as const, error: '留言编号无效' }
+  }
+  if (!content || content.length > 500) {
+    return { ok: false as const, error: '官方回复需要填写内容，且不能超过 500 个字符' }
+  }
+  try {
+    await adminCreateOfficialGuestbookReply(parentId, content)
+  } catch (error) {
+    console.error('[guestbook] official reply failed', error)
+    return { ok: false as const, error: '官方回复发布失败，请确认原留言仍为公开状态' }
+  }
   updateTag('guestbook')
   return { ok: true as const }
 }

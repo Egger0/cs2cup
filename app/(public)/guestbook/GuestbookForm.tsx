@@ -6,8 +6,10 @@ import { Button, Field, TextField, Toast } from '@/components/ui'
 import { submitGuestbookMessage } from './actions'
 import styles from './guestbook.module.css'
 
-export function GuestbookForm() {
+export function GuestbookForm({ parentId = null }: { parentId?: number | null }) {
   const router = useRouter()
+  const replying = parentId !== null
+  const idSuffix = parentId ?? 'root'
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
   const [done, setDone] = useState(false)
@@ -36,25 +38,26 @@ export function GuestbookForm() {
     <>
       <form key={formKey} action={submit} className={styles.form}>
         <fieldset disabled={pending} className={styles.fieldset}>
-          <Field id="guestbook-name" name="name" label="昵称" required maxLength={32} placeholder="留下你的称呼" />
+          {replying ? <input type="hidden" name="parentId" value={parentId} /> : null}
+          <Field id={`guestbook-name-${idSuffix}`} name="name" label="昵称" required maxLength={32} placeholder="留下你的称呼" />
           <TextField
-            id="guestbook-body"
+            id={`guestbook-body-${idSuffix}`}
             name="body"
-            label="想说的话"
+            label={replying ? '回复内容' : '想说的话'}
             required
-            rows={5}
+            rows={replying ? 3 : 5}
             maxLength={500}
-            placeholder="欢迎分享建议、比赛感受，或想参与的活动。"
+            placeholder={replying ? '友善地参与讨论。' : '欢迎分享建议、比赛感受，或想参与的活动。'}
           />
-          <p className={styles.hint}>留言需要后台审核，通过后才会公开显示。</p>
+          <p className={styles.hint}>{replying ? '回复' : '留言'}提交后会立即公开；不符合规范的内容可能被管理员删除。</p>
           {error ? <p className={styles.error} role="alert">{error}</p> : null}
           <Button type="submit" variant="primary">
-            {pending ? '提交中…' : '提交留言'}
+            {pending ? '提交中…' : replying ? '提交回复' : '提交留言'}
           </Button>
         </fieldset>
       </form>
 
-      <Toast open={done} title="留言已提交" message="审核通过后会显示在这里。" />
+      <Toast open={done} title={replying ? '回复已发布' : '留言已发布'} message="现在可以在留言板中看到。" />
     </>
   )
 }

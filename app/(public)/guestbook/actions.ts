@@ -33,18 +33,27 @@ export async function submitGuestbookMessage(form: FormData): Promise<GuestbookR
 
   if (!name || !body) return { ok: false, error: '请填写昵称和留言内容' }
 
+  const rawParentId = form.get('parentId')
+  const parentId = rawParentId === null ? null : Number(rawParentId)
+  if (parentId !== null && (!Number.isSafeInteger(parentId) || parentId <= 0)) {
+    return { ok: false, error: '回复的留言无效，请刷新页面后重试' }
+  }
+
   try {
     const fingerprint = await clientFingerprint()
     const { db } = cloudflareBindings()
     await db.batch([
       db.prepare('INSERT INTO guestbook_attempt (fingerprint) VALUES (?)').bind(fingerprint),
-      db.prepare("INSERT INTO guestbook_message (name,body,status) VALUES (?,?,'pending')").bind(name, body),
+      db.prepare("INSERT INTO guestbook_message (name,body,parent_id,status) VALUES (?,?,?,'published')").bind(name, body, parentId),
     ])
     return { ok: true }
   } catch (error) {
     const message = error instanceof Error ? error.message : ''
     if (message.includes('留言太频繁')) {
       return { ok: false, error: '留言太频繁。每 60 分钟最多提交 5 次，请稍后再试。' }
+    }
+    if (message.includes('只能回复已公开留言')) {
+      return { ok: false, error: '这条留言已无法回复，请刷新页面后重试。' }
     }
     console.error('[guestbook] guarded submission unavailable', error)
     return { ok: false, error: '留言服务暂时不可用，请稍后再试。' }

@@ -221,6 +221,8 @@ interface GuestbookRow {
   id: number
   name: string
   body: string
+  parent_id: number | null
+  is_official: boolean
   status: GuestbookMessageStatus
   created_at: string
 }
@@ -229,6 +231,8 @@ const toGuestbookMessage = (row: GuestbookRow): GuestbookMessage => ({
   id: row.id,
   name: row.name,
   body: row.body,
+  parentId: row.parent_id,
+  official: row.is_official,
   status: row.status,
   createdAt: d1UtcTimestampToIso(row.created_at) ?? row.created_at,
 })
@@ -245,6 +249,18 @@ export async function adminListGuestbookMessages(): Promise<GuestbookMessage[]> 
 export function adminSetGuestbookMessageStatus(id: number, status: GuestbookMessageStatus) {
   return adminMutation(() =>
     updatePrivateRows('guestbook_message', { status }, { filters: { id: `eq.${id}` } }),
+  )
+}
+
+export function adminCreateOfficialGuestbookReply(parentId: number, body: string) {
+  return adminMutation(() =>
+    insertPrivateRows('guestbook_message', {
+      name: '宁波理工电竞社',
+      body,
+      parent_id: parentId,
+      is_official: true,
+      status: 'published',
+    }),
   )
 }
 

@@ -107,6 +107,23 @@
   white-space: pre-wrap;
 }
 
+.officialReply {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+  margin-top: 12px;
+}
+
+.officialReply textarea {
+  width: min(100%, 520px);
+  resize: vertical;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-2);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
 .rowActions {
   display: flex;
   flex-wrap: wrap;

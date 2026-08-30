@@ -152,6 +152,8 @@ export interface GuestbookMessage {
   id: number
   name: string
   body: string
+  parentId: number | null
+  official: boolean
   status: GuestbookMessageStatus
   createdAt: string
 }

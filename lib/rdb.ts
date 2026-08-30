@@ -35,7 +35,7 @@ function normalize<Row>(row: Row): Row {
   if (typeof record.game === 'string') {
     try { record.game = JSON.parse(record.game) } catch { record.game = null }
   }
-  for (const key of ['active', 'is_substitute', 'played', 'pinned']) {
+  for (const key of ['active', 'is_official', 'is_substitute', 'played', 'pinned']) {
     if (typeof record[key] === 'number') record[key] = record[key] === 1
   }
   return row

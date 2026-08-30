@@ -36,7 +36,7 @@ const PHOTO_SELECT =
 const MATCH_MAP_SELECT =
   'id,match_id,pick_order,map_name,action,chosen_by,score_a,score_b,played'
 const MEMBER_SELECT = 'id,name,role,handle,intro,sort_order'
-const GUESTBOOK_SELECT = 'id,name,body,created_at'
+const GUESTBOOK_SELECT = 'id,name,body,parent_id,is_official,created_at'
 const POST_SELECT = 'id,game_id,slug,title,summary,body,published_at,pinned'
 const GAME_SELECT =
   'id,slug,name,name_en,accent_color,tagline,description,format_note,sort_order,active'
@@ -355,6 +355,8 @@ interface GuestbookRow {
   id: number
   name: string
   body: string
+  parent_id: number | null
+  is_official: boolean
   created_at: string
 }
 
@@ -368,6 +370,8 @@ export async function listGuestbookMessages(limit = 50): Promise<GuestbookMessag
     id: row.id,
     name: row.name,
     body: row.body,
+    parentId: row.parent_id,
+    official: row.is_official,
     status: 'published',
     createdAt: d1UtcTimestampToIso(row.created_at) ?? row.created_at,
   }))

@@ -10,7 +10,15 @@ export const dynamic = 'force-dynamic'
 export const metadata = { title: '留言板 · 宁波理工电竞社' }
 
 export default async function GuestbookPage() {
-  const messages = await safely(() => listGuestbookMessages(), [])
+  const messages = await safely(() => listGuestbookMessages(200), [])
+  const roots = messages.filter(message => message.parentId === null)
+  const repliesByParent = new Map<number, typeof messages>()
+  for (const message of messages) {
+    if (message.parentId === null) continue
+    const replies = repliesByParent.get(message.parentId) ?? []
+    replies.push(message)
+    repliesByParent.set(message.parentId, replies)
+  }
 
   return (
     <section className="section">
@@ -29,11 +37,11 @@ export default async function GuestbookPage() {
 
           <div className={styles.messages}>
             <h2>大家在说</h2>
-            {messages.length === 0 ? (
+            {roots.length === 0 ? (
               <Empty>还没有公开留言，来写第一条吧。</Empty>
             ) : (
               <div className={styles.list}>
-                {messages.map(message => (
+                {roots.map(message => (
                   <article key={message.id} className={styles.message}>
                     <header>
                       <strong>{message.name}</strong>
@@ -42,6 +50,24 @@ export default async function GuestbookPage() {
                       </time>
                     </header>
                     <p>{message.body}</p>
+                    {(repliesByParent.get(message.id) ?? []).slice().reverse().map(reply => (
+                      <article key={reply.id} className={styles.reply}>
+                        <header>
+                          <strong>
+                            {reply.name}
+                            {reply.official ? <span className={styles.official}>官方</span> : null}
+                          </strong>
+                          <time dateTime={reply.createdAt}>
+                            {formatSiteNumericDateTime(reply.createdAt) ?? reply.createdAt}
+                          </time>
+                        </header>
+                        <p>{reply.body}</p>
+                      </article>
+                    ))}
+                    <details className={styles.replyComposer}>
+                      <summary>回复</summary>
+                      <GuestbookForm parentId={message.id} />
+                    </details>
                   </article>
                 ))}
               </div>
