@@ -21,10 +21,20 @@ try {
     "INSERT INTO tournament (id,slug,title,game_id,season,edition,status,team_cap) VALUES (1,'draft','Draft',1,'2026',1,'draft',4),(2,'live','Live',1,'2026',2,'registration',4);",
     "INSERT INTO match (id,tournament_id,round,slot,round_label) VALUES (1,1,0,0,'Draft'),(2,2,0,0,'Live');",
     "INSERT INTO registration_attempt (fingerprint,tournament_id) VALUES ('test',2),('test',2),('test',2);",
-    "SELECT (SELECT COUNT(*) FROM tournament_public) AS visible_tournaments, (SELECT COUNT(*) FROM match_public) AS visible_matches;",
+    "INSERT INTO guestbook_message (id,name,body,status) VALUES (1,'公开访客','公开留言','published'),(2,'待审核访客','待审核留言','pending');",
+    "INSERT INTO guestbook_attempt (fingerprint) VALUES ('guestbook-test'),('guestbook-test'),('guestbook-test'),('guestbook-test'),('guestbook-test');",
+    "SELECT (SELECT COUNT(*) FROM tournament_public) AS visible_tournaments, (SELECT COUNT(*) FROM match_public) AS visible_matches, (SELECT COUNT(*) FROM guestbook_public) AS visible_guestbook_messages;",
   ].join(' ')])
-  if (!stdout.includes('"visible_tournaments": 1') || !stdout.includes('"visible_matches": 1')) {
-    throw new Error('public D1 views exposed draft records')
+  if (!stdout.includes('"visible_tournaments": 1') || !stdout.includes('"visible_matches": 1') || !stdout.includes('"visible_guestbook_messages": 1')) {
+    throw new Error('public D1 views exposed non-public records')
+  }
+
+  try {
+    await wrangler([...common, '--command', "INSERT INTO guestbook_attempt (fingerprint) VALUES ('guestbook-test');"])
+    throw new Error('guestbook rate-limit trigger did not reject the sixth attempt')
+  } catch (error) {
+    const output = `${error.stdout ?? ''}\n${error.stderr ?? ''}`
+    if (!output.includes('留言太频繁')) throw error
   }
 
   try {

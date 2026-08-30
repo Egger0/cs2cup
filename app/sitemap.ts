@@ -20,6 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/archive`, lastModified: now, priority: 0.6 },
     { url: `${BASE}/news`, lastModified: now, priority: 0.7 },
     { url: `${BASE}/about`, lastModified: now, priority: 0.6 },
+    { url: `${BASE}/guestbook`, lastModified: now, priority: 0.5 },
     ...games.map(game => ({ url: `${BASE}/games/${game.slug}`, lastModified: now, priority: 0.7 })),
     ...tournaments.flatMap(tournament => {
       const base = `${BASE}/tournaments/${tournament.slug}`

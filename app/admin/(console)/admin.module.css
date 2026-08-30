@@ -99,6 +99,14 @@
   margin-top: 6px;
 }
 
+.messageBody {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
 .rowActions {
   display: flex;
   flex-wrap: wrap;

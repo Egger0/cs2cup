@@ -7,7 +7,7 @@ import {
   selectPrivateRows,
   updatePrivateRows,
 } from '../rdb'
-import type { ClubMember, Game, Post, Tournament } from '../types'
+import type { ClubMember, Game, GuestbookMessage, GuestbookMessageStatus, Post, Tournament } from '../types'
 
 async function adminMutation<Result>(write: () => Promise<Result>) {
   await requireAdmin()
@@ -213,6 +213,43 @@ export function adminSaveMember(id: number, values: Partial<ClubMember>) {
 export function adminDeleteMember(id: number) {
   return adminMutation(() =>
     deletePrivateRows('club_member', { filters: { id: `eq.${id}` } }),
+  )
+}
+
+interface GuestbookRow {
+  id: number
+  name: string
+  body: string
+  status: GuestbookMessageStatus
+  created_at: string
+}
+
+const toGuestbookMessage = (row: GuestbookRow): GuestbookMessage => ({
+  id: row.id,
+  name: row.name,
+  body: row.body,
+  status: row.status,
+  createdAt: row.created_at,
+})
+
+export async function adminListGuestbookMessages(): Promise<GuestbookMessage[]> {
+  await requireAdmin()
+
+  const rows = await selectPrivateRows<GuestbookRow>('guestbook_message', {
+    order: 'created_at.desc,id.desc',
+  })
+  return rows.map(toGuestbookMessage)
+}
+
+export function adminSetGuestbookMessageStatus(id: number, status: GuestbookMessageStatus) {
+  return adminMutation(() =>
+    updatePrivateRows('guestbook_message', { status }, { filters: { id: `eq.${id}` } }),
+  )
+}
+
+export function adminDeleteGuestbookMessage(id: number) {
+  return adminMutation(() =>
+    deletePrivateRows('guestbook_message', { filters: { id: `eq.${id}` } }),
   )
 }
 

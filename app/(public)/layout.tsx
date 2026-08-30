@@ -15,6 +15,7 @@ const LINKS = [
   { href: '/news', label: '动态' },
   { href: '/archive', label: '存档' },
   { href: '/about', label: '关于' },
+  { href: '/guestbook', label: '留言' },
   { href: '/search', label: '搜索' },
 ]
 

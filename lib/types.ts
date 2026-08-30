@@ -146,6 +146,16 @@ export interface ClubMember {
   sortOrder: number
 }
 
+export type GuestbookMessageStatus = 'pending' | 'published' | 'hidden'
+
+export interface GuestbookMessage {
+  id: number
+  name: string
+  body: string
+  status: GuestbookMessageStatus
+  createdAt: string
+}
+
 export interface Post {
   id: number
   gameId: number | null

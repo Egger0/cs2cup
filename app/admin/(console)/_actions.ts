@@ -26,6 +26,7 @@ import {
   adminCreateMember,
   adminCreatePost,
   adminCreateTournament,
+  adminDeleteGuestbookMessage,
   adminDeleteGame,
   adminDeleteMember,
   adminDeletePost,
@@ -34,6 +35,7 @@ import {
   adminSaveMember,
   adminSavePost,
   adminSaveTournament,
+  adminSetGuestbookMessageStatus,
   adminDeletePhoto,
   adminGetPhoto,
   adminInsertPhoto,
@@ -44,6 +46,7 @@ import {
 import { RdbError } from '@/lib/rdb'
 import type { MatchMapInput, MatchScheduleInput } from '@/lib/queries/admin'
 import type { TeamStatus, VetoAction } from '@/lib/types'
+import type { GuestbookMessageStatus } from '@/lib/types'
 
 function readRdbPayload(error: RdbError) {
   const raw = error.message.slice(error.message.indexOf(':') + 1).trim()
@@ -373,6 +376,25 @@ export async function removeMember(id: number) {
   await requireAdmin()
   await adminDeleteMember(id)
   updateTag('club_member')
+}
+
+export async function setGuestbookMessageStatus(id: number, status: GuestbookMessageStatus) {
+  await requireAdmin()
+  if (!Number.isSafeInteger(id) || id <= 0) return { ok: false as const, error: '留言编号无效' }
+  if (!['pending', 'published', 'hidden'].includes(status)) {
+    return { ok: false as const, error: '留言状态无效' }
+  }
+  await adminSetGuestbookMessageStatus(id, status)
+  updateTag('guestbook')
+  return { ok: true as const }
+}
+
+export async function removeGuestbookMessage(id: number) {
+  await requireAdmin()
+  if (!Number.isSafeInteger(id) || id <= 0) return { ok: false as const, error: '留言编号无效' }
+  await adminDeleteGuestbookMessage(id)
+  updateTag('guestbook')
+  return { ok: true as const }
 }
 
 export async function createTournament(form: FormData) {

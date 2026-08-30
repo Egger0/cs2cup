@@ -5,7 +5,7 @@ import { splitFilter } from './rdb-filter'
 type SelectionOptions = { select?: string; filters?: Record<string, string>; order?: string; limit?: number }
 export interface PublicQueryOptions extends SelectionOptions { select: string }
 export type PrivateQueryOptions = SelectionOptions
-export const PUBLIC_RELATIONS = ['club_member','game','match_map_public','match_public','photo_public','player_public','post','site_setting','team_public','tournament_public'] as const
+export const PUBLIC_RELATIONS = ['club_member','game','guestbook_public','match_map_public','match_public','photo_public','player_public','post','site_setting','team_public','tournament_public'] as const
 export type PublicRelation = (typeof PUBLIC_RELATIONS)[number]
 export type PublicFunction = 'registration_status'
 export class RdbError extends Error { constructor(readonly status: number, readonly table: string, message: string) { super(`${table}: ${message}`); this.name = 'RdbError' } }

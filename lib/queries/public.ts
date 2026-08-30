@@ -2,6 +2,7 @@ import 'server-only'
 import { callPublicFunction, selectPublicRow, selectPublicRows } from '../rdb'
 import type {
   ClubMember,
+  GuestbookMessage,
   Game,
   FaqItem,
   Match,
@@ -34,6 +35,7 @@ const PHOTO_SELECT =
 const MATCH_MAP_SELECT =
   'id,match_id,pick_order,map_name,action,chosen_by,score_a,score_b,played'
 const MEMBER_SELECT = 'id,name,role,handle,intro,sort_order'
+const GUESTBOOK_SELECT = 'id,name,body,created_at'
 const POST_SELECT = 'id,game_id,slug,title,summary,body,published_at,pinned'
 const GAME_SELECT =
   'id,slug,name,name_en,accent_color,tagline,description,format_note,sort_order,active'
@@ -345,6 +347,28 @@ export async function listMembers(): Promise<ClubMember[]> {
     handle: row.handle,
     intro: row.intro,
     sortOrder: row.sort_order,
+  }))
+}
+
+interface GuestbookRow {
+  id: number
+  name: string
+  body: string
+  created_at: string
+}
+
+export async function listGuestbookMessages(limit = 50): Promise<GuestbookMessage[]> {
+  const rows = await selectPublicRows<GuestbookRow>('guestbook_public', {
+    select: GUESTBOOK_SELECT,
+    order: 'created_at.desc,id.desc',
+    limit,
+  })
+  return rows.map(row => ({
+    id: row.id,
+    name: row.name,
+    body: row.body,
+    status: 'published',
+    createdAt: row.created_at,
   }))
 }
 

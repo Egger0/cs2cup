@@ -1,0 +1,87 @@
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.submit,
+.messages {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: clamp(20px, 3vw, 30px);
+}
+
+.submit h2,
+.messages h2 {
+  margin-bottom: 20px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.25rem;
+}
+
+.form {
+  display: grid;
+}
+
+.fieldset {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.hint {
+  color: var(--muted-2);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.error {
+  color: var(--c4);
+  font-size: 0.86rem;
+}
+
+.list {
+  border-top: 1px solid var(--line);
+}
+
+.message {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.message header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.message strong {
+  color: var(--accent);
+  font-family: var(--font-display), sans-serif;
+  font-size: 1rem;
+}
+
+.message time {
+  flex: none;
+  color: var(--muted-2);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
+
+.message p {
+  margin-top: 10px;
+  color: var(--muted);
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 780px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
