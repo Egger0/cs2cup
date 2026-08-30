@@ -23,9 +23,11 @@ import { deleteRecordThenObjects } from '@/lib/object-cleanup'
 import { createPhotoStorageKey } from '@/lib/photo-storage-key'
 import {
   adminCreateGame,
+  adminCreateMember,
   adminCreatePost,
   adminCreateTournament,
   adminDeleteGame,
+  adminDeleteMember,
   adminDeletePost,
   adminDeleteTournament,
   adminSaveGame,
@@ -346,9 +348,30 @@ export async function updateMember(id: number, form: FormData) {
   await requireAdmin()
   await adminSaveMember(id, {
     name: String(form.get('name') ?? '').trim(),
+    role: String(form.get('role') ?? '').trim(),
     handle: String(form.get('handle') ?? '').trim() || null,
     intro: String(form.get('intro') ?? '').trim() || null,
+    sortOrder: Number(form.get('sortOrder')) || 0,
   })
+  updateTag('club_member')
+}
+
+export async function createMember(form: FormData) {
+  await requireAdmin()
+  await adminCreateMember({
+    name: String(form.get('name') ?? '').trim(),
+    role: String(form.get('role') ?? '').trim(),
+    handle: String(form.get('handle') ?? '').trim() || null,
+    intro: String(form.get('intro') ?? '').trim() || null,
+    sortOrder: Number(form.get('sortOrder')) || 0,
+  })
+  updateTag('club_member')
+  redirect('/admin/members')
+}
+
+export async function removeMember(id: number) {
+  await requireAdmin()
+  await adminDeleteMember(id)
   updateTag('club_member')
 }
 

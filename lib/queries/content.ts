@@ -186,13 +186,33 @@ export async function adminListMembers(): Promise<ClubMember[]> {
   }))
 }
 
+export function adminCreateMember(values: Omit<ClubMember, 'id'>) {
+  return adminMutation(() =>
+    insertPrivateRows('club_member', {
+      name: values.name,
+      role: values.role,
+      handle: values.handle,
+      intro: values.intro,
+      sort_order: values.sortOrder,
+    }),
+  )
+}
+
 export function adminSaveMember(id: number, values: Partial<ClubMember>) {
   const payload: Record<string, unknown> = {}
   if (values.name !== undefined) payload.name = values.name
+  if (values.role !== undefined) payload.role = values.role
   if (values.handle !== undefined) payload.handle = values.handle
   if (values.intro !== undefined) payload.intro = values.intro
+  if (values.sortOrder !== undefined) payload.sort_order = values.sortOrder
   return adminMutation(() =>
     updatePrivateRows('club_member', payload, { filters: { id: `eq.${id}` } }),
+  )
+}
+
+export function adminDeleteMember(id: number) {
+  return adminMutation(() =>
+    deletePrivateRows('club_member', { filters: { id: `eq.${id}` } }),
   )
 }
 
