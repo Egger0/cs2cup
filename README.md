@@ -68,8 +68,8 @@ npm run cf:build
 ```
 
 `npm run check` is the single local and CI quality entry point. It checks formatting, types,
-ESLint, deterministic tests, and source-size limits. Implementation files are limited to 300
-non-comment lines.
+ESLint, deterministic tests, and source-size limits. Source files are limited to 300 non-empty
+lines.
 
 Repository documentation, configuration, comments, identifiers, and file names use English.
 User-facing copy may use Chinese.
