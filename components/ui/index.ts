@@ -1,5 +1,5 @@
 export { Badge } from './Badge'
-export { Button } from './Button'
+export { Button, ButtonLink } from './Button'
 export { Empty } from './Empty'
 export { Field, TextField } from './Field'
 export { Toast } from './Toast'

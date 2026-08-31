@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Button } from '@/components/ui'
+import { ButtonLink } from '@/components/ui'
 import { PostList } from '@/components/domain/PostList'
 import { ResultsTable } from '@/components/domain/ResultsTable'
 import { SectionHead } from '@/components/domain/Sections'
@@ -75,13 +75,11 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
                     : '本届不再接受报名。'}
               </p>
               {acceptingEntries ? (
-                <Link href={`/tournaments/${slug}/register`}>
-                  <Button variant="primary">报名参赛</Button>
-                </Link>
+                <ButtonLink href={`/tournaments/${slug}/register`} variant="primary">
+                  报名参赛
+                </ButtonLink>
               ) : (
-                <Link href={`/tournaments/${slug}/teams`}>
-                  <Button>看看谁报了名</Button>
-                </Link>
+                <ButtonLink href={`/tournaments/${slug}/teams`}>看看谁报了名</ButtonLink>
               )}
             </div>
 
