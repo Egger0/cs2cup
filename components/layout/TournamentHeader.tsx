@@ -4,9 +4,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { formatSiteCompactDateTime } from '@/lib/datetime'
 import { TournamentTabs, type TournamentTab } from './TournamentTabs'
-import styles from './TournamentShell.module.css'
+import styles from './TournamentHeader.module.css'
 
-export interface NextMatchSummary {
+interface NextMatchSummary {
   id: number
   roundLabel: string
   bestOf: number
@@ -17,7 +17,7 @@ export interface NextMatchSummary {
   bName: string
 }
 
-export interface TournamentHeaderProps {
+interface TournamentHeaderProps {
   base: string
   status: string
   eyebrow: string
@@ -76,26 +76,26 @@ export function TournamentHeader({
             {compact ? null : <p className={styles.tagline}>{tagline}</p>}
 
             {compact ? null : (
-            <div className={styles.rail}>
-              <span className={styles.railItem}>
-                <span className={styles.railValue}>
-                  {seats[0]}
-                  <span className={styles.railTotal}>/{seats[1]}</span>
+              <div className={styles.rail}>
+                <span className={styles.railItem}>
+                  <span className={styles.railValue}>
+                    {seats[0]}
+                    <span className={styles.railTotal}>/{seats[1]}</span>
+                  </span>
+                  <span className={styles.railKey}>席位</span>
                 </span>
-                <span className={styles.railKey}>席位</span>
-              </span>
-              <span className={styles.railItem}>
-                <span className={styles.railValue}>
-                  {played[0]}
-                  <span className={styles.railTotal}>/{played[1]}</span>
+                <span className={styles.railItem}>
+                  <span className={styles.railValue}>
+                    {played[0]}
+                    <span className={styles.railTotal}>/{played[1]}</span>
+                  </span>
+                  <span className={styles.railKey}>已完赛</span>
                 </span>
-                <span className={styles.railKey}>已完赛</span>
-              </span>
-              <span className={styles.railItem}>
-                <span className={styles.railValue}>{maps}</span>
-                <span className={styles.railKey}>现役地图</span>
-              </span>
-            </div>
+                <span className={styles.railItem}>
+                  <span className={styles.railValue}>{maps}</span>
+                  <span className={styles.railKey}>现役地图</span>
+                </span>
+              </div>
             )}
           </div>
 

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import styles from './admin.module.css'
+import styles from './shell.module.css'
 
 const LINKS = [
   { href: '/admin', label: '报名与赛果', exact: true },

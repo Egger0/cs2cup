@@ -16,10 +16,7 @@ for (const value of [
   'https://example.com?preview=1',
   'https://example.com#section',
 ]) {
-  assert.throws(
-    () => resolveSiteOrigin(value),
-    /must be an absolute HTTP\(S\) origin/,
-  )
+  assert.throws(() => resolveSiteOrigin(value), /must be an absolute HTTP\(S\) origin/)
 }
 
 console.log('site configuration tests passed')

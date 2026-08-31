@@ -24,11 +24,8 @@ const {
   isoToDateTimeLocal,
   siteDayKey,
 } = await import('../lib/datetime.ts')
-const {
-  buildScheduleEntries,
-  groupScheduleEntries,
-  selectNextScheduleEntry,
-} = await import('../lib/schedule.ts')
+const { buildScheduleEntries, groupScheduleEntries, selectNextScheduleEntry } =
+  await import('../lib/schedule.ts')
 
 const tournamentId = 1
 
@@ -75,10 +72,7 @@ assert.equal(d1UtcTimestampToIso('2026-08-30 21:43:52'), '2026-08-30T21:43:52Z')
 assert.equal(formatSiteNumericDateTime('2026-08-30T21:43:52Z'), '2026/8/31 05:43')
 assert.equal(formatSiteTime('2026-11-14T16:30:00Z'), '00:30')
 assert.equal(formatSiteCompactDateTime('2026-11-14T16:30:00Z'), '11月15日 00:30')
-assert.equal(
-  formatSiteDateTime('2026-11-14T16:30:00Z'),
-  '2026年11月15日 · 周日 · 00:30',
-)
+assert.equal(formatSiteDateTime('2026-11-14T16:30:00Z'), '2026年11月15日 · 周日 · 00:30')
 assert.equal(dateTimeLocalToIso('2024-02-29T23:59'), '2024-02-29T15:59:00.000Z')
 assert.equal(
   dateTimeLocalToIso('1988-07-01T12:00'),
@@ -100,7 +94,11 @@ for (const invalid of [
   assert.equal(dateTimeLocalToIso(invalid), null, `invalid local date must fail closed: ${invalid}`)
 }
 assert.equal(isoToDateTimeLocal('2026-02-30T12:00:00Z'), null)
-assert.equal(siteDayKey('2026-11-14T12:00:00'), null, 'an instant without an offset must fail closed')
+assert.equal(
+  siteDayKey('2026-11-14T12:00:00'),
+  null,
+  'an instant without an offset must fail closed',
+)
 assert.equal(formatSiteTime(Number.NaN), null)
 assert.equal(formatSiteDate(new Date(Number.NaN)), null)
 
@@ -182,7 +180,11 @@ assert.deepEqual(
   [10, 11, 12, 21, 20, 22, 41, 30, 31],
   'scheduled matches must sort chronologically and unscheduled matches by bracket order',
 )
-assert.equal(entries.some(entry => entry.match.id === bye.id), false, 'byes must be excluded')
+assert.equal(
+  entries.some(entry => entry.match.id === bye.id),
+  false,
+  'byes must be excluded',
+)
 assert.equal(
   entries.some(entry => entry.match.id === orphanedMatch.id),
   true,
@@ -201,13 +203,14 @@ assert.equal(byId.get(20)?.a?.id, 1, 'a later round must resolve a completed sou
 assert.equal(byId.get(20)?.b, null, 'an unresolved source must leave its side waiting')
 
 const groups = groupScheduleEntries(entries)
-assert.deepEqual(groups.map(group => group.key), [
-  '2026-11-14',
-  '2026-11-15',
-  '2026-11-16',
-  'unscheduled',
-])
-assert.deepEqual(groups.at(-1)?.entries.map(entry => entry.match.id), [41, 30, 31])
+assert.deepEqual(
+  groups.map(group => group.key),
+  ['2026-11-14', '2026-11-15', '2026-11-16', 'unscheduled'],
+)
+assert.deepEqual(
+  groups.at(-1)?.entries.map(entry => entry.match.id),
+  [41, 30, 31],
+)
 assert.equal(groups[0]?.label, '2026年11月14日 · 周六')
 assert.equal(groups.at(-1)?.label, '时间待定')
 
@@ -217,42 +220,52 @@ assert.equal(
   'the earliest future match must win over bracket order and waiting later matches',
 )
 
-const withoutFuture = entries.filter(entry => entry.scheduledTime === null || entry.scheduledTime < now)
+const withoutFuture = entries.filter(
+  entry => entry.scheduledTime === null || entry.scheduledTime < now,
+)
 assert.equal(
   selectNextScheduleEntry(withoutFuture, now)?.match.id,
   overdue.id,
   'the closest playable overdue match must be the fallback',
 )
 
-const unresolvedOverdue = buildScheduleEntries([
-  match(50, {
-    round: 2,
-    slot: 0,
-    teamAId: null,
-    teamBId: null,
-    sourceMatchAId: 98,
-    sourceMatchBId: 99,
-    scheduledAt: '2026-11-15T03:30:00Z',
-  }),
-  overdue,
-], teams, now)
+const unresolvedOverdue = buildScheduleEntries(
+  [
+    match(50, {
+      round: 2,
+      slot: 0,
+      teamAId: null,
+      teamBId: null,
+      sourceMatchAId: 98,
+      sourceMatchBId: 99,
+      scheduledAt: '2026-11-15T03:30:00Z',
+    }),
+    overdue,
+  ],
+  teams,
+  now,
+)
 assert.equal(
   selectNextScheduleEntry(unresolvedOverdue, now)?.match.id,
   overdue.id,
   'a playable overdue match must beat a more recent unresolved overdue match',
 )
 
-const onlyUnscheduled = buildScheduleEntries([
-  match(60, {
-    round: 1,
-    slot: 0,
-    teamAId: null,
-    teamBId: null,
-    sourceMatchAId: 98,
-    sourceMatchBId: 99,
-  }),
-  match(61, { round: 2, slot: 0, teamAId: 3, teamBId: 4 }),
-], teams, now)
+const onlyUnscheduled = buildScheduleEntries(
+  [
+    match(60, {
+      round: 1,
+      slot: 0,
+      teamAId: null,
+      teamBId: null,
+      sourceMatchAId: 98,
+      sourceMatchBId: 99,
+    }),
+    match(61, { round: 2, slot: 0, teamAId: 3, teamBId: 4 }),
+  ],
+  teams,
+  now,
+)
 assert.equal(
   selectNextScheduleEntry(onlyUnscheduled, now)?.match.id,
   61,

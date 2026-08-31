@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { Button, Field } from '@/components/ui'
 import { normalizeImageFile } from '@/lib/client-image'
 import type { Tournament } from '@/lib/types'
-import { uploadPhoto } from '../_actions'
+import { uploadPhoto } from '../actions/media'
 import styles from '../admin.module.css'
 
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024

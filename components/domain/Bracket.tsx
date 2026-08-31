@@ -5,7 +5,7 @@ import { formatSiteCompactDateTime } from '@/lib/datetime'
 import type { Match, PublicTeam } from '@/lib/types'
 import styles from './Bracket.module.css'
 
-export interface BracketProps {
+interface BracketProps {
   matches: Match[]
   teams: PublicTeam[]
   slug: string

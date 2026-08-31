@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Button, Field, TextField } from '@/components/ui'
 import type { Game, Post } from '@/lib/types'
-import { removePost, updatePost } from '../_actions'
+import { removePost, updatePost } from '../actions/content'
 import styles from '../admin.module.css'
 
 export function PostEditor({ post, games }: { post: Post; games: Game[] }) {

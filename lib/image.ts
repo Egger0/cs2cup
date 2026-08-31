@@ -1,4 +1,4 @@
-export interface ImageSize {
+interface ImageSize {
   width: number
   height: number
 }
@@ -20,7 +20,10 @@ function jpegSize(buffer: Buffer): ImageSize | null {
     const marker = buffer[offset + 1]
     if (marker === undefined) break
     if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
-      return { height: buffer.readUInt16BE(offset + 5), width: buffer.readUInt16BE(offset + 7) }
+      return {
+        height: buffer.readUInt16BE(offset + 5),
+        width: buffer.readUInt16BE(offset + 7),
+      }
     }
     offset += 2 + buffer.readUInt16BE(offset + 2)
   }
@@ -36,7 +39,10 @@ function webpSize(buffer: Buffer): ImageSize | null {
   if (buffer.length < 30) return null
   const format = buffer.toString('ascii', 12, 16)
   if (format === 'VP8 ') {
-    return { width: buffer.readUInt16LE(26) & 0x3fff, height: buffer.readUInt16LE(28) & 0x3fff }
+    return {
+      width: buffer.readUInt16LE(26) & 0x3fff,
+      height: buffer.readUInt16LE(28) & 0x3fff,
+    }
   }
   if (format === 'VP8L') {
     const bits = buffer.readUInt32LE(21)

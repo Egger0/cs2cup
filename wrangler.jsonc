@@ -5,24 +5,24 @@
   "compatibility_date": "2026-08-28",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "vars": {
-    "REGISTRATION_CLIENT_IP_SOURCE": "cf-connecting-ip"
+    "REGISTRATION_CLIENT_IP_SOURCE": "cf-connecting-ip",
   },
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
   },
   "d1_databases": [
     {
       "binding": "CS2CUP_DB",
       "database_name": "cs2cup-preview-db",
       "database_id": "eb3b131a-657d-431c-8ffc-05b7796ede29",
-      "migrations_dir": "cloudflare/d1"
-    }
+      "migrations_dir": "cloudflare/d1",
+    },
   ],
   "r2_buckets": [
     {
       "binding": "CS2CUP_MEDIA",
-      "bucket_name": "cs2cup-preview-media"
-    }
-  ]
+      "bucket_name": "cs2cup-preview-media",
+    },
+  ],
 }

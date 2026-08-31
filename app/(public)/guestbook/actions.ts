@@ -44,7 +44,11 @@ export async function submitGuestbookMessage(form: FormData): Promise<GuestbookR
     const { db } = cloudflareBindings()
     await db.batch([
       db.prepare('INSERT INTO guestbook_attempt (fingerprint) VALUES (?)').bind(fingerprint),
-      db.prepare("INSERT INTO guestbook_message (name,body,parent_id,status) VALUES (?,?,?,'published')").bind(name, body, parentId),
+      db
+        .prepare(
+          "INSERT INTO guestbook_message (name,body,parent_id,status) VALUES (?,?,?,'published')",
+        )
+        .bind(name, body, parentId),
     ])
     return { ok: true }
   } catch (error) {

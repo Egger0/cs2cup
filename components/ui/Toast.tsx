@@ -1,6 +1,6 @@
 import styles from './Toast.module.css'
 
-export interface ToastProps {
+interface ToastProps {
   open: boolean
   title: string
   message?: string

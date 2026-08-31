@@ -28,8 +28,16 @@ for (const invalid of [-1, 0, 1, 2.5]) {
 const sixTeamPairs = firstRoundPairs(bracketSize(6))
 const sixTeamByes = sixTeamPairs.filter(([a, b]) => a > 6 || b > 6)
 
-assert.deepEqual(sixTeamPairs, [[1, 8], [4, 5], [2, 7], [3, 6]])
-assert.deepEqual(sixTeamByes, [[1, 8], [2, 7]])
+assert.deepEqual(sixTeamPairs, [
+  [1, 8],
+  [4, 5],
+  [2, 7],
+  [3, 6],
+])
+assert.deepEqual(sixTeamByes, [
+  [1, 8],
+  [2, 7],
+])
 assert.equal(sixTeamByes.length, 2)
 
 const partialSeeds = [

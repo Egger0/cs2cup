@@ -26,14 +26,16 @@ export default async function SearchPage({
   return (
     <section className="section">
       <div className="wrap">
-        <SectionHead
-          eyebrow="搜索"
-          title="找点什么"
-          lede="赛事、战队、项目和动态都能搜。"
-        />
+        <SectionHead eyebrow="搜索" title="找点什么" lede="赛事、战队、项目和动态都能搜。" />
 
         <form className={styles.form} action="/search">
-          <Field id="q" name="q" label="关键词" defaultValue={q} placeholder="例:宁理杯、FROST、纳新" />
+          <Field
+            id="q"
+            name="q"
+            label="关键词"
+            defaultValue={q}
+            placeholder="例:宁理杯、FROST、纳新"
+          />
           <button type="submit" className={styles.go}>
             搜索
           </button>

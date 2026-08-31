@@ -2,8 +2,7 @@ import { chromium } from 'playwright'
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:3000'
 
-// Budgets are based on measured values with roughly 15% headroom.
-// The display font is an intentional part of the site's visual identity.
+// Budgets keep roughly 15% headroom and retain the site's display font.
 const BUDGET = {
   transferKb: 700,
   jsKb: 180,
@@ -14,10 +13,7 @@ const BUDGET = {
   requests: 60,
 }
 
-// The legacy archive currently serves private originals through the guarded,
-// no-store media route. Keep a measured, ratchetable ceiling until the media
-// phase introduces authorization-aware thumbnail derivatives; never route
-// withdrawn originals through Next.js' shared optimizer just to meet a budget.
+// Keep the guarded archive ceiling until authorization-aware thumbnails replace originals.
 const PAGE_BUDGET = {
   '/archive': {
     transferKb: 2400,

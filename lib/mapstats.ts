@@ -16,7 +16,16 @@ export function mapStats(maps: MatchMap[], pool: string[]): MapStat[] {
   const ensure = (name: string) => {
     let stat = byName.get(name)
     if (!stat) {
-      stat = { name, picked: 0, banned: 0, decider: 0, played: 0, total: 0, pickRate: 0, banRate: 0 }
+      stat = {
+        name,
+        picked: 0,
+        banned: 0,
+        decider: 0,
+        played: 0,
+        total: 0,
+        pickRate: 0,
+        banRate: 0,
+      }
       byName.set(name, stat)
     }
     return stat

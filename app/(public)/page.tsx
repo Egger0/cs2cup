@@ -90,15 +90,19 @@ export default async function HomePage() {
               <NextMatchCountdown
                 tournamentTitle={current?.title ?? '本地预览'}
                 scheduleHref={current ? `/tournaments/${current.slug}/schedule` : undefined}
-                match={nextMatch && current ? {
-                  href: `/tournaments/${current.slug}/matches/${nextMatch.match.id}`,
-                  scheduledAt: nextMatch.match.scheduledAt,
-                  roundLabel: nextMatch.match.roundLabel,
-                  bestOf: nextMatch.match.bestOf,
-                  teamA: nextMatch.a?.tag ?? '待定',
-                  teamB: nextMatch.b?.tag ?? '待定',
-                  status: nextMatch.status,
-                } : null}
+                match={
+                  nextMatch && current
+                    ? {
+                        href: `/tournaments/${current.slug}/matches/${nextMatch.match.id}`,
+                        scheduledAt: nextMatch.match.scheduledAt,
+                        roundLabel: nextMatch.match.roundLabel,
+                        bestOf: nextMatch.match.bestOf,
+                        teamA: nextMatch.a?.tag ?? '待定',
+                        teamB: nextMatch.b?.tag ?? '待定',
+                        status: nextMatch.status,
+                      }
+                    : null
+                }
               />
             </div>
           ) : null}

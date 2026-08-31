@@ -17,11 +17,7 @@ export default async function TournamentsPage() {
     <section className="section">
       <div className="wrap">
         <div data-rise>
-          <SectionHead
-            eyebrow="赛事"
-            title="全部赛事"
-            lede="社团办过的所有比赛,按时间倒序。"
-          />
+          <SectionHead eyebrow="赛事" title="全部赛事" lede="社团办过的所有比赛,按时间倒序。" />
         </div>
         <TournamentList tournaments={tournaments} />
 

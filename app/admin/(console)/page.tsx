@@ -33,7 +33,8 @@ export default async function AdminPage() {
     <>
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>
-          报名审核 · 共 {teams.length} 支 · 待审核 {pending} · 已通过 {approved}/{tournament.teamCap}
+          报名审核 · 共 {teams.length} 支 · 待审核 {pending} · 已通过 {approved}/
+          {tournament.teamCap}
         </h2>
         <TeamTable teams={teams} tournamentId={tournament.id} />
       </section>

@@ -41,11 +41,11 @@ html {
 
 :root {
   --font-body:
-    -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB',
-    'Microsoft YaHei', 'Noto Sans CJK SC', 'Source Han Sans SC', sans-serif;
+    -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+    'Noto Sans CJK SC', 'Source Han Sans SC', sans-serif;
   --font-heavy:
-    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC',
-    'Source Han Sans SC', sans-serif;
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Source Han Sans SC',
+    sans-serif;
 }
 
 body {
@@ -138,7 +138,13 @@ button {
 
 .divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--line-strong) 18%, var(--line-strong) 82%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--line-strong) 18%,
+    var(--line-strong) 82%,
+    transparent
+  );
 }
 
 .readout {

@@ -4,11 +4,7 @@ import { resolveSiteOrigin } from '@/lib/site-config'
 const BASE = resolveSiteOrigin()
 
 const escape = (value: string) =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+  value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 export const revalidate = 900
 

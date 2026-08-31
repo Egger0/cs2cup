@@ -39,20 +39,8 @@ jobs:
       - name: Audit production dependencies
         run: npm audit --omit=dev
 
-      - name: Check types and lint
-        run: |
-          npm run typecheck
-          npm run lint
-
-      - name: Run D1 and deterministic checks
-        run: |
-          npm run test:cloudflare-d1
-          npm run test:csrf
-          npm run test:seeding
-          npm run test:schedule
-          npm run test:object-cleanup
-          npm run test:registration-fingerprint
-          npm run test:site-config
+      - name: Run project checks
+        run: npm run check
 
       - name: Build Cloudflare Worker
         run: npm run cf:build

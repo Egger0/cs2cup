@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Button, Field, TextField } from '@/components/ui'
 import type { Game, Tournament, TournamentStatus } from '@/lib/types'
-import { updateTournament } from '../../_actions'
+import { updateTournament } from '../../actions/tournaments'
 import styles from '../../admin.module.css'
 
 const STATES: { value: TournamentStatus; label: string }[] = [
@@ -14,13 +14,7 @@ const STATES: { value: TournamentStatus; label: string }[] = [
   { value: 'postponed', label: '延期中' },
 ]
 
-export function TournamentEditor({
-  tournament,
-  games,
-}: {
-  tournament: Tournament
-  games: Game[]
-}) {
+export function TournamentEditor({ tournament, games }: { tournament: Tournament; games: Game[] }) {
   const [pending, startTransition] = useTransition()
   const [saved, setSaved] = useState(false)
 

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Button, Field } from '@/components/ui'
 import type { SiteSetting } from '@/lib/types'
-import { updateSiteSetting } from '../_actions'
+import { updateSiteSetting } from '../actions/settings'
 import styles from '../admin.module.css'
 
 export function SettingsForm({ setting }: { setting: SiteSetting }) {
@@ -21,7 +21,13 @@ export function SettingsForm({ setting }: { setting: SiteSetting }) {
       }
     >
       <div className={styles.pair}>
-        <Field id="st-name" name="clubName" label="社团名称" defaultValue={setting.clubName} required />
+        <Field
+          id="st-name"
+          name="clubName"
+          label="社团名称"
+          defaultValue={setting.clubName}
+          required
+        />
         <Field
           id="st-en"
           name="clubNameEn"

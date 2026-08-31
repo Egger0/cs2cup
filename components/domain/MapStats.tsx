@@ -21,9 +21,7 @@ export function MapStats({ stats }: { stats: MapStat[] }) {
           <span className={styles.name}>{stat.name}</span>
           <span className={`${styles.num} ${styles.pick}`}>{stat.picked + stat.decider}</span>
           <span className={`${styles.num} ${styles.ban}`}>{stat.banned}</span>
-          <span
-            className={`${styles.num} ${stat.played > 0 ? styles.played : styles.unplayed}`}
-          >
+          <span className={`${styles.num} ${stat.played > 0 ? styles.played : styles.unplayed}`}>
             {stat.played}
           </span>
         </div>

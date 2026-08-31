@@ -7,12 +7,12 @@ import { Badge } from '@/components/ui'
 import type { SiteSetting } from '@/lib/types'
 import styles from './SiteHeader.module.css'
 
-export interface NavLink {
+interface NavLink {
   href: string
   label: string
 }
 
-export interface SiteHeaderProps {
+interface SiteHeaderProps {
   setting: SiteSetting
   links: NavLink[]
   status?: { label: string; open: boolean }
@@ -36,9 +36,7 @@ export function SiteHeader({ setting, links, status }: SiteHeaderProps) {
           </span>
           <span className={styles.names}>
             <span>{setting.clubName}</span>
-            <small className={styles.school}>
-              {setting.clubNameEn ?? setting.school}
-            </small>
+            <small className={styles.school}>{setting.clubNameEn ?? setting.school}</small>
           </span>
         </Link>
 

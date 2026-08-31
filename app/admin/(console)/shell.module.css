@@ -1,0 +1,79 @@
+.shell {
+  padding-block: 28px 72px;
+}
+
+.nav {
+  display: flex;
+  gap: clamp(16px, 3vw, 30px);
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-bottom: 34px;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
+}
+
+.navLink {
+  position: relative;
+  padding: 13px 0;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 0.92rem;
+  transition: color 0.2s ease;
+}
+
+.navLink::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 0;
+  height: 2px;
+  background: var(--t);
+  transition: width 0.28s var(--ease);
+}
+
+.navLink:hover {
+  color: var(--ink);
+}
+
+.navActive {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.navActive::after {
+  width: 100%;
+}
+
+.uid {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  color: var(--muted-2);
+  margin-top: 8px;
+}
+
+.barActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 32px;
+}
+
+.title {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  font-size: 1.4rem;
+}

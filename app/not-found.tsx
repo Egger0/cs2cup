@@ -10,9 +10,7 @@ export default function NotFound() {
       <span className={styles.glow} aria-hidden />
       <div className={styles.code}>404</div>
       <h1 className={styles.line}>这一枪打空了</h1>
-      <p className={styles.hint}>
-        地址不对,或者这个页面已经被撤下。从下面两个入口回到正轨。
-      </p>
+      <p className={styles.hint}>地址不对,或者这个页面已经被撤下。从下面两个入口回到正轨。</p>
       <div className={styles.actions}>
         <Link href="/">
           <Button variant="primary">回社团主页</Button>

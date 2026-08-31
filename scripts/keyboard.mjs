@@ -17,12 +17,24 @@ await page.waitForTimeout(1200)
 await page.keyboard.press('Tab')
 const first = await page.evaluate(() => {
   const el = document.activeElement
-  return { tag: el?.tagName, text: (el?.textContent ?? '').trim().slice(0, 20), href: el?.getAttribute('href') }
+  return {
+    tag: el?.tagName,
+    text: (el?.textContent ?? '').trim().slice(0, 20),
+    href: el?.getAttribute('href'),
+  }
 })
-check('Skip-to-content link is first', first.href === '#main' || first.text.includes('主内容'), `${first.tag} ${first.href}`)
+check(
+  'Skip-to-content link is first',
+  first.href === '#main' || first.text.includes('主内容'),
+  `${first.tag} ${first.href}`,
+)
 
 const focusable = await page.evaluate(() => {
-  const nodes = [...document.querySelectorAll('a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])')]
+  const nodes = [
+    ...document.querySelectorAll(
+      'a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])',
+    ),
+  ]
   return nodes.filter(n => n.getBoundingClientRect().height > 0).length
 })
 check('Focusable controls are available', focusable > 5, `${focusable} controls`)
@@ -35,14 +47,17 @@ const invisibleFocus = await page.evaluate(() => {
   for (const node of nodes.slice(0, 40)) {
     node.focus()
     const style = getComputedStyle(node)
-    const ring =
-      style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0
+    const ring = style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0
     const shadow = style.boxShadow !== 'none'
     if (!ring && !shadow) bad += 1
   }
   return bad
 })
-check('Focused controls have visible indicators', invisibleFocus === 0, `${invisibleFocus} missing indicators`)
+check(
+  'Focused controls have visible indicators',
+  invisibleFocus === 0,
+  `${invisibleFocus} missing indicators`,
+)
 
 const landmarks = await page.evaluate(() => ({
   header: document.querySelectorAll('header').length,
@@ -50,7 +65,11 @@ const landmarks = await page.evaluate(() => ({
   main: document.querySelectorAll('main').length,
   footer: document.querySelectorAll('footer').length,
 }))
-check('Page landmarks are complete', landmarks.main === 1 && landmarks.nav >= 1 && landmarks.footer === 1, JSON.stringify(landmarks))
+check(
+  'Page landmarks are complete',
+  landmarks.main === 1 && landmarks.nav >= 1 && landmarks.footer === 1,
+  JSON.stringify(landmarks),
+)
 
 await page.goto(`${BASE}/tournaments/2026-nlc/schedule`, { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(1200)
@@ -64,9 +83,9 @@ await page.keyboard.press('f')
 const selectedTeam = await scheduleTeamFilter.inputValue()
 check('Keyboard changes the schedule team filter', selectedTeam.length > 0, selectedTeam)
 await page.keyboard.press('Tab')
-const scheduleSubmitFocused = await page.getByRole('button', { name: '查看日程' }).evaluate(
-  element => element === document.activeElement,
-)
+const scheduleSubmitFocused = await page
+  .getByRole('button', { name: '查看日程' })
+  .evaluate(element => element === document.activeElement)
 check('Tab reaches the schedule filter submit button', scheduleSubmitFocused)
 await Promise.all([
   page.waitForURL(url => new URL(url).searchParams.get('team') === selectedTeam),
@@ -112,7 +131,10 @@ if (await firstPoster.count()) {
 } else {
   check(
     'Archive empty state remains keyboard-safe',
-    await page.getByText('还没有往届海报').isVisible().catch(() => false),
+    await page
+      .getByText('还没有往届海报')
+      .isVisible()
+      .catch(() => false),
   )
 }
 

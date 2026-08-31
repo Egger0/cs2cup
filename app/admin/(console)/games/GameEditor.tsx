@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Button, Field, TextField } from '@/components/ui'
 import type { Game } from '@/lib/types'
-import { removeGame, updateGame } from '../_actions'
+import { removeGame, updateGame } from '../actions/content'
 import styles from '../admin.module.css'
 
 export function GameEditor({ game }: { game: Game }) {
@@ -74,7 +74,12 @@ export function GameEditor({ game }: { game: Game }) {
           <input type="checkbox" name="active" defaultChecked={game.active} /> 在网站上展示
         </label>
       </div>
-      <Field id={`gt${game.id}`} name="tagline" label="一句话介绍" defaultValue={game.tagline ?? ''} />
+      <Field
+        id={`gt${game.id}`}
+        name="tagline"
+        label="一句话介绍"
+        defaultValue={game.tagline ?? ''}
+      />
       <TextField
         id={`gd${game.id}`}
         name="description"
@@ -95,7 +100,13 @@ export function GameEditor({ game }: { game: Game }) {
         <Button type="button" onClick={() => setOpen(false)}>
           取消
         </Button>
-        <Button type="button" size="mini" variant="danger" disabled={pending} onClick={handleDelete}>
+        <Button
+          type="button"
+          size="mini"
+          variant="danger"
+          disabled={pending}
+          onClick={handleDelete}
+        >
           删除
         </Button>
         {error ? <span className={styles.error}>{error}</span> : null}

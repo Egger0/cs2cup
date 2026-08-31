@@ -4,12 +4,12 @@ import { resolveSiteOrigin } from './site-config.ts'
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
 
-export interface CsrfEnvironment {
+interface CsrfEnvironment {
   [name: string]: string | undefined
   NEXT_PUBLIC_SITE_URL?: string
 }
 
-export interface CsrfRequestLike {
+interface CsrfRequestLike {
   method: string
   headers: Headers
 }

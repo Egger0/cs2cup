@@ -3,7 +3,7 @@ import { Empty } from '@/components/ui'
 import type { Tournament } from '@/lib/types'
 import styles from './Honours.module.css'
 
-export interface Honour {
+interface Honour {
   tournament: Tournament
   champion: string | null
 }
@@ -27,11 +27,7 @@ export function Honours({ honours }: { honours: Honour[] }) {
   return (
     <div className={styles.wall}>
       {honours.map(({ tournament, champion }) => (
-        <Link
-          key={tournament.id}
-          href={`/tournaments/${tournament.slug}`}
-          className={styles.entry}
-        >
+        <Link key={tournament.id} href={`/tournaments/${tournament.slug}`} className={styles.entry}>
           <div className={styles.year}>{tournament.season.replace(/[^0-9]/g, '')}</div>
           <div className={styles.edition}>
             第 {tournament.edition} 届 · {tournament.gameName ?? ''}

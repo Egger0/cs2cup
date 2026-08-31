@@ -10,11 +10,7 @@ import styles from '../../admin.module.css'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AdminTournamentPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function AdminTournamentPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin()
 
   const { id } = await params

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import styles from './Empty.module.css'
 
-export interface EmptyProps {
+interface EmptyProps {
   children: ReactNode
   action?: ReactNode
 }

@@ -67,7 +67,9 @@
   margin-top: 14px;
   opacity: 0;
   transform: translateX(-4px);
-  transition: opacity 0.24s ease, transform 0.24s var(--ease);
+  transition:
+    opacity 0.24s ease,
+    transform 0.24s var(--ease);
 }
 
 .item:hover .more {

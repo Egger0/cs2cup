@@ -2,7 +2,7 @@ import type { Match, PublicTeam } from '@/lib/types'
 import { isByeMatch } from '@/lib/bracket'
 import styles from './Versus.module.css'
 
-export interface VersusProps {
+interface VersusProps {
   match: Match
   a: PublicTeam | null
   b: PublicTeam | null
@@ -29,9 +29,13 @@ export function Versus({ match, a, b }: VersusProps) {
             <span className={styles.win}>轮空</span>
           ) : (
             <>
-              <span className={decided && !aWon ? styles.lose : styles.win}>{match.scoreA ?? 0}</span>
+              <span className={decided && !aWon ? styles.lose : styles.win}>
+                {match.scoreA ?? 0}
+              </span>
               <span className={styles.colon}>:</span>
-              <span className={decided && aWon ? styles.lose : styles.win}>{match.scoreB ?? 0}</span>
+              <span className={decided && aWon ? styles.lose : styles.win}>
+                {match.scoreB ?? 0}
+              </span>
             </>
           )}
         </div>

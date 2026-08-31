@@ -14,7 +14,11 @@ export default async function NewsPage() {
     <section className="section">
       <div className="wrap">
         <div data-rise>
-          <SectionHead eyebrow="社团动态" title="公告与记录" lede="赛事通知、纳新、服务器变更都在这里。" />
+          <SectionHead
+            eyebrow="社团动态"
+            title="公告与记录"
+            lede="赛事通知、纳新、服务器变更都在这里。"
+          />
         </div>
         {posts.length > 0 ? <PostList posts={posts} /> : <Empty>还没有发布动态</Empty>}
       </div>

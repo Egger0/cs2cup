@@ -92,9 +92,7 @@
 
 .join {
   border: 1px solid var(--line-strong);
-  background:
-    linear-gradient(120deg, rgba(61, 155, 233, 0.12), transparent 58%),
-    var(--surface);
+  background: linear-gradient(120deg, rgba(61, 155, 233, 0.12), transparent 58%), var(--surface);
   padding: clamp(28px, 4vw, 48px);
   display: flex;
   flex-wrap: wrap;

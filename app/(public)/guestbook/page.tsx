@@ -53,20 +53,25 @@ export default async function GuestbookPage() {
                       </time>
                     </header>
                     <p>{message.body}</p>
-                    {(repliesByParent.get(message.id) ?? []).slice().reverse().map(reply => (
-                      <article key={reply.id} className={styles.reply}>
-                        <header>
-                          <strong>
-                            {reply.name}
-                            {reply.official ? <span className={styles.official}>官方</span> : null}
-                          </strong>
-                          <time dateTime={reply.createdAt}>
-                            {formatSiteNumericDateTime(reply.createdAt) ?? reply.createdAt}
-                          </time>
-                        </header>
-                        <p>{reply.body}</p>
-                      </article>
-                    ))}
+                    {(repliesByParent.get(message.id) ?? [])
+                      .slice()
+                      .reverse()
+                      .map(reply => (
+                        <article key={reply.id} className={styles.reply}>
+                          <header>
+                            <strong>
+                              {reply.name}
+                              {reply.official ? (
+                                <span className={styles.official}>官方</span>
+                              ) : null}
+                            </strong>
+                            <time dateTime={reply.createdAt}>
+                              {formatSiteNumericDateTime(reply.createdAt) ?? reply.createdAt}
+                            </time>
+                          </header>
+                          <p>{reply.body}</p>
+                        </article>
+                      ))}
                     <details className={styles.replyComposer}>
                       <summary>回复</summary>
                       <GuestbookForm parentId={message.id} />

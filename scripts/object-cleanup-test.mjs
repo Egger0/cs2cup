@@ -12,7 +12,10 @@ const failures = await deleteRecordThenObjects(
   },
 )
 assert.deepEqual(events, ['database', 'first.webp', 'second.webp', 'third.webp'])
-assert.deepEqual(failures.map(failure => failure.key), ['second.webp'])
+assert.deepEqual(
+  failures.map(failure => failure.key),
+  ['second.webp'],
+)
 
 const blockedEvents = []
 await assert.rejects(

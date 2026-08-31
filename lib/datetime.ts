@@ -1,6 +1,6 @@
 export const SITE_TIME_ZONE = 'Asia/Shanghai'
 
-export type DateTimeValue = string | number | Date
+type DateTimeValue = string | number | Date
 
 const LOCAL_DATE_TIME = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/
 const D1_UTC_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/
@@ -71,7 +71,18 @@ function parseDateTimeValue(value: DateTimeValue): Date | null {
   const match = ISO_INSTANT.exec(value)
   if (!match) return null
 
-  const [, rawYear, rawMonth, rawDay, rawHour, rawMinute, rawSecond, , rawOffsetHour, rawOffsetMinute] = match
+  const [
+    ,
+    rawYear,
+    rawMonth,
+    rawDay,
+    rawHour,
+    rawMinute,
+    rawSecond,
+    ,
+    rawOffsetHour,
+    rawOffsetMinute,
+  ] = match
   const year = Number(rawYear)
   const month = Number(rawMonth)
   const day = Number(rawDay)

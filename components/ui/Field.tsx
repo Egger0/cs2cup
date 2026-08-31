@@ -9,8 +9,8 @@ interface FieldShell {
   error?: string
 }
 
-export type FieldProps = FieldShell & InputHTMLAttributes<HTMLInputElement>
-export type TextFieldProps = FieldShell & TextareaHTMLAttributes<HTMLTextAreaElement>
+type FieldProps = FieldShell & InputHTMLAttributes<HTMLInputElement>
+type TextFieldProps = FieldShell & TextareaHTMLAttributes<HTMLTextAreaElement>
 
 function Label({ id, label, required, hint }: FieldShell) {
   return (

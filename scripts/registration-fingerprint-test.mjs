@@ -73,10 +73,7 @@ assert.equal(
   }),
 )
 assert.equal(registrationClientIpSource('cf-connecting-ip'), 'cf-connecting-ip')
-assert.throws(
-  () => registrationClientIpSource(undefined, true),
-  /required outside development/,
-)
+assert.throws(() => registrationClientIpSource(undefined, true), /required outside development/)
 assert.throws(
   () => registrationClientIpSource('cloudbase'),
   /must be x-real-ip or cf-connecting-ip/,

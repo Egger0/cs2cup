@@ -20,7 +20,7 @@ export function SectionHead({
   )
 }
 
-export interface StatItem {
+interface StatItem {
   value: string
   unit?: string
   key: string

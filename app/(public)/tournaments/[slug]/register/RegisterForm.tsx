@@ -35,16 +35,44 @@ export function RegisterForm({ slug, disabled }: { slug: string; disabled: boole
       <form action={submit} className={styles.form}>
         <fieldset disabled={disabled || pending} className={styles.fieldset}>
           <div className={styles.pair}>
-            <Field id="name" name="name" label="战队名称" required maxLength={20} placeholder="例:临界爆破小队" />
-            <Field id="tag" name="tag" label="战队 TAG" required hint="2–5 字符" maxLength={5} placeholder="例:FROST" />
+            <Field
+              id="name"
+              name="name"
+              label="战队名称"
+              required
+              maxLength={20}
+              placeholder="例:临界爆破小队"
+            />
+            <Field
+              id="tag"
+              name="tag"
+              label="战队 TAG"
+              required
+              hint="2–5 字符"
+              maxLength={5}
+              placeholder="例:FROST"
+            />
           </div>
 
           <div className={styles.pair}>
             <Field id="captain" name="captain" label="队长昵称 / 姓名" required maxLength={20} />
-            <Field id="contact" name="contact" label="联系方式" required hint="QQ / 微信 / Steam" maxLength={40} />
+            <Field
+              id="contact"
+              name="contact"
+              label="联系方式"
+              required
+              hint="QQ / 微信 / Steam"
+              maxLength={40}
+            />
           </div>
 
-          <Field id="dept" name="dept" label="学院 / 分区" maxLength={30} placeholder="例:计算机与数据工程学院" />
+          <Field
+            id="dept"
+            name="dept"
+            label="学院 / 分区"
+            maxLength={30}
+            placeholder="例:计算机与数据工程学院"
+          />
 
           <div className={styles.roster}>
             <div className="readout">首发五人 + 替补一人</div>
@@ -63,7 +91,14 @@ export function RegisterForm({ slug, disabled }: { slug: string; disabled: boole
             </div>
           </div>
 
-          <TextField id="note" name="note" label="备注" rows={2} maxLength={120} placeholder="时间冲突、器材需求等(选填)" />
+          <TextField
+            id="note"
+            name="note"
+            label="备注"
+            rows={2}
+            maxLength={120}
+            placeholder="时间冲突、器材需求等(选填)"
+          />
 
           {error ? <p className={styles.error}>{error}</p> : null}
 

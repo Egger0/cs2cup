@@ -4,7 +4,7 @@ import { indexMatches, indexTeams, isCompletedMatch, resolveMatch } from '@/lib/
 import type { Match, MatchMap, PublicTeam } from '@/lib/types'
 import styles from './ResultsTable.module.css'
 
-export interface ResultsTableProps {
+interface ResultsTableProps {
   matches: Match[]
   teams: PublicTeam[]
   maps: MatchMap[]
@@ -68,9 +68,7 @@ export function ResultsTable({ matches, teams, maps, slug, limit }: ResultsTable
                 <td className={styles.score}>
                   {match.scoreA} : {match.scoreB}
                 </td>
-                <td className={styles.maps}>
-                  {played.map(map => map.mapName).join(' / ') || '—'}
-                </td>
+                <td className={styles.maps}>{played.map(map => map.mapName).join(' / ') || '—'}</td>
                 <td>
                   <Link href={`/tournaments/${slug}/matches/${match.id}`} className={styles.link}>
                     战报 →

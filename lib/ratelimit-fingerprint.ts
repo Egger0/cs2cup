@@ -1,10 +1,10 @@
 import { createHmac } from 'node:crypto'
 import { isIP } from 'node:net'
 
-export const REGISTRATION_FINGERPRINT_VERSION = 'v1'
+const REGISTRATION_FINGERPRINT_VERSION = 'v1'
 export const MIN_FINGERPRINT_SECRET_BYTES = 32
 
-export type RegistrationClientIpSource = 'x-real-ip' | 'cf-connecting-ip'
+type RegistrationClientIpSource = 'x-real-ip' | 'cf-connecting-ip'
 
 const FINGERPRINT_CONTEXT = 'cs2cup:registration-rate-limit'
 
@@ -64,9 +64,7 @@ export function registrationClientIpSource(
   if (configured === 'x-real-ip') return configured
   if (configured === 'cf-connecting-ip') return configured
 
-  throw new Error(
-    'REGISTRATION_CLIENT_IP_SOURCE must be x-real-ip or cf-connecting-ip',
-  )
+  throw new Error('REGISTRATION_CLIENT_IP_SOURCE must be x-real-ip or cf-connecting-ip')
 }
 
 export function fingerprintAddress(address: string, secret: string) {
@@ -95,10 +93,7 @@ export function fingerprintFromHeaders(
   },
 ) {
   const clientIpSource = options.clientIpSource ?? 'x-real-ip'
-  const address =
-    headerStore.get(clientIpSource) ??
-    options.fallbackAddress ??
-    null
+  const address = headerStore.get(clientIpSource) ?? options.fallbackAddress ?? null
 
   if (!address) {
     throw new Error(`Trusted client IP header ${clientIpSource} is missing`)

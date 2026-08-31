@@ -39,7 +39,14 @@ export function GuestbookForm({ parentId = null }: { parentId?: number | null })
       <form key={formKey} action={submit} className={styles.form}>
         <fieldset disabled={pending} className={styles.fieldset}>
           {replying ? <input type="hidden" name="parentId" value={parentId} /> : null}
-          <Field id={`guestbook-name-${idSuffix}`} name="name" label="昵称" required maxLength={32} placeholder="留下你的称呼" />
+          <Field
+            id={`guestbook-name-${idSuffix}`}
+            name="name"
+            label="昵称"
+            required
+            maxLength={32}
+            placeholder="留下你的称呼"
+          />
           <TextField
             id={`guestbook-body-${idSuffix}`}
             name="body"
@@ -49,15 +56,25 @@ export function GuestbookForm({ parentId = null }: { parentId?: number | null })
             maxLength={500}
             placeholder={replying ? '友善地参与讨论。' : '欢迎分享建议、比赛感受，或想参与的活动。'}
           />
-          <p className={styles.hint}>{replying ? '回复' : '留言'}提交后会立即公开；不符合规范的内容可能被管理员删除。</p>
-          {error ? <p className={styles.error} role="alert">{error}</p> : null}
+          <p className={styles.hint}>
+            {replying ? '回复' : '留言'}提交后会立即公开；不符合规范的内容可能被管理员删除。
+          </p>
+          {error ? (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          ) : null}
           <Button type="submit" variant="primary">
             {pending ? '提交中…' : replying ? '提交回复' : '提交留言'}
           </Button>
         </fieldset>
       </form>
 
-      <Toast open={done} title={replying ? '回复已发布' : '留言已发布'} message="现在可以在留言板中看到。" />
+      <Toast
+        open={done}
+        title={replying ? '回复已发布' : '留言已发布'}
+        message="现在可以在留言板中看到。"
+      />
     </>
   )
 }

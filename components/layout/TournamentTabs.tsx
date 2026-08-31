@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, type MouseEvent } from 'react'
-import styles from './TournamentShell.module.css'
+import styles from './TournamentTabs.module.css'
 
 export interface TournamentTab {
   href: string
@@ -40,10 +40,7 @@ export function TournamentTabs({ tabs }: { tabs: TournamentTab[] }) {
       const activeBox = active.getBoundingClientRect()
       rail.scrollTo({
         left:
-          rail.scrollLeft +
-          activeBox.left -
-          railBox.left -
-          (railBox.width - activeBox.width) / 2,
+          rail.scrollLeft + activeBox.left - railBox.left - (railBox.width - activeBox.width) / 2,
         behavior: 'auto',
       })
     }

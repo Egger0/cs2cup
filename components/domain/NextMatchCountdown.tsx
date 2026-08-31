@@ -32,7 +32,11 @@ function formatRemaining(milliseconds: number) {
   return [days, hours, minutes, seconds].map(value => String(value).padStart(2, '0')).join(':')
 }
 
-export function NextMatchCountdown({ tournamentTitle, match, scheduleHref }: NextMatchCountdownProps) {
+export function NextMatchCountdown({
+  tournamentTitle,
+  match,
+  scheduleHref,
+}: NextMatchCountdownProps) {
   const [now, setNow] = useState<number | null>(null)
   const scheduledAt = match?.scheduledAt ? new Date(match.scheduledAt).getTime() : null
   const isScheduled = scheduledAt !== null && !Number.isNaN(scheduledAt)
@@ -49,11 +53,13 @@ export function NextMatchCountdown({ tournamentTitle, match, scheduleHref }: Nex
   }, [scheduledAt])
 
   const countdown = useMemo(
-    () => (isScheduled && scheduledAt && now !== null ? formatRemaining(scheduledAt - now) : '— — : — — : — — : — —'),
+    () =>
+      isScheduled && scheduledAt && now !== null
+        ? formatRemaining(scheduledAt - now)
+        : '— — : — — : — — : — —',
     [isScheduled, now, scheduledAt],
   )
-  const hasStarted =
-    scheduledAt !== null && isScheduled && now !== null && scheduledAt <= now
+  const hasStarted = scheduledAt !== null && isScheduled && now !== null && scheduledAt <= now
   const isWaiting = match?.status === 'waiting'
 
   const panel = match ? (
@@ -61,7 +67,9 @@ export function NextMatchCountdown({ tournamentTitle, match, scheduleHref }: Nex
       <span className={styles.matchLabel}>
         {isWaiting ? '等待对阵' : hasStarted ? '待更新场次' : '下一场'}
       </span>
-      <strong>{match.teamA} <span>VS</span> {match.teamB}</strong>
+      <strong>
+        {match.teamA} <span>VS</span> {match.teamB}
+      </strong>
       <span className={styles.matchMeta}>
         {match.roundLabel} · BO{match.bestOf} ·{' '}
         {isScheduled ? (
@@ -95,11 +103,20 @@ export function NextMatchCountdown({ tournamentTitle, match, scheduleHref }: Nex
                 : '下一场比赛'}
         </span>
         <span className={styles.status}>
-          <i /> {isWaiting ? '等待晋级结果' : hasStarted ? '等待赛果' : isScheduled ? '赛程已定' : '等待排期'}
+          <i />{' '}
+          {isWaiting
+            ? '等待晋级结果'
+            : hasStarted
+              ? '等待赛果'
+              : isScheduled
+                ? '赛程已定'
+                : '等待排期'}
         </span>
       </div>
       {isScheduled && !hasStarted ? (
-        <time className={styles.countdown} dateTime={match?.scheduledAt ?? undefined}>{countdown}</time>
+        <time className={styles.countdown} dateTime={match?.scheduledAt ?? undefined}>
+          {countdown}
+        </time>
       ) : (
         <p className={styles.pending}>
           {isWaiting ? '等待对阵确定' : hasStarted ? '等待赛果更新' : '下一场时间待定'}

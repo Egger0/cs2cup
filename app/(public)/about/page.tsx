@@ -40,7 +40,8 @@ export default async function ClubPage() {
             <div className={styles.intro}>
               <div>
                 <p className={styles.paragraph}>
-                  我们是{setting.school}的学生电竞社团。日常做两件事:把校内比赛办起来,以及让想打比赛的人能找到队友。
+                  我们是{setting.school}
+                  的学生电竞社团。日常做两件事:把校内比赛办起来,以及让想打比赛的人能找到队友。
                 </p>
                 <p className={styles.paragraph}>
                   宁理杯是社团每年的主赛事,到今年已经办到第 {tournaments.length} 届。除了 CS2,

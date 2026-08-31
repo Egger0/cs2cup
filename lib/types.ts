@@ -1,9 +1,4 @@
-export type TournamentStatus =
-  | 'draft'
-  | 'registration'
-  | 'running'
-  | 'finished'
-  | 'postponed'
+export type TournamentStatus = 'draft' | 'registration' | 'running' | 'finished' | 'postponed'
 
 export type TeamStatus = 'pending' | 'approved' | 'rejected'
 

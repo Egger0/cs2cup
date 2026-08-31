@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Button, Field, TextField } from '@/components/ui'
 import type { ClubMember } from '@/lib/types'
-import { removeMember, updateMember } from '../_actions'
+import { removeMember, updateMember } from '../actions/content'
 import styles from '../admin.module.css'
 
 export function MemberEditor({ member }: { member: ClubMember }) {
@@ -56,7 +56,12 @@ export function MemberEditor({ member }: { member: ClubMember }) {
         <Field id={`mr${member.id}`} name="role" label="职务" defaultValue={member.role} required />
       </div>
       <div className={styles.pair}>
-        <Field id={`mh${member.id}`} name="handle" label="联系方式" defaultValue={member.handle ?? ''} />
+        <Field
+          id={`mh${member.id}`}
+          name="handle"
+          label="联系方式"
+          defaultValue={member.handle ?? ''}
+        />
         <Field
           id={`mo${member.id}`}
           name="sortOrder"
@@ -65,7 +70,13 @@ export function MemberEditor({ member }: { member: ClubMember }) {
           defaultValue={member.sortOrder}
         />
       </div>
-      <TextField id={`mi${member.id}`} name="intro" label="职责" rows={2} defaultValue={member.intro ?? ''} />
+      <TextField
+        id={`mi${member.id}`}
+        name="intro"
+        label="职责"
+        rows={2}
+        defaultValue={member.intro ?? ''}
+      />
       <div className={styles.rowActions}>
         <Button type="submit" variant="primary" disabled={pending}>
           {pending ? '保存中…' : '保存'}
@@ -73,7 +84,13 @@ export function MemberEditor({ member }: { member: ClubMember }) {
         <Button type="button" onClick={() => setOpen(false)}>
           取消
         </Button>
-        <Button type="button" size="mini" variant="danger" disabled={pending} onClick={handleDelete}>
+        <Button
+          type="button"
+          size="mini"
+          variant="danger"
+          disabled={pending}
+          onClick={handleDelete}
+        >
           删除
         </Button>
       </div>

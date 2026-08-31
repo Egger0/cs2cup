@@ -6,14 +6,18 @@ export interface CloudflareD1Statement {
   first<T>(): Promise<T | null>
   run(): Promise<unknown>
 }
-export interface CloudflareD1 {
+interface CloudflareD1 {
   prepare(query: string): { bind(...values: unknown[]): CloudflareD1Statement }
   batch(statements: CloudflareD1Statement[]): Promise<unknown[]>
 }
 
-export interface CloudflareR2 {
+interface CloudflareR2 {
   get(key: string): Promise<unknown>
-  put(key: string, value: ReadableStream | ArrayBuffer | ArrayBufferView | string | null, options?: unknown): Promise<unknown>
+  put(
+    key: string,
+    value: ReadableStream | ArrayBuffer | ArrayBufferView | string | null,
+    options?: unknown,
+  ): Promise<unknown>
   delete(keys: string | string[]): Promise<void>
 }
 
@@ -24,7 +28,7 @@ declare global {
   }
 }
 
-export function cloudflareEnvironment() {
+function cloudflareEnvironment() {
   return getCloudflareContext().env
 }
 

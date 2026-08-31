@@ -6,7 +6,13 @@ import { SectionHead } from '@/components/domain/Sections'
 import { indexMatches, indexTeams, isByeMatch, isCompletedMatch, resolveMatch } from '@/lib/bracket'
 import { formatSiteCompactDateTime } from '@/lib/datetime'
 import { mapStats } from '@/lib/mapstats'
-import { getMatchMaps, getMatches, getPublicTeams, getTournament, safely } from '@/lib/queries/public'
+import {
+  getMatchMaps,
+  getMatches,
+  getPublicTeams,
+  getTournament,
+  safely,
+} from '@/lib/queries/public'
 import styles from '@/components/domain/TeamProfile.module.css'
 
 export const revalidate = 300
@@ -25,7 +31,9 @@ export default async function TeamPage({
     getMatches(tournament.id),
   ])
 
-  const team = teams.find(entry => entry.tag.toLowerCase() === decodeURIComponent(tag).toLowerCase())
+  const team = teams.find(
+    entry => entry.tag.toLowerCase() === decodeURIComponent(tag).toLowerCase(),
+  )
   if (!team) notFound()
 
   const matchIndex = indexMatches(matches)
@@ -43,10 +51,7 @@ export default async function TeamPage({
     entry => isCompletedMatch(entry.match) && entry.match.winnerTeamId !== team.id,
   ).length
 
-  const maps = await safely(
-    () => getMatchMaps(played.map(entry => entry.match.id)),
-    [],
-  )
+  const maps = await safely(() => getMatchMaps(played.map(entry => entry.match.id)), [])
   const stats = mapStats(maps, tournament.mapPool).filter(stat => stat.total > 0)
 
   return (
@@ -85,9 +90,7 @@ export default async function TeamPage({
                   </div>
                   <div
                     className={
-                      player.isSubstitute
-                        ? `${styles.playerName} ${styles.sub}`
-                        : styles.playerName
+                      player.isSubstitute ? `${styles.playerName} ${styles.sub}` : styles.playerName
                     }
                   >
                     {player.nickname}
@@ -140,7 +143,9 @@ export default async function TeamPage({
             })}
           </div>
           <p className={styles.scheduleLink}>
-            <Link href={`/tournaments/${slug}/schedule?state=all&team=${encodeURIComponent(team.tag)}`}>
+            <Link
+              href={`/tournaments/${slug}/schedule?state=all&team=${encodeURIComponent(team.tag)}`}
+            >
               查看本队完整赛程 →
             </Link>
           </p>

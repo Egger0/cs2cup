@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui'
 import { photoUrl } from '@/lib/media'
-import { deletePhotoAndFile } from '../_actions'
+import { deletePhotoAndFile } from '../actions/media'
 import styles from '../admin.module.css'
 
 export function PhotoRow({

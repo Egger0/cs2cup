@@ -4,7 +4,13 @@ import { ResultsTable } from '@/components/domain/ResultsTable'
 import { SectionHead } from '@/components/domain/Sections'
 import { isCompletedMatch } from '@/lib/bracket'
 import { mapStats } from '@/lib/mapstats'
-import { getMatchMaps, getMatches, getPublicTeams, getTournament, safely } from '@/lib/queries/public'
+import {
+  getMatchMaps,
+  getMatches,
+  getPublicTeams,
+  getTournament,
+  safely,
+} from '@/lib/queries/public'
 
 export const revalidate = 300
 

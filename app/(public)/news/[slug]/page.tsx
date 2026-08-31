@@ -42,9 +42,12 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           />
         </div>
         <div className={styles.body}>
-          {post.body.split('\n').filter(Boolean).map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
-          ))}
+          {post.body
+            .split('\n')
+            .filter(Boolean)
+            .map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
+            ))}
         </div>
         <p className={styles.back}>
           <Link href="/news" className="readout">

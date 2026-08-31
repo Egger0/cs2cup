@@ -44,7 +44,12 @@ for (const path of PAGES) {
   const count = violations.reduce((sum, v) => sum + v.nodes.length, 0)
   total += count
   for (const violation of violations) {
-    const entry = byRule.get(violation.id) ?? { impact: violation.impact, nodes: 0, pages: new Set(), help: violation.help }
+    const entry = byRule.get(violation.id) ?? {
+      impact: violation.impact,
+      nodes: 0,
+      pages: new Set(),
+      help: violation.help,
+    }
     entry.nodes += violation.nodes.length
     entry.pages.add(path)
     byRule.set(violation.id, entry)
@@ -54,7 +59,9 @@ for (const path of PAGES) {
 
 console.log('\n=== Summary ===')
 for (const [rule, entry] of [...byRule.entries()].sort((a, b) => b[1].nodes - a[1].nodes)) {
-  console.log(`${(entry.impact ?? '?').padEnd(9)} ${rule.padEnd(30)} ${entry.nodes} occurrences / ${entry.pages.size} pages`)
+  console.log(
+    `${(entry.impact ?? '?').padEnd(9)} ${rule.padEnd(30)} ${entry.nodes} occurrences / ${entry.pages.size} pages`,
+  )
   console.log(`          ${entry.help}`)
 }
 console.log(`\nTotal: ${total} issues`)

@@ -10,7 +10,9 @@
   align-items: center;
   padding: clamp(18px, 2.4vw, 26px) 0;
   border-bottom: 1px solid var(--line);
-  transition: background 0.24s ease, padding-inline 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    background 0.24s ease,
+    padding-inline 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .row:hover {
@@ -25,9 +27,11 @@
   font-size: clamp(1.7rem, 3vw, 2.4rem);
   line-height: 1;
   color: #5e748a;
-  opacity: .78;
+  opacity: 0.78;
   font-variant-numeric: tabular-nums;
-  transition: color 0.24s ease, opacity 0.24s ease;
+  transition:
+    color 0.24s ease,
+    opacity 0.24s ease;
 }
 
 .year[data-timeline='0'] {
@@ -37,7 +41,7 @@
 
 .year[data-timeline='1'] {
   color: #7f9ab2;
-  opacity: .9;
+  opacity: 0.9;
 }
 
 .row:hover .year {
@@ -82,13 +86,13 @@
 
 .registration {
   color: #3d9be9;
-  background: rgba(61, 155, 233, 0.10);
+  background: rgba(61, 155, 233, 0.1);
   border-color: rgba(61, 155, 233, 0.38);
 }
 
 .running {
   color: #e94b5c;
-  background: rgba(233, 75, 92, 0.10);
+  background: rgba(233, 75, 92, 0.1);
   border-color: rgba(233, 75, 92, 0.38);
 }
 

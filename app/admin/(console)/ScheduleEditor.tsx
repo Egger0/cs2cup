@@ -5,8 +5,8 @@ import { useState, useTransition } from 'react'
 import { Button, Empty } from '@/components/ui'
 import { groupByRound, indexMatches, indexTeams, resolveMatch, winsNeeded } from '@/lib/bracket'
 import type { Match, PublicTeam } from '@/lib/types'
-import { recordScore } from './_actions'
-import styles from './admin.module.css'
+import { recordScore } from './actions/matches'
+import styles from './scheduler.module.css'
 
 export function ScheduleEditor({
   matches,

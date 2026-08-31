@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui'
-import { removeTournament } from '../_actions'
+import { removeTournament } from '../actions/tournaments'
 import styles from '../admin.module.css'
 
 export function TournamentDeleteButton({ id, title }: { id: number; title: string }) {

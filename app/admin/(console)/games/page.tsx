@@ -1,7 +1,7 @@
 import { Button, Field } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
 import { adminListGames } from '@/lib/queries/content'
-import { createGame } from '../_actions'
+import { createGame } from '../actions/content'
 import { GameEditor } from './GameEditor'
 import styles from '../admin.module.css'
 

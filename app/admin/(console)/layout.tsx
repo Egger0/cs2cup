@@ -2,8 +2,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
 import { AdminNav } from './AdminNav'
-import { signOut } from './_actions'
-import styles from './admin.module.css'
+import { signOut } from './actions/auth'
+import styles from './shell.module.css'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,7 +33,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="wrap">
         <AdminNav />
       </div>
-      <main id="main" className="wrap">{children}</main>
+      <main id="main" className="wrap">
+        {children}
+      </main>
     </div>
   )
 }

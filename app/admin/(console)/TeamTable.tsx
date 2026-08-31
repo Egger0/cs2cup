@@ -3,8 +3,9 @@
 import { useState, useTransition } from 'react'
 import { Badge, Button, Empty } from '@/components/ui'
 import type { Team, TeamStatus } from '@/lib/types'
-import { deleteTeam, updateTeamSeed, updateTeamStatus } from './_actions'
-import styles from './admin.module.css'
+import { deleteTeam, updateTeamSeed, updateTeamStatus } from './actions/teams'
+import sharedStyles from './admin.module.css'
+import styles from './table.module.css'
 
 const STATUS_LABEL: Record<TeamStatus, string> = {
   pending: '待审核',
@@ -22,7 +23,10 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
 
   const rows = teams.filter(team =>
     keyword
-      ? [team.name, team.tag, team.captain, team.dept ?? ''].join(' ').toLowerCase().includes(keyword.toLowerCase())
+      ? [team.name, team.tag, team.captain, team.dept ?? '']
+          .join(' ')
+          .toLowerCase()
+          .includes(keyword.toLowerCase())
       : true,
   )
 
@@ -36,7 +40,7 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
         value={keyword}
         onChange={event => setKeyword(event.target.value)}
       />
-      {seedMessage ? <p className={styles.error}>{seedMessage}</p> : null}
+      {seedMessage ? <p className={sharedStyles.error}>{seedMessage}</p> : null}
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
@@ -82,8 +86,13 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
                     value={team.status}
                     disabled={pending}
                     onChange={event =>
-                      startTransition(() =>
-                        void updateTeamStatus(team.id, event.target.value as TeamStatus, tournamentId),
+                      startTransition(
+                        () =>
+                          void updateTeamStatus(
+                            team.id,
+                            event.target.value as TeamStatus,
+                            tournamentId,
+                          ),
                       )
                     }
                   >

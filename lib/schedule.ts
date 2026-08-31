@@ -75,9 +75,8 @@ export function buildScheduleEntries(
     .map(match => {
       const resolved = resolveMatch(match, matchIndex, teamIndex)
       const dayKey = match.scheduledAt ? siteDayKey(match.scheduledAt) : null
-      const scheduledTime = dayKey && match.scheduledAt
-        ? new Date(match.scheduledAt).getTime()
-        : null
+      const scheduledTime =
+        dayKey && match.scheduledAt ? new Date(match.scheduledAt).getTime() : null
 
       return {
         ...resolved,

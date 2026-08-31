@@ -1,7 +1,7 @@
 import { Button, Empty, Field, TextField } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
 import { adminListGames, adminListPosts } from '@/lib/queries/content'
-import { createPost } from '../_actions'
+import { createPost } from '../actions/content'
 import { PostEditor } from './PostEditor'
 import styles from '../admin.module.css'
 
@@ -18,7 +18,13 @@ export default async function AdminPostsPage() {
         <h2 className={styles.panelHead}>发布动态</h2>
         <form className={styles.editor} action={createPost}>
           <div className={styles.pair}>
-            <Field id="np-slug" name="slug" label="链接标识" required placeholder="例:recruit-2026" />
+            <Field
+              id="np-slug"
+              name="slug"
+              label="链接标识"
+              required
+              placeholder="例:recruit-2026"
+            />
             <Field id="np-title" name="title" label="标题" required />
           </div>
           <Field id="np-summary" name="summary" label="摘要" required />

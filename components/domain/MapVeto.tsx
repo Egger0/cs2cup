@@ -1,7 +1,7 @@
 import type { MatchMap } from '@/lib/types'
 import styles from './MapVeto.module.css'
 
-export interface MapVetoProps {
+interface MapVetoProps {
   maps: MatchMap[]
   teamAName: string
   teamBName: string

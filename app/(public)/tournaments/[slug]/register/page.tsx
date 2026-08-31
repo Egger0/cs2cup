@@ -28,9 +28,7 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
             eyebrow={accepting ? `还剩 ${seatsLeft} / ${status.cap} 个席位` : '报名已截止'}
             title="组队报名"
             lede={
-              accepting
-                ? '提交后由主办方审核。通过的战队会出现在参赛名单并进入对阵表。'
-                : undefined
+              accepting ? '提交后由主办方审核。通过的战队会出现在参赛名单并进入对阵表。' : undefined
             }
           />
         </div>

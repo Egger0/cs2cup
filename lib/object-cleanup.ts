@@ -1,4 +1,4 @@
-export interface ObjectCleanupFailure {
+interface ObjectCleanupFailure {
   key: string
   error: unknown
 }

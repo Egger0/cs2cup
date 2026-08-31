@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui'
-import { buildBracket } from '../../_actions'
+import { buildBracket } from '../../actions/matches'
 import styles from '../../admin.module.css'
 
 export function BracketBuilder({

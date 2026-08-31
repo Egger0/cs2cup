@@ -1,15 +1,10 @@
 import assert from 'node:assert/strict'
 
-import {
-  CsrfError,
-  assertCsrfRequest,
-  csrfRequestAllowed,
-} from '../lib/csrf.ts'
+import { CsrfError, assertCsrfRequest, csrfRequestAllowed } from '../lib/csrf.ts'
 
 const environment = { NEXT_PUBLIC_SITE_URL: 'https://cup.example' }
 const artifactCanary = process.env.AUTH_ARTIFACT_CANARY ?? 'csrf-static-canary'
-const forceArtifactFailure =
-  process.env.AUTH_ARTIFACT_FORCE_FAILURE === 'csrf-redaction'
+const forceArtifactFailure = process.env.AUTH_ARTIFACT_FORCE_FAILURE === 'csrf-redaction'
 const request = (method, values = {}) => ({
   method,
   headers: new Headers(values),
@@ -75,12 +70,8 @@ for (const invalidEnvironment of [
   { NEXT_PUBLIC_SITE_URL: 'https://cup.example/admin' },
 ]) {
   assertSafeThrow(
-    () => assertCsrfRequest(
-      request('POST', { origin: 'https://cup.example' }),
-      invalidEnvironment,
-    ),
-    error => error instanceof CsrfError &&
-      error.message === 'Request origin could not be verified',
+    () => assertCsrfRequest(request('POST', { origin: 'https://cup.example' }), invalidEnvironment),
+    error => error instanceof CsrfError && error.message === 'Request origin could not be verified',
     'invalid CSRF origin configuration was not rejected safely',
   )
 }
@@ -91,7 +82,8 @@ const denied = request('POST', {
 })
 assertSafeThrow(
   () => assertCsrfRequest(denied, environment),
-  error => error instanceof CsrfError &&
+  error =>
+    error instanceof CsrfError &&
     !forceArtifactFailure &&
     !error.message.includes('credential-value'),
   'cross-origin CSRF request was not rejected safely',

@@ -1,10 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { withPrivateNoStore } from '@/lib/http-cache'
 export async function proxy(request: NextRequest) {
-  if (
-    request.nextUrl.pathname === '/photos' ||
-    request.nextUrl.pathname.startsWith('/photos/')
-  ) {
+  if (request.nextUrl.pathname === '/photos' || request.nextUrl.pathname.startsWith('/photos/')) {
     return withPrivateNoStore(new NextResponse('not found', { status: 404 }))
   }
 

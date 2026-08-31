@@ -10,7 +10,7 @@ import {
   removeGuestbookMessage,
   setGuestbookMessagePinned,
   setGuestbookMessageStatus,
-} from '../_actions'
+} from '../actions/guestbook'
 import styles from '../admin.module.css'
 
 const STATUS_LABEL: Record<GuestbookMessageStatus, string> = {
@@ -70,9 +70,11 @@ export function GuestbookRow({ message }: { message: GuestbookMessage }) {
       <div>
         <div className={styles.listTitle}>{message.name}</div>
         <div className={styles.listMeta}>
-          {message.parentId === null ? '主留言' : `回复 #${message.parentId}`} · {message.pinned ? '置顶 · ' : ''}
+          {message.parentId === null ? '主留言' : `回复 #${message.parentId}`} ·{' '}
+          {message.pinned ? '置顶 · ' : ''}
           {message.official ? '官方 · ' : ''}
-          {STATUS_LABEL[message.status]} · {new Date(message.createdAt).toLocaleString('zh-CN', {
+          {STATUS_LABEL[message.status]} ·{' '}
+          {new Date(message.createdAt).toLocaleString('zh-CN', {
             timeZone: SITE_TIME_ZONE,
           })}
         </div>
@@ -87,7 +89,12 @@ export function GuestbookRow({ message }: { message: GuestbookMessage }) {
               placeholder="发布带官方标识的回复"
               disabled={pending}
             />
-            <Button size="mini" variant="primary" disabled={pending || !replyBody.trim()} onClick={replyOfficially}>
+            <Button
+              size="mini"
+              variant="primary"
+              disabled={pending || !replyBody.trim()}
+              onClick={replyOfficially}
+            >
               官方回复
             </Button>
           </div>
@@ -95,12 +102,22 @@ export function GuestbookRow({ message }: { message: GuestbookMessage }) {
       </div>
       <div className={styles.rowActions}>
         {message.parentId === null ? (
-          <Button size="mini" variant={message.pinned ? undefined : 'primary'} disabled={pending} onClick={() => updatePinned(!message.pinned)}>
+          <Button
+            size="mini"
+            variant={message.pinned ? undefined : 'primary'}
+            disabled={pending}
+            onClick={() => updatePinned(!message.pinned)}
+          >
             {message.pinned ? '取消置顶' : '置顶'}
           </Button>
         ) : null}
         {message.status !== 'published' ? (
-          <Button size="mini" variant="primary" disabled={pending} onClick={() => updateStatus('published')}>
+          <Button
+            size="mini"
+            variant="primary"
+            disabled={pending}
+            onClick={() => updateStatus('published')}
+          >
             公开
           </Button>
         ) : null}

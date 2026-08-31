@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Button, Empty, Field } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
 import { adminListGames, adminListTournaments } from '@/lib/queries/content'
-import { createTournament } from '../_actions'
+import { createTournament } from '../actions/tournaments'
 import { TournamentDeleteButton } from './TournamentDeleteButton'
 import styles from '../admin.module.css'
 
@@ -29,7 +29,13 @@ export default async function AdminTournamentsPage() {
         <form className={styles.editor} action={createTournament}>
           <div className={styles.pair}>
             <Field id="nt-slug" name="slug" label="链接标识" required placeholder="例:2027-nlc" />
-            <Field id="nt-title" name="title" label="赛事名称" required placeholder="例:第五届宁理杯" />
+            <Field
+              id="nt-title"
+              name="title"
+              label="赛事名称"
+              required
+              placeholder="例:第五届宁理杯"
+            />
           </div>
           <div className={styles.pair}>
             <label className="readout">
@@ -45,8 +51,24 @@ export default async function AdminTournamentsPage() {
             <Field id="nt-season" name="season" label="赛季" required placeholder="例:2027 春季" />
           </div>
           <div className={styles.pair}>
-            <Field id="nt-edition" name="edition" type="number" min={1} label="第几届" required defaultValue={5} />
-            <Field id="nt-cap" name="teamCap" type="number" min={2} label="席位数" required defaultValue={16} />
+            <Field
+              id="nt-edition"
+              name="edition"
+              type="number"
+              min={1}
+              label="第几届"
+              required
+              defaultValue={5}
+            />
+            <Field
+              id="nt-cap"
+              name="teamCap"
+              type="number"
+              min={2}
+              label="席位数"
+              required
+              defaultValue={16}
+            />
           </div>
           <Button type="submit" variant="primary">
             创建为草稿
@@ -65,8 +87,8 @@ export default async function AdminTournamentsPage() {
                 <div>
                   <div className={styles.listTitle}>{tournament.title}</div>
                   <div className={styles.listMeta}>
-                    {gameName(tournament.gameId)} · {tournament.season} · 第 {tournament.edition} 届 ·{' '}
-                    {tournament.teamCap} 队 · {STATE[tournament.status] ?? tournament.status}
+                    {gameName(tournament.gameId)} · {tournament.season} · 第 {tournament.edition} 届
+                    · {tournament.teamCap} 队 · {STATE[tournament.status] ?? tournament.status}
                   </div>
                 </div>
                 <div className={styles.rowActions}>

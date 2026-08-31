@@ -1,7 +1,7 @@
 import { Button, Empty, Field, TextField } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
 import { adminListMembers } from '@/lib/queries/content'
-import { createMember } from '../_actions'
+import { createMember } from '../actions/content'
 import { MemberEditor } from './MemberEditor'
 import styles from '../admin.module.css'
 

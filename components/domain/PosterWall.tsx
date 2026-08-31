@@ -54,7 +54,7 @@ export function PosterWall({ editions }: { editions: Edition[] }) {
                   unoptimized
                   width={poster.width}
                   height={poster.height}
-                  sizes="(max-width: 720px) 100vw, 380px" 
+                  sizes="(max-width: 720px) 100vw, 380px"
                   placeholder={poster.blurDataUrl ? 'blur' : 'empty'}
                   blurDataURL={poster.blurDataUrl ?? undefined}
                 />

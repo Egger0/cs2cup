@@ -57,7 +57,7 @@ export function isByeMatch(match: Match) {
     match.winnerTeamId !== null &&
     match.scoreA === null &&
     match.scoreB === null &&
-    ((match.teamAId === null) !== (match.teamBId === null))
+    (match.teamAId === null) !== (match.teamBId === null)
   )
 }
 
