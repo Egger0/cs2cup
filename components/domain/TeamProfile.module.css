@@ -147,8 +147,11 @@
 }
 
 .scheduleLink {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px 12px;
   margin-top: 12px;
-  text-align: right;
 }
 
 .scheduleLink a {
