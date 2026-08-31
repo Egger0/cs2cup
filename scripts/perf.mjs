@@ -1,6 +1,7 @@
 import { chromium } from 'playwright'
+import { installLoopbackRequestGuard, resolveE2EBaseUrl } from './loopback-url.mjs'
 
-const BASE = process.env.BASE_URL ?? 'http://localhost:3000'
+const BASE = resolveE2EBaseUrl()
 
 // Budgets keep roughly 15% headroom and retain the site's display font.
 const BUDGET = {
@@ -35,7 +36,11 @@ let failed = 0
 
 for (const path of PAGES) {
   const budget = { ...BUDGET, ...PAGE_BUDGET[path] }
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } })
+  const ctx = await browser.newContext({
+    viewport: { width: 1280, height: 900 },
+    serviceWorkers: 'block',
+  })
+  const outboundGuard = await installLoopbackRequestGuard(ctx)
   const page = await ctx.newPage()
 
   const sizes = { total: 0, js: 0, css: 0, image: 0, font: 0 }
@@ -112,6 +117,7 @@ for (const path of PAGES) {
       `CLS ${row.cls}  ${row.requests} requests` +
       (over.length ? `  over budget: ${over.join(', ')}` : ''),
   )
+  outboundGuard.assertSafe()
   await ctx.close()
 }
 

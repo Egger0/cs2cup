@@ -1,6 +1,7 @@
 import { chromium } from 'playwright'
+import { installLoopbackRequestGuard, resolveE2EBaseUrl } from './loopback-url.mjs'
 
-const BASE = process.env.BASE_URL ?? 'http://localhost:3000'
+const BASE = resolveE2EBaseUrl()
 const results = []
 const check = (name, pass, detail = '') => {
   results.push(pass)
@@ -8,7 +9,11 @@ const check = (name, pass, detail = '') => {
 }
 
 const browser = await chromium.launch()
-const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } })
+const ctx = await browser.newContext({
+  viewport: { width: 1280, height: 900 },
+  serviceWorkers: 'block',
+})
+const outboundGuard = await installLoopbackRequestGuard(ctx)
 const page = await ctx.newPage()
 
 await page.goto(`${BASE}/tournaments/2026-nlc`, { waitUntil: 'domcontentloaded' })
@@ -153,6 +158,7 @@ check(
 await mobile.close()
 
 await browser.close()
+outboundGuard.assertSafe()
 const failed = results.filter(r => !r).length
 console.log(`\n${results.length - failed}/${results.length} passed`)
 if (failed) process.exit(1)

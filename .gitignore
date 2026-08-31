@@ -1,12 +1,15 @@
 .claude/
 .playwright-mcp/
+.playwright-cli/
 .DS_Store
 Thumbs.db
 *.log
 .env*
 !.env.example
+!.env.development
 .next/
 .open-next/
+.local/
 .wrangler/
 node_modules/
 next-env.d.ts
@@ -16,3 +19,6 @@ egger/
 docs/superpowers/
 migration-output/
 public/photos/
+output/playwright/
+AGENTS.md
+CLAUDE.md

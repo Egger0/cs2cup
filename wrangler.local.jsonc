@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cs2cup-local-only",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-08-28",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "send_metrics": false,
+  "vars": {
+    "REGISTRATION_CLIENT_IP_SOURCE": "x-real-ip",
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "d1_databases": [
+    {
+      "binding": "CS2CUP_DB",
+      "database_name": "cs2cup-local-db",
+      "migrations_dir": "cloudflare/d1",
+      "remote": false,
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "CS2CUP_MEDIA",
+      "bucket_name": "cs2cup-local-media",
+      "remote": false,
+    },
+  ],
+}

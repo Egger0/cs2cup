@@ -1,0 +1,78 @@
+import assert from 'node:assert/strict'
+import { installLoopbackRequestGuard, resolveE2EBaseUrl } from './loopback-url.mjs'
+
+assert.equal(resolveE2EBaseUrl(undefined), 'http://127.0.0.1:3000')
+assert.equal(resolveE2EBaseUrl('http://localhost:3100'), 'http://localhost:3100')
+assert.equal(resolveE2EBaseUrl('https://[::1]:8443'), 'https://[::1]:8443')
+
+for (const value of [
+  '',
+  ' https://localhost:3000',
+  'ftp://127.0.0.1:3000',
+  'http://127.0.0.2:3000',
+  'http://0.0.0.0:3000',
+  'http://user@localhost:3000',
+  'http://localhost:3000/path',
+  'http://localhost:3000/?query=1',
+  'https://example.com',
+]) {
+  assert.throws(() => resolveE2EBaseUrl(value), /loopback HTTP\(S\) origin/)
+}
+
+let requestHandler
+let socketHandler
+const context = {
+  async route(_pattern, handler) {
+    requestHandler = handler
+  },
+  async routeWebSocket(_pattern, handler) {
+    socketHandler = handler
+  },
+}
+const guard = await installLoopbackRequestGuard(context)
+
+let continued = false
+await requestHandler({
+  request: () => ({ url: () => 'http://127.0.0.1:3000/app.js' }),
+  continue: async () => {
+    continued = true
+  },
+  abort: async () => assert.fail('Loopback request was blocked'),
+})
+assert.equal(continued, true)
+
+let abortedWith
+await requestHandler({
+  request: () => ({ url: () => 'https://example.com/tracker.js' }),
+  continue: async () => assert.fail('External request was allowed'),
+  abort: async reason => {
+    abortedWith = reason
+  },
+})
+assert.equal(abortedWith, 'blockedbyclient')
+
+let connected = false
+await socketHandler({
+  url: () => 'ws://localhost:3000/_next/webpack-hmr',
+  connectToServer: () => {
+    connected = true
+  },
+  close: async () => assert.fail('Loopback WebSocket was blocked'),
+})
+assert.equal(connected, true)
+
+let closedWith
+await socketHandler({
+  url: () => 'wss://example.com/live',
+  connectToServer: () => assert.fail('External WebSocket was allowed'),
+  close: async options => {
+    closedWith = options
+  },
+})
+assert.deepEqual(closedWith, { code: 1008, reason: 'Non-loopback request blocked' })
+assert.throws(
+  () => guard.assertSafe(),
+  /https:\/\/example\.com\/tracker\.js, wss:\/\/example\.com\/live/,
+)
+
+console.log('loopback URL tests passed')
