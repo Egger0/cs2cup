@@ -110,11 +110,28 @@ try {
   assert.equal(teamColumns.has('management_token_hash'), true)
   assert.equal(teamColumns.has('management_revision'), true)
   assert.equal(teamColumns.has('management_write_nonce'), true)
+  assert.equal(teamColumns.has('checked_in_at'), true)
 
   database.exec(`
     INSERT INTO team (id, tournament_id, name, tag, captain, contact)
     VALUES (10, 2, 'Alpha', 'AAA', 'Captain', 'contact');
   `)
+  expectDatabaseError(
+    database,
+    "UPDATE team SET checked_in_at = '2026-08-31T00:00:00.000Z' WHERE id = 10;",
+    'team check-in requires approved status',
+  )
+  database.exec(`
+    UPDATE team
+    SET status = 'approved', checked_in_at = '2026-08-31T00:00:00.000Z'
+    WHERE id = 10;
+  `)
+  expectDatabaseError(
+    database,
+    "UPDATE team SET status = 'pending' WHERE id = 10;",
+    'team check-in requires approved status',
+  )
+  database.exec("UPDATE team SET status = 'pending', checked_in_at = NULL WHERE id = 10;")
   expectDatabaseError(
     database,
     "INSERT INTO team (id, tournament_id, name, tag, captain, contact) VALUES (11, 2, 'alpha', 'BBB', 'Captain', 'contact');",

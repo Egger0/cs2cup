@@ -15,7 +15,7 @@ export default async function AdminPage() {
   if (!tournament) {
     return (
       <section className={styles.panel}>
-        <p>没有进行中的赛事。到「赛事」里新建一届,或把某一届的状态改为报名中。</p>
+        <p>没有进行中的赛事。到「赛事」里新建一届，或把某一届的状态改为报名中。</p>
       </section>
     )
   }
@@ -28,14 +28,24 @@ export default async function AdminPage() {
 
   const pending = teams.filter(team => team.status === 'pending').length
   const approved = teams.filter(team => team.status === 'approved').length
+  const checkedIn = teams.filter(team => team.checkedInAt).length
 
   return (
     <>
       <section className={styles.panel}>
-        <h2 className={styles.panelHead}>
-          报名审核 · 共 {teams.length} 支 · 待审核 {pending} · 已通过 {approved}/
-          {tournament.teamCap}
-        </h2>
+        <div className={styles.panelHeading}>
+          <h2 className={styles.panelHead}>
+            报名审核 · 共 {teams.length} 支 · 待审核 {pending} · 已通过 {approved}/
+            {tournament.teamCap} · 已签到 {checkedIn}
+          </h2>
+          <a
+            className={styles.panelAction}
+            href={`/admin/tournaments/${tournament.id}/teams.csv`}
+            download
+          >
+            导出 CSV
+          </a>
+        </div>
         <TeamTable teams={teams} tournamentId={tournament.id} />
       </section>
 

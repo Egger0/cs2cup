@@ -31,7 +31,16 @@ export default async function AdminTournamentPage({ params }: { params: Promise<
   return (
     <>
       <section className={styles.panel}>
-        <h2 className={styles.panelHead}>{tournament.title}</h2>
+        <div className={styles.panelHeading}>
+          <h2 className={styles.panelHead}>{tournament.title}</h2>
+          <a
+            className={styles.panelAction}
+            href={`/admin/tournaments/${tournamentId}/teams.csv`}
+            download
+          >
+            导出战队 CSV
+          </a>
+        </div>
         <TournamentEditor tournament={tournament} games={games} />
       </section>
 

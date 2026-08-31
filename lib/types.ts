@@ -87,6 +87,7 @@ export interface Team extends PublicTeam {
   contact: string
   note: string | null
   status: TeamStatus
+  checkedInAt: string | null
   createdAt: string
 }
 

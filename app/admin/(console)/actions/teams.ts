@@ -2,18 +2,42 @@
 
 import { updateTag } from 'next/cache'
 import { requireAdmin } from '@/lib/auth'
-import { assignTeamSeed, removeTeam, setTeamStatus } from '@/lib/queries/admin'
+import { isIsoInstant } from '@/lib/datetime'
+import { assignTeamSeed, removeTeam, setTeamCheckedIn, setTeamStatus } from '@/lib/queries/admin'
 import type { TeamStatus } from '@/lib/types'
 import { writeError } from './_errors'
 
+const TEAM_STATUSES: readonly TeamStatus[] = ['pending', 'approved', 'rejected']
+
+function validId(value: number) {
+  return Number.isSafeInteger(value) && value > 0
+}
+
 export async function updateTeamStatus(id: number, status: TeamStatus, tournamentId: number) {
   await requireAdmin()
-  await setTeamStatus(id, status)
+  if (!validId(id) || !validId(tournamentId)) {
+    return { ok: false as const, error: '战队或赛事编号无效' }
+  }
+  if (!TEAM_STATUSES.includes(status)) {
+    return { ok: false as const, error: '战队状态无效' }
+  }
+
+  try {
+    const rows = await setTeamStatus(id, tournamentId, status)
+    if (!rows.length) return { ok: false as const, error: '战队不存在或不属于该赛事' }
+  } catch (error) {
+    return { ok: false as const, error: writeError(error, '战队状态保存失败') }
+  }
   updateTag(`teams:${tournamentId}`)
+  return { ok: true as const }
 }
 
 export async function updateTeamSeed(id: number, seed: number | null, tournamentId: number) {
   await requireAdmin()
+
+  if (!validId(id) || !validId(tournamentId)) {
+    return { ok: false as const, error: '战队或赛事编号无效' }
+  }
 
   if (seed !== null && !Number.isInteger(seed)) {
     return { ok: false as const, error: '种子号必须是整数' }
@@ -29,8 +53,50 @@ export async function updateTeamSeed(id: number, seed: number | null, tournament
   return { ok: true as const }
 }
 
+export async function updateTeamCheckIn(
+  id: number,
+  checkedIn: boolean,
+  expectedCheckedInAt: string | null,
+  tournamentId: number,
+) {
+  await requireAdmin()
+  if (!validId(id) || !validId(tournamentId)) {
+    return { ok: false as const, error: '战队或赛事编号无效' }
+  }
+  if (typeof checkedIn !== 'boolean') {
+    return { ok: false as const, error: '签到状态无效' }
+  }
+  if (
+    (expectedCheckedInAt !== null && !isIsoInstant(expectedCheckedInAt)) ||
+    checkedIn === (expectedCheckedInAt !== null)
+  ) {
+    return { ok: false as const, error: '签到状态无效' }
+  }
+
+  try {
+    const rows = await setTeamCheckedIn(id, tournamentId, checkedIn, expectedCheckedInAt)
+    if (!rows.length) {
+      return { ok: false as const, error: '签到状态已更新，请刷新后重试' }
+    }
+  } catch (error) {
+    return { ok: false as const, error: writeError(error, '签到状态保存失败') }
+  }
+  updateTag(`teams:${tournamentId}`)
+  return { ok: true as const }
+}
+
 export async function deleteTeam(id: number, tournamentId: number) {
   await requireAdmin()
-  await removeTeam(id)
+  if (!validId(id) || !validId(tournamentId)) {
+    return { ok: false as const, error: '战队或赛事编号无效' }
+  }
+
+  try {
+    const rows = await removeTeam(id, tournamentId)
+    if (!rows.length) return { ok: false as const, error: '战队不存在或不属于该赛事' }
+  } catch (error) {
+    return { ok: false as const, error: writeError(error, '战队删除失败') }
+  }
   updateTag(`teams:${tournamentId}`)
+  return { ok: true as const }
 }

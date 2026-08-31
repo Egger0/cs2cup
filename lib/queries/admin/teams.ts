@@ -1,6 +1,7 @@
 import 'server-only'
 import { requireAdmin } from '../../auth'
-import { deletePrivateRows, selectPrivateRows, updatePrivateRows } from '../../rdb'
+import { cloudflareBindings } from '../../cloudflare-bindings'
+import { updatePrivateRows } from '../../rdb'
 import type { Team, TeamStatus } from '../../types'
 
 async function adminMutation<Result>(write: () => Promise<Result>) {
@@ -19,61 +20,127 @@ interface TeamRow {
   note: string | null
   status: TeamStatus
   seed: number | null
+  checked_in_at: string | null
   created_at: string
+}
+
+interface TeamPlayerRow extends TeamRow {
+  player_id: number | null
+  player_nickname: string | null
+  player_role: string | null
+  player_is_substitute: number | null
+  player_sort_order: number | null
 }
 
 export async function listTeamsWithContact(tournamentId: number): Promise<Team[]> {
   await requireAdmin()
 
-  const [rows, players] = await Promise.all([
-    selectPrivateRows<TeamRow>('team', {
-      filters: { tournament_id: `eq.${tournamentId}` },
-      order: 'created_at.asc',
-    }),
-    selectPrivateRows<{
-      id: number
-      team_id: number
-      nickname: string
-      role: string | null
-      is_substitute: boolean
-      sort_order: number
-    }>('player', { order: 'sort_order.asc' }),
-  ])
+  const rows = (
+    await cloudflareBindings()
+      .db.prepare(
+        `SELECT
+          t.id,
+          t.tournament_id,
+          t.name,
+          t.tag,
+          t.captain,
+          t.contact,
+          t.dept,
+          t.note,
+          t.status,
+          t.seed,
+          t.checked_in_at,
+          t.created_at,
+          p.id AS player_id,
+          p.nickname AS player_nickname,
+          p.role AS player_role,
+          p.is_substitute AS player_is_substitute,
+          p.sort_order AS player_sort_order
+        FROM team t
+        LEFT JOIN player p ON p.team_id = t.id
+        WHERE t.tournament_id = ?
+        ORDER BY t.created_at ASC, t.id ASC, p.sort_order ASC, p.id ASC`,
+      )
+      .bind(tournamentId)
+      .all<TeamPlayerRow>()
+  ).results
+  const teams = new Map<number, Team>()
 
-  return rows.map(row => ({
-    id: row.id,
-    tournamentId: row.tournament_id,
-    name: row.name,
-    tag: row.tag,
-    captain: row.captain,
-    contact: row.contact,
-    dept: row.dept,
-    note: row.note,
-    status: row.status,
-    seed: row.seed,
-    createdAt: row.created_at,
-    players: players
-      .filter(player => player.team_id === row.id)
-      .map(player => ({
-        id: player.id,
-        teamId: player.team_id,
-        nickname: player.nickname,
-        role: player.role,
-        isSubstitute: player.is_substitute,
-        sortOrder: player.sort_order,
-      }))
-      .sort((a, b) => a.sortOrder - b.sortOrder),
-  }))
+  for (const row of rows) {
+    let team = teams.get(row.id)
+    if (!team) {
+      team = {
+        id: row.id,
+        tournamentId: row.tournament_id,
+        name: row.name,
+        tag: row.tag,
+        captain: row.captain,
+        contact: row.contact,
+        dept: row.dept,
+        note: row.note,
+        status: row.status,
+        seed: row.seed,
+        checkedInAt: row.checked_in_at,
+        createdAt: row.created_at,
+        players: [],
+      }
+      teams.set(row.id, team)
+    }
+    if (row.player_id !== null && row.player_nickname !== null) {
+      team.players.push({
+        id: row.player_id,
+        teamId: row.id,
+        nickname: row.player_nickname,
+        role: row.player_role,
+        isSubstitute: Boolean(row.player_is_substitute),
+        sortOrder: row.player_sort_order ?? 0,
+      })
+    }
+  }
+
+  return [...teams.values()]
 }
 
-export function setTeamStatus(id: number, status: TeamStatus) {
+export function setTeamStatus(id: number, tournamentId: number, status: TeamStatus) {
   return adminMutation(() =>
-    updatePrivateRows('team', status === 'approved' ? { status } : { status, seed: null }, {
-      filters: { id: `eq.${id}` },
-    }),
+    updatePrivateRows<TeamRow>(
+      'team',
+      status === 'approved' ? { status } : { status, seed: null, checked_in_at: null },
+      { filters: { id: `eq.${id}`, tournament_id: `eq.${tournamentId}` } },
+    ),
   )
 }
 
-export function removeTeam(id: number) {
-  return adminMutation(() => deletePrivateRows('team', { filters: { id: `eq.${id}` } }))
+export function setTeamCheckedIn(
+  id: number,
+  tournamentId: number,
+  checkedIn: boolean,
+  expectedCheckedInAt: string | null,
+) {
+  return adminMutation(() =>
+    updatePrivateRows<TeamRow>(
+      'team',
+      { checked_in_at: checkedIn ? new Date().toISOString() : null },
+      {
+        filters: {
+          id: `eq.${id}`,
+          tournament_id: `eq.${tournamentId}`,
+          status: 'eq.approved',
+          checked_in_at: expectedCheckedInAt === null ? 'is.null' : `eq.${expectedCheckedInAt}`,
+        },
+      },
+    ),
+  )
+}
+
+export function removeTeam(id: number, tournamentId: number) {
+  return adminMutation(
+    async () =>
+      (
+        await cloudflareBindings()
+          .db.prepare('DELETE FROM team WHERE id = ? AND tournament_id = ? RETURNING id')
+          .bind(id, tournamentId)
+          .all<{ id: number }>()
+      ).results,
+  )
 }
