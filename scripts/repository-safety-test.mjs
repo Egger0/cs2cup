@@ -20,7 +20,8 @@ for (const [name, command] of Object.entries(scripts)) {
 }
 
 assert.match(scripts.dev, /^npm run db:local:migrate && next dev$/)
-assert.match(scripts['cf:build'], /--config wrangler\.local\.jsonc/)
+assert.doesNotMatch(scripts['cf:build'], /wrangler\.local\.jsonc/)
+assert.match(scripts['cf:build:local'], /--config wrangler\.local\.jsonc/)
 assert.equal(scripts['cf:preview'], undefined)
 
 const localConfigSource = await read('wrangler.local.jsonc')

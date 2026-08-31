@@ -10,7 +10,8 @@
   "scripts": {
     "dev": "npm run db:local:migrate && next dev",
     "build": "next build",
-    "cf:build": "opennextjs-cloudflare build --config wrangler.local.jsonc",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:build:local": "opennextjs-cloudflare build --config wrangler.local.jsonc",
     "db:local:migrate": "node scripts/local-database.mjs migrate",
     "db:local:seed": "node scripts/local-database.mjs seed",
     "db:local:reset": "node scripts/local-database.mjs reset",

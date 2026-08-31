@@ -39,9 +39,10 @@ Contributor commands use [`wrangler.local.jsonc`](./wrangler.local.jsonc). Its D
 bindings are local-only, remote bindings are disabled in code, and telemetry is disabled.
 Browser checks also reject non-loopback origins and outbound requests.
 
-[`wrangler.jsonc`](./wrangler.jsonc) is deployment configuration. Default development,
-testing, and quality commands never load it. Remote migrations and deployment belong only in
-protected maintainer automation and are intentionally absent from package scripts.
+[`wrangler.jsonc`](./wrangler.jsonc) is deployment configuration. `npm run cf:build`
+uses it to produce the same bundle as Workers Builds without deploying. Use
+`npm run cf:build:local` to validate the local-only bindings. Remote migrations and deployment
+belong only in protected maintainer automation and are intentionally absent from package scripts.
 
 ## Configuration
 
@@ -59,6 +60,7 @@ Never commit credentials or production secrets.
 ```sh
 npm run check
 npm run cf:build
+npm run cf:build:local
 ```
 
 `npm run check` covers formatting, types, ESLint, deterministic offline tests, repository
