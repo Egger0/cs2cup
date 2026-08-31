@@ -92,6 +92,34 @@
   margin-bottom: 16px;
 }
 
+.panelHeading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.panelHeading .panelHead {
+  margin-bottom: 0;
+}
+
+.panelAction {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  color: var(--ink);
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+
+.panelAction:hover {
+  border-color: var(--t);
+  color: var(--t);
+}
+
 .select {
   display: block;
   width: 100%;

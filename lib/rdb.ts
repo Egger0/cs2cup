@@ -32,13 +32,14 @@ type PublicRelation =
 type PublicFunction = 'registration_status'
 
 export class RdbError extends Error {
-  constructor(
-    readonly status: number,
-    readonly table: string,
-    message: string,
-  ) {
+  readonly status: number
+  readonly table: string
+
+  constructor(status: number, table: string, message: string) {
     super(`${table}: ${message}`)
     this.name = 'RdbError'
+    this.status = status
+    this.table = table
   }
 }
 
@@ -66,6 +67,8 @@ function predicate(column: string, value: string, values: unknown[]) {
     values.push(...entries)
     return `${name(column)} IN (${entries.map(() => '?').join(',')})`
   }
+
+  if (operator === 'is' && raw === 'null') return `${name(column)} IS NULL`
 
   if (operator === 'ilike') {
     values.push(raw.replaceAll('*', '%'))
