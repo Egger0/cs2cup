@@ -148,6 +148,12 @@ export default async function TeamPage({
             >
               查看本队完整赛程 →
             </Link>
+            <a
+              href={`/tournaments/${encodeURIComponent(slug)}/calendar.ics?teamId=${team.id}`}
+              download
+            >
+              下载本队日历 (.ics)
+            </a>
           </p>
         </div>
 

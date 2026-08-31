@@ -43,6 +43,9 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
     : entries
   const visibleEntries = teamEntries.filter(entry => matchesState(entry, state))
   const base = `/tournaments/${slug}/schedule`
+  const calendarHref = `/tournaments/${encodeURIComponent(slug)}/calendar.ics${
+    selectedTeam ? `?teamId=${selectedTeam.id}` : ''
+  }`
   const timeZoneLabel = SITE_TIME_ZONE === 'Asia/Shanghai' ? '北京时间' : SITE_TIME_ZONE
 
   return (
@@ -60,7 +63,12 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
             <strong>{visibleEntries.length}</strong> 场 · {selectedTeam?.name ?? '全部战队'} ·{' '}
             {STATE_LABEL[state]}
           </p>
-          <p title={SITE_TIME_ZONE}>{timeZoneLabel}</p>
+          <p title={SITE_TIME_ZONE}>
+            {timeZoneLabel} ·{' '}
+            <a className={styles.calendarLink} href={calendarHref} download>
+              下载{selectedTeam ? '本队' : '赛事'}日历 (.ics)
+            </a>
+          </p>
         </div>
 
         <ScheduleLedger
