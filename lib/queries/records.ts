@@ -1,9 +1,5 @@
 import type { Game, Post } from '../types'
 
-export const POST_SELECT = 'id,game_id,slug,title,summary,body,published_at,pinned'
-export const GAME_SELECT =
-  'id,slug,name,name_en,accent_color,tagline,description,format_note,sort_order,active'
-
 export interface PostRow {
   id: number
   game_id: number | null

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { bracketSize, firstRoundPairs, orderBySeed, seedPositions } from '../lib/seeding.ts'
+import { bracketSize, orderBySeed, seedPositions } from '../lib/seeding.ts'
 
 const expectedPositions = new Map([
   [2, [1, 2]],
@@ -24,21 +24,6 @@ for (const invalid of [0, 1, 3, 6, 12, 16.5]) {
 for (const invalid of [-1, 0, 1, 2.5]) {
   assert.throws(() => bracketSize(invalid), RangeError, `reject invalid team count ${invalid}`)
 }
-
-const sixTeamPairs = firstRoundPairs(bracketSize(6))
-const sixTeamByes = sixTeamPairs.filter(([a, b]) => a > 6 || b > 6)
-
-assert.deepEqual(sixTeamPairs, [
-  [1, 8],
-  [4, 5],
-  [2, 7],
-  [3, 6],
-])
-assert.deepEqual(sixTeamByes, [
-  [1, 8],
-  [2, 7],
-])
-assert.equal(sixTeamByes.length, 2)
 
 const partialSeeds = [
   { id: 'first', seed: null },

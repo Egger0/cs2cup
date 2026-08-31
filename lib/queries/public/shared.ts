@@ -2,9 +2,6 @@ import 'server-only'
 import { selectPublicRow } from '../../rdb'
 import type { SiteSetting } from '../../types'
 
-const SITE_SETTING_SELECT =
-  'id,club_name,club_name_en,school,logo_url,contact_qq,contact_wechat,footer_copy'
-
 interface SiteSettingRow {
   id: number
   club_name: string
@@ -31,9 +28,7 @@ export async function safely<T>(work: () => Promise<T>, fallback: T): Promise<T>
 }
 
 export async function getSiteSetting(): Promise<SiteSetting | null> {
-  const row = await selectPublicRow<SiteSettingRow>('site_setting', {
-    select: SITE_SETTING_SELECT,
-  })
+  const row = await selectPublicRow<SiteSettingRow>('site_setting')
   if (!row) return null
 
   return {

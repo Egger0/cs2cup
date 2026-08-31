@@ -40,11 +40,3 @@ export function orderBySeed<T extends { seed: number | null }>(entries: readonly
     (_, index) => ordered[index] ?? unseeded[nextUnseeded++]!,
   )
 }
-
-export function firstRoundPairs(size: number): [number, number][] {
-  const positions = seedPositions(size)
-  return Array.from({ length: size / 2 }, (_, slot) => [
-    positions[slot * 2]!,
-    positions[slot * 2 + 1]!,
-  ])
-}

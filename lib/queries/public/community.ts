@@ -3,9 +3,6 @@ import { d1UtcTimestampToIso } from '../../datetime'
 import { selectPublicRows } from '../../rdb'
 import type { ClubMember, GuestbookMessage } from '../../types'
 
-const MEMBER_SELECT = 'id,name,role,handle,intro,sort_order'
-const GUESTBOOK_SELECT = 'id,name,body,parent_id,is_official,pinned,created_at'
-
 interface MemberRow {
   id: number
   name: string
@@ -27,7 +24,6 @@ interface GuestbookRow {
 
 export async function listMembers(): Promise<ClubMember[]> {
   const rows = await selectPublicRows<MemberRow>('club_member', {
-    select: MEMBER_SELECT,
     order: 'sort_order.asc',
   })
   return rows.map(row => ({
@@ -42,7 +38,6 @@ export async function listMembers(): Promise<ClubMember[]> {
 
 export async function listGuestbookMessages(limit = 50): Promise<GuestbookMessage[]> {
   const rows = await selectPublicRows<GuestbookRow>('guestbook_public', {
-    select: GUESTBOOK_SELECT,
     order: 'pinned.desc,created_at.desc,id.desc',
     limit,
   })

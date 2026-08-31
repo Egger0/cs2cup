@@ -1,20 +1,12 @@
 import 'server-only'
 import { cloudflareBindings } from './cloudflare-bindings'
-import { registrationAvailability } from './registration'
 import { splitFilter } from './rdb-filter'
 
 type SelectionOptions = {
-  select?: string
   filters?: Record<string, string>
   order?: string
   limit?: number
 }
-
-interface PublicQueryOptions extends SelectionOptions {
-  select: string
-}
-
-type PrivateQueryOptions = SelectionOptions
 
 type PublicRelation =
   | 'club_member'
@@ -28,8 +20,6 @@ type PublicRelation =
   | 'site_setting'
   | 'team_public'
   | 'tournament_public'
-
-type PublicFunction = 'registration_status'
 
 export class RdbError extends Error {
   readonly status: number
@@ -169,19 +159,19 @@ async function rows<T>(table: string, options: SelectionOptions) {
   }
 }
 
-export function selectPublicRows<Row>(table: PublicRelation, options: PublicQueryOptions) {
+export function selectPublicRows<Row>(table: PublicRelation, options: SelectionOptions = {}) {
   return rows<Row>(table, options)
 }
 
-export async function selectPublicRow<Row>(table: PublicRelation, options: PublicQueryOptions) {
+export async function selectPublicRow<Row>(table: PublicRelation, options: SelectionOptions = {}) {
   return (await rows<Row>(table, { ...options, limit: 1 }))[0] ?? null
 }
 
-export function selectPrivateRows<Row>(table: string, options: PrivateQueryOptions = {}) {
+export function selectPrivateRows<Row>(table: string, options: SelectionOptions = {}) {
   return rows<Row>(table, options)
 }
 
-export async function selectPrivateRow<Row>(table: string, options: PrivateQueryOptions = {}) {
+export async function selectPrivateRow<Row>(table: string, options: SelectionOptions = {}) {
   return (await rows<Row>(table, { ...options, limit: 1 }))[0] ?? null
 }
 
@@ -212,7 +202,7 @@ export async function insertPrivateRows<Row>(table: string, values: unknown) {
 export async function updatePrivateRows<Row>(
   table: string,
   values: unknown,
-  options: PrivateQueryOptions,
+  options: SelectionOptions,
 ) {
   const record = values as Record<string, unknown>
   const data = fields(record)
@@ -226,37 +216,10 @@ export async function updatePrivateRows<Row>(
   ).results
 }
 
-export async function deletePrivateRows(table: string, options: PrivateQueryOptions) {
+export async function deletePrivateRows(table: string, options: SelectionOptions) {
   const params: unknown[] = []
   await cloudflareBindings()
     .db.prepare(`DELETE FROM ${name(table)}${where(options.filters, params)}`)
     .bind(...params)
     .run()
-}
-
-export async function callPublicFunction<T>(name: PublicFunction, args: unknown): Promise<T> {
-  if (name !== 'registration_status') {
-    throw new TypeError('unsupported public function')
-  }
-
-  const slug = (args as { p_slug?: unknown }).p_slug
-  const row = await cloudflareBindings()
-    .db.prepare(
-      "SELECT t.team_cap AS cap, COUNT(team.id) AS taken, t.status, t.reg_deadline AS regDeadline, unixepoch('now') * 1000 AS nowMs FROM tournament t LEFT JOIN team ON team.tournament_id = t.id AND team.status != 'rejected' WHERE t.slug = ? GROUP BY t.id",
-    )
-    .bind(slug)
-    .first<{
-      cap: number
-      taken: number
-      status: string
-      regDeadline: string | null
-      nowMs: number
-    }>()
-  if (!row) throw new RdbError(404, name, 'tournament not found')
-  const availability = registrationAvailability(
-    { status: row.status, regDeadline: row.regDeadline, teamCap: row.cap },
-    row.taken,
-    row.nowMs,
-  )
-  return { cap: row.cap, taken: row.taken, open: availability.open } as T
 }

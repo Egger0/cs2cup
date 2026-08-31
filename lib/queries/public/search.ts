@@ -1,6 +1,6 @@
 import 'server-only'
 import { selectPublicRows } from '../../rdb'
-import { GAME_SELECT, type GameRow, POST_SELECT, type PostRow } from '../records'
+import type { GameRow, PostRow } from '../records'
 import { listTournaments } from './tournaments'
 
 export interface SearchHit {
@@ -17,7 +17,6 @@ export async function search(query: string): Promise<SearchHit[]> {
 
   const [games, tournaments, posts] = await Promise.all([
     selectPublicRows<GameRow>('game', {
-      select: GAME_SELECT,
       filters: { or: `(name.${like},name_en.${like})` },
       limit: 8,
     }),
@@ -28,12 +27,10 @@ export async function search(query: string): Promise<SearchHit[]> {
       season: string
       edition: number
     }>('tournament_public', {
-      select: 'id,slug,title,season,edition',
       filters: { or: `(title.${like},season.${like})` },
       limit: 8,
     }),
     selectPublicRows<PostRow>('post', {
-      select: POST_SELECT,
       filters: { or: `(title.${like},summary.${like},body.${like})` },
       limit: 8,
     }),
@@ -45,7 +42,6 @@ export async function search(query: string): Promise<SearchHit[]> {
     name: string
     tag: string
   }>('team_public', {
-    select: 'tournament_id,name,tag',
     filters: { or: `(name.${like},tag.${like})` },
     limit: 10,
   })

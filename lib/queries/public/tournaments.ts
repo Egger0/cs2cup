@@ -1,12 +1,9 @@
 import 'server-only'
-import { callPublicFunction, selectPublicRow, selectPublicRows } from '../../rdb'
+import { cloudflareBindings } from '../../cloudflare-bindings'
+import { RdbError, selectPublicRow, selectPublicRows } from '../../rdb'
+import { registrationAvailability } from '../../registration'
 import type { FaqItem, RuleItem, Tournament, TournamentStatus } from '../../types'
 import { getMatches, getPublicTeams } from './matches'
-
-const TOURNAMENT_SELECT =
-  'id,slug,title,game_id,game(slug,name),season,edition,status,format,team_cap,' +
-  'reg_deadline,starts_at,accent_color,map_pool,rules,faqs,hero_eyebrow,hero_top,' +
-  'hero_bottom,lede,champion_name,champion_note'
 
 interface TournamentRow {
   id: number
@@ -63,7 +60,6 @@ function toTournament(row: TournamentRow): Tournament {
 
 export async function listTournaments(): Promise<Tournament[]> {
   const rows = await selectPublicRows<TournamentRow>('tournament_public', {
-    select: TOURNAMENT_SELECT,
     order: 'season.desc,edition.desc',
   })
   return rows.map(toTournament)
@@ -71,7 +67,6 @@ export async function listTournaments(): Promise<Tournament[]> {
 
 export async function getTournament(slug: string): Promise<Tournament | null> {
   const row = await selectPublicRow<TournamentRow>('tournament_public', {
-    select: TOURNAMENT_SELECT,
     filters: { slug: `eq.${slug}` },
   })
   return row ? toTournament(row) : null
@@ -79,7 +74,6 @@ export async function getTournament(slug: string): Promise<Tournament | null> {
 
 export async function getCurrentTournament(): Promise<Tournament | null> {
   const rows = await selectPublicRows<TournamentRow>('tournament_public', {
-    select: TOURNAMENT_SELECT,
     filters: { status: 'neq.finished' },
     order: 'season.desc,edition.desc',
     limit: 1,
@@ -87,14 +81,32 @@ export async function getCurrentTournament(): Promise<Tournament | null> {
   return rows[0] ? toTournament(rows[0]) : null
 }
 
-export interface RegistrationStatus {
+interface RegistrationStatus {
   cap: number
   taken: number
   open: boolean
 }
 
-export function getRegistrationStatus(slug: string) {
-  return callPublicFunction<RegistrationStatus>('registration_status', { p_slug: slug })
+export async function getRegistrationStatus(slug: string): Promise<RegistrationStatus> {
+  const row = await cloudflareBindings()
+    .db.prepare(
+      "SELECT t.team_cap AS cap, COUNT(team.id) AS taken, t.status, t.reg_deadline AS regDeadline, unixepoch('now') * 1000 AS nowMs FROM tournament t LEFT JOIN team ON team.tournament_id = t.id AND team.status != 'rejected' WHERE t.slug = ? GROUP BY t.id",
+    )
+    .bind(slug)
+    .first<{
+      cap: number
+      taken: number
+      status: string
+      regDeadline: string | null
+      nowMs: number
+    }>()
+  if (!row) throw new RdbError(404, 'registration_status', 'tournament not found')
+  const availability = registrationAvailability(
+    { status: row.status, regDeadline: row.regDeadline, teamCap: row.cap },
+    row.taken,
+    row.nowMs,
+  )
+  return { cap: row.cap, taken: row.taken, open: availability.open }
 }
 
 export async function listHonours() {

@@ -2,14 +2,6 @@ import 'server-only'
 import { selectPublicRows } from '../../rdb'
 import type { Match, MatchMap, Photo, Player, PublicTeam, VetoAction } from '../../types'
 
-const TEAM_SELECT = 'id,tournament_id,name,tag,captain,dept,seed'
-const PLAYER_SELECT = 'id,team_id,tournament_id,nickname,role,is_substitute,sort_order'
-const MATCH_SELECT =
-  'id,tournament_id,round,slot,round_label,best_of,team_a_id,team_b_id,' +
-  'source_match_a_id,source_match_b_id,score_a,score_b,winner_team_id,scheduled_at'
-const PHOTO_SELECT = 'id,tournament_id,storage_key,width,height,blur_data_url,caption,sort_order'
-const MATCH_MAP_SELECT = 'id,match_id,pick_order,map_name,action,chosen_by,score_a,score_b,played'
-
 interface TeamRow {
   id: number
   tournament_id: number
@@ -102,12 +94,10 @@ function toMatch(row: MatchRow): Match {
 export async function getPublicTeams(tournamentId: number): Promise<PublicTeam[]> {
   const [teams, players] = await Promise.all([
     selectPublicRows<TeamRow>('team_public', {
-      select: TEAM_SELECT,
       filters: { tournament_id: `eq.${tournamentId}` },
       order: 'seed.asc.nullslast',
     }),
     selectPublicRows<PlayerRow>('player_public', {
-      select: PLAYER_SELECT,
       filters: { tournament_id: `eq.${tournamentId}` },
       order: 'sort_order.asc',
     }),
@@ -135,7 +125,6 @@ export async function getPublicTeams(tournamentId: number): Promise<PublicTeam[]
 
 export async function getMatches(tournamentId: number): Promise<Match[]> {
   const rows = await selectPublicRows<MatchRow>('match_public', {
-    select: MATCH_SELECT,
     filters: { tournament_id: `eq.${tournamentId}` },
     order: 'round.asc,slot.asc',
   })
@@ -144,7 +133,6 @@ export async function getMatches(tournamentId: number): Promise<Match[]> {
 
 export async function getPhotos(tournamentId?: number): Promise<Photo[]> {
   const rows = await selectPublicRows<PhotoRow>('photo_public', {
-    select: PHOTO_SELECT,
     filters: tournamentId ? { tournament_id: `eq.${tournamentId}` } : undefined,
     order: 'sort_order.asc',
   })
@@ -163,7 +151,6 @@ export async function getPhotos(tournamentId?: number): Promise<Photo[]> {
 export async function getMatchMaps(matchIds: number[]): Promise<MatchMap[]> {
   if (matchIds.length === 0) return []
   const rows = await selectPublicRows<MatchMapRow>('match_map_public', {
-    select: MATCH_MAP_SELECT,
     filters: { match_id: `in.(${matchIds.join(',')})` },
     order: 'match_id.asc,pick_order.asc',
   })
