@@ -64,6 +64,7 @@ export interface MatchWriteResult {
   scoreB: number | null
   winnerTeamId: number | null
   cleared: number
+  reportCleared: boolean
 }
 
 export interface MatchReportResult extends MatchWriteResult {

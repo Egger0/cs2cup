@@ -2,8 +2,10 @@
 
 import Link from 'next/link'
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button, Empty } from '@/components/ui'
 import { groupByRound, indexMatches, indexTeams, resolveMatch, winsNeeded } from '@/lib/bracket'
+import { confirmScoreWrite } from '@/lib/score-confirmation'
 import type { Match, PublicTeam } from '@/lib/types'
 import { recordScore } from './actions/matches'
 import styles from './scheduler.module.css'
@@ -17,8 +19,9 @@ export function ScheduleEditor({
   teams: PublicTeam[]
   tournamentId: number
 }) {
+  const router = useRouter()
   const [pending, startTransition] = useTransition()
-  const [error, setError] = useState('')
+  const [feedback, setFeedback] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
 
   if (matches.length === 0) return <Empty>还没有生成对阵表</Empty>
 
@@ -36,31 +39,64 @@ export function ScheduleEditor({
     const limit = winsNeeded(match.bestOf)
 
     if ((scoreA !== null && scoreA > limit) || (scoreB !== null && scoreB > limit)) {
-      setError(`BO${match.bestOf} 单方最多 ${limit} 分`)
+      setFeedback({ tone: 'error', text: `BO${match.bestOf} 单方最多 ${limit} 分` })
       return
     }
-    setError('')
+    const resolved = resolveMatch(match, matchIndex, teamIndex)
+    if (!resolved.a || !resolved.b) {
+      setFeedback({ tone: 'error', text: '对阵双方尚未确定，请刷新页面' })
+      return
+    }
+    const teamAId = resolved.a.id
+    const teamBId = resolved.b.id
+
+    setFeedback(null)
     startTransition(async () => {
-      const resolved = resolveMatch(match, matchIndex, teamIndex)
-      if (!resolved.a || !resolved.b) {
-        setError('对阵双方尚未确定，请刷新页面')
-        return
+      try {
+        const result = await confirmScoreWrite(
+          confirmationToken =>
+            recordScore(
+              match.id,
+              teamAId,
+              teamBId,
+              scoreA,
+              scoreB,
+              tournamentId,
+              confirmationToken,
+            ),
+          message => window.confirm(message),
+        )
+        if (!result) return
+        if (!result.ok) {
+          setFeedback({ tone: 'error', text: result.error })
+          return
+        }
+
+        const cleared = [
+          result.reportCleared ? '本场战报' : '',
+          result.cleared > 0 ? `${result.cleared} 场下游赛果` : '',
+        ].filter(Boolean)
+        setFeedback({
+          tone: 'ok',
+          text: cleared.length > 0 ? `比分已保存，并清空${cleared.join('及')}` : '比分已保存',
+        })
+        router.refresh()
+      } catch {
+        setFeedback({ tone: 'error', text: '网络异常，比分未保存' })
       }
-      const result = await recordScore(
-        match.id,
-        resolved.a.id,
-        resolved.b.id,
-        scoreA,
-        scoreB,
-        tournamentId,
-      )
-      if (!result.ok) setError(result.error)
     })
   }
 
   return (
     <>
-      {error ? <p style={{ color: 'var(--c4)', marginBottom: 12 }}>{error}</p> : null}
+      {feedback ? (
+        <p
+          role={feedback.tone === 'error' ? 'alert' : 'status'}
+          style={{ color: feedback.tone === 'error' ? 'var(--c4)' : 'var(--ct)', marginBottom: 12 }}
+        >
+          {feedback.text}
+        </p>
+      ) : null}
       {groupByRound(matches).map(round => (
         <section key={round.round} style={{ marginBottom: 24 }}>
           <div className={styles.scoreRound}>{round.label}</div>

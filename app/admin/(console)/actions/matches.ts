@@ -10,11 +10,35 @@ import {
   replaceMatchSchedule,
   saveAdminMatchReport,
   saveAdminMatchScore,
+  ScoreCorrectionConfirmationError,
 } from '@/lib/queries/admin'
 import type { MatchMapInput, MatchScheduleInput } from '@/lib/queries/admin'
 import { bracketSize, orderBySeed, seedPositions } from '@/lib/seeding'
 import type { VetoAction } from '@/lib/types'
 import { scheduleError, writeError } from './_errors'
+
+function scoreWriteFailure(error: unknown, fallback: string) {
+  if (!(error instanceof ScoreCorrectionConfirmationError)) {
+    return { ok: false as const, error: writeError(error, fallback) }
+  }
+
+  const effects = [
+    error.clearsCurrentReport ? '本场逐图战报' : '',
+    error.affectedMatches > 0 ? `${error.affectedMatches} 场下游比赛的比分与战报` : '',
+  ].filter(Boolean)
+  return {
+    ok: false as const,
+    code: 'score_correction_confirmation' as const,
+    affectedMatches: error.affectedMatches,
+    clearsCurrentReport: error.clearsCurrentReport,
+    confirmationToken: error.confirmationToken,
+    error: `此次修正将清空${effects.join('及')}。确定继续？`,
+  }
+}
+
+function scoreConfirmationToken(value: unknown) {
+  return typeof value === 'string' && /^[a-f0-9]{64}$/.test(value) ? value : null
+}
 
 export async function buildBracket(tournamentId: number) {
   await requireAdmin()
@@ -58,6 +82,7 @@ export async function recordScore(
   scoreA: number | null,
   scoreB: number | null,
   tournamentId: number,
+  confirmationToken: string | null = null,
 ) {
   await requireAdmin()
 
@@ -68,9 +93,16 @@ export async function recordScore(
 
   let result: Awaited<ReturnType<typeof saveAdminMatchScore>>
   try {
-    result = await saveAdminMatchScore(matchId, teamAId, teamBId, scoreA, scoreB)
+    result = await saveAdminMatchScore(
+      matchId,
+      teamAId,
+      teamBId,
+      scoreA,
+      scoreB,
+      scoreConfirmationToken(confirmationToken),
+    )
   } catch (error) {
-    return { ok: false as const, error: writeError(error, '比分保存失败') }
+    return scoreWriteFailure(error, '比分保存失败')
   }
 
   updateTag(`matches:${tournamentId}`)
@@ -85,6 +117,7 @@ export async function saveMatchReport(
   teamAId: number,
   teamBId: number,
   mapsJson: string,
+  confirmationToken: string | null = null,
 ) {
   await requireAdmin()
 
@@ -137,9 +170,15 @@ export async function saveMatchReport(
 
   let result: Awaited<ReturnType<typeof saveAdminMatchReport>>
   try {
-    result = await saveAdminMatchReport(matchId, teamAId, teamBId, maps)
+    result = await saveAdminMatchReport(
+      matchId,
+      teamAId,
+      teamBId,
+      maps,
+      scoreConfirmationToken(confirmationToken),
+    )
   } catch (error) {
-    return { ok: false as const, error: writeError(error, '战报保存失败') }
+    return scoreWriteFailure(error, '战报保存失败')
   }
   if (result.ok) {
     updateTag(`matches:${tournamentId}`)
