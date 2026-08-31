@@ -8,6 +8,7 @@ import {
   updatePrivateRows,
 } from '../../rdb'
 import type { Tournament } from '../../types'
+import type { TournamentUpdateValues } from '../../tournament-form'
 import { adminMutation } from './shared'
 
 interface TournamentRow {
@@ -93,8 +94,9 @@ export function adminDeleteTournament(id: number) {
   return adminMutation(() => deletePrivateRows('tournament', { filters: { id: `eq.${id}` } }))
 }
 
-export function adminSaveTournament(id: number, values: Record<string, unknown>) {
-  return adminMutation(() =>
+export async function adminSaveTournament(id: number, values: TournamentUpdateValues) {
+  const rows = await adminMutation(() =>
     updatePrivateRows('tournament', values, { filters: { id: `eq.${id}` } }),
   )
+  return rows.length > 0
 }

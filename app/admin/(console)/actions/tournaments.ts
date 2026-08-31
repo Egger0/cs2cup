@@ -12,27 +12,26 @@ import {
   adminSaveTournament,
 } from '@/lib/queries/content'
 import { removeObject } from '@/lib/storage'
+import { parseTournamentUpdate } from '@/lib/tournament-form'
+import { writeError } from './_errors'
 
 export async function updateTournament(id: number, form: FormData) {
   await requireAdmin()
-  const mapPool = String(form.get('mapPool') ?? '')
-    .split(/[,，]/)
-    .map(entry => entry.trim())
-    .filter(Boolean)
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return { ok: false as const, error: '赛事编号无效' }
+  }
 
-  await adminSaveTournament(id, {
-    title: String(form.get('title') ?? '').trim(),
-    hero_bottom: String(form.get('heroBottom') ?? '').trim(),
-    hero_eyebrow: String(form.get('heroEyebrow') ?? '').trim(),
-    lede: String(form.get('lede') ?? '').trim(),
-    status: String(form.get('status') ?? 'draft'),
-    team_cap: Number(form.get('teamCap')),
-    game_id: Number(form.get('gameId')),
-    map_pool: mapPool,
-    champion_name: String(form.get('championName') ?? '').trim() || null,
-    champion_note: String(form.get('championNote') ?? '').trim() || null,
-  })
+  const parsed = parseTournamentUpdate(form)
+  if (!parsed.ok) return parsed
+
+  try {
+    const saved = await adminSaveTournament(id, parsed.value)
+    if (!saved) return { ok: false as const, error: '赛事不存在或已删除' }
+  } catch (error) {
+    return { ok: false as const, error: writeError(error, '赛事保存失败') }
+  }
   updateTag('tournament')
+  return { ok: true as const }
 }
 
 export async function createTournament(form: FormData) {
