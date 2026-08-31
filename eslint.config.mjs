@@ -6,6 +6,7 @@ const config = [
     ignores: [
       '.next/**',
       '.open-next/**',
+      '.local/**',
       '.wrangler/**',
       'node_modules/**',
       'dist/**',

@@ -1,9 +1,20 @@
 import type { NextConfig } from 'next'
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
 import { PRIVATE_NO_STORE } from './lib/http-cache'
 
 const PRIVATE_ROUTE_SOURCES = ['/admin/:path*', '/media/:path*', '/photos/:path*']
 
+if (process.env.NODE_ENV === 'development') {
+  void initOpenNextCloudflareForDev({
+    configPath: './wrangler.local.jsonc',
+    envFiles: ['wrangler.local.env'],
+    persist: { path: './.local/cloudflare/v3' },
+    remoteBindings: false,
+  })
+}
+
 const config: NextConfig = {
+  agentRules: false,
   expireTime: 600,
   async headers() {
     return PRIVATE_ROUTE_SOURCES.map(source => ({

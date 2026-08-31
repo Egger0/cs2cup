@@ -1,7 +1,8 @@
 import { chromium } from 'playwright'
 import AxeBuilder from '@axe-core/playwright'
+import { installLoopbackRequestGuard, resolveE2EBaseUrl } from './loopback-url.mjs'
 
-const BASE = process.env.BASE_URL ?? 'http://localhost:3000'
+const BASE = resolveE2EBaseUrl()
 const PAGES = [
   '/',
   '/games',
@@ -21,7 +22,11 @@ const PAGES = [
 ]
 
 const browser = await chromium.launch()
-const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } })
+const ctx = await browser.newContext({
+  viewport: { width: 1280, height: 900 },
+  serviceWorkers: 'block',
+})
+const outboundGuard = await installLoopbackRequestGuard(ctx)
 const page = await ctx.newPage()
 
 let total = 0
@@ -66,4 +71,5 @@ for (const [rule, entry] of [...byRule.entries()].sort((a, b) => b[1].nodes - a[
 }
 console.log(`\nTotal: ${total} issues`)
 await browser.close()
+outboundGuard.assertSafe()
 if (total > 0) process.exit(1)
