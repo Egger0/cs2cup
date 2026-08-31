@@ -77,12 +77,13 @@ User-facing copy may use Chinese. Source files are limited to 300 non-empty line
 
 ## Structure
 
-| Path                | Responsibility                             |
-| ------------------- | ------------------------------------------ |
-| `app`               | Public and admin routes                    |
-| `components`        | UI, layout, and domain components          |
-| `lib/queries`       | Public and authenticated data access       |
-| `lib`               | Domain and infrastructure code             |
-| `cloudflare/d1`     | Schema, migrations, and local fixture data |
-| `scripts`           | Local tooling and deterministic checks     |
-| `.github/workflows` | Quality and repository automation          |
+| Path                  | Responsibility                         |
+| --------------------- | -------------------------------------- |
+| `app`                 | Public and admin routes                |
+| `components`          | UI, layout, and domain components      |
+| `lib/queries`         | Public and authenticated data access   |
+| `lib`                 | Domain and infrastructure code         |
+| `cloudflare/d1`       | Schema and production migrations       |
+| `cloudflare/fixtures` | Local deterministic fixture data       |
+| `scripts`             | Local tooling and deterministic checks |
+| `.github/workflows`   | Quality and repository automation      |

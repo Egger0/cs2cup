@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
+import { readdir, readFile } from 'node:fs/promises'
 import ts from 'typescript'
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8')
 const packageJson = JSON.parse(await read('package.json'))
 const scripts = packageJson.scripts ?? {}
+const migrationNames = await readdir(new URL('../cloudflare/d1/', import.meta.url))
 const forbiddenScriptPatterns = [
   /\bnpx\b/i,
   /(^|\s)--remote(?:\s|$)/i,
@@ -23,6 +24,10 @@ assert.match(scripts.dev, /^npm run db:local:migrate && next dev$/)
 assert.doesNotMatch(scripts['cf:build'], /wrangler\.local\.jsonc/)
 assert.match(scripts['cf:build:local'], /--config wrangler\.local\.jsonc/)
 assert.equal(scripts['cf:preview'], undefined)
+assert.ok(
+  migrationNames.every(name => /^\d{4}_[a-z0-9_-]+\.sql$/.test(name)),
+  'D1 migrations must only include numbered migration files',
+)
 
 const localConfigSource = await read('wrangler.local.jsonc')
 const parsedLocalConfig = ts.parseConfigFileTextToJson('wrangler.local.jsonc', localConfigSource)

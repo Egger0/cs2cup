@@ -7,7 +7,7 @@ const database = await createMigratedDatabase()
 
 try {
   const [seed, readme] = await Promise.all([
-    readFile(new URL('../cloudflare/d1/local-seed.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../cloudflare/fixtures/local-seed.sql', import.meta.url), 'utf8'),
     readFile(new URL('../README.md', import.meta.url), 'utf8'),
   ])
   database.exec(seed)
