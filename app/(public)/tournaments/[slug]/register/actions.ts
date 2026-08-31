@@ -2,29 +2,17 @@
 
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { clientFingerprint } from '@/lib/ratelimit'
+import { createRegistrationAccess } from '@/lib/registration-access'
+import { parseRegistrationForm } from '@/lib/registration-form'
+import { registrationAvailability } from '@/lib/registration'
 
 export interface RegisterResult {
   ok: boolean
   error?: string
   seatsLeft?: number
+  managementPath?: string
   code?: 'RATE_LIMITED' | 'SUBMISSION_FAILED'
   retryAfterSeconds?: number
-}
-
-const FIELD_LIMITS = {
-  name: 20,
-  tag: 5,
-  captain: 20,
-  contact: 40,
-  dept: 30,
-  note: 120,
-  player: 20,
-} as const
-
-function formText(form: FormData, name: string, maxLength: number) {
-  const value = String(form.get(name) ?? '').trim()
-  if (value.length > maxLength) throw new RangeError(`${name} exceeds its server-side limit`)
-  return value
 }
 
 export async function registerTeam(slug: string, form: FormData): Promise<RegisterResult> {
@@ -32,50 +20,39 @@ export async function registerTeam(slug: string, form: FormData): Promise<Regist
     return { ok: false, error: '当前赛事不存在或不可报名' }
   }
 
-  let payload: Record<string, unknown>
-  try {
-    payload = {
-      slug,
-      name: formText(form, 'name', FIELD_LIMITS.name),
-      tag: formText(form, 'tag', FIELD_LIMITS.tag),
-      captain: formText(form, 'captain', FIELD_LIMITS.captain),
-      contact: formText(form, 'contact', FIELD_LIMITS.contact),
-      dept: formText(form, 'dept', FIELD_LIMITS.dept),
-      note: formText(form, 'note', FIELD_LIMITS.note),
-      players: [1, 2, 3, 4, 5, 6].map(index => ({
-        nickname: formText(form, `player${index}`, FIELD_LIMITS.player),
-        substitute: index === 6,
-      })),
-    }
-  } catch {
-    return { ok: false, error: '报名信息超出允许长度，请检查后重试' }
-  }
+  const parsed = parseRegistrationForm(form)
+  if (!parsed.ok) return { ok: false, error: parsed.error }
+  const team = parsed.values
+  const tag = team.tag
 
   try {
-    const fingerprint = await clientFingerprint()
     const { db } = cloudflareBindings()
     const tournament = await db
       .prepare(
-        "SELECT id, team_cap AS teamCap, status FROM tournament WHERE slug = ? AND status != 'draft'",
+        "SELECT t.id, t.team_cap AS teamCap, t.status, t.reg_deadline AS regDeadline, COUNT(team.id) AS taken, unixepoch('now') * 1000 AS nowMs FROM tournament t LEFT JOIN team ON team.tournament_id = t.id AND team.status != 'rejected' WHERE t.slug = ? GROUP BY t.id",
       )
       .bind(slug)
-      .first<{ id: number; teamCap: number; status: string }>()
-    if (!tournament || !['registration', 'postponed'].includes(tournament.status)) {
+      .first<{
+        id: number
+        teamCap: number
+        status: string
+        regDeadline: string | null
+        taken: number
+        nowMs: number
+      }>()
+    if (!tournament) return { ok: false, error: '当前赛事不存在或不可报名' }
+
+    const availability = registrationAvailability(tournament, tournament.taken, tournament.nowMs)
+    if (!availability.open) {
+      if (availability.reason === 'capacity_reached') return { ok: false, error: '席位已满' }
+      if (availability.reason === 'deadline_passed') return { ok: false, error: '报名已截止' }
+      if (availability.reason === 'invalid_configuration') {
+        return { ok: false, error: '报名配置无效，请联系赛事负责人' }
+      }
       return { ok: false, error: '当前赛事未开放报名' }
     }
-    const team = payload as {
-      name: string
-      tag: string
-      captain: string
-      contact: string
-      dept: string
-      note: string
-      players: { nickname: string; substitute: boolean }[]
-    }
-    if (!team.name || !team.tag || !team.captain || !team.contact)
-      return { ok: false, error: '请填写完整的必填项' }
-    const tag = team.tag.toUpperCase()
-    if (tag.length < 2 || tag.length > 5) return { ok: false, error: '战队 TAG 需要 2 到 5 个字符' }
+
+    const fingerprint = await clientFingerprint()
     const duplicate = await db
       .prepare(
         'SELECT id FROM team WHERE tournament_id = ? AND (LOWER(name) = LOWER(?) OR UPPER(tag) = ?)',
@@ -83,45 +60,62 @@ export async function registerTeam(slug: string, form: FormData): Promise<Regist
       .bind(tournament.id, team.name, tag)
       .first()
     if (duplicate) return { ok: false, error: '战队名称或 TAG 已被占用' }
+    const access = await createRegistrationAccess()
     const statements = [
       db
         .prepare(
-          'INSERT INTO registration_attempt (fingerprint,tournament_id,accepted) VALUES (?,?,1)',
-        )
-        .bind(fingerprint, tournament.id),
-      db
-        .prepare(
-          "INSERT INTO team (tournament_id,name,tag,captain,contact,dept,note,status) VALUES (?,?,?,?,?,?,?,'pending')",
+          "INSERT INTO team (tournament_id,name,tag,captain,contact,dept,note,status,management_token_hash) SELECT id,?,?,?,?,?,?,'pending',? FROM tournament WHERE id = ? AND status IN ('registration','postponed') AND (reg_deadline IS NULL OR unixepoch(reg_deadline) > unixepoch('now'))",
         )
         .bind(
-          tournament.id,
           team.name,
           tag,
           team.captain,
           team.contact,
           team.dept || null,
           team.note || null,
+          access.tokenHash,
+          tournament.id,
         ),
-      ...team.players
-        .filter(player => player.nickname)
-        .map((player, index) =>
-          db
-            .prepare(
-              'INSERT INTO player (team_id,nickname,is_substitute,sort_order) SELECT id,?,?,? FROM team WHERE tournament_id = ? AND tag = ?',
-            )
-            .bind(player.nickname, player.substitute ? 1 : 0, index + 1, tournament.id, tag),
-        ),
+      ...team.players.map((player, index) =>
+        db
+          .prepare(
+            'INSERT INTO player (team_id,nickname,is_substitute,sort_order) SELECT id,?,?,? FROM team WHERE tournament_id = ? AND tag = ? AND management_token_hash = ?',
+          )
+          .bind(
+            player.nickname,
+            player.substitute ? 1 : 0,
+            index + 1,
+            tournament.id,
+            tag,
+            access.tokenHash,
+          ),
+      ),
+      db
+        .prepare(
+          'INSERT INTO registration_attempt (fingerprint,tournament_id,accepted) SELECT ?,tournament_id,1 FROM team WHERE tournament_id = ? AND tag = ? AND management_token_hash = ?',
+        )
+        .bind(fingerprint, tournament.id, tag, access.tokenHash),
     ]
     await db.batch(statements)
-    const taken = await db
-      .prepare(
-        "SELECT COUNT(*) AS count FROM team WHERE tournament_id = ? AND status != 'rejected'",
-      )
-      .bind(tournament.id)
-      .first<{ count: number }>()
+    const [inserted, taken] = await Promise.all([
+      db
+        .prepare(
+          'SELECT id FROM team WHERE tournament_id = ? AND tag = ? AND management_token_hash = ?',
+        )
+        .bind(tournament.id, tag, access.tokenHash)
+        .first(),
+      db
+        .prepare(
+          "SELECT COUNT(*) AS count FROM team WHERE tournament_id = ? AND status != 'rejected'",
+        )
+        .bind(tournament.id)
+        .first<{ count: number }>(),
+    ])
+    if (!inserted) return { ok: false, error: '报名已截止或赛事状态已变更，请刷新后重试' }
     return {
       ok: true,
       seatsLeft: Math.max(0, tournament.teamCap - (taken?.count ?? tournament.teamCap)),
+      managementPath: `/tournaments/${encodeURIComponent(slug)}/registration/${access.token}`,
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : ''

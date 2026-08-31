@@ -101,6 +101,44 @@ try {
     '提交太频繁',
   )
 
+  const teamColumns = new Set(
+    database
+      .prepare('PRAGMA table_info(team)')
+      .all()
+      .map(column => column.name),
+  )
+  assert.equal(teamColumns.has('management_token_hash'), true)
+  assert.equal(teamColumns.has('management_revision'), true)
+  assert.equal(teamColumns.has('management_write_nonce'), true)
+
+  database.exec(`
+    INSERT INTO team (id, tournament_id, name, tag, captain, contact)
+    VALUES (10, 2, 'Alpha', 'AAA', 'Captain', 'contact');
+  `)
+  expectDatabaseError(
+    database,
+    "INSERT INTO team (id, tournament_id, name, tag, captain, contact) VALUES (11, 2, 'alpha', 'BBB', 'Captain', 'contact');",
+    'UNIQUE constraint failed',
+  )
+  expectDatabaseError(
+    database,
+    "INSERT INTO team (id, tournament_id, name, tag, captain, contact) VALUES (12, 2, 'Bravo', 'aaa', 'Captain', 'contact');",
+    'UNIQUE constraint failed',
+  )
+  expectDatabaseError(
+    database,
+    'UPDATE team SET management_revision = 2 WHERE id = 10;',
+    'registration revision conflict',
+  )
+  database.exec(
+    "UPDATE team SET management_revision = 1, management_write_nonce = 'schema-test' WHERE id = 10;",
+  )
+  assert.equal(
+    database.prepare('SELECT management_revision FROM team WHERE id = 10').get()
+      .management_revision,
+    1,
+  )
+
   console.log('Cloudflare D1 schema tests passed')
 } finally {
   database.close()

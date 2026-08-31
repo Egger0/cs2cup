@@ -1,5 +1,6 @@
 import 'server-only'
 import { cloudflareBindings } from './cloudflare-bindings'
+import { registrationAvailability } from './registration'
 import { splitFilter } from './rdb-filter'
 
 type SelectionOptions = {
@@ -238,10 +239,21 @@ export async function callPublicFunction<T>(name: PublicFunction, args: unknown)
   const slug = (args as { p_slug?: unknown }).p_slug
   const row = await cloudflareBindings()
     .db.prepare(
-      "SELECT t.team_cap AS cap, COUNT(team.id) AS taken, t.status IN ('registration', 'postponed') AND (t.reg_deadline IS NULL OR t.reg_deadline > CURRENT_TIMESTAMP) AS open FROM tournament t LEFT JOIN team ON team.tournament_id = t.id AND team.status != 'rejected' WHERE t.slug = ? GROUP BY t.id",
+      "SELECT t.team_cap AS cap, COUNT(team.id) AS taken, t.status, t.reg_deadline AS regDeadline, unixepoch('now') * 1000 AS nowMs FROM tournament t LEFT JOIN team ON team.tournament_id = t.id AND team.status != 'rejected' WHERE t.slug = ? GROUP BY t.id",
     )
     .bind(slug)
-    .first<T>()
+    .first<{
+      cap: number
+      taken: number
+      status: string
+      regDeadline: string | null
+      nowMs: number
+    }>()
   if (!row) throw new RdbError(404, name, 'tournament not found')
-  return row
+  const availability = registrationAvailability(
+    { status: row.status, regDeadline: row.regDeadline, teamCap: row.cap },
+    row.taken,
+    row.nowMs,
+  )
+  return { cap: row.cap, taken: row.taken, open: availability.open } as T
 }
