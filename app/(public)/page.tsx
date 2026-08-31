@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { NextMatchCountdown } from '@/components/domain/NextMatchCountdown'
-import { Button, Empty } from '@/components/ui'
+import { ButtonLink, Empty } from '@/components/ui'
 import { PostList } from '@/components/domain/PostList'
 import { SectionHead } from '@/components/domain/Sections'
 import { buildScheduleEntries, selectNextScheduleEntry } from '@/lib/schedule'
@@ -76,13 +76,11 @@ export default async function HomePage() {
             </p>
             <div className={styles.actions}>
               {current ? (
-                <Link href={`/tournaments/${current.slug}`}>
-                  <Button variant="primary">看本届宁理杯</Button>
-                </Link>
+                <ButtonLink href={`/tournaments/${current.slug}`} variant="primary">
+                  看本届宁理杯
+                </ButtonLink>
               ) : null}
-              <Link href="/about">
-                <Button>加入我们</Button>
-              </Link>
+              <ButtonLink href="/about">加入我们</ButtonLink>
             </div>
           </div>
           {current || previewCountdown ? (
@@ -168,9 +166,9 @@ export default async function HomePage() {
                   </div>
                   <p className={styles.spotlightBody}>{current.lede}</p>
                   <div style={{ marginTop: 20 }}>
-                    <Link href={`/tournaments/${current.slug}`}>
-                      <Button size="mini">进入赛事页</Button>
-                    </Link>
+                    <ButtonLink href={`/tournaments/${current.slug}`} size="mini">
+                      进入赛事页
+                    </ButtonLink>
                   </div>
                 </div>
               ) : null}

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Button, Empty } from '@/components/ui'
+import { ButtonLink, Empty } from '@/components/ui'
 import { groupByRound, indexMatches, indexTeams, isByeMatch, resolveMatch } from '@/lib/bracket'
 import { formatSiteCompactDateTime } from '@/lib/datetime'
 import type { Match, PublicTeam } from '@/lib/types'
@@ -16,9 +16,9 @@ export function Bracket({ matches, teams, slug }: BracketProps) {
     return (
       <Empty
         action={
-          <Link href={`/tournaments/${slug}/teams`}>
-            <Button size="mini">看参赛战队</Button>
-          </Link>
+          <ButtonLink href={`/tournaments/${slug}/teams`} size="mini">
+            看参赛战队
+          </ButtonLink>
         }
       >
         报名满员后统一抽签,对阵表会出现在这里。

@@ -1,6 +1,5 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Button, Empty } from '@/components/ui'
+import { ButtonLink, Empty } from '@/components/ui'
 import { SectionHead } from '@/components/domain/Sections'
 import { getRegistrationStatus, getTournament, safely } from '@/lib/queries/public'
 import { RegisterForm } from './RegisterForm'
@@ -41,12 +40,10 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
           <Empty
             action={
               <>
-                <Link href={`/tournaments/${slug}/teams`}>
-                  <Button variant="primary">看看谁报了名</Button>
-                </Link>
-                <Link href="/about">
-                  <Button>进群等下一届</Button>
-                </Link>
+                <ButtonLink href={`/tournaments/${slug}/teams`} variant="primary">
+                  看看谁报了名
+                </ButtonLink>
+                <ButtonLink href="/about">进群等下一届</ButtonLink>
               </>
             }
           >

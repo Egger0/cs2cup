@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Button, Empty } from '@/components/ui'
+import { ButtonLink, Empty } from '@/components/ui'
 import { indexMatches, indexTeams, isCompletedMatch, resolveMatch } from '@/lib/bracket'
 import type { Match, MatchMap, PublicTeam } from '@/lib/types'
 import styles from './ResultsTable.module.css'
@@ -19,9 +19,9 @@ export function ResultsTable({ matches, teams, maps, slug, limit }: ResultsTable
     return (
       <Empty
         action={
-          <Link href={`/tournaments/${slug}/bracket`}>
-            <Button size="mini">看对阵表</Button>
-          </Link>
+          <ButtonLink href={`/tournaments/${slug}/bracket`} size="mini">
+            看对阵表
+          </ButtonLink>
         }
       >
         还没有打完的比赛。每场结束后,比分和 Ban/Pick 会出现在这里。

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Button, Empty } from '@/components/ui'
+import { ButtonLink, Empty } from '@/components/ui'
 import type { PublicTeam } from '@/lib/types'
 import styles from './TeamGrid.module.css'
 
@@ -9,9 +9,9 @@ export function TeamGrid({ teams, slug }: { teams: PublicTeam[]; slug?: string }
       <Empty
         action={
           slug ? (
-            <Link href={`/tournaments/${slug}/register`}>
-              <Button variant="primary">第一个报名</Button>
-            </Link>
+            <ButtonLink href={`/tournaments/${slug}/register`} variant="primary">
+              第一个报名
+            </ButtonLink>
           ) : null
         }
       >

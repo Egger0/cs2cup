@@ -1,5 +1,4 @@
-import Link from 'next/link'
-import { Button } from '@/components/ui'
+import { Button, ButtonLink } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
 import { AdminNav } from './AdminNav'
 import { signOut } from './actions/auth'
@@ -20,9 +19,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <div className={styles.uid}>{admin.uid}</div>
         </div>
         <div className={styles.barActions}>
-          <Link href="/">
-            <Button size="mini">回到网站</Button>
-          </Link>
+          <ButtonLink href="/" size="mini">
+            回到网站
+          </ButtonLink>
           <form action={signOut}>
             <Button type="submit" size="mini">
               退出

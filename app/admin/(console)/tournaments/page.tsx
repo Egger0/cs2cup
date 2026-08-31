@@ -1,5 +1,4 @@
-import Link from 'next/link'
-import { Button, Empty, Field } from '@/components/ui'
+import { Button, ButtonLink, Empty, Field } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
 import { adminListGames, adminListTournaments } from '@/lib/queries/content'
 import { createTournament } from '../actions/tournaments'
@@ -92,12 +91,12 @@ export default async function AdminTournamentsPage() {
                   </div>
                 </div>
                 <div className={styles.rowActions}>
-                  <Link href={`/admin/tournaments/${tournament.id}`}>
-                    <Button size="mini">编辑</Button>
-                  </Link>
-                  <Link href={`/tournaments/${tournament.slug}`}>
-                    <Button size="mini">查看</Button>
-                  </Link>
+                  <ButtonLink href={`/admin/tournaments/${tournament.id}`} size="mini">
+                    编辑
+                  </ButtonLink>
+                  <ButtonLink href={`/tournaments/${tournament.slug}`} size="mini">
+                    查看
+                  </ButtonLink>
                   <TournamentDeleteButton id={tournament.id} title={tournament.title} />
                 </div>
               </div>

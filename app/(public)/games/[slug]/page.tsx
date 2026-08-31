@@ -1,6 +1,5 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Button, Empty } from '@/components/ui'
+import { ButtonLink, Empty } from '@/components/ui'
 import { PostList } from '@/components/domain/PostList'
 import { SectionHead } from '@/components/domain/Sections'
 import { TournamentList } from '@/components/domain/TournamentList'
@@ -74,9 +73,9 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
           ) : (
             <Empty
               action={
-                <Link href="/about">
-                  <Button variant="primary">来牵头办一场</Button>
-                </Link>
+                <ButtonLink href="/about" variant="primary">
+                  来牵头办一场
+                </ButtonLink>
               }
             >
               这个项目还没有办过比赛。社团有服务器、有裁判、有海报设计,缺的是发起人。
