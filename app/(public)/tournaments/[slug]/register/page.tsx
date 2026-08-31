@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { ButtonLink, Empty } from '@/components/ui'
 import { SectionHead } from '@/components/domain/Sections'
 import { getRegistrationStatus, getTournament, safely } from '@/lib/queries/public'
+import { resolveSiteOrigin } from '@/lib/site-config'
 import { RegisterForm } from './RegisterForm'
 
 export const dynamic = 'force-dynamic'
@@ -34,7 +35,7 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
 
         {accepting ? (
           <div data-rise="2">
-            <RegisterForm slug={slug} disabled={false} />
+            <RegisterForm slug={slug} disabled={false} siteOrigin={resolveSiteOrigin()} />
           </div>
         ) : (
           <Empty

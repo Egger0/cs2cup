@@ -28,16 +28,23 @@ async function writeClipboard(value: string) {
   }
 }
 
-export function RegisterForm({ slug, disabled }: { slug: string; disabled: boolean }) {
+export function RegisterForm({
+  slug,
+  disabled,
+  siteOrigin,
+}: {
+  slug: string
+  disabled: boolean
+  siteOrigin: string
+}) {
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
-  const [receipt, setReceipt] = useState<{ path: string; seatsLeft: number | null } | null>(null)
+  const [receipt, setReceipt] = useState<{ url: string; seatsLeft: number | null } | null>(null)
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle')
 
   async function copyManagementLink() {
     if (!receipt) return
-    const url = new URL(receipt.path, window.location.origin).href
-    setCopyState((await writeClipboard(url)) ? 'copied' : 'failed')
+    setCopyState((await writeClipboard(receipt.url)) ? 'copied' : 'failed')
   }
 
   async function submit(form: FormData) {
@@ -53,7 +60,10 @@ export function RegisterForm({ slug, disabled }: { slug: string; disabled: boole
         setError('报名已提交，但管理链接生成失败；请立即联系赛事负责人')
         return
       }
-      setReceipt({ path: result.managementPath, seatsLeft: result.seatsLeft ?? null })
+      setReceipt({
+        url: new URL(result.managementPath, siteOrigin).href,
+        seatsLeft: result.seatsLeft ?? null,
+      })
     } catch {
       setError('网络异常，请稍后重试')
     } finally {
@@ -68,7 +78,7 @@ export function RegisterForm({ slug, disabled }: { slug: string; disabled: boole
         <h2 id="registration-receipt-title">报名已提交</h2>
         <p>请保存下面的专属链接。审核状态和阵容修改都通过该链接完成。</p>
         <div className={styles.receiptActions}>
-          <Link href={receipt.path} prefetch={false} className={styles.managementLink}>
+          <Link href={receipt.url} prefetch={false} className={styles.managementLink}>
             查看报名状态并管理阵容 →
           </Link>
           <Button type="button" size="mini" onClick={copyManagementLink}>
