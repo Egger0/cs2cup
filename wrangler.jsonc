@@ -5,6 +5,7 @@
   "compatibility_date": "2026-08-28",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://cn.nbtesportsclub.online",
     "REGISTRATION_CLIENT_IP_SOURCE": "cf-connecting-ip",
   },
   "assets": {
