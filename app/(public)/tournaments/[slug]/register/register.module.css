@@ -37,3 +37,41 @@
   border-left: 2px solid var(--c4);
   padding-left: 12px;
 }
+
+.receipt {
+  display: grid;
+  gap: 16px;
+  max-width: 680px;
+  padding: clamp(24px, 5vw, 44px);
+  border: 1px solid var(--ct);
+  background: color-mix(in srgb, var(--ct) 8%, var(--surface));
+}
+
+.receipt h2 {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 0.95;
+}
+
+.receipt p,
+.receipt small {
+  color: var(--muted);
+}
+
+.receiptActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.managementLink {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 44px;
+  align-items: center;
+  padding-inline: 16px;
+  background: var(--ct);
+  color: var(--void);
+  font-weight: 700;
+}

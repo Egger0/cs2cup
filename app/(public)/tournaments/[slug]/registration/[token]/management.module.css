@@ -1,0 +1,178 @@
+.statusPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: end;
+  margin-bottom: 36px;
+  padding: 24px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
+.status {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: 10px;
+  padding: 5px 9px;
+  border: 1px solid currentColor;
+  color: var(--ct);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
+
+.statusPanel h2 {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 0.95;
+}
+
+.meta {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: right;
+}
+
+.locked {
+  padding: 20px;
+  border-left: 2px solid var(--t);
+  background: color-mix(in srgb, var(--t) 8%, transparent);
+  color: var(--muted);
+}
+
+.lockedState,
+.summary {
+  display: grid;
+  gap: 22px;
+  max-width: 820px;
+}
+
+.summary {
+  padding: 22px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.summaryGrid div {
+  min-width: 0;
+}
+
+.summaryGrid dt {
+  color: var(--muted-2);
+  font-size: 0.72rem;
+}
+
+.summaryGrid dd {
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+}
+
+.rosterSummary,
+.note {
+  display: grid;
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.rosterSummary ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  list-style: none;
+  background: var(--line);
+}
+
+.rosterSummary li {
+  display: flex;
+  min-width: 0;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-2);
+}
+
+.rosterSummary li span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rosterSummary small,
+.note p {
+  color: var(--muted);
+}
+
+.note p {
+  white-space: pre-wrap;
+}
+
+.form {
+  display: grid;
+  gap: 22px;
+  max-width: 820px;
+}
+
+.pair,
+.players {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.roster {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--line-strong);
+}
+
+.roster legend {
+  padding-inline: 8px;
+}
+
+.players {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.success {
+  color: var(--ct);
+}
+
+.error {
+  color: var(--c4);
+}
+
+@media (max-width: 640px) {
+  .statusPanel,
+  .pair,
+  .players,
+  .summaryGrid,
+  .rosterSummary ul {
+    grid-template-columns: 1fr;
+  }
+
+  .meta {
+    text-align: left;
+  }
+
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
