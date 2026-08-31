@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui'
+import { confirmScoreWrite } from '@/lib/score-confirmation'
 import { saveMatchReport } from '../../../../actions/matches'
 import { MatchReportRow } from './MatchReportRow'
 import {
@@ -80,13 +81,19 @@ export function MatchReportEditor({
     setFeedback(null)
     startTransition(async () => {
       try {
-        const result = await saveMatchReport(
-          matchId,
-          tournamentId,
-          teamA.id,
-          teamB.id,
-          JSON.stringify(checked.rows),
+        const result = await confirmScoreWrite(
+          confirmationToken =>
+            saveMatchReport(
+              matchId,
+              tournamentId,
+              teamA.id,
+              teamB.id,
+              JSON.stringify(checked.rows),
+              confirmationToken,
+            ),
+          message => window.confirm(message),
         )
+        if (!result) return
         if (!result.ok) {
           setFeedback({ tone: 'error', message: result.error ?? '战报保存失败' })
           return
