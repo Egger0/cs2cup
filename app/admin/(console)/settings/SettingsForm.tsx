@@ -9,14 +9,21 @@ import styles from '../admin.module.css'
 export function SettingsForm({ setting }: { setting: SiteSetting }) {
   const [pending, startTransition] = useTransition()
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
 
   return (
     <form
       className={styles.editor}
       action={formData =>
         startTransition(async () => {
-          await updateSiteSetting(formData)
-          setSaved(true)
+          setSaved(false)
+          setError('')
+          try {
+            await updateSiteSetting(formData)
+            setSaved(true)
+          } catch {
+            setError('保存失败，请检查网络后重试。')
+          }
         })
       }
     >
@@ -55,7 +62,16 @@ export function SettingsForm({ setting }: { setting: SiteSetting }) {
         <Button type="submit" variant="primary" disabled={pending}>
           {pending ? '保存中…' : '保存'}
         </Button>
-        {saved ? <span className={styles.ok}>已保存</span> : null}
+        {saved ? (
+          <span className={styles.ok} role="status">
+            已保存
+          </span>
+        ) : null}
+        {error ? (
+          <span className={styles.error} role="alert">
+            {error}
+          </span>
+        ) : null}
       </div>
     </form>
   )

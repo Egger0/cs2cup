@@ -1,4 +1,5 @@
 import { Button, Field } from '@/components/ui'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { requireAdmin } from '@/lib/auth'
 import { adminListGames } from '@/lib/queries/content'
 import { createGame } from '../actions/content'
@@ -14,6 +15,11 @@ export default async function AdminGamesPage() {
 
   return (
     <>
+      <AdminPageHeader
+        index="03"
+        title="项目库"
+        description="管理比赛项目的名称、识别色与公开介绍。"
+      />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>新增项目</h2>
         <form className={styles.editor} action={createGame}>

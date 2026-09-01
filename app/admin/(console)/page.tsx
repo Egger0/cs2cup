@@ -1,3 +1,4 @@
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { requireAdmin } from '@/lib/auth'
 import { listAdminMatches, listTeamsWithContact } from '@/lib/queries/admin'
 import { getCurrentTournament, getPublicTeams } from '@/lib/queries/public'
@@ -14,9 +15,16 @@ export default async function AdminPage() {
 
   if (!tournament) {
     return (
-      <section className={styles.panel}>
-        <p>没有进行中的赛事。到「赛事」里新建一届，或把某一届的状态改为报名中。</p>
-      </section>
+      <>
+        <AdminPageHeader
+          index="01"
+          title="现场控制"
+          description="审核报名、完成签到，并在同一条工作流中维护赛果。"
+        />
+        <section className={styles.panel}>
+          <p>没有进行中的赛事。到「赛事」里新建一届，或把某一届的状态改为报名中。</p>
+        </section>
+      </>
     )
   }
 
@@ -32,6 +40,11 @@ export default async function AdminPage() {
 
   return (
     <>
+      <AdminPageHeader
+        index="01"
+        title="现场控制"
+        description="审核报名、完成签到，并在同一条工作流中维护赛果。"
+      />
       <section className={styles.panel}>
         <div className={styles.panelHeading}>
           <h2 className={styles.panelHead}>

@@ -123,6 +123,7 @@ export function ScheduleEditor({
                       max={winsNeeded(match.bestOf)}
                       defaultValue={match.scoreA ?? ''}
                       disabled={!resolved.a || !resolved.b}
+                      aria-label={`${resolved.a?.name ?? '待定战队'} 比分`}
                     />
                   </div>
                   <div className={styles.scoreRow}>
@@ -136,6 +137,7 @@ export function ScheduleEditor({
                       max={winsNeeded(match.bestOf)}
                       defaultValue={match.scoreB ?? ''}
                       disabled={!resolved.a || !resolved.b}
+                      aria-label={`${resolved.b?.name ?? '待定战队'} 比分`}
                     />
                   </div>
                   <div className={styles.rowActions}>

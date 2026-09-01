@@ -7,6 +7,8 @@
   min-height: 104px;
   padding: 15px 16px;
   border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  transition: background-color 180ms ease;
 }
 
 .match:last-child {
@@ -14,7 +16,12 @@
 }
 
 .match:hover {
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--ct-dim);
+}
+
+.match:focus-visible {
+  outline: 2px solid var(--ct);
+  outline-offset: -2px;
 }
 
 .nextMatch {
@@ -69,7 +76,7 @@
 .matchNumber {
   font-size: 0.59rem;
   letter-spacing: 0.1em;
-  color: var(--muted-2);
+  color: var(--muted);
 }
 
 .fixture {
@@ -84,7 +91,7 @@
   gap: 6px;
   font-size: 0.63rem;
   letter-spacing: 0.08em;
-  color: var(--muted-2);
+  color: var(--muted);
 }
 
 .nextLabel {
@@ -92,7 +99,7 @@
   align-items: center;
   min-height: 22px;
   padding-inline: 7px;
-  border: 1px solid rgba(61, 155, 233, 0.4);
+  border: 1px solid color-mix(in srgb, var(--ct) 48%, transparent);
   color: var(--ct);
   letter-spacing: 0.08em;
 }
@@ -178,14 +185,18 @@
 
 .status[data-status='waiting'],
 .status[data-status='unscheduled'] {
-  color: var(--muted-2);
+  color: var(--muted);
 }
 
 .open {
   font-size: 0.6rem;
   letter-spacing: 0.05em;
-  color: var(--muted-2);
+  color: var(--muted);
   white-space: nowrap;
+}
+
+.nextMatch .teamName {
+  color: var(--ink);
 }
 
 @media (max-width: 720px) {
@@ -229,5 +240,11 @@
 @media (max-width: 420px) {
   .open {
     font-size: 0.57rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .match {
+    transition: none;
   }
 }

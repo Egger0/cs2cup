@@ -1,0 +1,93 @@
+.routeMotion,
+.indexMotion {
+  --reveal-duration: 580ms;
+  --reveal-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.routeMotion [data-home-reveal='item'],
+.indexMotion [data-home-reveal='item'] {
+  transition:
+    opacity var(--reveal-duration) ease,
+    transform var(--reveal-duration) var(--reveal-ease);
+}
+
+.routeMotion [data-home-reveal='group'] > *,
+.indexMotion [data-home-reveal='group'] > * {
+  transition:
+    opacity 520ms ease,
+    transform 620ms var(--reveal-ease),
+    background-color 200ms ease;
+}
+
+.routeMotion [data-home-reveal='item'][data-visible='true'],
+.indexMotion [data-home-reveal='item'][data-visible='true'],
+.routeMotion [data-home-reveal='group'][data-visible='true'] > *,
+.indexMotion [data-home-reveal='group'][data-visible='true'] > * {
+  opacity: 1;
+  transform: none;
+}
+
+.routeMotion [data-home-reveal='group'] > :nth-child(2),
+.indexMotion [data-home-reveal='group'] > :nth-child(2) {
+  transition-delay: 70ms, 70ms, 0ms;
+}
+
+.routeMotion [data-home-reveal='group'] > :nth-child(3),
+.indexMotion [data-home-reveal='group'] > :nth-child(3) {
+  transition-delay: 140ms, 140ms, 0ms;
+}
+
+.routeMotion [data-home-reveal='group'] > :nth-child(4),
+.indexMotion [data-home-reveal='group'] > :nth-child(4) {
+  transition-delay: 210ms, 210ms, 0ms;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :global(html[data-home-motion='ready'])
+    .routeMotion
+    [data-home-reveal='item']:not([data-visible='true']),
+  :global(html[data-home-motion='ready'])
+    .indexMotion
+    [data-home-reveal='item']:not([data-visible='true']) {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  :global(html[data-home-motion='ready'])
+    .routeMotion
+    [data-home-reveal='group']:not([data-visible='true'])
+    > *,
+  :global(html[data-home-motion='ready'])
+    .indexMotion
+    [data-home-reveal='group']:not([data-visible='true'])
+    > * {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+.routeMotion [data-home-path][data-visible='true']::after {
+  transform: scaleX(1);
+}
+
+@media (max-width: 760px) {
+  .routeMotion [data-home-path][data-visible='true']::after {
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .routeMotion [data-home-reveal],
+  .indexMotion [data-home-reveal],
+  .routeMotion [data-home-reveal] > *,
+  .indexMotion [data-home-reveal] > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .routeMotion [data-home-path]::after {
+    transform: scaleX(1);
+    transition: none;
+  }
+}

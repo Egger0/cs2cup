@@ -15,10 +15,26 @@
   --t-dim: rgba(227, 166, 58, 0.14);
   --c4: #e5484d;
   --accent: var(--t);
-  --wrap: 1240px;
-  --pad: clamp(20px, 5vw, 48px);
+  --wrap: 1536px;
+  --pad: clamp(20px, 6vw, 88px);
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@font-face {
+  font-family: 'NLC Serif';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/noto-serif-sc-display.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'NLC Role Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/noto-sans-sc-roles.woff2') format('woff2');
 }
 
 *,
@@ -54,6 +70,8 @@ body {
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.65;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -133,23 +151,17 @@ button {
 }
 
 .section {
-  padding-block: clamp(64px, 10vh, 128px);
+  padding-block: clamp(84px, 11vh, 136px);
 }
 
 .divider {
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--line-strong) 18%,
-    var(--line-strong) 82%,
-    transparent
-  );
+  background: var(--line);
 }
 
 .readout {
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.72rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted-2);
@@ -227,6 +239,11 @@ button {
   [data-drift] {
     animation: none !important;
   }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
 }
 
 ::view-transition-old(root) {
@@ -256,6 +273,11 @@ button {
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+::view-transition-group(site-header) {
+  z-index: 100;
+  animation: none;
+}
+
 .scrollbar {
   position: fixed;
   top: 0;
@@ -265,8 +287,17 @@ button {
   z-index: 60;
   transform-origin: left;
   transform: scaleX(0);
-  background: linear-gradient(90deg, var(--t), #f2d08a);
+  background: linear-gradient(90deg, var(--ct), #8fc8fa);
   pointer-events: none;
+}
+
+body:has([data-home-cover]) .scrollbar {
+  display: none;
+}
+
+body:has([data-home-cover]) header :focus-visible,
+body:has([data-home-cover]) main :focus-visible {
+  outline-color: #6da5d3;
 }
 
 @supports (animation-timeline: scroll()) {
@@ -294,11 +325,13 @@ button {
   left: 8px;
   z-index: 200;
   padding: 12px 18px;
-  border: 1px solid var(--t);
-  background: var(--void);
-  color: var(--ink);
-  font-family: var(--font-body), sans-serif;
-  font-weight: 500;
+  border: 1px solid #6da5d3;
+  background: #171817;
+  color: #f1efe8;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   transform: translateY(-160%);
   transition: transform 0.2s var(--ease);
 }

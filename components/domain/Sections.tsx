@@ -2,15 +2,28 @@ import type { ReactNode } from 'react'
 import type { FaqItem, RuleItem } from '@/lib/types'
 import styles from './Sections.module.css'
 
-export function SectionHead({
-  eyebrow,
-  title,
-  lede,
-}: {
+interface HeadingCopy {
   eyebrow: string
   title: ReactNode
   lede?: string
-}) {
+}
+
+export function PageMasthead({
+  eyebrow,
+  title,
+  lede,
+  density = 'spacious',
+}: HeadingCopy & { density?: 'spacious' | 'compact' }) {
+  return (
+    <header className={`${styles.pageHead} ${density === 'compact' ? styles.pageHeadCompact : ''}`}>
+      <span className={styles.eyebrow}>{eyebrow}</span>
+      <h1 className={styles.pageTitle}>{title}</h1>
+      {lede ? <p className={styles.pageLede}>{lede}</p> : null}
+    </header>
+  )
+}
+
+export function SectionHead({ eyebrow, title, lede }: HeadingCopy) {
   return (
     <div className={styles.head}>
       <span className={styles.eyebrow}>{eyebrow}</span>

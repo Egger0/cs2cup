@@ -13,26 +13,36 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className={styles.shell}>
-      <header className={`wrap ${styles.bar}`}>
-        <div>
-          <div className={styles.title}>后台管理</div>
-          <div className={styles.uid}>{admin.uid}</div>
-        </div>
-        <div className={styles.barActions}>
-          <ButtonLink href="/" size="mini">
-            回到网站
-          </ButtonLink>
-          <form action={signOut}>
-            <Button type="submit" size="mini">
-              退出
-            </Button>
-          </form>
+      <header className={styles.barFrame}>
+        <div className={`wrap ${styles.bar}`}>
+          <div className={styles.identity}>
+            <span className={styles.monogram} aria-hidden="true">
+              N
+            </span>
+            <div>
+              <div className={styles.eyebrow}>NINGBOTECH ESPORTS / CONTROL ROOM</div>
+              <div className={styles.title}>后台控制台</div>
+              <div className={styles.uid}>SESSION / {admin.uid}</div>
+            </div>
+          </div>
+          <div className={styles.barActions}>
+            <ButtonLink href="/" size="mini">
+              回到网站
+            </ButtonLink>
+            <form action={signOut}>
+              <Button type="submit" size="mini">
+                退出
+              </Button>
+            </form>
+          </div>
         </div>
       </header>
-      <div className="wrap">
-        <AdminNav />
+      <div className={styles.navDock}>
+        <div className="wrap">
+          <AdminNav />
+        </div>
       </div>
-      <main id="main" className="wrap">
+      <main id="main" className={`wrap ${styles.main}`}>
         {children}
       </main>
     </div>

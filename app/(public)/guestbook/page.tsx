@@ -1,5 +1,5 @@
 import { Empty } from '@/components/ui'
-import { SectionHead } from '@/components/domain/Sections'
+import { PageMasthead } from '@/components/domain/Sections'
 import { formatSiteNumericDateTime } from '@/lib/datetime'
 import { listGuestbookMessages, safely } from '@/lib/queries/public'
 import { GuestbookForm } from './GuestbookForm'
@@ -7,7 +7,7 @@ import styles from './guestbook.module.css'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata = { title: '留言板 · 宁波理工电竞社' }
+export const metadata = { title: '留言板' }
 
 export default async function GuestbookPage() {
   const messages = await safely(() => listGuestbookMessages(200), [])
@@ -23,20 +23,27 @@ export default async function GuestbookPage() {
   return (
     <section className="section">
       <div className="wrap">
-        <SectionHead
+        <PageMasthead
           eyebrow="留言板"
           title="留下你的声音"
           lede="对赛事、社团或网站有什么想说的，都可以留在这里。"
+          density="compact"
         />
 
         <div className={styles.grid}>
-          <div className={styles.submit}>
-            <h2>写一条留言</h2>
+          <section className={styles.submit} aria-labelledby="guestbook-compose-title">
+            <div className={styles.panelHead}>
+              <span>01</span>
+              <h2 id="guestbook-compose-title">写一条留言</h2>
+            </div>
             <GuestbookForm />
-          </div>
+          </section>
 
-          <div className={styles.messages}>
-            <h2>大家在说</h2>
+          <section className={styles.messages} aria-labelledby="guestbook-messages-title">
+            <div className={styles.panelHead}>
+              <span>02</span>
+              <h2 id="guestbook-messages-title">大家在说</h2>
+            </div>
             {roots.length === 0 ? (
               <Empty>还没有公开留言，来写第一条吧。</Empty>
             ) : (
@@ -80,7 +87,7 @@ export default async function GuestbookPage() {
                 ))}
               </div>
             )}
-          </div>
+          </section>
         </div>
       </div>
     </section>

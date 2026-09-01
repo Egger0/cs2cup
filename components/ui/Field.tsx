@@ -35,7 +35,7 @@ export function Field({ id, label, required, hint, error, ...props }: FieldProps
         {...props}
       />
       {error ? (
-        <span id={`${id}-error`} className={styles.error}>
+        <span id={`${id}-error`} className={styles.error} role="alert">
           {error}
         </span>
       ) : null}
@@ -51,10 +51,15 @@ export function TextField({ id, label, required, hint, error, ...props }: TextFi
         id={id}
         className={error ? `${styles.control} ${styles.invalid}` : styles.control}
         aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
         required={required}
         {...props}
       />
-      {error ? <span className={styles.error}>{error}</span> : null}
+      {error ? (
+        <span id={`${id}-error`} className={styles.error} role="alert">
+          {error}
+        </span>
+      ) : null}
     </div>
   )
 }

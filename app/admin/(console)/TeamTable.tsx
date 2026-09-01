@@ -52,11 +52,25 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
       <input
         className={styles.search}
         placeholder="搜索战队、TAG、队长、学院"
+        aria-label="搜索报名战队"
         value={keyword}
         onChange={event => setKeyword(event.target.value)}
       />
-      {message ? <p className={sharedStyles.error}>{message}</p> : null}
-      <div className={styles.tableWrap}>
+      {message ? (
+        <p className={sharedStyles.error} role="alert">
+          {message}
+        </p>
+      ) : null}
+      <p className={styles.scrollHint} id="team-table-hint">
+        横向滑动查看完整报名资料
+      </p>
+      <div
+        className={styles.tableWrap}
+        role="region"
+        aria-label="报名战队资料表"
+        aria-describedby="team-table-hint"
+        tabIndex={0}
+      >
         <table className={styles.table}>
           <thead>
             <tr>
@@ -98,6 +112,7 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
                   <select
                     className={styles.select}
                     value={team.status}
+                    aria-label={`${team.name} 的审核状态`}
                     disabled={pending}
                     onChange={event => {
                       const status = event.target.value as TeamStatus
@@ -118,6 +133,7 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
                     disabled={pending || team.status !== 'approved'}
                     title={team.checkedInAt ?? undefined}
                     aria-pressed={Boolean(team.checkedInAt)}
+                    aria-label={`${team.name}${team.checkedInAt ? '取消签到' : '签到'}`}
                     onClick={() => {
                       if (
                         team.checkedInAt &&
@@ -153,6 +169,7 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
                     variant="danger"
                     size="mini"
                     disabled={pending}
+                    aria-label={`删除 ${team.name}`}
                     onClick={() => {
                       if (!confirm(`确定删除「${team.name}」？此操作不可撤销。`)) return
                       mutate(() => deleteTeam(team.id, tournamentId))

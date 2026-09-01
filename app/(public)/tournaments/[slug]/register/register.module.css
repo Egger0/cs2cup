@@ -2,6 +2,17 @@
   max-width: 760px;
 }
 
+.privacy {
+  max-width: 64ch;
+  margin-bottom: 24px;
+  padding: 14px 16px;
+  color: var(--muted);
+  border-left: 2px solid var(--ct);
+  background: var(--ct-dim);
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+
 .fieldset {
   border: none;
   display: grid;
@@ -32,10 +43,13 @@
 }
 
 .error {
+  padding: 12px 14px;
   color: var(--c4);
+  border: 1px solid color-mix(in srgb, var(--c4) 45%, var(--line));
+  border-left: 3px solid var(--c4);
+  background: var(--danger-dim);
   font-size: 0.88rem;
-  border-left: 2px solid var(--c4);
-  padding-left: 12px;
+  outline: none;
 }
 
 .receipt {
@@ -56,6 +70,11 @@
 .receipt p,
 .receipt small {
   color: var(--muted);
+}
+
+.receipt .receiptWarning {
+  color: var(--ink);
+  font-weight: 620;
 }
 
 .receiptActions {

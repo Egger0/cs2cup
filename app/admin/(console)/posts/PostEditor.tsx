@@ -22,7 +22,11 @@ export function PostEditor({ post, games }: { post: Post; games: Game[] }) {
           </div>
         </div>
         <div className={styles.rowActions}>
-          {saved ? <span className={styles.ok}>已保存</span> : null}
+          {saved ? (
+            <span className={styles.ok} role="status">
+              已保存
+            </span>
+          ) : null}
           <Button size="mini" onClick={() => setOpen(true)}>
             编辑
           </Button>
@@ -58,7 +62,7 @@ export function PostEditor({ post, games }: { post: Post; games: Game[] }) {
       <Field id={`s${post.id}`} name="summary" label="摘要" defaultValue={post.summary} required />
       <TextField id={`b${post.id}`} name="body" label="正文" rows={6} defaultValue={post.body} />
       <div className={styles.pair}>
-        <label className="readout">
+        <label className={styles.controlLabel}>
           关联项目
           <select name="gameId" defaultValue={post.gameId ?? ''} className={styles.select}>
             <option value="">不关联</option>
@@ -69,7 +73,7 @@ export function PostEditor({ post, games }: { post: Post; games: Game[] }) {
             ))}
           </select>
         </label>
-        <label className="readout">
+        <label className={styles.checkLabel}>
           <input type="checkbox" name="pinned" defaultChecked={post.pinned} /> 置顶
         </label>
       </div>

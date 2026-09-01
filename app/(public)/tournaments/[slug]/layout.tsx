@@ -1,7 +1,14 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { TournamentHeader } from '@/components/layout/TournamentHeader'
 import { isByeMatch, isCompletedMatch } from '@/lib/bracket'
-import { getMatches, getPublicTeams, getTournament } from '@/lib/queries/public'
+import {
+  getMatches,
+  getPublicTeams,
+  getRegistrationStatus,
+  getTournament,
+  safely,
+} from '@/lib/queries/public'
 import { buildScheduleEntries, selectNextScheduleEntry } from '@/lib/schedule'
 import type { TournamentStatus } from '@/lib/types'
 
@@ -11,6 +18,28 @@ const STATUS_TEXT: Record<TournamentStatus, string> = {
   running: '正在进行',
   finished: '已结束',
   postponed: '延期中',
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const tournament = await safely(() => getTournament(slug), null)
+  if (!tournament) return { title: '赛事' }
+
+  return {
+    title: {
+      default: tournament.title,
+      template: `%s · ${tournament.title} · 宁波理工电竞社`,
+    },
+    description: tournament.lede,
+    openGraph: {
+      title: tournament.title,
+      description: tournament.lede,
+    },
+  }
 }
 
 export default async function TournamentLayout({
@@ -24,28 +53,34 @@ export default async function TournamentLayout({
   const tournament = await getTournament(slug)
   if (!tournament) notFound()
 
-  const [teams, matches] = await Promise.all([
+  const [teams, matches, registration] = await Promise.all([
     getPublicTeams(tournament.id),
     getMatches(tournament.id),
+    safely(() => getRegistrationStatus(slug), null),
   ])
 
   const played = matches.filter(isCompletedMatch).length
   const playable = matches.filter(match => !isByeMatch(match)).length
   const next = selectNextScheduleEntry(buildScheduleEntries(matches, teams))
   const base = `/tournaments/${slug}`
+  const status = STATUS_TEXT[tournament.status]
+  const eyebrow = tournament.heroEyebrow ? `${tournament.heroEyebrow} · ${status}` : status
+  const seats: [number, number] = registration
+    ? [registration.taken, registration.cap]
+    : [teams.length, tournament.teamCap]
 
   return (
     <>
       <TournamentHeader
         base={base}
-        status={STATUS_TEXT[tournament.status]}
-        eyebrow={tournament.heroEyebrow}
+        status={status}
+        eyebrow={eyebrow}
         title={tournament.heroBottom || tournament.title}
         game={tournament.gameName ?? ''}
         edition={tournament.edition}
         season={tournament.season}
         tagline={tournament.lede}
-        seats={[teams.length, tournament.teamCap]}
+        seats={seats}
         played={[played, playable]}
         maps={tournament.mapPool.length}
         next={

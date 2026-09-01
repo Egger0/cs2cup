@@ -5,7 +5,7 @@ import styles from './SiteFooter.module.css'
 export function SiteFooter({ setting }: { setting: SiteSetting }) {
   return (
     <footer className={styles.footer}>
-      <div className="wrap">
+      <div className={styles.inner}>
         <div className={styles.grid}>
           <div className={styles.identity}>
             <div className={styles.brand}>{setting.clubName}</div>
@@ -14,12 +14,12 @@ export function SiteFooter({ setting }: { setting: SiteSetting }) {
           <div className={styles.contact}>
             {setting.contactQq ? (
               <p>
-                QQ 群:<b>{setting.contactQq}</b>
+                QQ 群：<b>{setting.contactQq}</b>
               </p>
             ) : null}
-            {setting.contactWechat ? (
+            {setting.contactWechat && setting.contactWechat !== '无' ? (
               <p>
-                负责人微信:<b>{setting.contactWechat}</b>
+                负责人微信：<b>{setting.contactWechat}</b>
               </p>
             ) : null}
           </div>

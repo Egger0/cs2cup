@@ -1,5 +1,8 @@
 .table {
-  border: 1px solid var(--line);
+  overflow: hidden;
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
 }
 
 .row {
@@ -18,7 +21,7 @@
 }
 
 .head {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-2);
   font-family: var(--font-mono), monospace;
   font-size: 0.62rem;
   letter-spacing: 0.16em;
@@ -29,8 +32,10 @@
 .fill {
   position: absolute;
   inset: 0 auto 0 0;
-  background: linear-gradient(90deg, rgba(158, 182, 197, 0.14), rgba(158, 182, 197, 0.02));
+  background: linear-gradient(90deg, var(--ct-dim), transparent);
   pointer-events: none;
+  transform-origin: left;
+  animation: fillEnter 520ms var(--ease-out) both;
 }
 
 .name {
@@ -66,10 +71,22 @@
   color: var(--muted-2);
 }
 
+@keyframes fillEnter {
+  from {
+    transform: scaleX(0);
+  }
+}
+
 @media (max-width: 560px) {
   .row {
     grid-template-columns: minmax(0, 1fr) 56px 56px 64px;
     gap: 8px;
     padding: 12px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    animation: none;
   }
 }

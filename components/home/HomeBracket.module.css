@@ -1,0 +1,155 @@
+.visual,
+.bracket {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.visual {
+  z-index: 0;
+}
+
+.routes {
+  fill: none;
+  stroke: rgba(241, 239, 232, 0.26);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.routes path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: drawRoute 520ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.roundOne path {
+  animation-delay: 180ms;
+}
+
+.roundTwo path {
+  animation-duration: 460ms;
+  animation-delay: 400ms;
+}
+
+.roundThree path {
+  animation-duration: 400ms;
+  animation-delay: 600ms;
+}
+
+.roundFinal path {
+  animation-duration: 340ms;
+  animation-delay: 800ms;
+}
+
+.finalAxis {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 2;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  vector-effect: non-scaling-stroke;
+  animation: drawRoute 340ms 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: stroke 200ms ease;
+}
+
+.finalNode {
+  fill: var(--blue);
+  opacity: 1;
+  scale: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: placeFinalNode 200ms 1120ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  transition:
+    fill 200ms ease,
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.clubMark {
+  --mark-opacity: 0.58;
+  position: absolute;
+  z-index: 1;
+  top: 18%;
+  right: clamp(74px, 10vw, 164px);
+  width: min(25vw, 350px);
+  opacity: var(--mark-opacity);
+  scale: 1;
+  animation: markEnter 640ms 560ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  transition:
+    opacity 220ms ease,
+    transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.clubMark img {
+  width: 100%;
+  height: auto;
+}
+
+@keyframes drawRoute {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes placeFinalNode {
+  from {
+    opacity: 0;
+    scale: 0;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes markEnter {
+  from {
+    opacity: 0;
+    scale: 0.985;
+  }
+  to {
+    opacity: var(--mark-opacity);
+    scale: 1;
+  }
+}
+
+@media (max-width: 900px) {
+  .clubMark {
+    right: 7vw;
+    width: min(30vw, 280px);
+  }
+}
+
+@media (max-width: 680px) {
+  .bracket {
+    left: -38%;
+    width: 176%;
+    opacity: 0.82;
+  }
+
+  .clubMark {
+    --mark-opacity: 0.5;
+    top: 17%;
+    right: -1vw;
+    width: min(49vw, 190px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .routes path,
+  .finalAxis {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .finalNode,
+  .clubMark {
+    animation: none;
+    opacity: 1;
+    scale: 1;
+  }
+
+  .clubMark {
+    opacity: var(--mark-opacity);
+  }
+}

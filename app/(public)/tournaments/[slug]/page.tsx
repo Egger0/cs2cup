@@ -69,9 +69,9 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
               <div className="readout">{acceptingEntries ? '报名开放中' : '报名已截止'}</div>
               <p className={styles.ctaLine}>
                 {acceptingEntries
-                  ? `还剩 ${seatsLeft} 个席位,先到先得。`
+                  ? `还剩 ${seatsLeft} 个席位，先到先得。`
                   : registration.open
-                    ? '十六个席位已满,下一届见。'
+                    ? `${registration.cap} 个席位已满，下一届见。`
                     : '本届不再接受报名。'}
               </p>
               {acceptingEntries ? (

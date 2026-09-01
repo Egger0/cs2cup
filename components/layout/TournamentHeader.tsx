@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { formatSiteCompactDateTime } from '@/lib/datetime'
 import { TournamentTabs, type TournamentTab } from './TournamentTabs'
 import styles from './TournamentHeader.module.css'
+import matchStyles from './TournamentMatchCard.module.css'
 
 interface NextMatchSummary {
   id: number
@@ -100,22 +101,22 @@ export function TournamentHeader({
           </div>
 
           {next && !compact ? (
-            <div className={styles.nextBlock}>
-              <Link href={`${base}/matches/${next.id}`} className={styles.card}>
-                <div className={styles.cardHead}>
+            <div className={matchStyles.nextBlock}>
+              <Link href={`${base}/matches/${next.id}`} className={matchStyles.card}>
+                <div className={matchStyles.cardHead}>
                   <span>下一场</span>
                   <span>{next.roundLabel}</span>
                 </div>
-                <div className={styles.cardSide}>
-                  <span className={styles.cardTag}>{next.aTag}</span>
-                  <span className={styles.cardName}>{next.aName}</span>
+                <div className={matchStyles.cardSide}>
+                  <span className={matchStyles.cardTag}>{next.aTag}</span>
+                  <span className={matchStyles.cardName}>{next.aName}</span>
                 </div>
-                <div className={styles.cardVs}>VS</div>
-                <div className={styles.cardSide}>
-                  <span className={styles.cardTag}>{next.bTag}</span>
-                  <span className={styles.cardName}>{next.bName}</span>
+                <div className={matchStyles.cardVs}>VS</div>
+                <div className={matchStyles.cardSide}>
+                  <span className={matchStyles.cardTag}>{next.bTag}</span>
+                  <span className={matchStyles.cardName}>{next.bName}</span>
                 </div>
-                <div className={styles.cardFoot}>
+                <div className={matchStyles.cardFoot}>
                   <span>BO{next.bestOf}</span>
                   {next.scheduledAt ? (
                     <time dateTime={next.scheduledAt}>
@@ -126,7 +127,7 @@ export function TournamentHeader({
                   )}
                 </div>
               </Link>
-              <Link href={`${base}/schedule`} className={styles.scheduleLink}>
+              <Link href={`${base}/schedule`} className={matchStyles.scheduleLink}>
                 查看全部赛程 →
               </Link>
             </div>

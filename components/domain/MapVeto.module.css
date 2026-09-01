@@ -1,6 +1,22 @@
 .veto {
-  border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(18, 26, 40, 0.72), rgba(10, 14, 22, 0.9));
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
+.empty {
+  display: grid;
+  gap: 14px;
+  padding: 22px 24px;
+  color: var(--muted);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
+.empty p {
+  max-width: 48ch;
+  font-size: 0.86rem;
+  line-height: 1.7;
 }
 
 .head {
@@ -10,6 +26,7 @@
   gap: 12px;
   padding: 12px 16px;
   border-bottom: 1px solid var(--line);
+  background: var(--bg-2);
 }
 
 .rows {
@@ -18,13 +35,15 @@
 }
 
 .row {
+  position: relative;
   display: grid;
   grid-template-columns: 34px 1fr auto;
   align-items: center;
   gap: 14px;
   padding: 11px 16px;
   border-bottom: 1px solid var(--line);
-  position: relative;
+  background: transparent;
+  transition: background-color 180ms ease;
 }
 
 .row:last-child {
@@ -46,6 +65,7 @@
 }
 
 .mapName {
+  color: var(--ink);
   font-family: var(--font-body), sans-serif;
   font-weight: 500;
   white-space: nowrap;
@@ -75,8 +95,8 @@
     -45deg,
     transparent,
     transparent 7px,
-    rgba(240, 68, 82, 0.05) 7px,
-    rgba(240, 68, 82, 0.05) 14px
+    var(--danger-dim) 7px,
+    var(--danger-dim) 14px
   );
 }
 
@@ -89,6 +109,7 @@
 }
 
 .picked {
+  background: color-mix(in srgb, var(--ct) 4%, transparent);
   box-shadow: inset 3px 0 0 var(--ct);
 }
 
@@ -97,6 +118,7 @@
 }
 
 .decider {
+  background: color-mix(in srgb, var(--t) 5%, transparent);
   box-shadow: inset 3px 0 0 var(--t);
 }
 
@@ -122,4 +144,34 @@
   font-size: 0.66rem;
   letter-spacing: 0.1em;
   color: var(--muted-2);
+}
+
+@media (hover: hover) {
+  .row:hover {
+    background-color: color-mix(in srgb, var(--ct) 7%, var(--surface));
+  }
+}
+
+@media (max-width: 560px) {
+  .head,
+  .row {
+    padding-inline: 12px;
+  }
+
+  .row {
+    grid-template-columns: 26px minmax(0, 1fr) auto;
+    gap: 9px;
+  }
+
+  .mapCell {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row {
+    transition: none;
+  }
 }

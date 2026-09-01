@@ -27,7 +27,11 @@ export function MemberEditor({ member }: { member: ClubMember }) {
           </div>
         </div>
         <div className={styles.rowActions}>
-          {saved ? <span className={styles.ok}>已保存</span> : null}
+          {saved ? (
+            <span className={styles.ok} role="status">
+              已保存
+            </span>
+          ) : null}
           <Button size="mini" onClick={() => setOpen(true)}>
             编辑
           </Button>

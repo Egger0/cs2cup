@@ -87,6 +87,7 @@ export function GuestbookRow({ message }: { message: GuestbookMessage }) {
               maxLength={500}
               rows={2}
               placeholder="发布带官方标识的回复"
+              aria-label={`回复 ${message.name} 的留言`}
               disabled={pending}
             />
             <Button
@@ -129,7 +130,11 @@ export function GuestbookRow({ message }: { message: GuestbookMessage }) {
         <Button size="mini" variant="danger" disabled={pending} onClick={remove}>
           删除
         </Button>
-        {error ? <span className={styles.error}>{error}</span> : null}
+        {error ? (
+          <span className={styles.error} role="alert">
+            {error}
+          </span>
+        ) : null}
       </div>
     </div>
   )

@@ -1,5 +1,7 @@
 .wrap {
-  border: 1px solid var(--line);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
   overflow-x: auto;
 }
 
@@ -12,7 +14,7 @@
 .table thead th {
   text-align: left;
   padding: 11px 14px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-2);
   border-bottom: 1px solid var(--line-strong);
   font-family: var(--font-mono), monospace;
   font-weight: 400;
@@ -33,7 +35,7 @@
 }
 
 .row:hover {
-  background: rgba(61, 155, 233, 0.05);
+  background: var(--ct-dim);
 }
 
 .table td {
@@ -101,6 +103,11 @@
   text-decoration: underline;
 }
 
+.link:focus-visible {
+  outline: 2px solid var(--ct);
+  outline-offset: 2px;
+}
+
 @media (max-width: 640px) {
   .wrap {
     overflow-x: visible;
@@ -162,5 +169,11 @@
     min-height: 44px;
     margin: -8px;
     padding: 0 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row {
+    transition: none;
   }
 }

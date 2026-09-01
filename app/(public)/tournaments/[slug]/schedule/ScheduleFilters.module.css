@@ -54,7 +54,7 @@
   cursor: pointer;
   background: var(--ct);
   border-color: var(--ct);
-  color: var(--void);
+  color: var(--button-ink);
 }
 
 .reset {

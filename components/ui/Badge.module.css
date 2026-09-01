@@ -2,13 +2,12 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 4px 8px;
   border: 1px solid currentColor;
-  border-radius: 999px;
-  font-family: var(--font-display), sans-serif;
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -32,6 +31,5 @@
 .dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
   background: currentColor;
 }

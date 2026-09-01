@@ -8,14 +8,14 @@
 .scoreGrid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
 }
 
 .scoreCard {
-  border: 1px solid var(--line);
+  border: 1px solid var(--admin-line, var(--line));
   border-radius: 3px;
   padding: 14px;
-  background: var(--bg-2);
+  background: var(--admin-paper-deep, var(--bg-2));
 }
 
 .scoreRound {
@@ -36,9 +36,9 @@
 .scoreInput {
   width: 64px;
   padding: 6px 8px;
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--admin-line-strong, var(--line-strong));
   border-radius: 2px;
-  background: var(--surface);
+  background: var(--admin-paper, var(--surface));
   text-align: center;
 }
 
@@ -51,8 +51,8 @@
   display: grid;
   gap: 18px;
   padding: 20px;
-  border: 1px solid var(--line);
-  background: var(--bg-2);
+  border: 1px solid var(--admin-line, var(--line));
+  background: var(--admin-paper-deep, var(--bg-2));
 }
 
 .scheduleFields {
@@ -67,11 +67,11 @@
 }
 
 .scheduleRounds {
-  border-block: 1px solid var(--line);
+  border-block: 1px solid var(--admin-line, var(--line));
 }
 
 .scheduleRound + .scheduleRound {
-  border-top: 1px solid var(--line-strong);
+  border-top: 1px solid var(--admin-line-strong, var(--line-strong));
 }
 
 .scheduleRoundHead {
@@ -87,7 +87,7 @@
 }
 
 .timeGrid {
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--admin-line, var(--line));
 }
 
 .timeCell {
@@ -97,7 +97,7 @@
   gap: 20px;
   min-height: 84px;
   padding: 12px 0;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--admin-line, var(--line));
   transition:
     background-color 0.2s ease,
     padding-inline 0.2s ease;
@@ -105,7 +105,7 @@
 
 .timeCell[data-changed] {
   padding-inline: 12px;
-  background: var(--surface);
+  background: var(--admin-paper, var(--surface));
 }
 
 .timeSlot {
@@ -172,15 +172,15 @@
   min-height: 44px;
   min-width: 0;
   padding: 0 10px;
-  border: 1px solid var(--line-strong);
-  background: var(--void);
+  border: 1px solid var(--admin-line-strong, var(--line-strong));
+  background: var(--admin-paper-deep, var(--void));
   color: var(--ink);
   font-family: var(--font-mono), monospace;
   font-size: 0.76rem;
 }
 
 .timeInput:focus {
-  outline: 2px solid var(--t);
+  outline: 2px solid var(--admin-blue, var(--t));
   outline-offset: 2px;
 }
 
@@ -194,8 +194,8 @@
   gap: 20px;
   min-height: 76px;
   padding: 14px 18px;
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
+  border: 1px solid var(--admin-line-strong, var(--line-strong));
+  background: var(--admin-paper, var(--surface));
 }
 
 .schedulePublish:not([data-dirty]) {
@@ -213,7 +213,7 @@
 }
 
 .schedulePublish p[data-tone='ok'] {
-  color: var(--t);
+  color: var(--admin-blue-strong, var(--t));
 }
 
 .schedulePublish p[data-tone='error'] {
@@ -255,5 +255,19 @@
 
   .schedulePublish button {
     width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .schedulePlanner {
+    padding: 14px;
+  }
+
+  .schedulePlanner .rowActions {
+    grid-template-columns: 1fr;
+  }
+
+  .schedulePlanner .rowActions > :first-child {
+    grid-column: auto;
   }
 }

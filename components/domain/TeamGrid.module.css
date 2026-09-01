@@ -1,24 +1,58 @@
 .grid {
   display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
 }
 
 .card {
+  position: relative;
   display: block;
-  color: inherit;
-  border: 1px solid var(--line);
-  border-left: 2px solid var(--accent);
-  background: linear-gradient(180deg, var(--surface), rgba(13, 19, 31, 0.9));
-  padding: 16px 18px;
+  min-height: 292px;
+  overflow: hidden;
+  padding: 20px 22px 22px;
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-top: 2px solid var(--ink);
+  background: linear-gradient(180deg, var(--surface), var(--bg-2));
   transition:
-    transform 0.2s var(--ease),
-    border-color 0.2s ease;
+    transform 220ms var(--ease),
+    border-color 180ms ease,
+    box-shadow 220ms ease;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  border-color: var(--line-strong);
+.card::after {
+  position: absolute;
+  right: 20px;
+  bottom: 18px;
+  width: 7px;
+  height: 7px;
+  background: var(--accent);
+  content: '';
+  opacity: 0;
+  transform: translateX(-6px);
+  transition:
+    opacity 180ms ease,
+    transform 220ms var(--ease);
+}
+
+@media (hover: hover) {
+  .card:hover {
+    z-index: 1;
+    border-color: var(--ink);
+    box-shadow: 0 16px 32px rgba(23, 24, 23, 0.1);
+    transform: translateY(-3px);
+  }
+
+  .card:hover::after {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.card:focus-visible {
+  border-color: var(--ct);
+  outline: 2px solid var(--ct);
+  outline-offset: 3px;
 }
 
 .head {
@@ -29,45 +63,48 @@
 }
 
 .seed {
-  font-family: var(--font-display), sans-serif;
-  font-weight: 800;
-  font-size: 1.9rem;
   color: var(--muted-2);
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.15rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 570;
+  letter-spacing: -0.06em;
   line-height: 1;
 }
 
 .tag {
-  font-family: var(--font-mono), monospace;
-  font-weight: 700;
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
+  padding: 2px 7px;
   color: var(--accent);
   border: 1px solid currentColor;
-  border-radius: 2px;
-  padding: 2px 7px;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
 }
 
 .name {
-  font-family: var(--font-body), sans-serif;
-  font-weight: 700;
-  font-size: 1.06rem;
-  margin-top: 10px;
+  margin-top: 18px;
+  color: var(--ink);
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.035em;
 }
 
 .meta {
+  margin-top: 7px;
   color: var(--muted);
-  font-size: 0.84rem;
-  margin-top: 4px;
+  font-size: 0.8rem;
+  line-height: 1.55;
 }
 
 .roster {
-  list-style: none;
-  margin-top: 10px;
-  padding-top: 10px;
+  margin-top: 18px;
+  padding-top: 14px;
   border-top: 1px solid var(--line);
   color: var(--muted-2);
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   line-height: 1.7;
+  list-style: none;
 }
 
 .player {
@@ -79,13 +116,35 @@
 }
 
 .playerName {
-  font-family: var(--font-mono), monospace;
-  font-size: 0.76rem;
   color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
 }
 
 .playerRole {
-  font-size: 0.7rem;
-  color: var(--muted-2);
   flex: none;
+  color: var(--muted-2);
+  font-size: 0.68rem;
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card::after {
+    transition: none;
+  }
+
+  .card:hover,
+  .card:hover::after {
+    transform: none;
+  }
 }

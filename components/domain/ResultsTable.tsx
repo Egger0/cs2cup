@@ -24,7 +24,7 @@ export function ResultsTable({ matches, teams, maps, slug, limit }: ResultsTable
           </ButtonLink>
         }
       >
-        还没有打完的比赛。每场结束后,比分和 Ban/Pick 会出现在这里。
+        还没有打完的比赛。每场结束后，比分和 Ban/Pick 会出现在这里。
       </Empty>
     )
   }

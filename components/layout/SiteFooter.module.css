@@ -1,43 +1,51 @@
 .footer {
-  border-top: 1px solid var(--line);
-  padding-block: 56px 40px;
-  color: var(--muted);
-  font-size: 0.9rem;
+  padding: 58px clamp(20px, 6vw, 88px) 34px;
+  color: rgba(241, 239, 232, 0.58);
+  font-size: 0.82rem;
+  background: #111210;
+  border-top: 1px solid rgba(241, 239, 232, 0.14);
+}
+
+.inner {
+  width: min(100%, 1360px);
+  margin-inline: auto;
 }
 
 .grid {
   display: grid;
-  gap: 32px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr 1fr auto;
+  gap: clamp(32px, 6vw, 84px);
+  align-items: start;
 }
 
 .brand {
-  font-family: var(--font-display), sans-serif;
-  font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 12px;
+  margin-bottom: 9px;
+  color: #f1efe8;
+  font-weight: 650;
+  letter-spacing: 0.06em;
 }
 
 .contact b {
-  color: var(--ink);
+  color: #f1efe8;
   font-weight: 500;
 }
 
 .douyin {
   display: grid;
   justify-self: end;
-  justify-items: center;
-  gap: 8px;
-  color: var(--muted-2);
-  text-align: center;
+  grid-template-columns: 96px auto;
+  align-items: center;
+  gap: 16px;
+  color: rgba(241, 239, 232, 0.54);
+  text-align: left;
 }
 
 .qrImage {
-  width: 112px;
-  height: 112px;
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
+  width: 96px;
+  height: 96px;
+  padding: 6px;
   background: #fff;
+  border: 1px solid rgba(241, 239, 232, 0.24);
 }
 
 .douyin figcaption {
@@ -47,17 +55,19 @@
 }
 
 .douyin strong {
-  color: var(--ink);
+  color: #f1efe8;
   font-size: 0.8rem;
   font-weight: 600;
 }
 
 .legal {
-  margin-top: 40px;
+  margin-top: 48px;
   padding-top: 20px;
-  border-top: 1px solid var(--line);
-  color: var(--muted-2);
-  font-size: 0.82rem;
+  border-top: 1px solid rgba(241, 239, 232, 0.12);
+  color: rgba(241, 239, 232, 0.5);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
 }
 
 @media (max-width: 640px) {
@@ -65,8 +75,8 @@
     grid-template-areas:
       'identity douyin'
       'contact douyin';
-    grid-template-columns: minmax(0, 1fr) 88px;
-    gap: 16px;
+    grid-template-columns: minmax(0, 1fr) 96px;
+    gap: 20px;
   }
 
   .identity {
@@ -80,11 +90,15 @@
   .douyin {
     grid-area: douyin;
     align-self: center;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 8px;
+    text-align: center;
   }
 
   .qrImage {
-    width: 88px;
-    height: 88px;
+    width: 92px;
+    height: 92px;
   }
 
   .douyin figcaption span {

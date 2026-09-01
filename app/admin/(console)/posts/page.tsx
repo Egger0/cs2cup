@@ -1,4 +1,5 @@
 import { Button, Empty, Field, TextField } from '@/components/ui'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { requireAdmin } from '@/lib/auth'
 import { adminListGames, adminListPosts } from '@/lib/queries/content'
 import { createPost } from '../actions/content'
@@ -14,6 +15,11 @@ export default async function AdminPostsPage() {
 
   return (
     <>
+      <AdminPageHeader
+        index="04"
+        title="内容台"
+        description="发布社团动态，并维护动态页与项目页需要展示的内容。"
+      />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>发布动态</h2>
         <form className={styles.editor} action={createPost}>
@@ -30,7 +36,7 @@ export default async function AdminPostsPage() {
           <Field id="np-summary" name="summary" label="摘要" required />
           <TextField id="np-body" name="body" label="正文" rows={5} required />
           <div className={styles.pair}>
-            <label className="readout">
+            <label className={styles.controlLabel}>
               关联项目
               <select name="gameId" defaultValue="" className={styles.select}>
                 <option value="">不关联</option>
@@ -41,7 +47,7 @@ export default async function AdminPostsPage() {
                 ))}
               </select>
             </label>
-            <label className="readout">
+            <label className={styles.checkLabel}>
               <input type="checkbox" name="pinned" /> 置顶
             </label>
           </div>

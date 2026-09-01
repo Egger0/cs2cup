@@ -1,4 +1,15 @@
 .shell {
+  --bg: #171817;
+  --surface: #1c1d1a;
+  --surface-2: #242521;
+  --line: rgba(241, 239, 232, 0.16);
+  --line-strong: rgba(241, 239, 232, 0.34);
+  --ink: #f1efe8;
+  --muted: rgba(241, 239, 232, 0.62);
+  --muted-2: rgba(241, 239, 232, 0.46);
+  --ct: #6da5d3;
+  --accent: var(--ct);
+  --button-ink: #171817;
   min-height: 100dvh;
   display: grid;
   place-content: center;
@@ -7,38 +18,54 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: linear-gradient(180deg, #0a101b 0%, #070b12 62%);
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+
+.shell::after {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  content: '';
+  pointer-events: none;
+  background: linear-gradient(rgba(241, 239, 232, 0.055) 1px, transparent 1px);
+  background-size: 100% 164px;
 }
 
 .glow {
   position: absolute;
-  inset: -40% -20% auto -20%;
-  height: 140%;
+  right: -8vw;
+  bottom: -16vw;
+  width: min(62vw, 760px);
+  aspect-ratio: 1;
   z-index: -1;
-  background: none;
+  background: url('/brand/club-mark.svg') center / contain no-repeat;
+  opacity: 0.08;
 }
 
 .code {
   font-family: var(--font-display), sans-serif;
-  font-weight: 800;
-  font-size: clamp(6rem, 22vw, 16rem);
-  line-height: 0.8;
-  color: transparent;
-  -webkit-text-stroke: 2px rgba(61, 155, 233, 0.55);
+  font-weight: 620;
+  font-size: clamp(8rem, 24vw, 19rem);
+  line-height: 0.72;
+  color: var(--ink);
+  letter-spacing: -0.07em;
   font-variant-numeric: tabular-nums;
 }
 
 .line {
-  font-family: var(--font-heavy), var(--font-body);
-  font-weight: 900;
-  font-size: clamp(1.4rem, 3.4vw, 2.4rem);
-  letter-spacing: -0.03em;
-  margin-top: 22px;
+  margin-top: clamp(30px, 5vw, 54px);
+  font-family: 'NLC Serif', 'Songti SC', serif;
+  font-weight: 760;
+  font-size: clamp(2.2rem, 5vw, 4.5rem);
+  letter-spacing: -0.07em;
+  line-height: 0.95;
 }
 
 .hint {
   color: var(--muted);
-  margin-top: 12px;
+  margin-top: 18px;
   max-width: 40ch;
   text-wrap: pretty;
 }
@@ -46,6 +73,18 @@
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 30px;
+  gap: 10px;
+  margin-top: 34px;
+}
+
+@media (max-width: 640px) {
+  .shell {
+    align-content: center;
+  }
+
+  .glow {
+    right: -24vw;
+    bottom: -5vw;
+    width: 100vw;
+  }
 }

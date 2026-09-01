@@ -1,28 +1,39 @@
 .theme {
-  --void: #070b12;
-  --bg: #0a101b;
-  --bg-2: #0d1420;
-  --surface: #101927;
-  --surface-2: #141f2e;
-  --line: rgba(143, 167, 186, 0.16);
-  --line-strong: #253348;
-  --ink: #e6edf5;
-  --muted: #90a0b4;
-  --muted-2: #70849b;
-  --ct: #3d9be9;
-  --ct-dim: rgba(61, 155, 233, 0.16);
-  --t: #9eb6c5;
-  --t-dim: rgba(158, 182, 197, 0.16);
+  --void: #111210;
+  --bg: #f1efe8;
+  --bg-2: #e9e6dc;
+  --surface: #f7f5ee;
+  --surface-2: #dfdcd2;
+  --line: rgba(23, 24, 23, 0.15);
+  --line-strong: #aaa69b;
+  --ink: #171817;
+  --muted: #5f605a;
+  --muted-2: #6d6d66;
+  --ct: #0b4d87;
+  --ct-dim: rgba(11, 77, 135, 0.1);
+  --t: #0b4d87;
+  --t-dim: rgba(11, 77, 135, 0.1);
   --c4: #f04452;
-  --honour: #e3a63a;
+  --honour: #8d661f;
   --accent: var(--ct);
   --accent-dim: var(--ct-dim);
-  --button-ink: #07111e;
+  --button-ink: #f1efe8;
   --danger-dim: rgba(240, 68, 82, 0.12);
   --toast-ink: var(--ink);
   position: relative;
   z-index: 1;
   min-height: 100dvh;
-  color-scheme: dark;
-  background: linear-gradient(180deg, var(--bg), var(--void) 88%);
+  color: var(--ink);
+  color-scheme: light;
+  background: var(--bg);
+}
+
+.theme > main {
+  min-height: calc(100svh - 76px);
+}
+
+@media (max-width: 900px) {
+  .theme > main {
+    min-height: calc(100svh - 68px);
+  }
 }

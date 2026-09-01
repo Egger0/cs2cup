@@ -71,7 +71,7 @@ export function TournamentTabs({ tabs }: { tabs: TournamentTab[] }) {
 
   return (
     <nav ref={tabsRef} className={styles.tabs} aria-label="赛事导航">
-      {tabs.map(tab => {
+      {tabs.map((tab, index) => {
         const active = tab.exact
           ? pathname === tab.href
           : pathname === tab.href || pathname.startsWith(`${tab.href}/`)
@@ -84,6 +84,9 @@ export function TournamentTabs({ tabs }: { tabs: TournamentTab[] }) {
             className={active ? `${styles.tab} ${styles.active}` : styles.tab}
             aria-current={active ? 'page' : undefined}
           >
+            <span className={styles.index} aria-hidden="true">
+              {String(index + 1).padStart(2, '0')}
+            </span>
             {tab.label}
             {tab.count !== undefined ? <span className={styles.count}>{tab.count}</span> : null}
           </Link>

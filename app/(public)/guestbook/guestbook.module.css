@@ -1,22 +1,47 @@
 .grid {
   display: grid;
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-  gap: 28px;
+  gap: 0;
   align-items: start;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
 }
 
 .submit,
 .messages {
-  border: 1px solid var(--line);
-  background: var(--surface);
-  padding: clamp(20px, 3vw, 30px);
+  min-width: 0;
+  padding-block: clamp(28px, 4vw, 46px);
 }
 
-.submit h2,
-.messages h2 {
-  margin-bottom: 20px;
+.submit {
+  padding-right: clamp(28px, 5vw, 72px);
+  border-right: 1px solid var(--line-strong);
+}
+
+.messages {
+  padding-left: clamp(28px, 5vw, 72px);
+}
+
+.panelHead {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  margin-bottom: clamp(30px, 4vw, 46px);
+}
+
+.panelHead span {
+  color: var(--accent);
   font-family: var(--font-display), sans-serif;
-  font-size: 1.25rem;
+  font-size: 1.85rem;
+  font-weight: 560;
+  letter-spacing: -0.05em;
+}
+
+.panelHead h2 {
+  color: var(--ink);
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
+  font-weight: 660;
+  letter-spacing: -0.04em;
 }
 
 .form {
@@ -32,6 +57,28 @@
   border: 0;
 }
 
+.grid input,
+.grid textarea {
+  padding-inline: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line-strong);
+  background: transparent;
+}
+
+.grid input:focus,
+.grid textarea:focus {
+  border-color: var(--accent);
+  background: transparent;
+  outline: 0;
+  box-shadow: 0 1px 0 var(--accent);
+}
+
+.fieldset button {
+  min-width: 154px;
+  justify-self: start;
+  padding-inline: 24px;
+}
+
 .hint {
   color: var(--muted-2);
   font-size: 0.8rem;
@@ -44,12 +91,12 @@
 }
 
 .list {
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--ink);
 }
 
 .message {
-  padding: 18px 0;
-  border-bottom: 1px solid var(--line);
+  padding: 24px 0;
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .message header {
@@ -82,9 +129,8 @@
 
 .reply {
   margin: 16px 0 0 24px;
-  padding: 14px 16px;
+  padding: 6px 0 6px 18px;
   border-left: 2px solid var(--accent);
-  background: color-mix(in srgb, var(--surface) 72%, var(--bg));
 }
 
 .reply p {
@@ -116,6 +162,9 @@
 }
 
 .replyComposer summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
   width: fit-content;
   cursor: pointer;
   color: var(--accent);
@@ -131,7 +180,30 @@
     grid-template-columns: 1fr;
   }
 
+  .submit,
+  .messages {
+    padding-inline: 0;
+  }
+
+  .submit {
+    padding-bottom: 42px;
+    border-right: 0;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .messages {
+    padding-top: 42px;
+  }
+
   .reply {
     margin-left: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .message header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
   }
 }

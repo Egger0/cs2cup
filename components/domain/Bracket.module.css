@@ -1,6 +1,19 @@
 .scroll {
+  position: relative;
   overflow-x: auto;
-  padding-bottom: 12px;
+  padding: 0 1px 18px;
+  overscroll-behavior-inline: contain;
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
+}
+
+.scroll:focus-visible {
+  outline: 2px solid var(--ct);
+  outline-offset: 5px;
+}
+
+.scrollHint {
+  display: none;
 }
 
 .board {
@@ -15,6 +28,7 @@
   justify-content: space-around;
   gap: 12px;
   min-width: 216px;
+  scroll-snap-align: start;
 }
 
 .roundLabel {
@@ -29,19 +43,30 @@
 }
 
 .match {
-  display: block;
-  color: inherit;
   position: relative;
+  display: block;
+  overflow: hidden;
+  color: var(--ink);
   border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(18, 26, 40, 0.9), rgba(13, 19, 31, 0.9));
+  background: linear-gradient(180deg, var(--surface), var(--bg-2));
   transition:
-    border-color 0.24s ease,
-    transform 0.24s var(--ease);
+    border-color 180ms ease,
+    box-shadow 220ms ease,
+    transform 220ms var(--ease);
 }
 
-.match:hover {
-  border-color: var(--line-strong);
-  transform: translateX(2px);
+@media (hover: hover) {
+  .match:hover {
+    border-color: var(--ink);
+    box-shadow: 0 10px 24px rgba(23, 24, 23, 0.09);
+    transform: translateY(-2px);
+  }
+}
+
+.match:focus-visible {
+  border-color: var(--ct);
+  outline: 2px solid var(--ct);
+  outline-offset: 2px;
 }
 
 .match::after {
@@ -89,7 +114,7 @@
 }
 
 .winner {
-  background: rgba(61, 155, 233, 0.08);
+  background: var(--ct-dim);
   box-shadow: inset 2px 0 0 var(--ct);
 }
 
@@ -124,15 +149,58 @@
 }
 
 .final {
-  border-color: rgba(158, 182, 197, 0.42);
+  border-color: var(--line-strong);
 }
 
 .final .winner {
-  background: rgba(158, 182, 197, 0.1);
+  background: color-mix(in srgb, var(--t) 12%, transparent);
   box-shadow: inset 2px 0 0 var(--t);
 }
 
 .final .winner .score,
 .final .winner .name {
   color: var(--t);
+}
+
+@media (max-width: 720px) {
+  .scroll {
+    margin-inline: calc(var(--pad) * -1);
+    padding-inline: var(--pad);
+    scroll-padding-inline: var(--pad);
+    scroll-snap-type: inline proximity;
+  }
+
+  .scrollHint {
+    position: sticky;
+    left: 0;
+    display: flex;
+    width: fit-content;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    color: var(--muted-2);
+    font-family: var(--font-mono), monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+  }
+
+  .scrollHint span {
+    color: var(--ct);
+  }
+
+  .round {
+    width: min(76vw, 280px);
+    min-width: min(76vw, 280px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .match,
+  .match::after {
+    transition: none;
+  }
+
+  .match:hover {
+    transform: none;
+  }
 }

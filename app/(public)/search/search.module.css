@@ -1,54 +1,76 @@
 .form {
   display: flex;
   align-items: flex-end;
-  gap: 12px;
-  max-width: 560px;
-  margin-bottom: 44px;
+  gap: 0;
+  max-width: 720px;
+  margin-bottom: 54px;
+  border-bottom: 1px solid var(--ink);
 }
 
 .form > div {
   flex: 1;
 }
 
-.go {
-  flex: none;
-  padding: 12px 22px;
-  border: 1px solid var(--ct);
-  background: var(--ct);
-  color: var(--button-ink, #06121f);
-  font-family: var(--font-display), sans-serif;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    filter 0.2s ease,
-    transform 0.2s var(--ease);
+.form input {
+  min-height: 58px;
+  padding-inline: 0;
+  border: 0;
+  background: transparent;
+  font-size: 1.08rem;
 }
 
-.go:hover {
-  filter: brightness(1.08);
-  transform: translateY(-2px);
+.form input:focus {
+  border: 0;
+  background: transparent;
+  outline: 0;
+}
+
+.go {
+  display: inline-flex;
+  min-height: 58px;
+  align-items: center;
+  gap: 18px;
+  flex: none;
+  padding: 12px 20px;
+  border: 0;
+  border-left: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  font-weight: 620;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.go:hover,
+.go:focus-visible {
+  background: var(--ink);
+  color: var(--bg);
 }
 
 .results {
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--ink);
 }
 
 .hit {
   display: grid;
-  grid-template-columns: 68px minmax(0, 1fr);
-  gap: 18px;
+  grid-template-columns: 72px minmax(0, 1fr) 28px;
+  gap: clamp(18px, 3vw, 34px);
   align-items: center;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--line);
+  min-height: 96px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line-strong);
   color: inherit;
-  transition:
-    background 0.2s ease,
-    padding-inline 0.3s var(--ease);
+  transition: background-color 180ms ease;
 }
 
-.hit:hover {
-  background: rgba(255, 255, 255, 0.02);
-  padding-inline: 12px;
+.hit:hover,
+.hit:focus-visible {
+  background: var(--ct-dim);
 }
 
 .kind {
@@ -63,7 +85,10 @@
 
 .title {
   display: block;
-  font-weight: 500;
+  color: var(--ink);
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
 }
 
 .subtitle {
@@ -72,4 +97,39 @@
   font-size: 0.66rem;
   color: var(--muted-2);
   margin-top: 6px;
+}
+
+.arrow {
+  justify-self: end;
+  color: var(--accent);
+  font-size: 1.2rem;
+  line-height: 1;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hit:hover .arrow,
+.hit:focus-visible .arrow {
+  transform: translateX(5px);
+}
+
+@media (max-width: 520px) {
+  .go {
+    gap: 10px;
+    padding-inline: 14px;
+  }
+
+  .hit {
+    grid-template-columns: 64px minmax(0, 1fr) 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arrow {
+    transition: none;
+  }
+
+  .hit:hover .arrow,
+  .hit:focus-visible .arrow {
+    transform: none;
+  }
 }

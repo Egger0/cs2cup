@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   },
   description: '浙大宁波理工学院电竞社官方网站。赛事、战队、对阵与社团动态。',
   icons: {
-    icon: { url: '/brand/club-logo.jpg', type: 'image/jpeg' },
-    shortcut: '/brand/club-logo.jpg',
+    icon: { url: '/brand/club-mark.svg', type: 'image/svg+xml' },
+    shortcut: '/brand/club-mark.svg',
     apple: '/brand/club-logo.jpg',
   },
   alternates: { types: { 'application/rss+xml': `${SITE}/feed.xml` } },
@@ -28,7 +28,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN" className={`${display.variable} ${mono.variable}`}>
+    <html
+      lang="zh-CN"
+      className={`${display.variable} ${mono.variable}`}
+      data-scroll-behavior="smooth"
+    >
       <head>
         <noscript>
           <style>{'.reveal{opacity:1 !important;transform:none !important}'}</style>

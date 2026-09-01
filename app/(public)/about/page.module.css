@@ -5,6 +5,10 @@
   align-items: start;
 }
 
+.clubTitle {
+  display: inline;
+}
+
 @media (max-width: 860px) {
   .intro {
     grid-template-columns: 1fr;
@@ -23,15 +27,15 @@
 }
 
 .facts {
-  border: 1px solid var(--line);
-  background: var(--surface);
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .fact {
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  padding: 14px 18px;
+  padding: 16px 0;
   border-bottom: 1px solid var(--line);
 }
 
@@ -53,21 +57,22 @@
 }
 
 .roles {
-  display: grid;
-  gap: 1px;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  background: var(--line);
-  border: 1px solid var(--line);
+  border-top: 1px solid var(--ink);
 }
 
 .role {
-  background: var(--bg);
-  padding: 24px;
+  display: grid;
+  grid-template-columns: minmax(126px, 180px) minmax(160px, 0.7fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(20px, 4vw, 56px);
+  min-height: 116px;
+  padding-block: 24px;
+  border-bottom: 1px solid var(--line-strong);
   transition: background 0.24s ease;
 }
 
 .role:hover {
-  background: var(--surface);
+  background: var(--ct-dim);
 }
 
 .roleName {
@@ -82,7 +87,6 @@
   font-family: var(--font-body), sans-serif;
   font-weight: 700;
   font-size: 1.15rem;
-  margin-block: 12px 8px;
 }
 
 .roleIntro {
@@ -91,8 +95,11 @@
 }
 
 .join {
+  position: relative;
+  overflow: hidden;
   border: 1px solid var(--line-strong);
-  background: linear-gradient(120deg, rgba(61, 155, 233, 0.12), transparent 58%), var(--surface);
+  background: var(--ink);
+  color: var(--bg);
   padding: clamp(28px, 4vw, 48px);
   display: flex;
   flex-wrap: wrap;
@@ -101,7 +108,22 @@
   gap: 24px;
 }
 
+.join::before {
+  position: absolute;
+  top: 0;
+  left: clamp(28px, 4vw, 48px);
+  width: 58px;
+  height: 4px;
+  background: #6da5d3;
+  content: '';
+}
+
+.joinSection {
+  scroll-margin-top: 88px;
+}
+
 .joinText h2 {
+  color: var(--bg);
   font-family: var(--font-heavy), var(--font-body);
   font-weight: 900;
   font-size: clamp(1.4rem, 3vw, 2rem);
@@ -109,7 +131,7 @@
 }
 
 .joinText p {
-  color: var(--muted);
+  color: rgba(241, 239, 232, 0.64);
   margin-top: 10px;
   max-width: 46ch;
 }
@@ -123,11 +145,24 @@
 .contact {
   font-family: var(--font-mono), monospace;
   font-size: 0.82rem;
-  color: var(--ink);
+  color: var(--bg);
 }
 
 .contact span {
-  color: var(--muted-2);
+  color: rgba(241, 239, 232, 0.52);
   letter-spacing: 0.12em;
   margin-right: 10px;
+}
+
+@media (max-width: 720px) {
+  .clubTitle {
+    display: block;
+    width: 4.05em;
+    text-wrap: wrap;
+  }
+
+  .role {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
 }

@@ -10,7 +10,14 @@ interface MapVetoProps {
 const ACTION_LABEL = { ban: 'BAN', pick: 'PICK', decider: 'DECIDER' } as const
 
 export function MapVeto({ maps, teamAName, teamBName }: MapVetoProps) {
-  if (maps.length === 0) return null
+  if (maps.length === 0) {
+    return (
+      <div className={styles.empty}>
+        <span className="readout">Ban / Pick</span>
+        <p>尚未录入地图选择。对局开始前，Ban/Pick 会显示在这里。</p>
+      </div>
+    )
+  }
 
   const sideName = (side: 'a' | 'b' | null) => {
     if (side === 'a') return teamAName

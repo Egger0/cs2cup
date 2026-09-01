@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { Empty } from '@/components/ui'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { requireAdmin } from '@/lib/auth'
 import { adminListGames, adminListTournaments } from '@/lib/queries/content'
 import { listAdminMatches, listTeamsWithContact } from '@/lib/queries/admin'
@@ -30,9 +31,14 @@ export default async function AdminTournamentPage({ params }: { params: Promise<
 
   return (
     <>
+      <AdminPageHeader
+        index="02.A"
+        title={tournament.title}
+        description="维护公开信息、对阵结构与开赛时间；更改仅在明确保存或发布后生效。"
+      />
       <section className={styles.panel}>
         <div className={styles.panelHeading}>
-          <h2 className={styles.panelHead}>{tournament.title}</h2>
+          <h2 className={styles.panelHead}>赛事设置</h2>
           <a
             className={styles.panelAction}
             href={`/admin/tournaments/${tournamentId}/teams.csv`}

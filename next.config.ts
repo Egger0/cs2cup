@@ -16,6 +16,7 @@ if (process.env.NODE_ENV === 'development') {
 
 const config: NextConfig = {
   agentRules: false,
+  allowedDevOrigins: ['127.0.0.1'],
   expireTime: 600,
   async headers() {
     return [

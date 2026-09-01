@@ -1,4 +1,5 @@
 import { Button, ButtonLink, Empty, Field } from '@/components/ui'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { requireAdmin } from '@/lib/auth'
 import { adminListGames, adminListTournaments } from '@/lib/queries/content'
 import { createTournament } from '../actions/tournaments'
@@ -23,6 +24,11 @@ export default async function AdminTournamentsPage() {
 
   return (
     <>
+      <AdminPageHeader
+        index="02"
+        title="赛事档案"
+        description="创建赛季、调整公开状态，并进入每届赛事的赛程工作台。"
+      />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>开一届新赛事</h2>
         <form className={styles.editor} action={createTournament}>
@@ -37,7 +43,7 @@ export default async function AdminTournamentsPage() {
             />
           </div>
           <div className={styles.pair}>
-            <label className="readout">
+            <label className={styles.controlLabel}>
               项目
               <select name="gameId" required className={styles.select}>
                 {games.map(game => (

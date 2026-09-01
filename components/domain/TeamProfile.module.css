@@ -27,11 +27,12 @@
 }
 
 .name {
-  font-family: var(--font-heavy), var(--font-body);
-  font-weight: 900;
-  font-size: clamp(1.5rem, 3.4vw, 2.4rem);
-  letter-spacing: -0.03em;
   margin-top: 10px;
+  color: var(--ink);
+  font-family: var(--font-heavy), var(--font-body);
+  font-size: clamp(1.5rem, 3.4vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .meta {
@@ -52,6 +53,7 @@
 }
 
 .recordValue {
+  color: var(--ink);
   font-family: var(--font-display), sans-serif;
   font-weight: 800;
   font-size: 2rem;
@@ -77,8 +79,9 @@
 }
 
 .player {
-  background: var(--bg);
   padding: 18px 20px;
+  color: var(--ink);
+  background: var(--surface);
 }
 
 .playerRole {
@@ -90,6 +93,7 @@
 }
 
 .playerName {
+  color: var(--ink);
   font-family: var(--font-mono), monospace;
   font-size: 0.98rem;
   margin-top: 10px;
@@ -110,6 +114,22 @@
   align-items: center;
   padding: 15px 0;
   border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  transition:
+    background-color 180ms ease,
+    transform 220ms var(--ease);
+}
+
+@media (hover: hover) {
+  .game:hover {
+    background: var(--ct-dim);
+    transform: translateX(4px);
+  }
+}
+
+.game:focus-visible {
+  outline: 2px solid var(--ct);
+  outline-offset: 2px;
 }
 
 .round {
@@ -120,6 +140,7 @@
 }
 
 .opponent {
+  color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -167,4 +188,26 @@
 
 .scheduleLink a:hover {
   color: var(--ct);
+}
+
+.scheduleLink a:focus-visible {
+  outline: 2px solid var(--ct);
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .game {
+    grid-template-columns: 68px minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game {
+    transition: none;
+  }
+
+  .game:hover {
+    transform: none;
+  }
 }

@@ -1,19 +1,31 @@
 .search {
   width: 100%;
-  max-width: 320px;
-  padding: 10px 12px;
-  margin-bottom: 16px;
-  border: 1px solid var(--line-strong);
+  max-width: 380px;
+  min-height: 46px;
+  padding: 10px 13px;
+  margin-bottom: 18px;
+  border: 1px solid var(--admin-line-strong, var(--line-strong));
   border-radius: 2px;
-  background: var(--bg-2);
+  background: var(--admin-paper-deep, var(--bg-2));
 }
 
 .tableWrap {
+  position: relative;
   overflow-x: auto;
+  border: 1px solid var(--admin-line, var(--line));
+  overscroll-behavior-inline: contain;
+  scrollbar-color: var(--admin-blue, var(--t)) var(--admin-paper-deep, var(--bg-2));
+  scrollbar-width: thin;
+}
+
+.tableWrap:focus-visible {
+  outline: 2px solid var(--admin-blue, var(--t));
+  outline-offset: 3px;
 }
 
 .table {
   width: 100%;
+  min-width: 1040px;
   border-collapse: collapse;
   font-size: 0.88rem;
   white-space: nowrap;
@@ -21,21 +33,27 @@
 
 .table th {
   text-align: left;
-  color: var(--muted);
+  color: var(--admin-muted, var(--muted));
   font-weight: 500;
   font-size: 0.78rem;
   letter-spacing: 0.1em;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--line-strong);
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--admin-line-strong, var(--line-strong));
+  background: rgba(20, 21, 20, 0.86);
 }
 
 .table td {
   padding: 12px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--admin-line, var(--line));
+  transition: background 0.16s ease;
+}
+
+.table tbody tr:hover td {
+  background: rgba(109, 165, 211, 0.045);
 }
 
 .sensitive {
-  color: var(--t);
+  color: var(--admin-blue-strong, var(--t));
 }
 
 .roster {
@@ -46,19 +64,21 @@
 }
 
 .select {
+  min-height: 34px;
   padding: 5px 8px;
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--admin-line-strong, var(--line-strong));
   border-radius: 2px;
-  background: var(--bg-2);
+  background: var(--admin-paper-deep, var(--bg-2));
   font-size: 0.82rem;
 }
 
 .seedInput {
   width: 54px;
   padding: 5px 7px;
-  border: 1px solid var(--line-strong);
+  min-height: 34px;
+  border: 1px solid var(--admin-line-strong, var(--line-strong));
   border-radius: 2px;
-  background: var(--bg-2);
+  background: var(--admin-paper-deep, var(--bg-2));
   color: var(--ink);
   font-family: var(--font-mono), monospace;
   font-size: 0.78rem;
@@ -67,4 +87,30 @@
 .seedInput:disabled {
   color: var(--muted-2);
   opacity: 0.55;
+}
+
+.scrollHint {
+  display: none;
+  margin-bottom: 9px;
+  color: var(--admin-muted, var(--muted));
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 680px) {
+  .search {
+    max-width: none;
+  }
+
+  .scrollHint {
+    display: block;
+  }
+
+  .tableWrap {
+    width: 100%;
+    background:
+      linear-gradient(90deg, transparent 85%, rgba(109, 165, 211, 0.09)),
+      var(--admin-paper-deep, var(--bg-2));
+  }
 }

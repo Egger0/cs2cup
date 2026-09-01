@@ -1,11 +1,12 @@
-import { SectionHead } from '@/components/domain/Sections'
+import type { Metadata } from 'next'
+import { PageMasthead, SectionHead } from '@/components/domain/Sections'
 import { Honours } from '@/components/domain/Honours'
 import { TournamentList } from '@/components/domain/TournamentList'
 import { listHonours, listTournaments, safely } from '@/lib/queries/public'
 
 export const revalidate = 300
 
-export const metadata = { title: '赛事 · 宁波理工电竞社' }
+export const metadata: Metadata = { title: '赛事' }
 
 export default async function TournamentsPage() {
   const [tournaments, honours] = await Promise.all([
@@ -17,7 +18,7 @@ export default async function TournamentsPage() {
     <section className="section">
       <div className="wrap">
         <div data-rise>
-          <SectionHead eyebrow="赛事" title="全部赛事" lede="社团办过的所有比赛,按时间倒序。" />
+          <PageMasthead eyebrow="赛事" title="全部赛事" lede="社团办过的所有比赛，按时间倒序。" />
         </div>
         <TournamentList tournaments={tournaments} />
 
@@ -26,7 +27,7 @@ export default async function TournamentsPage() {
             <SectionHead
               eyebrow="荣誉墙"
               title="历届冠军"
-              lede="决赛胜者自动进入这里,往届可在后台补录。"
+              lede="决赛胜者自动进入这里，往届可在后台补录。"
             />
             <Honours honours={honours} />
           </div>

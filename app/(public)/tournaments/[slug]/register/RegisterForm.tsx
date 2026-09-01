@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button, Field, TextField } from '@/components/ui'
 import { registerTeam } from './actions'
 import styles from './register.module.css'
@@ -41,6 +41,11 @@ export function RegisterForm({
   const [pending, setPending] = useState(false)
   const [receipt, setReceipt] = useState<{ url: string; seatsLeft: number | null } | null>(null)
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle')
+  const errorRef = useRef<HTMLParagraphElement>(null)
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus()
+  }, [error])
 
   async function copyManagementLink() {
     if (!receipt) return
@@ -77,6 +82,7 @@ export function RegisterForm({
         <span className="readout">报名回执</span>
         <h2 id="registration-receipt-title">报名已提交</h2>
         <p>请保存下面的专属链接。审核状态和阵容修改都通过该链接完成。</p>
+        <p className={styles.receiptWarning}>此链接等同于战队管理凭证，请勿转发给无关人员。</p>
         <div className={styles.receiptActions}>
           <Link href={receipt.url} prefetch={false} className={styles.managementLink}>
             查看报名状态并管理阵容 →
@@ -98,7 +104,15 @@ export function RegisterForm({
   }
 
   return (
-    <form action={submit} className={styles.form}>
+    <form
+      action={submit}
+      className={styles.form}
+      aria-busy={pending}
+      aria-describedby="registration-privacy"
+    >
+      <p id="registration-privacy" className={styles.privacy}>
+        联系方式仅供主办方审核、排期与紧急联络，不会展示在公开参赛名单中。提交前请确认队员已知悉本次报名。
+      </p>
       <fieldset disabled={disabled || pending} className={styles.fieldset}>
         <div className={styles.pair}>
           <Field
@@ -167,7 +181,17 @@ export function RegisterForm({
           placeholder="时间冲突、器材需求等（选填）"
         />
 
-        {error ? <p className={styles.error}>{error}</p> : null}
+        {error ? (
+          <p
+            ref={errorRef}
+            className={styles.error}
+            role="alert"
+            aria-live="assertive"
+            tabIndex={-1}
+          >
+            {error}
+          </p>
+        ) : null}
 
         <Button type="submit" variant="primary">
           {pending ? '提交中…' : disabled ? '席位已满' : '提交报名'}

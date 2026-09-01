@@ -56,7 +56,7 @@
   break-inside: avoid;
   padding: 0;
   border: 1px solid var(--line);
-  background: var(--void);
+  background: var(--surface);
   overflow: hidden;
   cursor: zoom-in;
   transition:
@@ -81,23 +81,25 @@
 }
 
 .caption {
-  position: absolute;
-  inset: auto 0 0;
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding: 28px 14px 10px;
-  background: linear-gradient(180deg, transparent, rgba(5, 7, 12, 0.9));
+  padding: 11px 13px 12px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
   font-family: var(--font-mono), monospace;
   font-size: 0.64rem;
   letter-spacing: 0.12em;
   color: var(--muted);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  text-align: left;
 }
 
-.poster:hover .caption {
-  opacity: 1;
+.editionEmpty {
+  padding: clamp(38px, 6vw, 64px) 0;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line-strong);
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .lightbox:not([open]) {
@@ -105,6 +107,12 @@
 }
 
 .lightbox {
+  --bg: #111210;
+  --ink: #f1efe8;
+  --muted: rgba(241, 239, 232, 0.62);
+  --line: rgba(241, 239, 232, 0.16);
+  --line-strong: rgba(241, 239, 232, 0.34);
+  --accent: #6da5d3;
   position: fixed;
   inset: 0;
   z-index: 120;
@@ -117,6 +125,7 @@
   padding: clamp(16px, 4vw, 56px);
   background: rgba(5, 7, 12, 0.96);
   border: none;
+  color: var(--ink);
 }
 
 .lightbox::backdrop {
@@ -136,4 +145,7 @@
   position: absolute;
   top: 20px;
   right: 20px;
+  color: var(--ink);
+  border-color: var(--line-strong);
+  background: rgba(17, 18, 16, 0.72);
 }

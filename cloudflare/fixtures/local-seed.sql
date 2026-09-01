@@ -15,7 +15,7 @@ INSERT OR IGNORE INTO tournament (
   '[{"label":"01","title":"比赛形式","body":"采用 5v5 单败淘汰赛。"},{"label":"02","title":"参赛资格","body":"参赛队员须为本校在读学生。"}]',
   '[{"question":"需要自备设备吗？","answer":"请自备耳机及常用外设。"}]',
   'NINGBOTECH LAN CUP', '为热爱组队', '为荣誉开战',
-  '这是仅用于本地开发的确定性赛事数据。'
+  '面向全校玩家的五人制校园赛，从组队报名到决赛日都在这里完成。'
 );
 
 INSERT OR IGNORE INTO team (
@@ -64,19 +64,20 @@ INSERT OR IGNORE INTO match_map (
 ) VALUES (1, 1, 1, 'Mirage', 'pick', 'a', NULL, NULL, 0);
 
 INSERT OR IGNORE INTO club_member (id, name, role, handle, intro, sort_order) VALUES
-  (1, '本地管理员', '赛事负责人', 'local-admin', '仅用于本地开发。', 1);
+  (1, '赛事筹备组', '赛事统筹', 'nlc-event', '负责赛程、裁判与现场协调。', 1);
 
 INSERT OR IGNORE INTO post (
   id, game_id, slug, title, summary, body, published_at, pinned
 ) VALUES (
-  1, 1, 'local-development', '本地开发环境已就绪',
-  '这是一条确定性示例动态。', '所有内容均保存在本机，不会连接远端资源。',
-  '2099-01-01T00:00:00Z', 1
+  1, 1, 'season-update', '校园杯资料页已更新',
+  '项目介绍、赛制与参赛信息已完成本轮整理。',
+  '新赛季的项目资料已经更新。报名、队伍与赛程信息会继续在赛事页同步。',
+  '2026-08-31T00:00:00Z', 1
 );
 
 INSERT OR IGNORE INTO guestbook_message (
   id, name, body, status, is_official, pinned, created_at
-) VALUES (1, '本地访客', '祝比赛顺利！', 'published', 0, 1, '2099-01-01T00:00:00Z');
+) VALUES (1, '看台七号', '期待今年的决赛日，也想报名做现场摄影。', 'published', 0, 1, '2026-08-30T00:00:00Z');
 
 INSERT OR IGNORE INTO admin_account (
   id, username, password_salt, password_hash

@@ -6,9 +6,10 @@
   padding: clamp(22px, 3.5vw, 40px) clamp(18px, 3vw, 36px);
   border: 1px solid var(--line-strong);
   background:
-    linear-gradient(90deg, rgba(61, 155, 233, 0.1), transparent 42%),
-    linear-gradient(270deg, rgba(158, 182, 197, 0.1), transparent 42%),
+    linear-gradient(90deg, var(--ct-dim), transparent 42%),
+    linear-gradient(270deg, var(--t-dim), transparent 42%),
     linear-gradient(180deg, var(--surface), var(--bg-2));
+  animation: versusEnter 420ms var(--ease-out) both;
 }
 
 .side {
@@ -26,21 +27,22 @@
   text-transform: uppercase;
 }
 
-.roleCt {
+.roleA {
   color: var(--ct);
 }
 
-.roleT {
+.roleB {
   color: var(--t);
 }
 
 .tag {
-  font-family: var(--font-display), sans-serif;
-  font-weight: 800;
-  font-size: clamp(1.8rem, 4.4vw, 3.4rem);
-  line-height: 0.9;
-  letter-spacing: 0.02em;
   margin-top: 8px;
+  color: var(--ink);
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.8rem, 4.4vw, 3.4rem);
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  line-height: 0.9;
 }
 
 .name {
@@ -80,6 +82,12 @@
   margin-inline: 0.12em;
 }
 
+.pendingScore {
+  color: var(--muted);
+  font-size: 0.8em;
+  letter-spacing: 0.06em;
+}
+
 .meta {
   margin-top: 10px;
   font-family: var(--font-mono), monospace;
@@ -88,12 +96,30 @@
   color: var(--muted-2);
 }
 
+@keyframes versusEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
 @media (max-width: 620px) {
+  .versus {
+    gap: 10px;
+    padding-inline: 14px;
+  }
+
   .tag {
     font-size: 1.5rem;
   }
 
   .name {
     font-size: 0.78rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .versus {
+    animation: none;
   }
 }

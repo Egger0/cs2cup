@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { SectionHead } from '@/components/domain/Sections'
 import { SITE_TIME_ZONE } from '@/lib/datetime'
@@ -9,6 +10,7 @@ import { belongsToTeam, firstValue, matchesState, readState, STATE_LABEL } from 
 import styles from './schedule.module.css'
 
 export const dynamic = 'force-dynamic'
+export const metadata: Metadata = { title: '赛程' }
 
 interface SchedulePageProps {
   params: Promise<{ slug: string }>
@@ -42,6 +44,10 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
     ? entries.filter(entry => belongsToTeam(entry, selectedTeam.id))
     : entries
   const visibleEntries = teamEntries.filter(entry => matchesState(entry, state))
+  const groups = groupScheduleEntries(visibleEntries).map(group => ({
+    ...group,
+    label: group.label.replace(/^\d{4}年/, ''),
+  }))
   const base = `/tournaments/${slug}/schedule`
   const calendarHref = `/tournaments/${encodeURIComponent(slug)}/calendar.ics${
     selectedTeam ? `?teamId=${selectedTeam.id}` : ''
@@ -74,7 +80,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
         <ScheduleLedger
           base={base}
           slug={slug}
-          groups={groupScheduleEntries(visibleEntries)}
+          groups={groups}
           nextEntry={selectNextScheduleEntry(teamEntries)}
         />
       </div>

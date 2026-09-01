@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import styles from './shell.module.css'
@@ -17,22 +18,33 @@ const LINKS = [
 
 export function AdminNav() {
   const pathname = usePathname()
+  const railRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const active = railRef.current?.querySelector<HTMLElement>('[aria-current="page"]')
+    active?.scrollIntoView({ block: 'nearest', inline: 'center' })
+  }, [pathname])
 
   return (
-    <nav className={styles.nav} aria-label="后台导航">
-      {LINKS.map(link => {
-        const active = link.exact ? pathname === link.href : pathname.startsWith(link.href)
-        return (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={active ? `${styles.navLink} ${styles.navActive}` : styles.navLink}
-            aria-current={active ? 'page' : undefined}
-          >
-            {link.label}
-          </Link>
-        )
-      })}
-    </nav>
+    <div className={styles.navViewport}>
+      <nav ref={railRef} className={styles.nav} aria-label="后台导航">
+        {LINKS.map((link, index) => {
+          const active = link.exact ? pathname === link.href : pathname.startsWith(link.href)
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={active ? `${styles.navLink} ${styles.navActive}` : styles.navLink}
+              aria-current={active ? 'page' : undefined}
+            >
+              <span className={styles.navIndex} aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <span>{link.label}</span>
+            </Link>
+          )
+        })}
+      </nav>
+    </div>
   )
 }

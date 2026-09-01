@@ -15,7 +15,7 @@ export function BracketBuilder({
   existingMatches: number
 }) {
   const [pending, startTransition] = useTransition()
-  const [message, setMessage] = useState('')
+  const [feedback, setFeedback] = useState<{ ok: boolean; message: string } | null>(null)
 
   return (
     <div>
@@ -35,17 +35,25 @@ export function BracketBuilder({
             if (!confirm(warning)) return
             startTransition(async () => {
               const result = await buildBracket(tournamentId)
-              setMessage(
-                result.ok
+              setFeedback({
+                ok: result.ok,
+                message: result.ok
                   ? `已生成 ${result.created} 场比赛${result.byes ? `，含 ${result.byes} 场轮空` : ''}`
                   : (result.error ?? '失败'),
-              )
+              })
             })
           }}
         >
           {pending ? '生成中…' : existingMatches > 0 ? '重新抽签' : '生成对阵表'}
         </Button>
-        {message ? <span className={styles.ok}>{message}</span> : null}
+        {feedback ? (
+          <span
+            className={feedback.ok ? styles.ok : styles.error}
+            role={feedback.ok ? 'status' : 'alert'}
+          >
+            {feedback.message}
+          </span>
+        ) : null}
       </div>
     </div>
   )

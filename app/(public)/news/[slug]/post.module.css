@@ -1,3 +1,33 @@
+.articleGrid {
+  display: grid;
+  grid-template-columns: minmax(112px, 180px) minmax(0, 1fr);
+  column-gap: clamp(28px, 5vw, 74px);
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 7px;
+  color: var(--accent);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+}
+
+.rail::before {
+  width: 42px;
+  height: 1px;
+  margin-bottom: 8px;
+  background: var(--accent);
+  content: '';
+}
+
+.articleColumn {
+  grid-column: 2;
+  min-width: 0;
+}
+
 .body {
   max-width: 66ch;
   color: var(--ink);
@@ -17,4 +47,27 @@
 
 .back a:hover {
   color: var(--ct);
+}
+
+@media (max-width: 720px) {
+  .articleGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .rail,
+  .articleColumn {
+    grid-column: 1;
+  }
+
+  .rail {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 34px;
+    padding-top: 0;
+  }
+
+  .rail::before {
+    width: 22px;
+    margin: 0 2px 0 0;
+  }
 }

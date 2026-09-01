@@ -3,28 +3,28 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 26px;
+  min-height: 46px;
+  padding: 11px 22px;
   border: 1px solid var(--line-strong);
-  border-radius: 2px;
+  border-radius: 0;
   background: transparent;
-  font-family: var(--font-display), sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: 580;
+  letter-spacing: 0.08em;
   cursor: pointer;
   transition:
     background 0.2s ease,
     border-color 0.2s ease,
-    transform 0.2s var(--ease);
+    color 0.2s ease;
 }
 
 .button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.9);
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
 }
 
 .button:active:not(:disabled) {
-  transform: translateY(1px) scale(0.985);
-  transition-duration: 0.06s;
+  opacity: 0.72;
 }
 
 .button:disabled {
@@ -39,17 +39,20 @@
 }
 
 .primary:hover:not(:disabled) {
-  filter: brightness(1.08);
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
 }
 
 .ghost {
-  background: rgba(255, 255, 255, 0.02);
+  background: transparent;
   color: var(--ink);
 }
 
 .ghost:hover:not(:disabled) {
-  border-color: var(--accent);
-  background: var(--ct-dim);
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
 }
 
 .danger {
@@ -58,10 +61,13 @@
 }
 
 .danger:hover:not(:disabled) {
-  background: var(--danger-dim, rgba(229, 72, 77, 0.12));
+  border-color: var(--c4);
+  background: var(--c4);
+  color: #fff;
 }
 
 .mini {
-  padding: 6px 12px;
+  min-height: 34px;
+  padding: 5px 11px;
   font-size: 0.82rem;
 }

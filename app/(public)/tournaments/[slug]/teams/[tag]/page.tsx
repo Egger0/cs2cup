@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Empty } from '@/components/ui'
 import { MapStats } from '@/components/domain/MapStats'
@@ -16,6 +17,27 @@ import {
 import styles from '@/components/domain/TeamProfile.module.css'
 
 export const revalidate = 300
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string; tag: string }>
+}): Promise<Metadata> {
+  const { slug, tag } = await params
+  const tournament = await safely(() => getTournament(slug), null)
+  if (!tournament) return { title: '参赛战队' }
+
+  const teams = await safely(() => getPublicTeams(tournament.id), [])
+  const decoded = decodeURIComponent(tag).toLocaleLowerCase()
+  const team = teams.find(entry => entry.tag.toLocaleLowerCase() === decoded)
+  return { title: team ? `${team.name} · ${team.tag}` : '参赛战队' }
+}
+
+function matchTime(value: string | null) {
+  if (!value) return null
+  const time = Date.parse(value)
+  return Number.isFinite(time) ? time : null
+}
 
 export default async function TeamPage({
   params,
@@ -42,7 +64,14 @@ export default async function TeamPage({
   const played = matches
     .map(match => ({ ...resolveMatch(match, matchIndex, teamIndex), match }))
     .filter(entry => entry.a?.id === team.id || entry.b?.id === team.id)
-    .sort((x, y) => x.match.round - y.match.round)
+    .sort((x, y) => {
+      const xTime = matchTime(x.match.scheduledAt)
+      const yTime = matchTime(y.match.scheduledAt)
+      if (xTime !== null && yTime !== null && xTime !== yTime) return xTime - yTime
+      if (xTime !== null && yTime === null) return -1
+      if (xTime === null && yTime !== null) return 1
+      return x.match.round - y.match.round || x.match.slot - y.match.slot || x.match.id - y.match.id
+    })
 
   const wins = played.filter(
     entry => isCompletedMatch(entry.match) && entry.match.winnerTeamId === team.id,
@@ -61,7 +90,7 @@ export default async function TeamPage({
           <div>
             <span className={styles.seed}>{team.seed ? `#${team.seed}` : '—'}</span>
             <div className={styles.tag}>{team.tag}</div>
-            <h1 className={styles.name}>{team.name}</h1>
+            <h2 className={styles.name}>{team.name}</h2>
             <div className={styles.meta}>
               队长 {team.captain}
               {team.dept ? ` · ${team.dept}` : ''}
@@ -106,6 +135,7 @@ export default async function TeamPage({
         <div style={{ marginTop: 44 }}>
           <SectionHead eyebrow="赛程" title="赛程与战绩" />
           <div className={styles.timeline}>
+            {played.length === 0 ? <Empty>这支战队的赛程还没有公布</Empty> : null}
             {played.map(entry => {
               const isA = entry.a?.id === team.id
               const opponent = isA ? entry.b : entry.a

@@ -1,6 +1,7 @@
 .empty {
-  padding: clamp(40px, 6vw, 64px) 24px;
-  border: 1px dashed var(--line-strong);
+  padding: clamp(52px, 8vw, 92px) 0;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--line-strong);
   display: grid;
   justify-items: center;
   gap: 18px;
@@ -9,7 +10,8 @@
 
 .line {
   color: var(--muted);
-  font-size: 0.94rem;
+  font-size: 0.9rem;
+  line-height: 1.8;
   max-width: 44ch;
 }
 

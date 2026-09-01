@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { MapStats } from '@/components/domain/MapStats'
 import { ResultsTable } from '@/components/domain/ResultsTable'
@@ -13,6 +14,7 @@ import {
 } from '@/lib/queries/public'
 
 export const revalidate = 300
+export const metadata: Metadata = { title: '战报' }
 
 export default async function ResultsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -26,7 +28,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ slug: 
 
   const decided = matches.filter(isCompletedMatch)
   const maps = await safely(() => getMatchMaps(decided.map(match => match.id)), [])
-  const stats = mapStats(maps, tournament.mapPool)
+  const stats = mapStats(maps, tournament.mapPool).filter(stat => stat.total > 0)
 
   return (
     <section className="section">
@@ -35,7 +37,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ slug: 
           <SectionHead
             eyebrow={`${decided.length} 场已完赛`}
             title="战报"
-            lede="点开任意一场,可以看到完整的 Ban/Pick 过程与每张图的比分。"
+            lede="点开任意一场，可以看到完整的 Ban/Pick 过程与每张图的比分。"
           />
         </div>
         <div data-rise="2">

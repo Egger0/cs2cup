@@ -27,7 +27,11 @@ export function TournamentDeleteButton({ id, title }: { id: number; title: strin
       >
         删除
       </Button>
-      {error ? <span className={styles.error}>{error}</span> : null}
+      {error ? (
+        <span className={styles.error} role="alert">
+          {error}
+        </span>
+      ) : null}
     </>
   )
 }

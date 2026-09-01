@@ -1,0 +1,75 @@
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 34px;
+  color: var(--muted-2);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+
+.breadcrumb a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  color: var(--muted);
+  transition: color 160ms ease;
+}
+
+.breadcrumb a:hover,
+.breadcrumb a:focus-visible {
+  color: var(--ct);
+}
+
+.veto {
+  margin-top: 28px;
+}
+
+.contextLinks {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 32px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-strong);
+}
+
+.contextLinks a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  transition:
+    color 160ms ease,
+    transform 180ms var(--ease);
+}
+
+.contextLinks a:hover,
+.contextLinks a:focus-visible {
+  color: var(--ct);
+}
+
+.contextLinks a:first-child:hover {
+  transform: translateX(-3px);
+}
+
+.contextLinks a:last-child:hover {
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breadcrumb a,
+  .contextLinks a {
+    transition: none;
+  }
+
+  .contextLinks a:hover {
+    transform: none;
+  }
+}

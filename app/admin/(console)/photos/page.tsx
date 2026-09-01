@@ -1,4 +1,5 @@
 import { Empty } from '@/components/ui'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { requireAdmin } from '@/lib/auth'
 import { adminListPhotos, adminListTournaments } from '@/lib/queries/content'
 import { PhotoRow } from './PhotoRow'
@@ -18,6 +19,11 @@ export default async function AdminPhotosPage() {
 
   return (
     <>
+      <AdminPageHeader
+        index="05"
+        title="素材库"
+        description="上传赛事影像，并核对素材归属与文件信息。"
+      />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>上传素材</h2>
         {tournaments.length === 0 ? (

@@ -33,14 +33,22 @@ export function GameEditor({ game }: { game: Game }) {
           </div>
         </div>
         <div className={styles.rowActions}>
-          {saved ? <span className={styles.ok}>已保存</span> : null}
+          {saved ? (
+            <span className={styles.ok} role="status">
+              已保存
+            </span>
+          ) : null}
           <Button size="mini" onClick={() => setOpen(true)}>
             编辑
           </Button>
           <Button size="mini" variant="danger" disabled={pending} onClick={handleDelete}>
             删除
           </Button>
-          {error ? <span className={styles.error}>{error}</span> : null}
+          {error ? (
+            <span className={styles.error} role="alert">
+              {error}
+            </span>
+          ) : null}
         </div>
       </div>
     )
@@ -70,7 +78,7 @@ export function GameEditor({ game }: { game: Game }) {
           hint="十六进制,如 #e3a63a"
           defaultValue={game.accentColor ?? ''}
         />
-        <label className="readout" style={{ alignSelf: 'end', paddingBottom: 12 }}>
+        <label className={styles.checkLabel}>
           <input type="checkbox" name="active" defaultChecked={game.active} /> 在网站上展示
         </label>
       </div>
@@ -109,7 +117,11 @@ export function GameEditor({ game }: { game: Game }) {
         >
           删除
         </Button>
-        {error ? <span className={styles.error}>{error}</span> : null}
+        {error ? (
+          <span className={styles.error} role="alert">
+            {error}
+          </span>
+        ) : null}
       </div>
     </form>
   )

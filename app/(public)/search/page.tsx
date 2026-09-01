@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Empty, Field } from '@/components/ui'
-import { SectionHead } from '@/components/domain/Sections'
+import { PageMasthead } from '@/components/domain/Sections'
 import { safely, search } from '@/lib/queries/public'
 import styles from './search.module.css'
 
@@ -26,7 +26,12 @@ export default async function SearchPage({
   return (
     <section className="section">
       <div className="wrap">
-        <SectionHead eyebrow="搜索" title="找点什么" lede="赛事、战队、项目和动态都能搜。" />
+        <PageMasthead
+          eyebrow="搜索"
+          title="找点什么"
+          lede="赛事、战队、项目和动态都能搜。"
+          density="compact"
+        />
 
         <form className={styles.form} action="/search">
           <Field
@@ -34,10 +39,11 @@ export default async function SearchPage({
             name="q"
             label="关键词"
             defaultValue={q}
-            placeholder="例:宁理杯、FROST、纳新"
+            placeholder="例：宁理杯、FROST、纳新"
           />
           <button type="submit" className={styles.go}>
-            搜索
+            <span>搜索</span>
+            <span aria-hidden="true">→</span>
           </button>
         </form>
 
@@ -50,6 +56,9 @@ export default async function SearchPage({
                   <span>
                     <span className={styles.title}>{hit.title}</span>
                     <span className={styles.subtitle}>{hit.subtitle}</span>
+                  </span>
+                  <span className={styles.arrow} aria-hidden="true">
+                    →
                   </span>
                 </Link>
               ))}

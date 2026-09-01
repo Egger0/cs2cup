@@ -20,11 +20,13 @@ export function PostList({ posts }: { posts: Post[] }) {
             </time>
             {post.pinned ? <span className={styles.pin}>置顶</span> : null}
           </div>
-          <div>
+          <div className={styles.content}>
             <h3 className={styles.title}>{post.title}</h3>
             <p className={styles.summary}>{post.summary}</p>
-            <p className={styles.more}>阅读全文 →</p>
           </div>
+          <span className={styles.arrow} aria-hidden="true">
+            →
+          </span>
         </Link>
       ))}
     </div>

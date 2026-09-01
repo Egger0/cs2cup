@@ -21,7 +21,7 @@ export function Bracket({ matches, teams, slug }: BracketProps) {
           </ButtonLink>
         }
       >
-        报名满员后统一抽签,对阵表会出现在这里。
+        报名满员后统一抽签，对阵表会出现在这里。
       </Empty>
     )
   }
@@ -32,7 +32,16 @@ export function Bracket({ matches, teams, slug }: BracketProps) {
   const lastRound = rounds.at(-1)?.round
 
   return (
-    <div className={styles.scroll}>
+    <div
+      className={styles.scroll}
+      role="region"
+      aria-label="赛事对阵表，可横向滚动查看各轮"
+      aria-describedby="bracket-scroll-hint"
+      tabIndex={0}
+    >
+      <p id="bracket-scroll-hint" className={styles.scrollHint}>
+        左右滑动查看各轮 <span aria-hidden>→</span>
+      </p>
       <div className={styles.board}>
         {rounds.map(round => (
           <div key={round.round} className={styles.round}>

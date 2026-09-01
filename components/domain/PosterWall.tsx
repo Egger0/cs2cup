@@ -14,7 +14,13 @@ export interface Edition {
   posters: Photo[]
 }
 
-export function PosterWall({ editions }: { editions: Edition[] }) {
+export function PosterWall({
+  editions,
+  emptyText = '档案整理中',
+}: {
+  editions: Edition[]
+  emptyText?: string
+}) {
   const [active, setActive] = useState<Photo | null>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
 
@@ -25,7 +31,7 @@ export function PosterWall({ editions }: { editions: Edition[] }) {
     if (!active && dialog.open) dialog.close()
   }, [active])
 
-  if (editions.length === 0) return <Empty>还没有往届海报</Empty>
+  if (editions.length === 0) return <Empty>{emptyText}</Empty>
 
   return (
     <>
@@ -36,37 +42,43 @@ export function PosterWall({ editions }: { editions: Edition[] }) {
               <span className={styles.year}>{edition.year}</span>
               <span className={styles.name}>{edition.name}</span>
             </h2>
-            <span className={styles.count}>{edition.posters.length} 张</span>
+            <span className={styles.count}>
+              {edition.posters.length > 0 ? `${edition.posters.length} 张` : '整理中'}
+            </span>
           </div>
 
-          <div className={styles.sheet}>
-            {edition.posters.map(poster => (
-              <button
-                key={poster.id}
-                type="button"
-                className={styles.poster}
-                onClick={() => setActive(poster)}
-                aria-label={`放大查看 ${edition.name} 海报`}
-              >
-                <Image
-                  src={photoUrl(poster.storageKey)}
-                  alt={poster.caption ?? `${edition.name} 海报`}
-                  unoptimized
-                  width={poster.width}
-                  height={poster.height}
-                  sizes="(max-width: 720px) 100vw, 380px"
-                  placeholder={poster.blurDataUrl ? 'blur' : 'empty'}
-                  blurDataURL={poster.blurDataUrl ?? undefined}
-                />
-                <span className={styles.caption}>
-                  <span>{poster.caption ?? edition.name}</span>
-                  <span>
-                    {poster.width}×{poster.height}
+          {edition.posters.length > 0 ? (
+            <div className={styles.sheet}>
+              {edition.posters.map(poster => (
+                <button
+                  key={poster.id}
+                  type="button"
+                  className={styles.poster}
+                  onClick={() => setActive(poster)}
+                  aria-label={`放大查看 ${edition.name} 海报`}
+                >
+                  <Image
+                    src={photoUrl(poster.storageKey)}
+                    alt={poster.caption ?? `${edition.name} 海报`}
+                    unoptimized
+                    width={poster.width}
+                    height={poster.height}
+                    sizes="(max-width: 720px) 100vw, 380px"
+                    placeholder={poster.blurDataUrl ? 'blur' : 'empty'}
+                    blurDataURL={poster.blurDataUrl ?? undefined}
+                  />
+                  <span className={styles.caption}>
+                    <span>{poster.caption ?? edition.name}</span>
+                    <span>
+                      {poster.width}×{poster.height}
+                    </span>
                   </span>
-                </span>
-              </button>
-            ))}
-          </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className={styles.editionEmpty}>本届影像正在核对与整理。</p>
+          )}
         </section>
       ))}
 

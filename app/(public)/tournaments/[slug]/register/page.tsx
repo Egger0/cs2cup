@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ButtonLink, Empty } from '@/components/ui'
 import { SectionHead } from '@/components/domain/Sections'
@@ -6,6 +7,7 @@ import { resolveSiteOrigin } from '@/lib/site-config'
 import { RegisterForm } from './RegisterForm'
 
 export const dynamic = 'force-dynamic'
+export const metadata: Metadata = { title: '报名' }
 
 export default async function RegisterPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params

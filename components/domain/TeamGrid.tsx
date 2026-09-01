@@ -15,7 +15,7 @@ export function TeamGrid({ teams, slug }: { teams: PublicTeam[]; slug?: string }
           ) : null
         }
       >
-        还没有战队通过审核。报名后由主办方确认,通过的队伍会出现在这里。
+        还没有战队通过审核。报名后由主办方确认，通过的队伍会出现在这里。
       </Empty>
     )
   }

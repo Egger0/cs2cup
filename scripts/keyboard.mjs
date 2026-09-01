@@ -40,14 +40,18 @@ const focusable = await page.evaluate(() => {
       'a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])',
     ),
   ]
-  return nodes.filter(n => n.getBoundingClientRect().height > 0).length
+  return nodes.filter(n => {
+    const style = getComputedStyle(n)
+    return n.getBoundingClientRect().height > 0 && style.visibility !== 'hidden'
+  }).length
 })
 check('Focusable controls are available', focusable > 5, `${focusable} controls`)
 
 const invisibleFocus = await page.evaluate(() => {
-  const nodes = [...document.querySelectorAll('a[href],button')].filter(
-    n => n.getBoundingClientRect().height > 0,
-  )
+  const nodes = [...document.querySelectorAll('a[href],button')].filter(n => {
+    const style = getComputedStyle(n)
+    return n.getBoundingClientRect().height > 0 && style.visibility !== 'hidden'
+  })
   let bad = 0
   for (const node of nodes.slice(0, 40)) {
     node.focus()
@@ -96,6 +100,8 @@ await Promise.all([
   page.waitForURL(url => new URL(url).searchParams.get('team') === selectedTeam),
   page.keyboard.press('Enter'),
 ])
+// The URL changes before the streamed schedule has replaced its old links.
+await page.waitForLoadState('networkidle')
 const keyboardScheduleLinks = page.locator('main a[href^="/tournaments/2026-nlc/matches/"]')
 check('Keyboard-filtered schedule exposes match links', (await keyboardScheduleLinks.count()) > 0)
 const firstScheduleLink = keyboardScheduleLinks.first()
@@ -137,7 +143,7 @@ if (await firstPoster.count()) {
   check(
     'Archive empty state remains keyboard-safe',
     await page
-      .getByText('还没有往届海报')
+      .getByText(/档案整理中/)
       .isVisible()
       .catch(() => false),
   )
@@ -146,14 +152,42 @@ if (await firstPoster.count()) {
 const mobile = await ctx.newPage()
 await mobile.setViewportSize({ width: 390, height: 760 })
 await mobile.goto(BASE, { waitUntil: 'domcontentloaded' })
-await mobile.waitForTimeout(1000)
-await mobile.locator('[aria-controls="site-nav"]').focus()
-await mobile.keyboard.press('Enter')
+await mobile.waitForLoadState('networkidle')
+await mobile.locator('[aria-controls="site-menu"]').press('Enter')
 await mobile.waitForTimeout(600)
-check('Keyboard opens the mobile drawer', await mobile.locator('#site-nav a').first().isVisible())
 check(
-  'Drawer exposes its expanded state',
-  (await mobile.locator('[aria-controls="site-nav"]').getAttribute('aria-expanded')) === 'true',
+  'Keyboard opens the mobile directory',
+  await mobile.locator('#site-menu a').first().isVisible(),
+)
+check(
+  'Directory exposes its expanded state',
+  (await mobile.locator('[aria-controls="site-menu"]').getAttribute('aria-expanded')) === 'true',
+)
+check(
+  'Focus moves into the directory',
+  await mobile
+    .locator('#site-menu a')
+    .first()
+    .evaluate(element => element === document.activeElement),
+)
+await mobile.keyboard.press('Shift+Tab')
+check(
+  'Reverse tab reaches the close control',
+  await mobile
+    .locator('[aria-controls="site-menu"]')
+    .evaluate(element => element === document.activeElement),
+)
+await mobile.keyboard.press('Escape')
+await mobile.waitForTimeout(350)
+check(
+  'Escape closes the directory',
+  (await mobile.locator('[aria-controls="site-menu"]').getAttribute('aria-expanded')) === 'false',
+)
+check(
+  'Focus returns to the directory control',
+  await mobile
+    .locator('[aria-controls="site-menu"]')
+    .evaluate(element => element === document.activeElement),
 )
 await mobile.close()
 

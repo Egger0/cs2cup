@@ -1,4 +1,5 @@
 import { Button, Empty, Field, TextField } from '@/components/ui'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { requireAdmin } from '@/lib/auth'
 import { adminListMembers } from '@/lib/queries/content'
 import { createMember } from '../actions/content'
@@ -14,6 +15,11 @@ export default async function AdminMembersPage() {
 
   return (
     <>
+      <AdminPageHeader
+        index="06"
+        title="成员名册"
+        description="维护核心团队、职务与对外展示顺序。"
+      />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>新增成员</h2>
         <form className={styles.editor} action={createMember}>

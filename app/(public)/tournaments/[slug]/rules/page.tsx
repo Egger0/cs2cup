@@ -1,8 +1,10 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { FaqList, RuleGrid, SectionHead } from '@/components/domain/Sections'
 import { getTournament } from '@/lib/queries/public'
 
 export const revalidate = 300
+export const metadata: Metadata = { title: '赛制与须知' }
 
 export default async function RulesPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params

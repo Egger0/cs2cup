@@ -32,7 +32,8 @@ export function TournamentList({ tournaments }: { tournaments: Tournament[] }) {
             <span>
               <span className={styles.title}>{tournament.title}</span>
               <span className={styles.meta}>
-                {tournament.gameName ?? ''} · 第 {tournament.edition} 届 · {tournament.teamCap} 队
+                {tournament.gameName ?? ''} · 第 {tournament.edition} 届 · {tournament.teamCap}{' '}
+                队上限
               </span>
             </span>
             <span className={`${styles.state} ${styles[tournament.status]}`}>

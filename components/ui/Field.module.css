@@ -5,11 +5,13 @@
 }
 
 .label {
-  font-size: 0.86rem;
-  color: var(--muted);
   display: flex;
   align-items: baseline;
   gap: 6px;
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
 }
 
 .required {
@@ -23,10 +25,11 @@
 
 .control {
   width: 100%;
-  padding: 12px 14px;
+  min-height: 48px;
+  padding: 11px 13px;
   border: 1px solid var(--line-strong);
-  border-radius: 2px;
-  background: var(--bg-2);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--surface) 68%, transparent);
   transition:
     border-color 0.2s ease,
     background 0.2s ease;
@@ -39,7 +42,8 @@
 .control:focus {
   border-color: var(--accent);
   background: var(--surface);
-  outline: none;
+  outline: 1px solid var(--accent);
+  outline-offset: 0;
 }
 
 .invalid {
