@@ -119,6 +119,26 @@
   font-size: 0.82rem;
 }
 
+.checkIn dd {
+  display: grid;
+  gap: 3px;
+}
+
+.checkIn dd > span {
+  font-weight: 720;
+}
+
+.checkIn[data-state='checked-in'] dd > span {
+  color: var(--stamp);
+}
+
+.checkIn time {
+  color: var(--paper-muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+}
+
 .roster,
 .private {
   margin-top: 34px;
@@ -227,7 +247,7 @@
   }
 
   .facts {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .private dl {
@@ -238,6 +258,12 @@
     align-items: center;
     justify-content: space-between;
     flex-direction: row;
+  }
+}
+
+@media (min-width: 980px) {
+  .facts {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

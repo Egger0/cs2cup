@@ -4,6 +4,7 @@ import { DatabaseSync } from 'node:sqlite'
 
 const bindingsModule =
   'data:text/javascript,export function cloudflareBindings(){return globalThis.__registrationManagementBindings}'
+const CHECKED_IN_AT = '2026-09-03T02:15:00.000Z'
 
 registerHooks({
   resolve(specifier, context, nextResolve) {
@@ -96,6 +97,7 @@ const schema = `
     note TEXT,
     status TEXT NOT NULL DEFAULT 'pending',
     seed INTEGER,
+    checked_in_at TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     management_token_hash TEXT UNIQUE,
     management_revision INTEGER NOT NULL DEFAULT 0 CHECK (management_revision >= 0),
@@ -179,6 +181,9 @@ async function expectManagementError(work, code) {
   const registration = await getManagedRegistration('cup', access.token)
   assert.equal(registration?.editable, true)
   assert.equal(registration?.revision, 0)
+  assert.equal(registration?.team.checkedInAt, null)
+  assert.equal(await getManagedRegistration('wrong-cup', access.token), null)
+  assert.equal(await getManagedRegistration('cup', 'Z'.repeat(43)), null)
   const firstUpdate = await saveManagedRegistration('cup', access.token, 0, update('OK'))
   assert.equal(firstUpdate.revision, 1)
   assert.equal(database.prepare('SELECT name FROM team WHERE id = 1').get().name, 'BetaOK')
@@ -191,6 +196,11 @@ async function expectManagementError(work, code) {
   )
   const secondUpdate = await saveManagedRegistration('cup', access.token, 1, update('Again'))
   assert.equal(secondUpdate.revision, 2)
+  database
+    .prepare("UPDATE team SET status = 'approved', checked_in_at = ? WHERE id = 1")
+    .run(CHECKED_IN_AT)
+  const checkedIn = await getManagedRegistration('cup', access.token)
+  assert.equal(checkedIn?.team.checkedInAt, CHECKED_IN_AT)
 }
 
 for (const [code, concurrentChange] of [

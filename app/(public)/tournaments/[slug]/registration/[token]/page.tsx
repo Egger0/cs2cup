@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { SectionHead } from '@/components/domain/Sections'
+import { participantCheckInReceipt } from '@/lib/check-in-receipt'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { formatSiteDateTime } from '@/lib/datetime'
 import { getCurrentParticipant } from '@/lib/participant-auth'
@@ -78,6 +79,7 @@ export default async function RegistrationStatusPage({
   const deadline = registration.tournament.regDeadline
     ? formatSiteDateTime(registration.tournament.regDeadline)
     : null
+  const checkIn = participantCheckInReceipt(registration.team.status, registration.team.checkedInAt)
   const [participant, ownerPrincipalId] = await Promise.all([
     getCurrentParticipant(),
     participantEntryOwnerPrincipal(cloudflareBindings().db, registration.team.id),
@@ -95,7 +97,7 @@ export default async function RegistrationStatusPage({
     <section className="section">
       <div className="wrap">
         <SectionHead eyebrow={registration.tournament.title} title="报名状态与阵容" />
-        <section className={styles.statusPanel} aria-label="报名状态">
+        <section className={styles.statusPanel} aria-label="报名与签到状态">
           <div>
             <span className={styles.status}>{STATUS_LABEL[registration.team.status]}</span>
             <h2>
@@ -103,6 +105,13 @@ export default async function RegistrationStatusPage({
             </h2>
           </div>
           <div className={styles.meta}>
+            <div className={styles.checkIn} data-state={checkIn.state}>
+              <span>CHECK-IN / 现场签到</span>
+              <strong>{checkIn.label}</strong>
+              {checkIn.instant && checkIn.timeLabel ? (
+                <time dateTime={checkIn.instant}>北京时间 · {checkIn.timeLabel}</time>
+              ) : null}
+            </div>
             <span>{deadline ? `报名截止 ${deadline}` : '未设置报名截止时间'}</span>
           </div>
         </section>

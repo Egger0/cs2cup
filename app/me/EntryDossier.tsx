@@ -1,4 +1,5 @@
 import { d1UtcTimestampToIso, formatSiteDateTime, isIsoInstant } from '@/lib/datetime'
+import { participantCheckInReceipt } from '@/lib/check-in-receipt'
 import type { ParticipantTournamentEntry } from '@/lib/queries/participant-account'
 import styles from './dossier.module.css'
 
@@ -15,6 +16,7 @@ function registrationInstant(value: string) {
 export function EntryDossier({ entry }: { entry: ParticipantTournamentEntry }) {
   const registeredAt = registrationInstant(entry.team.registeredAt)
   const registeredLabel = registeredAt ? formatSiteDateTime(registeredAt) : null
+  const checkIn = participantCheckInReceipt(entry.team.status, entry.team.checkedInAt)
   const titleId = `entry-${entry.team.id}`
 
   return (
@@ -50,6 +52,15 @@ export function EntryDossier({ entry }: { entry: ParticipantTournamentEntry }) {
             ) : (
               entry.team.registeredAt
             )}
+          </dd>
+        </div>
+        <div className={styles.checkIn} data-state={checkIn.state}>
+          <dt>现场签到</dt>
+          <dd>
+            <span>{checkIn.label}</span>
+            {checkIn.instant && checkIn.timeLabel ? (
+              <time dateTime={checkIn.instant}>北京时间 · {checkIn.timeLabel}</time>
+            ) : null}
           </dd>
         </div>
       </dl>
