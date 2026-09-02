@@ -117,6 +117,7 @@ export default async function RegistrationStatusPage({
         </section>
 
         <ParticipantPasskeyClaim
+          teamId={registration.team.id}
           slug={slug}
           token={token}
           tournamentTitle={registration.tournament.title}

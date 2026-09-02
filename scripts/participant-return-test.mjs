@@ -3,6 +3,8 @@ import assert from 'node:assert/strict'
 import {
   DEFAULT_PARTICIPANT_RETURN_PATH,
   isParticipantReturnPath,
+  participantEntryAddedId,
+  participantEntryAddedPath,
   participantRegistrationReturnPath,
   safeParticipantReturnPath,
 } from '../lib/participant-return.ts'
@@ -27,6 +29,16 @@ for (const path of [
 assert.equal(participantRegistrationReturnPath('autumn-cup-2026', token), registrationPath)
 assert.equal(participantRegistrationReturnPath('Autumn-cup', token), null)
 assert.equal(participantRegistrationReturnPath('autumn-cup', `${token}?next=/me`), null)
+const entryAddedPath = participantEntryAddedPath(37)
+assert.equal(entryAddedPath, '/me?joined=37')
+assert.equal(participantEntryAddedId('37'), 37)
+assert.equal(participantEntryAddedId(['37']), null)
+assert.equal(participantEntryAddedId('037'), null)
+assert.equal(participantEntryAddedId('9007199254740992'), null)
+assert.equal(participantEntryAddedPath(0), null)
+assert.equal(participantEntryAddedPath(Number.MAX_SAFE_INTEGER + 1), null)
+assert.equal(isParticipantReturnPath(entryAddedPath), false)
+assert.equal(safeParticipantReturnPath(entryAddedPath), DEFAULT_PARTICIPANT_RETURN_PATH)
 
 for (const value of [
   undefined,

@@ -1,11 +1,24 @@
 const TOURNAMENT_SLUG = '[a-z0-9][a-z0-9-]{0,99}'
 const OPAQUE_TOKEN = '[A-Za-z0-9_-]{43}'
+const PARTICIPANT_ENTRY_ID = /^[1-9][0-9]{0,15}$/
 
 const PARTICIPANT_REGISTRATION_PATH = new RegExp(
   `^/tournaments/${TOURNAMENT_SLUG}/registration/${OPAQUE_TOKEN}(?![\\s\\S])`,
 )
 
 export const DEFAULT_PARTICIPANT_RETURN_PATH = '/me'
+
+export function participantEntryAddedId(value: unknown): number | null {
+  if (typeof value !== 'string' || !PARTICIPANT_ENTRY_ID.test(value)) return null
+  const teamId = Number(value)
+  return Number.isSafeInteger(teamId) ? teamId : null
+}
+
+export function participantEntryAddedPath(teamId: number): string | null {
+  return Number.isSafeInteger(teamId) && teamId > 0
+    ? `${DEFAULT_PARTICIPANT_RETURN_PATH}?joined=${teamId}`
+    : null
+}
 
 export function isParticipantReturnPath(value: unknown): value is string {
   return (
