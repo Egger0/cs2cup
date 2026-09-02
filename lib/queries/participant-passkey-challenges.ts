@@ -10,6 +10,7 @@ import {
 
 const ATTEMPT_WINDOW_MS = 10 * 60 * 1000
 const CHALLENGE_TTL_MS = 5 * 60 * 1000
+const TRANSIENT_CLEANUP_BATCH = 64
 const FINGERPRINT_PATTERN = /^v1:[0-9a-f]{64}$/
 const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,99}$/
 
@@ -58,7 +59,12 @@ async function enforceAttemptLimit(
     throw new ParticipantPasskeyError('rate_limited')
   }
   const bucket = Math.floor(now / ATTEMPT_WINDOW_MS) * ATTEMPT_WINDOW_MS
-  await db.prepare('DELETE FROM participant_passkey_attempt WHERE expires_at <= ?').bind(now).run()
+  await db
+    .prepare(
+      'DELETE FROM participant_passkey_attempt WHERE (bucket_start, kind, fingerprint) IN (SELECT bucket_start, kind, fingerprint FROM participant_passkey_attempt WHERE expires_at <= ? ORDER BY expires_at, bucket_start, kind, fingerprint LIMIT ?)',
+    )
+    .bind(now, TRANSIENT_CLEANUP_BATCH)
+    .run()
   const admitted = await db
     .prepare(
       'INSERT INTO participant_passkey_attempt (bucket_start, kind, fingerprint, attempt_count, expires_at) VALUES (?, ?, ?, 1, ?) ON CONFLICT (bucket_start, kind, fingerprint) DO UPDATE SET attempt_count = attempt_count + 1 WHERE attempt_count < 5 RETURNING attempt_count',
@@ -82,8 +88,10 @@ async function replacePreviousCeremony(
       .run()
   }
   await db
-    .prepare('DELETE FROM participant_webauthn_challenge WHERE expires_at <= ?')
-    .bind(now)
+    .prepare(
+      'DELETE FROM participant_webauthn_challenge WHERE ceremony_token_hash IN (SELECT ceremony_token_hash FROM participant_webauthn_challenge WHERE expires_at <= ? ORDER BY expires_at LIMIT ?)',
+    )
+    .bind(now, TRANSIENT_CLEANUP_BATCH)
     .run()
 }
 
