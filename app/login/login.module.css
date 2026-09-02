@@ -277,7 +277,16 @@
   }
 
   .assurances {
-    display: none;
+    display: block;
+    margin-top: 18px;
+    font-size: 0.58rem;
+    letter-spacing: 0.04em;
+    line-height: 1.55;
+  }
+
+  .assurances span {
+    margin-right: 10px;
+    letter-spacing: 0.08em;
   }
 
   .passBand {
