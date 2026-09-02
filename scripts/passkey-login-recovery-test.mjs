@@ -4,6 +4,7 @@ import {
   participantLoginReceiptPath,
   passkeyLoginDeviceFailure,
   passkeyLoginHttpFailure,
+  passkeyLoginRetryAfterSeconds,
   passkeyLoginShouldResumeSession,
 } from '../lib/passkey-login-recovery.ts'
 
@@ -16,7 +17,7 @@ const REFRESH_REQUIRED = {
 const RATE_LIMITED = {
   code: 'rate-limited',
   title: '请求过于频繁',
-  description: '请等待几分钟，再由你重新发起通行密钥验证。',
+  description: '请等待当前限制窗口结束，再由你重新发起通行密钥验证。',
   action: 'wait',
 }
 const TEMPORARILY_UNAVAILABLE = {
@@ -54,6 +55,24 @@ for (const [stage, status, expected] of [
 assert.equal(passkeyLoginShouldResumeSession(409), true)
 for (const status of [0, 200, 400, 403, 429, 503]) {
   assert.equal(passkeyLoginShouldResumeSession(status), false)
+}
+
+for (const [header, expected] of [
+  ['1', 1],
+  ['60', 60],
+  ['599', 599],
+  ['600', 600],
+  [null, 60],
+  ['', 60],
+  ['0', 60],
+  ['601', 60],
+  ['060', 60],
+  [' 60', 60],
+  ['60 ', 60],
+  ['1.5', 60],
+  ['-1', 60],
+]) {
+  assert.equal(passkeyLoginRetryAfterSeconds(header), expected)
 }
 
 const secret = 'raw authenticator message must stay private'

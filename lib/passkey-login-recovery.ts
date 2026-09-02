@@ -24,7 +24,7 @@ const REFRESH_REQUIRED: PasskeyLoginFeedback = {
 const RATE_LIMITED: PasskeyLoginFeedback = {
   code: 'rate-limited',
   title: '请求过于频繁',
-  description: '请等待几分钟，再由你重新发起通行密钥验证。',
+  description: '请等待当前限制窗口结束，再由你重新发起通行密钥验证。',
   action: 'wait',
 }
 
@@ -47,6 +47,15 @@ const INTERRUPTED_OR_UNAVAILABLE: PasskeyLoginFeedback = {
   title: '验证未完成',
   description: '验证可能被取消、超时或当前设备暂不可用，请重新尝试。',
   action: 'retry',
+}
+
+const RETRY_AFTER_FALLBACK_SECONDS = 60
+const RETRY_AFTER_MAX_SECONDS = 10 * 60
+
+export function passkeyLoginRetryAfterSeconds(value: string | null): number {
+  if (!value || !/^[1-9][0-9]{0,2}$/.test(value)) return RETRY_AFTER_FALLBACK_SECONDS
+  const seconds = Number(value)
+  return seconds <= RETRY_AFTER_MAX_SECONDS ? seconds : RETRY_AFTER_FALLBACK_SECONDS
 }
 
 export function passkeyLoginHttpFailure(

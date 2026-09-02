@@ -6,6 +6,7 @@ import {
   beginAuthenticationCeremony,
   beginClaimCeremony,
   consumePasskeyCeremony,
+  participantPasskeyRetryAfterSeconds,
 } from '../lib/queries/participant-passkey-challenges.ts'
 import {
   finishParticipantAuthentication,
@@ -17,6 +18,11 @@ import {
   createPasskeyQueryFixture,
   expectPasskeyError,
 } from './participant-passkey-query-fixture.mjs'
+
+assert.equal(participantPasskeyRetryAfterSeconds(0), 600)
+assert.equal(participantPasskeyRetryAfterSeconds(300_000), 300)
+assert.equal(participantPasskeyRetryAfterSeconds(599_999), 1)
+assert.equal(participantPasskeyRetryAfterSeconds(600_000), 600)
 
 const { database, db } = await createPasskeyQueryFixture()
 
