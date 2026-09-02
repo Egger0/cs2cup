@@ -2,6 +2,11 @@
 
 import { browserSupportsWebAuthn, startRegistration } from '@simplewebauthn/browser'
 import { useEffect, useRef, useState } from 'react'
+import {
+  passkeyClaimDeviceFailure,
+  passkeyClaimHttpFailure,
+  type PasskeyClaimFeedback,
+} from '@/lib/passkey-claim-recovery'
 import { publishParticipantSessionEnded } from '@/lib/participant-session-events'
 
 import {
@@ -54,10 +59,12 @@ export function ParticipantPasskeyClaim({
 }: ParticipantPasskeyClaimProps) {
   const [support, setSupport] = useState<SupportState>('checking')
   const [claimState, setClaimState] = useState<ClaimState>('idle')
+  const [claimFailure, setClaimFailure] = useState<PasskeyClaimFeedback | null>(null)
   const [attachState, setAttachState] = useState<AttachState>('idle')
   const [switchState, setSwitchState] = useState<SwitchState>('idle')
   const [attachConflict, setAttachConflict] = useState(false)
   const confirmButton = useRef<HTMLButtonElement>(null)
+  const claimInFlight = useRef(false)
   const switchButton = useRef<HTMLButtonElement>(null)
   const switchInFlight = useRef(false)
   const visibleOwnership = attachConflict ? 'owned-by-other' : ownershipState
@@ -89,15 +96,25 @@ export function ParticipantPasskeyClaim({
     return () => window.removeEventListener('pageshow', refreshRestoredPage)
   }, [])
 
+  function finishClaimFailure(failure: PasskeyClaimFeedback) {
+    claimInFlight.current = false
+    setClaimFailure(failure)
+    setClaimState('error')
+  }
+
   async function claimPasskey() {
     if (
       visibleOwnership !== 'anonymous-unclaimed' ||
       support !== 'supported' ||
-      claimState === 'working'
+      claimState === 'working' ||
+      claimInFlight.current
     )
       return
 
+    claimInFlight.current = true
+    setClaimFailure(null)
     setClaimState('working')
+    let requestStage: 'options' | 'verification' = 'options'
     try {
       const optionsResponse = await fetch('/api/participant/passkeys/claim/options', {
         method: 'POST',
@@ -109,10 +126,21 @@ export function ParticipantPasskeyClaim({
         window.location.reload()
         return
       }
-      if (!optionsResponse.ok) throw new Error('options request failed')
+      if (!optionsResponse.ok) {
+        finishClaimFailure(passkeyClaimHttpFailure('options', optionsResponse.status))
+        return
+      }
 
       const optionsJSON = (await optionsResponse.json()) as RegistrationOptions
-      const registration = await startRegistration({ optionsJSON })
+      let registration: Awaited<ReturnType<typeof startRegistration>>
+      try {
+        registration = await startRegistration({ optionsJSON })
+      } catch (error) {
+        finishClaimFailure(passkeyClaimDeviceFailure(error))
+        return
+      }
+
+      requestStage = 'verification'
       const verificationResponse = await fetch('/api/participant/passkeys/claim/verify', {
         method: 'POST',
         credentials: 'same-origin',
@@ -123,14 +151,25 @@ export function ParticipantPasskeyClaim({
         window.location.reload()
         return
       }
-      if (!verificationResponse.ok) throw new Error('verification failed')
+      if (!verificationResponse.ok) {
+        finishClaimFailure(passkeyClaimHttpFailure('verification', verificationResponse.status))
+        return
+      }
 
       // The verification response establishes the participant session cookie.
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.assign('/me')
     } catch {
-      setClaimState('error')
+      finishClaimFailure(passkeyClaimHttpFailure(requestStage, 0))
     }
+  }
+
+  function handleClaimAction() {
+    if (claimFailure?.action === 'reload') {
+      window.location.reload()
+      return
+    }
+    void claimPasskey()
   }
 
   async function attachEntry() {
@@ -207,8 +246,9 @@ export function ParticipantPasskeyClaim({
             <AnonymousClaimAction
               support={support}
               claimState={claimState}
+              failure={claimFailure}
               loginHref={loginHref}
-              onCreate={claimPasskey}
+              onCreate={handleClaimAction}
             />
           ) : null}
           {visibleOwnership === 'signed-in-unclaimed' ? (

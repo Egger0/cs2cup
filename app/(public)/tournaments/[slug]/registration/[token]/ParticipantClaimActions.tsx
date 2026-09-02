@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import type { RefObject } from 'react'
+import type { PasskeyClaimFeedback } from '@/lib/passkey-claim-recovery'
 import { ownedEntryRecoveryAction } from '@/lib/participant-owner-recovery'
 
 import ownershipStyles from './claim-ownership.module.css'
 import styles from './claim-passkey.module.css'
+import { ParticipantClaimRecovery } from './ParticipantClaimRecovery'
 
 export type ParticipantEntryOwnershipState =
   | 'anonymous-unclaimed'
@@ -15,18 +17,19 @@ export type ClaimState = 'idle' | 'working' | 'error'
 export type AttachState = 'idle' | 'confirming' | 'working' | 'error'
 export type SwitchState = 'idle' | 'working' | 'error'
 
-const CLAIM_ERROR = '没有完成创建。报名和管理链接都没有变化，可以再次尝试。'
 const ATTACH_ERROR = '暂时没能加入。报名和管理链接都没有变化，请稍后重试。'
 const SWITCH_ERROR = '暂时未能确认退出结果；报名和归属不会因此改变。可以重新尝试。'
 
 export function AnonymousClaimAction({
   support,
   claimState,
+  failure,
   loginHref,
   onCreate,
 }: {
   support: SupportState
   claimState: ClaimState
+  failure: PasskeyClaimFeedback | null
   loginHref: string
   onCreate: () => void
 }) {
@@ -38,7 +41,13 @@ export function AnonymousClaimAction({
         ? '当前设备暂不可用'
         : working
           ? '正在等待设备确认…'
-          : '创建赛事通行证'
+          : failure?.action === 'reload'
+            ? '刷新报名回执'
+            : failure?.action === 'wait'
+              ? '稍后重新尝试'
+              : failure
+                ? '重新开始设备确认'
+                : '创建赛事通行证'
 
   return (
     <div className={ownershipStyles.choice}>
@@ -55,7 +64,7 @@ export function AnonymousClaimAction({
         className={styles.claimButton}
         disabled={support !== 'supported' || working}
         onClick={onCreate}
-        aria-describedby="passkey-claim-status passkey-claim-notes"
+        aria-describedby="passkey-claim-status"
       >
         <span className={styles.keyMark} aria-hidden="true">
           PK
@@ -63,16 +72,23 @@ export function AnonymousClaimAction({
         <span>{createLabel}</span>
         <span aria-hidden="true">↗</span>
       </button>
-      <div id="passkey-claim-status" className={styles.actionStatus} aria-live="polite">
+      <div
+        id="passkey-claim-status"
+        className={styles.actionStatus}
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         {support === 'checking' ? <p>正在确认浏览器的通行密钥能力。</p> : null}
         {support === 'unsupported' ? <p>请换用支持通行密钥的浏览器或设备。</p> : null}
-        {support === 'supported' && claimState === 'idle' ? (
+        {support === 'supported' && working ? (
+          <p>设备确认窗口已打开，请在系统界面中继续。</p>
+        ) : null}
+        {support === 'supported' && claimState === 'idle' && !failure ? (
           <p>创建时会打开设备的系统验证界面。</p>
         ) : null}
-        {claimState === 'error' ? (
-          <p className={styles.error} role="alert">
-            {CLAIM_ERROR}
-          </p>
+        {support === 'supported' && failure ? (
+          <ParticipantClaimRecovery feedback={failure} />
         ) : null}
       </div>
     </div>
