@@ -1,0 +1,174 @@
+.page {
+  --desk: #0d1215;
+  --desk-line: rgba(132, 167, 185, 0.1);
+  --paper: #eeeadd;
+  --paper-deep: #e2dccd;
+  --paper-ink: #172026;
+  --paper-muted: #626a6d;
+  --stamp: #176b9a;
+  --accent: #79b9d8;
+  position: relative;
+  z-index: 1;
+  min-height: 100svh;
+  padding: 18px clamp(16px, 4vw, 68px) clamp(48px, 8vw, 112px);
+  background:
+    linear-gradient(90deg, transparent 31px, var(--desk-line) 32px, transparent 33px),
+    linear-gradient(var(--desk), #080b0d);
+  background-size:
+    64px 100%,
+    auto;
+  color: #e9ece8;
+}
+
+.topbar {
+  display: flex;
+  max-width: 1320px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-inline: auto;
+  padding-block: 10px 24px;
+  border-bottom: 1px solid rgba(132, 167, 185, 0.24);
+}
+
+.brand {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 10px;
+  font-family: 'NLC Role Sans', var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 680;
+  letter-spacing: 0.08em;
+}
+
+.brand span {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid #75a9c5;
+}
+
+.brand img {
+  width: 27px;
+  height: 27px;
+  filter: brightness(1.75) saturate(0.8);
+}
+
+.topbar button {
+  min-height: 44px;
+  padding: 7px 0 5px;
+  border: 0;
+  border-bottom: 1px solid #66869a;
+  background: transparent;
+  color: #aebbc1;
+  cursor: pointer;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.61rem;
+  letter-spacing: 0.08em;
+}
+
+.topbar button:hover {
+  color: #fff;
+  border-color: #b9d9e9;
+}
+
+.intro {
+  display: grid;
+  max-width: 1320px;
+  gap: 28px;
+  margin: clamp(44px, 9vw, 108px) auto clamp(38px, 6vw, 76px);
+}
+
+.eyebrow,
+.empty > p {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  color: #7faec6;
+  font-size: 0.61rem;
+}
+
+.intro h1 {
+  max-width: 760px;
+  margin-top: 10px;
+  font-family: 'NLC Serif', 'Songti SC', serif;
+  font-size: clamp(3.2rem, 11vw, 7.5rem);
+  font-weight: 800;
+  letter-spacing: -0.065em;
+  line-height: 0.94;
+}
+
+.intro aside {
+  max-width: 490px;
+  padding: 18px 0 0 18px;
+  border-top: 1px solid #31566a;
+  border-left: 3px solid #4b91b5;
+  color: #9ca8ac;
+}
+
+.intro aside strong {
+  color: #d4e8f1;
+  font-family: 'NLC Role Sans', var(--font-body);
+  font-size: 0.82rem;
+}
+
+.intro aside p {
+  margin-top: 7px;
+  font-size: 0.74rem;
+}
+
+.files {
+  display: grid;
+  max-width: 1180px;
+  gap: clamp(36px, 6vw, 74px);
+  margin-inline: auto;
+}
+
+.empty {
+  max-width: 760px;
+  margin-inline: auto;
+  padding: clamp(30px, 8vw, 74px);
+  border: 1px solid #37576a;
+  background: #11191d;
+}
+
+.empty > p {
+  color: #75a9c5;
+  font-size: 0.56rem;
+}
+
+.empty h2 {
+  margin-top: 12px;
+  font-family: 'NLC Serif', 'Songti SC', serif;
+  font-size: clamp(1.8rem, 7vw, 3.5rem);
+}
+
+.empty > span {
+  display: block;
+  margin-top: 12px;
+  color: #94a2a8;
+  font-size: 0.78rem;
+}
+
+.empty a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  margin-top: 28px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #75a9c5;
+  color: #b8d9e9;
+  font-size: 0.72rem;
+}
+
+@media (min-width: 920px) {
+  .intro {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.5fr);
+    align-items: end;
+  }
+}

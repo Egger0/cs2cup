@@ -31,6 +31,15 @@ assert.deepEqual(
   },
 )
 
+for (const source of ['/api/participant/:path*', '/login', '/me']) {
+  const rule = headerRules.find(candidate => candidate.source === source)
+  assert.ok(rule, `${source} must define private response headers`)
+  assert.equal(
+    rule.headers.find(header => header.key === 'Cache-Control')?.value,
+    'private, no-cache, no-store, max-age=0, must-revalidate',
+  )
+}
+
 const first = await createRegistrationAccess()
 const second = await createRegistrationAccess()
 
