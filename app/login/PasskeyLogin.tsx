@@ -6,6 +6,7 @@ import {
   participantLoginReceiptPath,
   passkeyLoginDeviceFailure,
   passkeyLoginHttpFailure,
+  passkeyLoginRetryAfterSeconds,
   passkeyLoginShouldResumeSession,
   type PasskeyLoginFeedback,
 } from '@/lib/passkey-login-recovery'
@@ -17,6 +18,11 @@ import recoveryStyles from './passkey-recovery.module.css'
 type SupportState = 'checking' | 'supported' | 'unsupported'
 type LoginState = 'idle' | 'working'
 type AuthenticationOptions = Parameters<typeof startAuthentication>[0]['optionsJSON']
+
+interface RetryCooldown {
+  retryAt: number
+  delaySeconds: number
+}
 
 const FAILURE_SIGNAL: Record<PasskeyLoginFeedback['code'], string> = {
   'refresh-required': 'REQUEST / EXPIRED',
@@ -65,6 +71,7 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
   const [support, setSupport] = useState<SupportState>('checking')
   const [loginState, setLoginState] = useState<LoginState>('idle')
   const [failure, setFailure] = useState<PasskeyLoginFeedback | null>(null)
+  const [retryCooldown, setRetryCooldown] = useState<RetryCooldown | null>(null)
   const loginInFlight = useRef(false)
   const safeReturnTo = safeParticipantReturnPath(returnTo)
   const receiptPath = participantLoginReceiptPath(returnTo)
@@ -79,19 +86,64 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
     }
   }, [])
 
-  function finishWithFailure(nextFailure: PasskeyLoginFeedback) {
+  useEffect(() => {
+    if (retryCooldown === null) return
+    let timer: number | null = null
+
+    const releaseIfReady = () => {
+      const remaining = retryCooldown.retryAt - Date.now()
+      if (remaining > 0) {
+        if (timer !== null) window.clearTimeout(timer)
+        timer = window.setTimeout(releaseIfReady, remaining)
+        return
+      }
+      setRetryCooldown(null)
+      setFailure(current => (current?.action === 'wait' ? null : current))
+    }
+    const releaseVisiblePage = () => {
+      if (!document.hidden) releaseIfReady()
+    }
+
+    timer = window.setTimeout(releaseIfReady, Math.max(0, retryCooldown.retryAt - Date.now()))
+    window.addEventListener('focus', releaseIfReady)
+    window.addEventListener('pageshow', releaseIfReady)
+    document.addEventListener('visibilitychange', releaseVisiblePage)
+    return () => {
+      if (timer !== null) window.clearTimeout(timer)
+      window.removeEventListener('focus', releaseIfReady)
+      window.removeEventListener('pageshow', releaseIfReady)
+      document.removeEventListener('visibilitychange', releaseVisiblePage)
+    }
+  }, [retryCooldown])
+
+  function finishWithFailure(
+    nextFailure: PasskeyLoginFeedback,
+    retryDelaySeconds: number | null = null,
+  ) {
     loginInFlight.current = false
     setFailure(nextFailure)
+    if (nextFailure.action === 'wait') {
+      const delaySeconds = retryDelaySeconds ?? passkeyLoginRetryAfterSeconds(null)
+      setRetryCooldown({ retryAt: Date.now() + delaySeconds * 1000, delaySeconds })
+    } else {
+      setRetryCooldown(null)
+    }
     setLoginState('idle')
   }
 
-  function handleRejectedResponse(stage: 'options' | 'verification', status: number) {
-    if (passkeyLoginShouldResumeSession(status)) {
+  function handleRejectedResponse(stage: 'options' | 'verification', response: Response) {
+    if (passkeyLoginShouldResumeSession(response.status)) {
       window.location.replace(safeReturnTo)
       return
     }
 
-    finishWithFailure(passkeyLoginHttpFailure(stage, status))
+    const nextFailure = passkeyLoginHttpFailure(stage, response.status)
+    finishWithFailure(
+      nextFailure,
+      nextFailure.action === 'wait'
+        ? passkeyLoginRetryAfterSeconds(response.headers.get('Retry-After'))
+        : null,
+    )
   }
 
   async function authenticate() {
@@ -99,6 +151,7 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
 
     loginInFlight.current = true
     setFailure(null)
+    setRetryCooldown(null)
     setLoginState('working')
     let requestStage: 'options' | 'verification' = 'options'
     try {
@@ -108,7 +161,7 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
         headers: { Accept: 'application/json' },
       })
       if (!optionsResponse.ok) {
-        handleRejectedResponse('options', optionsResponse.status)
+        handleRejectedResponse('options', optionsResponse)
         return
       }
 
@@ -132,7 +185,7 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
         body: JSON.stringify(authentication),
       })
       if (!verificationResponse.ok) {
-        handleRejectedResponse('verification', verificationResponse.status)
+        handleRejectedResponse('verification', verificationResponse)
         return
       }
 
@@ -152,8 +205,15 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
   }
 
   const isWorking = loginState === 'working'
-  const mustWait = failure?.action === 'wait'
+  const mustWait = failure?.action === 'wait' && retryCooldown !== null
   const isUnavailable = support !== 'supported'
+  const retryAfterSeconds = retryCooldown?.delaySeconds ?? null
+  const retryDelayLabel =
+    retryAfterSeconds === null
+      ? null
+      : retryAfterSeconds >= 60
+        ? `约 ${Math.ceil(retryAfterSeconds / 60)} 分钟`
+        : `${retryAfterSeconds} 秒`
   const buttonLabel =
     support === 'checking'
       ? '正在检查这台设备…'
@@ -164,7 +224,7 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
           : failure?.action === 'reload'
             ? '刷新登录页面'
             : mustWait
-              ? '稍后重新尝试'
+              ? `${retryDelayLabel}后可重试`
               : failure
                 ? '重新开始设备确认'
                 : '使用通行密钥登录'
@@ -174,7 +234,7 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
       <button
         type="button"
         className={styles.passkeyButton}
-        disabled={isUnavailable || isWorking}
+        disabled={isUnavailable || isWorking || mustWait}
         aria-describedby="passkey-login-status"
         onClick={handlePrimaryAction}
       >
@@ -202,7 +262,11 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
             code={failure.code}
             signal={FAILURE_SIGNAL[failure.code]}
             title={failure.title}
-            description={failure.description}
+            description={
+              mustWait
+                ? `${failure.description} 本页会在${retryDelayLabel}后自动恢复操作。`
+                : failure.description
+            }
             receiptPath={receiptPath}
           />
         ) : null}

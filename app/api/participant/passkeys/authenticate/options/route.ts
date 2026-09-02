@@ -11,20 +11,26 @@ import {
 } from '@/lib/passkey-ceremony'
 import { passkeyError, privateJson } from '@/lib/passkey-http'
 import { participantAuthenticationOptions } from '@/lib/participant-passkeys'
-import { beginAuthenticationCeremony } from '@/lib/queries/participant-passkey-challenges'
+import {
+  beginAuthenticationCeremony,
+  participantPasskeyRetryAfterSeconds,
+} from '@/lib/queries/participant-passkey-challenges'
 import { ParticipantPasskeyError } from '@/lib/queries/participant-passkey-shared'
 import { clientFingerprint } from '@/lib/ratelimit'
 import { resolveWebAuthnConfig } from '@/lib/webauthn-config'
 
-function authenticationOptionsError(error: unknown) {
+function authenticationOptionsError(error: unknown, now: number) {
   if (error instanceof CsrfError) return passkeyError(403, '请求来源无法确认，请刷新页面重试。')
   if (error instanceof ParticipantPasskeyError && error.code === 'rate_limited') {
-    return passkeyError(429, '尝试过于频繁，请稍后再试。')
+    const response = passkeyError(429, '尝试过于频繁，请稍后再试。')
+    response.headers.set('Retry-After', String(participantPasskeyRetryAfterSeconds(now)))
+    return response
   }
   return passkeyError(503, '通行密钥服务暂不可用，请稍后重试。')
 }
 
 export async function POST(request: NextRequest) {
+  const now = Date.now()
   try {
     assertCsrfRequest(request)
     if (await getCurrentParticipant()) {
@@ -37,7 +43,7 @@ export async function POST(request: NextRequest) {
       ceremonyToken,
       challenge,
       previousToken: ceremonyTokenFromRequest(request),
-      now: Date.now(),
+      now,
     })
     const options = await participantAuthenticationOptions({
       config: resolveWebAuthnConfig(),
@@ -45,6 +51,6 @@ export async function POST(request: NextRequest) {
     })
     return setCeremonyCookie(privateJson(options), ceremonyToken)
   } catch (error) {
-    return clearCeremonyCookie(authenticationOptionsError(error))
+    return clearCeremonyCookie(authenticationOptionsError(error, now))
   }
 }

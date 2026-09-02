@@ -49,6 +49,12 @@ function exactNow(now: number) {
   return now
 }
 
+export function participantPasskeyRetryAfterSeconds(inputNow: number) {
+  const now = exactNow(inputNow)
+  const bucketStart = Math.floor(now / ATTEMPT_WINDOW_MS) * ATTEMPT_WINDOW_MS
+  return Math.max(1, Math.ceil((bucketStart + ATTEMPT_WINDOW_MS - now) / 1000))
+}
+
 async function enforceAttemptLimit(
   db: ParticipantPasskeyDatabase,
   kind: PasskeyCeremonyKind,
