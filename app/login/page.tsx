@@ -1,8 +1,11 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { getCurrentParticipant } from '@/lib/participant-auth'
 
 import PasskeyLogin from './PasskeyLogin'
+import noticeStyles from './login-notice.module.css'
 import styles from './login.module.css'
 
 export const metadata: Metadata = {
@@ -11,7 +14,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default function ParticipantLoginPage() {
+export default async function ParticipantLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reason?: string | string[] }>
+}) {
+  const participant = await getCurrentParticipant()
+  if (participant) redirect('/me')
+
+  const reason = (await searchParams).reason
+  const accessExpired = reason === 'expired'
+
   return (
     <main id="main" className={styles.page}>
       <section className={styles.vestibule} aria-labelledby="participant-login-title">
@@ -45,6 +58,18 @@ export default function ParticipantLoginPage() {
           <h2 id="passkey-action-title">由你的设备确认</h2>
           <p>系统将打开你已保存的通行密钥；无需输入账号或密码。</p>
         </header>
+
+        {accessExpired ? (
+          <aside className={noticeStyles.notice} role="status">
+            <span>SESSION / CLOSED</span>
+            <div>
+              <strong>访问窗口已结束</strong>
+              <p>
+                为了保护报名档案，本次访问已关闭。报名与通行密钥都没有变化，重新由设备确认即可。
+              </p>
+            </div>
+          </aside>
+        ) : null}
 
         <PasskeyLogin />
 

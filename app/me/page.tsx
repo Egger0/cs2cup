@@ -1,8 +1,14 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { requireParticipant } from '@/lib/participant-auth'
-import { listParticipantTournamentEntries } from '@/lib/queries/participant-account'
+import {
+  listParticipantTournamentEntries,
+  participantAccessReceipt,
+} from '@/lib/queries/participant-account'
+import { AccessReceipt } from './AccessReceipt'
 import { signOut } from './actions'
 import { EntryDossier } from './EntryDossier'
 import styles from './me.module.css'
@@ -18,7 +24,15 @@ export const metadata: Metadata = {
 
 export default async function ParticipantAccountPage() {
   const participant = await requireParticipant()
-  const entries = await listParticipantTournamentEntries(participant.principalId)
+  const [entries, receipt] = await Promise.all([
+    listParticipantTournamentEntries(participant.principalId),
+    participantAccessReceipt(
+      cloudflareBindings().db,
+      participant.principalId,
+      participant.credentialId,
+    ),
+  ])
+  if (!receipt) redirect('/login?reason=expired')
 
   return (
     <main id="main" className={styles.page}>
@@ -47,6 +61,8 @@ export default async function ParticipantAccountPage() {
           </p>
         </aside>
       </div>
+
+      <AccessReceipt receipt={receipt} sessionExpiresAt={participant.sessionExpiresAt} />
 
       {entries.length ? (
         <section className={styles.files} aria-label="已绑定的赛事报名">
