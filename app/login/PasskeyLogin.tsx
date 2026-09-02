@@ -6,6 +6,7 @@ import {
   participantLoginReceiptPath,
   passkeyLoginDeviceFailure,
   passkeyLoginHttpFailure,
+  passkeyLoginShouldResumeSession,
   type PasskeyLoginFeedback,
 } from '@/lib/passkey-login-recovery'
 import { safeParticipantReturnPath } from '@/lib/participant-return'
@@ -84,6 +85,15 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
     setLoginState('idle')
   }
 
+  function handleRejectedResponse(stage: 'options' | 'verification', status: number) {
+    if (passkeyLoginShouldResumeSession(status)) {
+      window.location.replace(safeReturnTo)
+      return
+    }
+
+    finishWithFailure(passkeyLoginHttpFailure(stage, status))
+  }
+
   async function authenticate() {
     if (support !== 'supported' || loginState === 'working' || loginInFlight.current) return
 
@@ -98,7 +108,7 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
         headers: { Accept: 'application/json' },
       })
       if (!optionsResponse.ok) {
-        finishWithFailure(passkeyLoginHttpFailure('options', optionsResponse.status))
+        handleRejectedResponse('options', optionsResponse.status)
         return
       }
 
@@ -122,7 +132,7 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
         body: JSON.stringify(authentication),
       })
       if (!verificationResponse.ok) {
-        finishWithFailure(passkeyLoginHttpFailure('verification', verificationResponse.status))
+        handleRejectedResponse('verification', verificationResponse.status)
         return
       }
 

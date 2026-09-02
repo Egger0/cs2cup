@@ -4,6 +4,7 @@ import {
   participantLoginReceiptPath,
   passkeyLoginDeviceFailure,
   passkeyLoginHttpFailure,
+  passkeyLoginShouldResumeSession,
 } from '../lib/passkey-login-recovery.ts'
 
 const REFRESH_REQUIRED = {
@@ -48,6 +49,11 @@ for (const [stage, status, expected] of [
   ['verification', 503, TEMPORARILY_UNAVAILABLE],
 ]) {
   assert.deepEqual(passkeyLoginHttpFailure(stage, status), expected)
+}
+
+assert.equal(passkeyLoginShouldResumeSession(409), true)
+for (const status of [0, 200, 400, 403, 429, 503]) {
+  assert.equal(passkeyLoginShouldResumeSession(status), false)
 }
 
 const secret = 'raw authenticator message must stay private'
