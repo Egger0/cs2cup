@@ -71,6 +71,8 @@ export function ParticipantPasskeyClaim({
     setClaimFailure(current => (current?.action === 'wait' ? null : current))
     setClaimState(current => (current === 'error' ? 'idle' : current))
   })
+  const attachButton = useRef<HTMLButtonElement>(null)
+  const previousAttachState = useRef(attachState)
   const confirmButton = useRef<HTMLButtonElement>(null)
   const claimInFlight = useRef(false)
   const switchButton = useRef<HTMLButtonElement>(null)
@@ -90,6 +92,13 @@ export function ParticipantPasskeyClaim({
 
   useEffect(() => {
     if (attachState === 'confirming') confirmButton.current?.focus()
+  }, [attachState])
+
+  useEffect(() => {
+    const previous = previousAttachState.current
+    previousAttachState.current = attachState
+    if (previous === 'confirming' && attachState === 'idle') attachButton.current?.focus()
+    if (previous === 'working' && attachState === 'error') attachButton.current?.focus()
   }, [attachState])
 
   useEffect(() => {
@@ -273,6 +282,7 @@ export function ParticipantPasskeyClaim({
               switchState={switchState}
               teamTag={teamTag}
               teamName={teamName}
+              attachButton={attachButton}
               confirmButton={confirmButton}
               onArm={() => setAttachState('confirming')}
               onCancel={() => setAttachState('idle')}
