@@ -2,13 +2,16 @@ import { chromium } from 'playwright'
 import { installLoopbackRequestGuard, resolveE2EBaseUrl } from './loopback-url.mjs'
 
 const BASE = resolveE2EBaseUrl()
+const PUBLIC_HREFS = '/tournaments,/news,/archive,/games,/about,/guestbook,/search,/me'
 const results = []
 const check = (name, pass, detail = '') => {
   results.push(pass)
   console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? '  — ' + detail : ''}`)
 }
 
-const browser = await chromium.launch()
+const browser = await chromium.launch(
+  process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : undefined,
+)
 const ctx = await browser.newContext({
   viewport: { width: 1280, height: 900 },
   serviceWorkers: 'block',
@@ -266,6 +269,43 @@ check(
     mobileTabState.activeHref?.endsWith('/register') === true,
 )
 await mobile.close()
+
+const degraded = await browser.newContext({
+  viewport: { width: 390, height: 760 },
+  serviceWorkers: 'block',
+})
+const degradedGuard = await installLoopbackRequestGuard(degraded)
+let blockedClientScripts = 0
+await degraded.route('**/_next/static/chunks/**', async route => {
+  if (route.request().resourceType() !== 'script') return route.fallback()
+  blockedClientScripts += 1
+  await route.abort('failed')
+})
+const degradedPage = await degraded.newPage()
+await degradedPage.goto(BASE, { waitUntil: 'load' })
+const fallback = degradedPage.locator('[data-site-header-fallback]')
+await fallback.locator('summary').press('Enter')
+const fallbackLinks = degradedPage.getByRole('navigation', { name: '基础站点目录链接' })
+const fallbackHrefs = await fallbackLinks
+  .locator('a')
+  .evaluateAll(links => links.map(link => link.getAttribute('href')))
+check(
+  'Native directory survives missing client scripts',
+  blockedClientScripts > 0 &&
+    (await fallback.evaluate(element => element.open)) &&
+    (await degradedPage.getByRole('button', { name: '打开全站目录' }).count()) === 0 &&
+    fallbackHrefs.join(',') === PUBLIC_HREFS,
+)
+const degradedFits = await degradedPage.evaluate(
+  () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+)
+check('Degraded mobile navigation has no horizontal overflow', degradedFits)
+await fallbackLinks.getByRole('link', { name: '项目', exact: true }).focus()
+await Promise.all([degradedPage.waitForURL(/\/games$/), degradedPage.keyboard.press('Enter')])
+const fallbackSurvived = await degradedPage.locator('[data-site-header-fallback]').count()
+check('Native directory keeps keyboard document navigation', fallbackSurvived === 1)
+await degraded.close()
+degradedGuard.assertSafe()
 
 await browser.close()
 outboundGuard.assertSafe()
