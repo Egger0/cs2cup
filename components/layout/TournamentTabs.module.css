@@ -1,7 +1,15 @@
+.tabsWrap {
+  position: relative;
+  margin-top: clamp(42px, 6vw, 70px);
+}
+
+.scrollHint {
+  display: none;
+}
+
 .tabs {
   display: flex;
   gap: clamp(24px, 3.4vw, 48px);
-  margin-top: clamp(42px, 6vw, 70px);
   overflow-x: auto;
   border-top: 1px solid var(--line-strong);
   scrollbar-width: none;
@@ -62,6 +70,26 @@
 }
 
 @media (max-width: 640px) {
+  .scrollHint {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 8px);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted-2);
+    font-family: var(--font-mono), monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    line-height: 1.4;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .scrollHint span {
+    color: var(--ct);
+  }
+
   .tabs {
     gap: 28px;
     margin-inline: calc(var(--pad) * -1);

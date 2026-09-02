@@ -226,6 +226,45 @@ check(
     .locator('[aria-controls="site-menu"]')
     .evaluate(element => element === document.activeElement),
 )
+
+await mobile.goto(`${BASE}/tournaments/2026-nlc/register`, { waitUntil: 'domcontentloaded' })
+const mobileTabs = mobile.getByRole('navigation', { name: '赛事导航' })
+await mobile.waitForFunction(() => document.fonts.status === 'loaded')
+await mobile.waitForFunction(() => {
+  const rail = document.querySelector('nav[aria-label="赛事导航"]')
+  const active = rail?.querySelector('[aria-current="page"]')
+  if (!rail || !active) return false
+
+  const railBox = rail.getBoundingClientRect()
+  const activeBox = active.getBoundingClientRect()
+  return (
+    rail.scrollLeft > 1 &&
+    activeBox.left >= railBox.left - 2 &&
+    activeBox.right <= railBox.right + 2
+  )
+})
+const mobileTabState = await mobileTabs.evaluate(rail => {
+  const active = rail.querySelector('[aria-current="page"]')
+  return {
+    overflow:
+      rail.scrollWidth > rail.clientWidth &&
+      ['auto', 'scroll'].includes(getComputedStyle(rail).overflowX),
+    scrolled: rail.scrollLeft > 1,
+    activeCount: rail.querySelectorAll('[aria-current="page"]').length,
+    activeHref: active?.getAttribute('href'),
+  }
+})
+check(
+  'Mobile tournament navigation exposes a scroll hint',
+  await mobile.getByText('左右滑动查看更多').isVisible(),
+)
+check('Mobile tournament navigation remains horizontally scrollable', mobileTabState.overflow)
+check(
+  'Mobile tournament navigation reveals its single active tab',
+  mobileTabState.scrolled &&
+    mobileTabState.activeCount === 1 &&
+    mobileTabState.activeHref?.endsWith('/register') === true,
+)
 await mobile.close()
 
 await browser.close()
