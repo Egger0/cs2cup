@@ -214,20 +214,6 @@
   font-size: 0.56rem;
 }
 
-.status {
-  min-height: 42px;
-  margin-top: 13px;
-  color: #6d7271;
-  font-size: 0.7rem;
-  line-height: 1.5;
-}
-
-.error {
-  padding-left: 10px;
-  border-left: 2px solid #a23737;
-  color: #8b2929;
-}
-
 .passFooter {
   animation-delay: 0.38s;
   color: #6d7271;

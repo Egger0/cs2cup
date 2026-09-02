@@ -63,7 +63,7 @@ export default async function ParticipantLoginPage({
         </header>
 
         {accessExpired ? (
-          <aside className={noticeStyles.notice} role="status">
+          <aside className={noticeStyles.notice}>
             <span>SESSION / CLOSED</span>
             <div>
               <strong>访问窗口已结束</strong>
