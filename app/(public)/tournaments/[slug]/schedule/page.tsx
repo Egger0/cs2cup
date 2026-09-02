@@ -52,6 +52,15 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
   const calendarHref = `/tournaments/${encodeURIComponent(slug)}/calendar.ics${
     selectedTeam ? `?teamId=${selectedTeam.id}` : ''
   }`
+  const emptyParams = new URLSearchParams({ state: 'all' })
+  if (selectedTeam && teamEntries.length > 0) emptyParams.set('team', selectedTeam.tag)
+  const emptyAction =
+    entries.length > 0
+      ? {
+          href: `${base}?${emptyParams}`,
+          label: selectedTeam && teamEntries.length > 0 ? '查看该队全部赛程' : '查看全部赛程',
+        }
+      : undefined
   const timeZoneLabel = SITE_TIME_ZONE === 'Asia/Shanghai' ? '北京时间' : SITE_TIME_ZONE
 
   return (
@@ -78,10 +87,10 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
         </div>
 
         <ScheduleLedger
-          base={base}
           slug={slug}
           groups={groups}
           nextEntry={selectNextScheduleEntry(teamEntries)}
+          emptyAction={emptyAction}
         />
       </div>
     </section>
