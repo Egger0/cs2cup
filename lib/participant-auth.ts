@@ -6,6 +6,9 @@ import { redirect } from 'next/navigation'
 import type { NextResponse } from 'next/server'
 import { cloudflareBindings } from './cloudflare-bindings'
 import { createOpaqueToken, hashOpaqueToken, isOpaqueToken } from './opaque-token.ts'
+import { PARTICIPANT_SESSION_COOKIE } from './participant-session-request.ts'
+
+export { participantSessionHashFromRequest } from './participant-session-request.ts'
 
 interface ParticipantSessionRow {
   principal_id: string
@@ -19,7 +22,7 @@ export interface ParticipantIdentity {
   sessionExpiresAt: number
 }
 
-const COOKIE_NAME = '__Host-cs2cup_participant'
+const COOKIE_NAME = PARTICIPANT_SESSION_COOKIE
 const SESSION_MAX_AGE = 60 * 60 * 8
 
 export const participantSessionCookie = {
@@ -46,6 +49,14 @@ export function setParticipantSessionCookie(response: NextResponse, token: strin
   response.cookies.set(COOKIE_NAME, token, {
     ...participantSessionCookie.options,
     maxAge: participantSessionCookie.maxAge,
+  })
+  return response
+}
+
+export function clearParticipantSessionCookie(response: NextResponse) {
+  response.cookies.set(COOKIE_NAME, '', {
+    ...participantSessionCookie.options,
+    maxAge: 0,
   })
   return response
 }

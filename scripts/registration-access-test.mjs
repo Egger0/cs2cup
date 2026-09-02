@@ -39,6 +39,11 @@ for (const source of ['/api/participant/:path*', '/login', '/me']) {
     'private, no-cache, no-store, max-age=0, must-revalidate',
   )
 }
+const loginHeaders = headerRules.find(rule => rule.source === '/login')
+assert.equal(
+  loginHeaders?.headers.find(header => header.key === 'Referrer-Policy')?.value,
+  'no-referrer',
+)
 
 const first = await createRegistrationAccess()
 const second = await createRegistrationAccess()

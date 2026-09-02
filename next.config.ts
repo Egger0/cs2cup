@@ -29,7 +29,10 @@ const config: NextConfig = {
     return [
       ...PRIVATE_ROUTE_SOURCES.map(source => ({
         source,
-        headers: [{ key: 'Cache-Control', value: PRIVATE_NO_STORE }],
+        headers: [
+          { key: 'Cache-Control', value: PRIVATE_NO_STORE },
+          ...(source === '/login' ? [{ key: 'Referrer-Policy', value: 'no-referrer' }] : []),
+        ],
       })),
       {
         source: REGISTRATION_MANAGEMENT_SOURCE,

@@ -9,6 +9,7 @@ import {
   setCeremonyCookie,
 } from '@/lib/passkey-ceremony'
 import { PasskeyRequestError, passkeyError, privateJson, readPasskeyJson } from '@/lib/passkey-http'
+import { getCurrentParticipant } from '@/lib/participant-auth'
 import { participantRegistrationOptions } from '@/lib/participant-passkeys'
 import { beginClaimCeremony } from '@/lib/queries/participant-passkey-challenges'
 import { ParticipantPasskeyError } from '@/lib/queries/participant-passkey-shared'
@@ -36,6 +37,11 @@ function claimOptionsError(error: unknown) {
 export async function POST(request: NextRequest) {
   try {
     assertCsrfRequest(request)
+    if (await getCurrentParticipant()) {
+      return clearCeremonyCookie(
+        passkeyError(409, '当前赛事通行已打开，请刷新页面后加入当前通行证。'),
+      )
+    }
     const body = await readPasskeyJson<ClaimOptionsBody>(request)
     const ceremonyToken = createOpaqueToken()
     const challenge = createOpaqueToken()
