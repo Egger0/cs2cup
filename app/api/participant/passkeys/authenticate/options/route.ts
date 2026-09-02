@@ -3,6 +3,7 @@ import { type NextRequest } from 'next/server'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { assertCsrfRequest, CsrfError } from '@/lib/csrf'
 import { createOpaqueToken } from '@/lib/opaque-token'
+import { getCurrentParticipant } from '@/lib/participant-auth'
 import {
   ceremonyTokenFromRequest,
   clearCeremonyCookie,
@@ -26,6 +27,9 @@ function authenticationOptionsError(error: unknown) {
 export async function POST(request: NextRequest) {
   try {
     assertCsrfRequest(request)
+    if (await getCurrentParticipant()) {
+      return clearCeremonyCookie(passkeyError(409, '当前赛事通行已打开，请返回继续。'))
+    }
     const ceremonyToken = createOpaqueToken()
     const challenge = createOpaqueToken()
     await beginAuthenticationCeremony(cloudflareBindings().db, {

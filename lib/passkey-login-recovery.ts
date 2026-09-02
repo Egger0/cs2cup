@@ -12,6 +12,8 @@ export interface PasskeyLoginFeedback {
   readonly action: 'retry' | 'reload' | 'wait'
 }
 
+type PasskeyLoginStage = 'options' | 'verification'
+
 const REFRESH_REQUIRED: PasskeyLoginFeedback = {
   code: 'refresh-required',
   title: '登录页面已过期',
@@ -48,13 +50,17 @@ const INTERRUPTED_OR_UNAVAILABLE: PasskeyLoginFeedback = {
 }
 
 export function passkeyLoginHttpFailure(
-  stage: 'options' | 'verification',
+  stage: PasskeyLoginStage,
   status: number,
 ): PasskeyLoginFeedback {
   if (status === 403) return REFRESH_REQUIRED
   if (stage === 'options' && status === 429) return RATE_LIMITED
   if (stage === 'verification' && status === 400) return VERIFICATION_FAILED
   return TEMPORARILY_UNAVAILABLE
+}
+
+export function passkeyLoginShouldResumeSession(status: number): boolean {
+  return status === 409
 }
 
 function errorField(value: unknown, field: 'name' | 'code' | 'cause'): unknown {
