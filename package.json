@@ -49,7 +49,7 @@
     "test:passkey-claim-verification": "node --conditions=react-server --experimental-strip-types scripts/passkey-claim-verification-test.mjs",
     "test:passkey-login-recovery": "node --experimental-strip-types scripts/passkey-login-recovery-test.mjs",
     "test:participant-passkey-schema": "node scripts/participant-passkey-schema-test.mjs",
-    "test:participant-passkey": "node --conditions=react-server --experimental-strip-types scripts/participant-passkey-options-test.mjs && node --conditions=react-server --experimental-strip-types scripts/participant-passkey-query-test.mjs && node --conditions=react-server --experimental-strip-types scripts/passkey-http-test.mjs",
+    "test:participant-passkey": "node --conditions=react-server --experimental-strip-types scripts/participant-passkey-options-test.mjs && node --conditions=react-server --experimental-strip-types scripts/participant-passkey-query-test.mjs && node --conditions=react-server --experimental-strip-types scripts/participant-passkey-retention-test.mjs && node --conditions=react-server --experimental-strip-types scripts/passkey-http-test.mjs",
     "test:webauthn-config": "node --experimental-strip-types scripts/webauthn-config-test.mjs",
     "test:object-cleanup": "node --experimental-strip-types scripts/object-cleanup-test.mjs",
     "test:site-config": "node --experimental-strip-types scripts/site-config-test.mjs",
