@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { participantSessionRemainingMs, requireParticipant } from '@/lib/participant-auth'
+import { participantEntryAddedId } from '@/lib/participant-return'
 import {
   listParticipantTournamentEntries,
   participantAccessReceipt,
@@ -23,8 +24,13 @@ export const metadata: Metadata = {
   referrer: 'no-referrer',
 }
 
-export default async function ParticipantAccountPage() {
+export default async function ParticipantAccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ joined?: string | string[] }>
+}) {
   const participant = await requireParticipant()
+  const params = await searchParams
   const sessionRemainingMs = participantSessionRemainingMs(participant.sessionExpiresAt)
   const requestNow = participant.sessionExpiresAt - sessionRemainingMs
   const nextMatchRequest = participantNextMatch(participant.principalId, requestNow).catch(
@@ -47,6 +53,9 @@ export default async function ParticipantAccountPage() {
     participant.sessionExpiresAt - participantSessionRemainingMs(participant.sessionExpiresAt)
   const hasApprovedEntry = entries.some(entry => entry.team.status === 'approved')
   const hasPendingEntry = entries.some(entry => entry.team.status === 'pending')
+  const addedTeamId = participantEntryAddedId(params.joined)
+  const addedEntry =
+    addedTeamId === null ? undefined : entries.find(entry => entry.team.id === addedTeamId)
 
   return (
     <ParticipantSessionBoundary sessionRemainingMs={sessionRemainingMs}>
@@ -68,11 +77,17 @@ export default async function ParticipantAccountPage() {
             <p className={styles.eyebrow}>PARTICIPANT ARCHIVE / 参赛者档案</p>
             <h1>我的赛事卷宗</h1>
           </div>
-          <aside aria-label="档案使用说明">
-            <strong>只读档案</strong>
+          <aside
+            aria-label={addedEntry ? '报名归档结果' : '档案使用说明'}
+            role={addedEntry ? 'status' : undefined}
+            aria-live={addedEntry ? 'polite' : undefined}
+            aria-atomic={addedEntry ? true : undefined}
+          >
+            <strong>{addedEntry ? '报名已成功归档' : '只读档案'}</strong>
             <p>
-              这里记录你已绑定的报名。修改仍请使用报名回执中的原管理链接；为保护报名权限，本页不会恢复、推导或显示管理
-              Token。
+              {addedEntry
+                ? `[${addedEntry.team.tag}] ${addedEntry.team.name} 已加入当前赛事通行证，可在下方卷宗中查看。修改仍请使用报名回执中的原管理链接。`
+                : '这里记录你已绑定的报名。修改仍请使用报名回执中的原管理链接；为保护报名权限，本页不会恢复、推导或显示管理 Token。'}
             </p>
           </aside>
         </div>

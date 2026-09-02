@@ -9,6 +9,7 @@ import {
 } from '@/lib/passkey-claim-recovery'
 import { publishParticipantSessionEnded } from '@/lib/participant-session-events'
 import { usePasskeyRetryCooldown } from '@/lib/passkey-retry-cooldown'
+import { participantEntryAddedPath } from '@/lib/participant-return'
 
 import {
   AnonymousClaimAction,
@@ -29,6 +30,7 @@ export type { ParticipantEntryOwnershipState } from './ParticipantClaimActions'
 type RegistrationOptions = Parameters<typeof startRegistration>[0]['optionsJSON']
 
 export interface ParticipantPasskeyClaimProps {
+  teamId: number
   slug: string
   token: string
   tournamentTitle: string
@@ -48,6 +50,7 @@ const TITLE: Record<ParticipantEntryOwnershipState, string> = {
 }
 
 export function ParticipantPasskeyClaim({
+  teamId,
   slug,
   token,
   tournamentTitle,
@@ -210,8 +213,7 @@ export function ParticipantPasskeyClaim({
       if (response.status !== 204) throw new Error('attach request failed')
 
       // A full navigation reads the newly attached entry from the server.
-      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-      window.location.assign('/me')
+      window.location.assign(participantEntryAddedPath(teamId) ?? '/me')
     } catch {
       setAttachState('error')
     }
