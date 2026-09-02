@@ -33,6 +33,10 @@ interface OwnerRow {
   principal_id: string
 }
 
+interface EntryRow {
+  team_id: number
+}
+
 const PRINCIPAL_PATTERN = /^p_[A-Za-z0-9_-]{43}$/
 const PROVIDER_PATTERN = /^[a-z][a-z0-9_-]{0,31}$/
 const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,99}$/
@@ -144,18 +148,24 @@ export async function claimTournamentEntryOwnership(
   const tokenHash = await hashRegistrationToken(input.managementToken)
   if (!tokenHash) throw new ParticipantIdentityError('invalid_claim')
 
+  const entry = await db
+    .prepare(
+      'SELECT team.id AS team_id FROM team JOIN tournament ON tournament.id = team.tournament_id WHERE tournament.slug = ? AND team.management_token_hash = ?',
+    )
+    .bind(input.slug, tokenHash)
+    .first<EntryRow>()
+  if (!entry) throw new ParticipantIdentityError('invalid_claim')
+
   await db
     .prepare(
-      "INSERT OR IGNORE INTO tournament_entry_owner (team_id, principal_id, claim_method) SELECT team.id, ?, 'management_token' FROM team JOIN tournament ON tournament.id = team.tournament_id WHERE tournament.slug = ? AND team.management_token_hash = ? AND EXISTS (SELECT 1 FROM participant_principal WHERE id = ?)",
+      "INSERT OR IGNORE INTO tournament_entry_owner (team_id, principal_id, claim_method) SELECT team.id, ?, 'management_token' FROM team JOIN tournament ON tournament.id = team.tournament_id WHERE team.id = ? AND tournament.slug = ? AND team.management_token_hash = ? AND EXISTS (SELECT 1 FROM participant_principal WHERE id = ?)",
     )
-    .bind(input.principalId, input.slug, tokenHash, input.principalId)
+    .bind(input.principalId, entry.team_id, input.slug, tokenHash, input.principalId)
     .run()
 
   const owner = await db
-    .prepare(
-      'SELECT owner.team_id, owner.principal_id FROM tournament_entry_owner AS owner JOIN team ON team.id = owner.team_id JOIN tournament ON tournament.id = team.tournament_id WHERE tournament.slug = ? AND team.management_token_hash = ?',
-    )
-    .bind(input.slug, tokenHash)
+    .prepare('SELECT team_id, principal_id FROM tournament_entry_owner WHERE team_id = ?')
+    .bind(entry.team_id)
     .first<OwnerRow>()
   if (!owner) throw new ParticipantIdentityError('invalid_claim')
   if (owner.principal_id !== input.principalId) {
