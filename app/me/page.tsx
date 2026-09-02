@@ -7,9 +7,11 @@ import {
   listParticipantTournamentEntries,
   participantAccessReceipt,
 } from '@/lib/queries/participant-account'
+import { participantNextMatch } from '@/lib/queries/participant-next-match'
 import { AccessReceipt } from './AccessReceipt'
 import { EntryDossier } from './EntryDossier'
 import styles from './me.module.css'
+import { NextMatchBrief } from './NextMatchBrief'
 import { ParticipantSessionBoundary, ParticipantSignOut } from './ParticipantSessionBoundary'
 
 export const dynamic = 'force-dynamic'
@@ -23,16 +25,28 @@ export const metadata: Metadata = {
 
 export default async function ParticipantAccountPage() {
   const participant = await requireParticipant()
-  const [entries, receipt] = await Promise.all([
+  const sessionRemainingMs = participantSessionRemainingMs(participant.sessionExpiresAt)
+  const requestNow = participant.sessionExpiresAt - sessionRemainingMs
+  const nextMatchRequest = participantNextMatch(participant.principalId, requestNow).catch(
+    error => {
+      console.error('[participant] next-match brief unavailable', error)
+      return undefined
+    },
+  )
+  const [entries, receipt, nextMatch] = await Promise.all([
     listParticipantTournamentEntries(participant.principalId),
     participantAccessReceipt(
       cloudflareBindings().db,
       participant.principalId,
       participant.credentialId,
     ),
+    nextMatchRequest,
   ])
   if (!receipt) redirect('/login?reason=expired')
-  const sessionRemainingMs = participantSessionRemainingMs(participant.sessionExpiresAt)
+  const briefNow =
+    participant.sessionExpiresAt - participantSessionRemainingMs(participant.sessionExpiresAt)
+  const hasApprovedEntry = entries.some(entry => entry.team.status === 'approved')
+  const hasPendingEntry = entries.some(entry => entry.team.status === 'pending')
 
   return (
     <ParticipantSessionBoundary sessionRemainingMs={sessionRemainingMs}>
@@ -62,6 +76,14 @@ export default async function ParticipantAccountPage() {
             </p>
           </aside>
         </div>
+
+        {nextMatch !== undefined && (hasApprovedEntry || hasPendingEntry) ? (
+          <NextMatchBrief
+            nextMatch={nextMatch}
+            emptyReason={hasApprovedEntry ? 'standby' : 'review'}
+            initialNow={briefNow}
+          />
+        ) : null}
 
         <AccessReceipt receipt={receipt} sessionExpiresAt={participant.sessionExpiresAt} />
 
