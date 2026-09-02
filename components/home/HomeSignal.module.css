@@ -1,0 +1,132 @@
+.signal {
+  position: absolute;
+  z-index: 5;
+  right: clamp(42px, 6vw, 96px);
+  bottom: clamp(47px, 6.4vh, 72px);
+  display: grid;
+  width: clamp(230px, 29vw, 390px);
+  min-height: 58px;
+  align-content: center;
+  gap: 7px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(241, 239, 232, 0.46);
+  animation: signalEnter 560ms 880ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.signal::before,
+.signal::after {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  height: 1px;
+  background: var(--signal);
+  content: '';
+}
+
+.signal::before {
+  width: 38px;
+  transform: translateX(-38px);
+  animation: signalScan 480ms 1320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.signal::after {
+  right: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.signalMeta,
+.signalTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.signalMeta {
+  color: rgba(241, 239, 232, 0.52);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.53rem;
+  letter-spacing: 0.13em;
+}
+
+.signalMeta span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signalMeta span:last-child {
+  color: var(--signal);
+  white-space: nowrap;
+}
+
+.signalTitle strong {
+  overflow: hidden;
+  color: var(--paper);
+  font-size: 0.82rem;
+  font-weight: 620;
+  letter-spacing: 0.07em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signalTitle > span {
+  color: var(--signal);
+  font-size: 1rem;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.signal:hover::after,
+.signal:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.signal:hover .signalTitle > span,
+.signal:focus-visible .signalTitle > span {
+  transform: translateX(4px);
+}
+
+@keyframes signalEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes signalScan {
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 680px) {
+  .signal {
+    right: 34px;
+    bottom: 35px;
+    left: 34px;
+    width: auto;
+  }
+
+  .signalTitle strong {
+    font-size: 0.76rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signal,
+  .signal::before {
+    animation: none;
+  }
+
+  .signal::before {
+    transform: none;
+  }
+
+  .signal::after,
+  .signalTitle > span {
+    transition: none;
+  }
+}

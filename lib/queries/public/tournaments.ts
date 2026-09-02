@@ -74,7 +74,7 @@ export async function getTournament(slug: string): Promise<Tournament | null> {
 
 export async function getCurrentTournament(): Promise<Tournament | null> {
   const rows = await selectPublicRows<TournamentRow>('tournament_public', {
-    filters: { status: 'neq.finished' },
+    filters: { status: 'in.(registration,running,postponed)' },
     order: 'season.desc,edition.desc',
     limit: 1,
   })

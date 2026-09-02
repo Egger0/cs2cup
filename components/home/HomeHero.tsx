@@ -1,8 +1,18 @@
 import Link from 'next/link'
+import type { HomeTournamentSignal } from '@/lib/home-tournament-signal'
 import { HomeBracket } from './HomeBracket'
 import styles from './HomeHero.module.css'
+import signalStyles from './HomeSignal.module.css'
 
-export function HomeHero() {
+export function HomeHero({ signal }: { signal: HomeTournamentSignal | null }) {
+  const href = signal ? `/tournaments/${signal.slug}` : '/tournaments'
+  const label = signal
+    ? `查看当前赛事：${signal.title}，${signal.season}，第 ${signal.edition} 届，${signal.statusLabel}`
+    : '查看全部赛事'
+  const fileLabel = signal
+    ? `CURRENT FILE / ${signal.season}—${String(signal.edition).padStart(2, '0')}`
+    : 'ALL FILES / 2022—'
+
   return (
     <section
       className={styles.cover}
@@ -37,9 +47,15 @@ export function HomeHero() {
           <i aria-hidden="true" />
         </a>
 
-        <Link href="/tournaments" className={styles.enter}>
-          <span>进入赛事</span>
-          <span aria-hidden="true">→</span>
+        <Link href={href} className={signalStyles.signal} aria-label={label} data-home-signal>
+          <span className={signalStyles.signalMeta} aria-hidden="true">
+            <span>{fileLabel}</span>
+            <span>{signal?.statusLabel ?? '赛事目录'}</span>
+          </span>
+          <span className={signalStyles.signalTitle}>
+            <strong>{signal?.title ?? '进入赛事'}</strong>
+            <span aria-hidden="true">→</span>
+          </span>
         </Link>
       </div>
     </section>
