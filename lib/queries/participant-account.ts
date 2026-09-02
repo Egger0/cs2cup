@@ -1,7 +1,15 @@
 import 'server-only'
 
-import { cloudflareBindings } from '../cloudflare-bindings'
-import type { TeamStatus } from '../types'
+import { cloudflareBindings } from '../cloudflare-bindings.ts'
+import type { TeamStatus } from '../types.ts'
+import type { ParticipantPasskeyDatabase } from './participant-passkey-shared.ts'
+
+interface ParticipantAccessReceiptRow {
+  created_at: number
+  last_used_at: number | null
+  device_type: 'singleDevice' | 'multiDevice'
+  backed_up: number
+}
 
 interface ParticipantEntryRow {
   team_id: number
@@ -49,6 +57,35 @@ export interface ParticipantTournamentEntry {
     registeredAt: string
     members: ParticipantTeamMember[]
   }
+}
+
+export interface ParticipantAccessReceipt {
+  credentialCreatedAt: number
+  credentialLastUsedAt: number | null
+  deviceType: 'singleDevice' | 'multiDevice'
+  backedUp: boolean
+}
+
+export async function participantAccessReceipt(
+  db: ParticipantPasskeyDatabase,
+  principalId: string,
+  credentialId: string,
+): Promise<ParticipantAccessReceipt | null> {
+  const row = await db
+    .prepare(
+      'SELECT created_at, last_used_at, device_type, backed_up FROM participant_passkey_credential WHERE principal_id = ? AND credential_id = ?',
+    )
+    .bind(principalId, credentialId)
+    .first<ParticipantAccessReceiptRow>()
+
+  return row
+    ? {
+        credentialCreatedAt: row.created_at,
+        credentialLastUsedAt: row.last_used_at,
+        deviceType: row.device_type,
+        backedUp: row.backed_up === 1,
+      }
+    : null
 }
 
 export async function listParticipantTournamentEntries(

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 
 import { hashOpaqueToken } from '../lib/opaque-token.ts'
+import { participantAccessReceipt } from '../lib/queries/participant-account.ts'
 import {
   beginAuthenticationCeremony,
   beginClaimCeremony,
@@ -253,6 +254,14 @@ try {
       .get('B'.repeat(43)).count,
     0,
   )
+
+  assert.deepEqual(await participantAccessReceipt(db, claimInput().principalId, 'K'.repeat(43)), {
+    credentialCreatedAt: claimInput().now + 3,
+    credentialLastUsedAt: authNow + 102,
+    deviceType: 'multiDevice',
+    backedUp: true,
+  })
+  assert.equal(await participantAccessReceipt(db, otherPrincipal, 'K'.repeat(43)), null)
 
   console.log('participant passkey query tests passed')
 } finally {

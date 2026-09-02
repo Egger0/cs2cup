@@ -9,10 +9,14 @@ import { createOpaqueToken, hashOpaqueToken, isOpaqueToken } from './opaque-toke
 
 interface ParticipantSessionRow {
   principal_id: string
+  credential_id: string
+  expires_at: number
 }
 
 export interface ParticipantIdentity {
   principalId: string
+  credentialId: string
+  sessionExpiresAt: number
 }
 
 const COOKIE_NAME = '__Host-cs2cup_participant'
@@ -66,15 +70,22 @@ export const getCurrentParticipant = cache(async (): Promise<ParticipantIdentity
   if (!token || !isOpaqueToken(token)) return null
   const session = await cloudflareBindings()
     .db.prepare(
-      'SELECT principal_id FROM participant_session WHERE token_hash = ? AND expires_at > ?',
+      'SELECT principal_id, credential_id, expires_at FROM participant_session WHERE token_hash = ? AND expires_at > ?',
     )
     .bind(await hashOpaqueToken(token), Date.now())
     .first<ParticipantSessionRow>()
-  return session ? { principalId: session.principal_id } : null
+  return session
+    ? {
+        principalId: session.principal_id,
+        credentialId: session.credential_id,
+        sessionExpiresAt: session.expires_at,
+      }
+    : null
 })
 
 export async function requireParticipant() {
+  const hasSessionCookie = Boolean((await cookies()).get(COOKIE_NAME)?.value)
   const participant = await getCurrentParticipant()
-  if (!participant) redirect('/login?reason=expired')
+  if (!participant) redirect(hasSessionCookie ? '/login?reason=expired' : '/login')
   return participant
 }
