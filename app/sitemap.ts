@@ -13,22 +13,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     safely(() => listPosts(), []),
   ])
 
-  const now = new Date()
-
   return [
-    { url: BASE, lastModified: now, priority: 1 },
-    { url: `${BASE}/games`, lastModified: now, priority: 0.8 },
-    { url: `${BASE}/tournaments`, lastModified: now, priority: 0.8 },
-    { url: `${BASE}/archive`, lastModified: now, priority: 0.6 },
-    { url: `${BASE}/news`, lastModified: now, priority: 0.7 },
-    { url: `${BASE}/about`, lastModified: now, priority: 0.6 },
-    { url: `${BASE}/guestbook`, lastModified: now, priority: 0.5 },
-    ...games.map(game => ({ url: `${BASE}/games/${game.slug}`, lastModified: now, priority: 0.7 })),
+    { url: BASE, priority: 1 },
+    { url: `${BASE}/games`, priority: 0.8 },
+    { url: `${BASE}/tournaments`, priority: 0.8 },
+    { url: `${BASE}/archive`, priority: 0.6 },
+    { url: `${BASE}/news`, priority: 0.7 },
+    { url: `${BASE}/about`, priority: 0.6 },
+    { url: `${BASE}/guestbook`, priority: 0.5 },
+    ...games.map(game => ({ url: `${BASE}/games/${game.slug}`, priority: 0.7 })),
     ...tournaments.flatMap(tournament => {
       const base = `${BASE}/tournaments/${tournament.slug}`
       return ['', '/schedule', '/teams', '/bracket', '/results', '/rules'].map(suffix => ({
         url: `${base}${suffix}`,
-        lastModified: now,
         priority: suffix === '' ? 0.9 : 0.5,
       }))
     }),
