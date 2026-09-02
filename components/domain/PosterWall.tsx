@@ -55,7 +55,7 @@ export function PosterWall({
                   type="button"
                   className={styles.poster}
                   onClick={() => setActive(poster)}
-                  aria-label={`放大查看 ${edition.name} 海报`}
+                  aria-label={`放大查看 ${poster.caption || `${edition.name} 海报`}`}
                 >
                   <Image
                     src={photoUrl(poster.storageKey)}
@@ -85,6 +85,7 @@ export function PosterWall({
       <dialog
         ref={dialogRef}
         className={styles.lightbox}
+        aria-label={active ? `赛事影像预览：${active.caption || '未命名影像'}` : '赛事影像预览'}
         onClose={() => setActive(null)}
         onClick={event => {
           if (event.target === dialogRef.current) setActive(null)

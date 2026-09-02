@@ -126,6 +126,10 @@ if (await firstPoster.count()) {
   await page.waitForTimeout(700)
   const dialogOpen = await page.locator('dialog[open]').count()
   check('Keyboard opens the lightbox', dialogOpen === 1)
+  check(
+    'Lightbox exposes its active image name',
+    (await page.getByRole('dialog', { name: /^赛事影像预览：.+$/ }).count()) === 1,
+  )
 
   const focusInDialog = await page.evaluate(() => {
     const dialog = document.querySelector('dialog[open]')
