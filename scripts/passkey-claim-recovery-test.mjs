@@ -14,7 +14,7 @@ const RECEIPT_REFRESH_REQUIRED = {
 const RATE_LIMITED = {
   code: 'rate-limited',
   title: '请求过于频繁',
-  description: '请稍后再从这份报名回执重新发起创建；系统不会自动重试。',
+  description: '请等待当前限制窗口结束，再从这份报名回执重新发起创建；系统不会自动提交。',
   action: 'wait',
 }
 const TEMPORARILY_UNAVAILABLE = {

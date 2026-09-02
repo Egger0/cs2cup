@@ -8,6 +8,7 @@ import {
   type PasskeyClaimFeedback,
 } from '@/lib/passkey-claim-recovery'
 import { publishParticipantSessionEnded } from '@/lib/participant-session-events'
+import { usePasskeyRetryCooldown } from '@/lib/passkey-retry-cooldown'
 
 import {
   AnonymousClaimAction,
@@ -63,6 +64,10 @@ export function ParticipantPasskeyClaim({
   const [attachState, setAttachState] = useState<AttachState>('idle')
   const [switchState, setSwitchState] = useState<SwitchState>('idle')
   const [attachConflict, setAttachConflict] = useState(false)
+  const retryCooldown = usePasskeyRetryCooldown(() => {
+    setClaimFailure(current => (current?.action === 'wait' ? null : current))
+    setClaimState(current => (current === 'error' ? 'idle' : current))
+  })
   const confirmButton = useRef<HTMLButtonElement>(null)
   const claimInFlight = useRef(false)
   const switchButton = useRef<HTMLButtonElement>(null)
@@ -96,9 +101,11 @@ export function ParticipantPasskeyClaim({
     return () => window.removeEventListener('pageshow', refreshRestoredPage)
   }, [])
 
-  function finishClaimFailure(failure: PasskeyClaimFeedback) {
+  function finishClaimFailure(failure: PasskeyClaimFeedback, retryAfter: string | null = null) {
     claimInFlight.current = false
     setClaimFailure(failure)
+    if (failure.action === 'wait') retryCooldown.startRetryCooldown(retryAfter)
+    else retryCooldown.clearRetryCooldown()
     setClaimState('error')
   }
 
@@ -107,12 +114,14 @@ export function ParticipantPasskeyClaim({
       visibleOwnership !== 'anonymous-unclaimed' ||
       support !== 'supported' ||
       claimState === 'working' ||
+      retryCooldown.retryAfterSeconds !== null ||
       claimInFlight.current
     )
       return
 
     claimInFlight.current = true
     setClaimFailure(null)
+    retryCooldown.clearRetryCooldown()
     setClaimState('working')
     let requestStage: 'options' | 'verification' = 'options'
     try {
@@ -127,7 +136,11 @@ export function ParticipantPasskeyClaim({
         return
       }
       if (!optionsResponse.ok) {
-        finishClaimFailure(passkeyClaimHttpFailure('options', optionsResponse.status))
+        const failure = passkeyClaimHttpFailure('options', optionsResponse.status)
+        finishClaimFailure(
+          failure,
+          failure.action === 'wait' ? optionsResponse.headers.get('Retry-After') : null,
+        )
         return
       }
 
@@ -247,6 +260,7 @@ export function ParticipantPasskeyClaim({
               support={support}
               claimState={claimState}
               failure={claimFailure}
+              retryDelayLabel={retryCooldown.retryDelayLabel}
               loginHref={loginHref}
               onCreate={handleClaimAction}
             />

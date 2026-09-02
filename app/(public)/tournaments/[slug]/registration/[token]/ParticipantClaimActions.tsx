@@ -24,16 +24,19 @@ export function AnonymousClaimAction({
   support,
   claimState,
   failure,
+  retryDelayLabel,
   loginHref,
   onCreate,
 }: {
   support: SupportState
   claimState: ClaimState
   failure: PasskeyClaimFeedback | null
+  retryDelayLabel: string | null
   loginHref: string
   onCreate: () => void
 }) {
   const working = claimState === 'working'
+  const waiting = failure?.action === 'wait' && retryDelayLabel !== null
   const createLabel =
     support === 'checking'
       ? '正在检查这台设备…'
@@ -43,8 +46,8 @@ export function AnonymousClaimAction({
           ? '正在等待设备确认…'
           : failure?.action === 'reload'
             ? '刷新报名回执'
-            : failure?.action === 'wait'
-              ? '稍后重新尝试'
+            : waiting
+              ? `${retryDelayLabel}后可重试`
               : failure
                 ? '重新开始设备确认'
                 : '创建赛事通行证'
@@ -62,7 +65,7 @@ export function AnonymousClaimAction({
       <button
         type="button"
         className={styles.claimButton}
-        disabled={support !== 'supported' || working}
+        disabled={support !== 'supported' || working || waiting}
         onClick={onCreate}
         aria-describedby="passkey-claim-status"
       >
@@ -88,7 +91,7 @@ export function AnonymousClaimAction({
           <p>创建时会打开设备的系统验证界面。</p>
         ) : null}
         {support === 'supported' && failure ? (
-          <ParticipantClaimRecovery feedback={failure} />
+          <ParticipantClaimRecovery feedback={failure} retryDelayLabel={retryDelayLabel} />
         ) : null}
       </div>
     </div>
