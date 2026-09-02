@@ -1,7 +1,7 @@
 .receipt {
   position: relative;
   max-width: 1180px;
-  margin: 0 auto clamp(38px, 6vw, 76px);
+  margin: clamp(38px, 6vw, 76px) auto 0;
   overflow: hidden;
   border: 1px solid rgba(121, 185, 216, 0.42);
   background:
