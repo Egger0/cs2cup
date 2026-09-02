@@ -67,6 +67,15 @@
   line-height: 0.95;
 }
 
+.receipt h2:focus-visible {
+  outline: 2px solid var(--ct);
+  outline-offset: 5px;
+}
+
+.receipt > :global(.readout) {
+  color: var(--ink);
+}
+
 .receipt p,
 .receipt small {
   color: var(--muted);
@@ -75,6 +84,38 @@
 .receipt .receiptWarning {
   color: var(--ink);
   font-weight: 620;
+}
+
+.passHandoff {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  padding-block: 14px;
+  border-block: 1px dashed color-mix(in srgb, var(--ct) 45%, var(--line));
+  background: linear-gradient(90deg, var(--ct-dim), transparent 72%);
+}
+
+.passHandoff > span {
+  align-self: start;
+  padding: 4px 6px;
+  background: var(--ct);
+  color: var(--button-ink, #f1efe8);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+}
+
+.passHandoff p {
+  display: grid;
+  gap: 4px;
+  line-height: 1.6;
+}
+
+.passHandoff strong {
+  color: var(--ink);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.82rem;
 }
 
 .receiptActions {
@@ -91,6 +132,6 @@
   align-items: center;
   padding-inline: 16px;
   background: var(--ct);
-  color: var(--void);
+  color: var(--button-ink, #f1efe8);
   font-weight: 700;
 }
