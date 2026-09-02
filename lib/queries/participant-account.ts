@@ -20,6 +20,7 @@ interface ParticipantEntryRow {
   dept: string | null
   note: string | null
   team_status: TeamStatus
+  checked_in_at: string | null
   registered_at: string
   tournament_id: number
   tournament_slug: string
@@ -54,6 +55,7 @@ export interface ParticipantTournamentEntry {
     dept: string | null
     note: string | null
     status: TeamStatus
+    checkedInAt: string | null
     registeredAt: string
     members: ParticipantTeamMember[]
   }
@@ -103,6 +105,7 @@ export async function listParticipantTournamentEntries(
           team.dept,
           team.note,
           team.status AS team_status,
+          team.checked_in_at,
           team.created_at AS registered_at,
           tournament.id AS tournament_id,
           tournament.slug AS tournament_slug,
@@ -142,6 +145,7 @@ export async function listParticipantTournamentEntries(
           dept: row.dept,
           note: row.note,
           status: row.team_status,
+          checkedInAt: row.checked_in_at,
           registeredAt: row.registered_at,
           members: [],
         },

@@ -15,6 +15,7 @@ interface ManagedRegistrationRow {
   dept: string | null
   note: string | null
   status: TeamStatus
+  checked_in_at: string | null
   seed: number | null
   management_revision: number
   management_write_nonce: string | null
@@ -49,6 +50,7 @@ export interface ManagedRegistrationTeam extends PublicTeam {
   contact: string
   note: string | null
   status: TeamStatus
+  checkedInAt: string | null
   createdAt: string
 }
 
@@ -100,6 +102,7 @@ function mapRegistration(
       dept: row.dept,
       note: row.note,
       status: row.status,
+      checkedInAt: row.checked_in_at,
       seed: row.seed,
       createdAt: row.created_at,
       players: players.map(player => ({
@@ -136,7 +139,7 @@ const CURRENT_WRITE_GUARD = 'team.management_write_nonce = ?'
 async function registrationRowByHash(slug: string, tokenHash: string) {
   return cloudflareBindings()
     .db.prepare(
-      "SELECT team.id, team.tournament_id, team.name, team.tag, team.captain, team.contact, team.dept, team.note, team.status, team.seed, team.management_revision, team.management_write_nonce, team.created_at, tournament.slug AS tournament_slug, tournament.title AS tournament_title, tournament.status AS tournament_status, tournament.reg_deadline, unixepoch('now') * 1000 AS now_ms FROM team JOIN tournament ON tournament.id = team.tournament_id WHERE tournament.slug = ? AND team.management_token_hash = ?",
+      "SELECT team.id, team.tournament_id, team.name, team.tag, team.captain, team.contact, team.dept, team.note, team.status, team.checked_in_at, team.seed, team.management_revision, team.management_write_nonce, team.created_at, tournament.slug AS tournament_slug, tournament.title AS tournament_title, tournament.status AS tournament_status, tournament.reg_deadline, unixepoch('now') * 1000 AS now_ms FROM team JOIN tournament ON tournament.id = team.tournament_id WHERE tournament.slug = ? AND team.management_token_hash = ?",
     )
     .bind(slug, tokenHash)
     .first<ManagedRegistrationRow>()
