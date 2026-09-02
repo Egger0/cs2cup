@@ -34,6 +34,14 @@ const UNSUPPORTED_RECOVERY = {
   description: '请换用支持通行密钥的浏览器或设备；你的报名仍可由原管理回执查看。',
 }
 
+const PENDING_CLIENT_RECOVERY = {
+  code: 'client-required',
+  signal: 'BROWSER / CLIENT',
+  title: '浏览器功能尚未就绪',
+  description:
+    '通行密钥登录需要 JavaScript。若此提示持续，请启用页面脚本、检查网络后刷新；报名和通行密钥不会改变。',
+}
+
 function RecoveryPanel({
   code,
   signal,
@@ -170,7 +178,7 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
   const isUnavailable = support !== 'supported'
   const buttonLabel =
     support === 'checking'
-      ? '正在检查这台设备…'
+      ? '浏览器功能待确认'
       : support === 'unsupported'
         ? '当前设备暂不可用'
         : isWorking
@@ -207,7 +215,9 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
         role="status"
         aria-atomic="true"
       >
-        {support === 'checking' ? <p>正在确认浏览器的通行密钥能力。</p> : null}
+        {support === 'checking' ? (
+          <RecoveryPanel {...PENDING_CLIENT_RECOVERY} receiptPath={receiptPath} />
+        ) : null}
         {support === 'unsupported' ? (
           <RecoveryPanel {...UNSUPPORTED_RECOVERY} receiptPath={receiptPath} />
         ) : null}
