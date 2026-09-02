@@ -12,8 +12,10 @@ import {
   adminSaveTournament,
 } from '@/lib/queries/content'
 import { removeObject } from '@/lib/storage'
-import { parseTournamentUpdate } from '@/lib/tournament-form'
+import { parseTournamentCreate, parseTournamentUpdate } from '@/lib/tournament-form'
 import { writeError } from './_errors'
+
+export type TournamentCreateState = { error: string | null }
 
 export async function updateTournament(id: number, form: FormData) {
   await requireAdmin()
@@ -34,16 +36,19 @@ export async function updateTournament(id: number, form: FormData) {
   return { ok: true as const }
 }
 
-export async function createTournament(form: FormData) {
+export async function createTournament(
+  _state: TournamentCreateState,
+  form: FormData,
+): Promise<TournamentCreateState> {
   await requireAdmin()
-  await adminCreateTournament({
-    slug: String(form.get('slug') ?? '').trim(),
-    title: String(form.get('title') ?? '').trim(),
-    gameId: Number(form.get('gameId')),
-    season: String(form.get('season') ?? '').trim(),
-    edition: Number(form.get('edition')),
-    teamCap: Number(form.get('teamCap')),
-  })
+  const parsed = parseTournamentCreate(form)
+  if (!parsed.ok) return { error: parsed.error }
+
+  try {
+    await adminCreateTournament(parsed.value)
+  } catch (error) {
+    return { error: writeError(error, '赛事创建失败') }
+  }
   updateTag('tournament')
   redirect('/admin/tournaments')
 }

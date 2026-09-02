@@ -8,6 +8,15 @@ import {
 } from './tournament-form-validation'
 import type { FaqItem, RuleItem, TournamentStatus } from './types'
 
+export interface TournamentCreateValues {
+  slug: string
+  title: string
+  gameId: number
+  season: string
+  edition: number
+  teamCap: number
+}
+
 export interface TournamentUpdateValues {
   title: string
   hero_bottom: string
@@ -32,6 +41,8 @@ const TOURNAMENT_STATES = new Set<TournamentStatus>([
   'finished',
   'postponed',
 ])
+
+const TOURNAMENT_SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,99}$/
 
 function integerField(
   form: FormData,
@@ -164,6 +175,43 @@ function parseMapPool(form: FormData): ParseResult<string[]> {
     names.add(key)
   }
   return { ok: true, value: entries }
+}
+
+export function parseTournamentCreate(form: FormData): ParseResult<TournamentCreateValues> {
+  const slug = formText(form, 'slug', '链接标识', TOURNAMENT_FORM_LIMITS.slug, {
+    required: true,
+  })
+  if (!slug.ok) return slug
+  if (!TOURNAMENT_SLUG_PATTERN.test(slug.value)) {
+    return { ok: false, error: '链接标识只能包含小写字母、数字和连字符，且必须以字母或数字开头' }
+  }
+
+  const title = formText(form, 'title', '赛事名称', TOURNAMENT_FORM_LIMITS.title, {
+    required: true,
+  })
+  if (!title.ok) return title
+  const season = formText(form, 'season', '赛季', TOURNAMENT_FORM_LIMITS.season, {
+    required: true,
+  })
+  if (!season.ok) return season
+  const gameId = integerField(form, 'gameId', '比赛项目', 1, Number.MAX_SAFE_INTEGER)
+  if (!gameId.ok) return gameId
+  const edition = integerField(form, 'edition', '届数', 1, Number.MAX_SAFE_INTEGER)
+  if (!edition.ok) return edition
+  const teamCap = integerField(form, 'teamCap', '席位数', 2, TOURNAMENT_FORM_LIMITS.teamCap)
+  if (!teamCap.ok) return teamCap
+
+  return {
+    ok: true,
+    value: {
+      slug: slug.value,
+      title: title.value,
+      gameId: gameId.value,
+      season: season.value,
+      edition: edition.value,
+      teamCap: teamCap.value,
+    },
+  }
 }
 
 export function parseTournamentUpdate(form: FormData): ParseResult<TournamentUpdateValues> {
