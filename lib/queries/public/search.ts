@@ -17,7 +17,7 @@ export async function search(query: string): Promise<SearchHit[]> {
 
   const [games, tournaments, posts] = await Promise.all([
     selectPublicRows<GameRow>('game', {
-      filters: { or: `(name.${like},name_en.${like})` },
+      filters: { active: 'eq.1', or: `(name.${like},name_en.${like})` },
       limit: 8,
     }),
     selectPublicRows<{
