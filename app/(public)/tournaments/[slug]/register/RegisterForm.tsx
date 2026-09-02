@@ -42,10 +42,15 @@ export function RegisterForm({
   const [receipt, setReceipt] = useState<{ url: string; seatsLeft: number | null } | null>(null)
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle')
   const errorRef = useRef<HTMLParagraphElement>(null)
+  const receiptTitleRef = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
     if (error) errorRef.current?.focus()
   }, [error])
+
+  useEffect(() => {
+    if (receipt) receiptTitleRef.current?.focus()
+  }, [receipt])
 
   async function copyManagementLink() {
     if (!receipt) return
@@ -80,12 +85,21 @@ export function RegisterForm({
     return (
       <section className={styles.receipt} aria-labelledby="registration-receipt-title">
         <span className="readout">报名回执</span>
-        <h2 id="registration-receipt-title">报名已提交</h2>
-        <p>请保存下面的专属链接。审核状态和阵容修改都通过该链接完成。</p>
+        <h2 ref={receiptTitleRef} id="registration-receipt-title" tabIndex={-1}>
+          报名已提交
+        </h2>
+        <p>先保存下面的专属链接；审核状态和阵容修改都通过它完成。</p>
         <p className={styles.receiptWarning}>此链接等同于战队管理凭证，请勿转发给无关人员。</p>
+        <div className={styles.passHandoff}>
+          <span aria-hidden="true">PASS / NEXT</span>
+          <p>
+            <strong>继续设置赛事通行证</strong>
+            已有通行证可把这份报名加入“我的赛事”；首次使用也可在下一页创建。
+          </p>
+        </div>
         <div className={styles.receiptActions}>
           <Link href={receipt.url} prefetch={false} className={styles.managementLink}>
-            查看报名状态并管理阵容 →
+            打开报名回执，继续设置 →
           </Link>
           <Button type="button" size="mini" onClick={copyManagementLink}>
             复制管理链接
