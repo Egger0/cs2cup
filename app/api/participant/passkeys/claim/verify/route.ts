@@ -1,7 +1,7 @@
 import { type NextRequest } from 'next/server'
 
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
-import { assertCsrfRequest, CsrfError } from '@/lib/csrf'
+import { assertCsrfRequest } from '@/lib/csrf'
 import { bytesToBase64Url } from '@/lib/opaque-token'
 import {
   createParticipantSessionDraft,
@@ -9,6 +9,10 @@ import {
   setParticipantSessionCookie,
 } from '@/lib/participant-auth'
 import { ceremonyTokenFromRequest, clearCeremonyCookie } from '@/lib/passkey-ceremony'
+import {
+  ParticipantRegistrationRejected,
+  participantClaimVerificationFailure,
+} from '@/lib/passkey-claim-verification'
 import { passkeyError, privateEmpty, readPasskeyJson } from '@/lib/passkey-http'
 import {
   type RegistrationResponseJSON,
@@ -16,11 +20,12 @@ import {
 } from '@/lib/participant-passkeys'
 import { consumePasskeyCeremony } from '@/lib/queries/participant-passkey-challenges'
 import { finishParticipantClaim } from '@/lib/queries/participant-passkey-credentials'
+import { ParticipantPasskeyError } from '@/lib/queries/participant-passkey-shared'
 import { resolveWebAuthnConfig } from '@/lib/webauthn-config'
 
 function claimVerificationError(error: unknown) {
-  if (error instanceof CsrfError) return passkeyError(403, '请求来源无法确认，请刷新页面重试。')
-  return passkeyError(400)
+  const failure = participantClaimVerificationFailure(error)
+  return passkeyError(failure.status, failure.message)
 }
 
 export async function POST(request: NextRequest) {
@@ -32,7 +37,7 @@ export async function POST(request: NextRequest) {
       )
     }
     const ceremonyToken = ceremonyTokenFromRequest(request)
-    if (!ceremonyToken) throw new Error('missing ceremony')
+    if (!ceremonyToken) throw new ParticipantPasskeyError('invalid_challenge')
     const response = await readPasskeyJson<RegistrationResponseJSON>(request)
     const now = Date.now()
     const db = cloudflareBindings().db
@@ -41,16 +46,27 @@ export async function POST(request: NextRequest) {
       kind: 'claim',
       now,
     })
-    const verification = await verifyParticipantRegistration({
-      config: resolveWebAuthnConfig(),
-      challenge: ceremony.challenge,
-      response,
-    })
+    const config = resolveWebAuthnConfig()
+    let verification: Awaited<ReturnType<typeof verifyParticipantRegistration>>
+    try {
+      verification = await verifyParticipantRegistration({
+        config,
+        challenge: ceremony.challenge,
+        response,
+      })
+    } catch {
+      throw new ParticipantRegistrationRejected()
+    }
     if (!verification.verified || !verification.registrationInfo) {
-      throw new Error('registration not verified')
+      throw new ParticipantRegistrationRejected()
     }
     const info = verification.registrationInfo
     const session = await createParticipantSessionDraft()
+    // Prepare both cookies before the atomic write. A later response-construction
+    // failure therefore cannot leave a committed claim reported as a 5xx.
+    const successResponse = clearCeremonyCookie(
+      setParticipantSessionCookie(privateEmpty(), session.token),
+    )
     await finishParticipantClaim(db, {
       ceremony,
       credential: {
@@ -64,7 +80,7 @@ export async function POST(request: NextRequest) {
       session,
       now,
     })
-    return clearCeremonyCookie(setParticipantSessionCookie(privateEmpty(), session.token))
+    return successResponse
   } catch (error) {
     return clearCeremonyCookie(claimVerificationError(error))
   }

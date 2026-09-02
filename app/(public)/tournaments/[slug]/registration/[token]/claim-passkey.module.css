@@ -198,6 +198,45 @@
   color: #842d2d;
 }
 
+.recovery {
+  display: grid;
+  gap: 4px;
+  padding: 10px 11px;
+  border-left: 3px solid var(--pass-blue);
+  background: rgba(21, 93, 140, 0.07);
+  font-family: var(--font-body);
+  letter-spacing: 0;
+}
+
+.recoverySignal {
+  color: var(--pass-blue);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.49rem;
+  font-weight: 750;
+  letter-spacing: 0.09em;
+}
+
+.recovery strong {
+  color: var(--pass-ink);
+  font-size: 0.71rem;
+}
+
+.recovery p {
+  color: #4b595d;
+  font-size: 0.64rem;
+  line-height: 1.45;
+}
+
+.recovery[data-code='rate-limited'] {
+  border-color: #9a6a22;
+  background: rgba(154, 106, 34, 0.08);
+}
+
+.recovery[data-code='verification-failed'] {
+  border-color: #9b3535;
+  background: rgba(155, 53, 53, 0.07);
+}
+
 .complete {
   display: grid;
   gap: 13px;
