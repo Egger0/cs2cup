@@ -103,6 +103,7 @@ export function SignedInAttachAction({
   switchState,
   teamTag,
   teamName,
+  attachButton,
   confirmButton,
   onArm,
   onCancel,
@@ -113,6 +114,7 @@ export function SignedInAttachAction({
   switchState: SwitchState
   teamTag: string
   teamName: string
+  attachButton: RefObject<HTMLButtonElement | null>
   confirmButton: RefObject<HTMLButtonElement | null>
   onArm: () => void
   onCancel: () => void
@@ -152,7 +154,7 @@ export function SignedInAttachAction({
             <strong>这份报名尚未归档</strong>
             <p>加入后，它会出现在你当前的“我的赛事”中。</p>
           </div>
-          <button type="button" className={styles.claimButton} onClick={onArm}>
+          <button ref={attachButton} type="button" className={styles.claimButton} onClick={onArm}>
             <span className={styles.keyMark} aria-hidden="true">
               +1
             </span>
