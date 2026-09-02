@@ -85,8 +85,6 @@ export default async function ParticipantAccountPage() {
           />
         ) : null}
 
-        <AccessReceipt receipt={receipt} sessionExpiresAt={participant.sessionExpiresAt} />
-
         {entries.length ? (
           <section className={styles.files} aria-label="已绑定的赛事报名">
             {entries.map(entry => (
@@ -102,6 +100,8 @@ export default async function ParticipantAccountPage() {
             <a href="/tournaments">浏览公开赛事</a>
           </section>
         )}
+
+        <AccessReceipt receipt={receipt} sessionExpiresAt={participant.sessionExpiresAt} />
       </main>
     </ParticipantSessionBoundary>
   )
