@@ -3,7 +3,11 @@ import { type NextRequest } from 'next/server'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { assertCsrfRequest, CsrfError } from '@/lib/csrf'
 import { bytesToBase64Url } from '@/lib/opaque-token'
-import { createParticipantSessionDraft, setParticipantSessionCookie } from '@/lib/participant-auth'
+import {
+  createParticipantSessionDraft,
+  getCurrentParticipant,
+  setParticipantSessionCookie,
+} from '@/lib/participant-auth'
 import { ceremonyTokenFromRequest, clearCeremonyCookie } from '@/lib/passkey-ceremony'
 import { passkeyError, privateEmpty, readPasskeyJson } from '@/lib/passkey-http'
 import {
@@ -22,6 +26,11 @@ function claimVerificationError(error: unknown) {
 export async function POST(request: NextRequest) {
   try {
     assertCsrfRequest(request)
+    if (await getCurrentParticipant()) {
+      return clearCeremonyCookie(
+        passkeyError(409, '当前赛事通行已打开，请刷新页面后加入当前通行证。'),
+      )
+    }
     const ceremonyToken = ceremonyTokenFromRequest(request)
     if (!ceremonyToken) throw new Error('missing ceremony')
     const response = await readPasskeyJson<RegistrationResponseJSON>(request)

@@ -214,13 +214,3 @@ export async function consumePasskeyCeremony(
     consumeNonce: row.consume_nonce,
   }
 }
-
-export async function participantEntryHasOwner(db: ParticipantPasskeyDatabase, teamId: number) {
-  if (!Number.isSafeInteger(teamId) || teamId <= 0) return false
-  return Boolean(
-    await db
-      .prepare('SELECT team_id FROM tournament_entry_owner WHERE team_id = ?')
-      .bind(teamId)
-      .first(),
-  )
-}

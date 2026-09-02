@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getCurrentParticipant } from '@/lib/participant-auth'
+import { safeParticipantReturnPath } from '@/lib/participant-return'
 
 import PasskeyLogin from './PasskeyLogin'
 import noticeStyles from './login-notice.module.css'
@@ -12,18 +13,20 @@ export const metadata: Metadata = {
   title: '赛事通行',
   description: '使用通行密钥进入你的赛事报名档案。',
   robots: { index: false, follow: false },
+  referrer: 'no-referrer',
 }
 
 export default async function ParticipantLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reason?: string | string[] }>
+  searchParams: Promise<{ reason?: string | string[]; returnTo?: string | string[] }>
 }) {
+  const params = await searchParams
+  const returnTo = safeParticipantReturnPath(params.returnTo)
   const participant = await getCurrentParticipant()
-  if (participant) redirect('/me')
+  if (participant) redirect(returnTo)
 
-  const reason = (await searchParams).reason
-  const accessExpired = reason === 'expired'
+  const accessExpired = params.reason === 'expired'
 
   return (
     <main id="main" className={styles.page}>
@@ -71,7 +74,7 @@ export default async function ParticipantLoginPage({
           </aside>
         ) : null}
 
-        <PasskeyLogin />
+        <PasskeyLogin returnTo={returnTo} />
 
         <footer className={styles.passFooter}>
           <p>

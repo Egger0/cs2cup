@@ -3,7 +3,9 @@ import { notFound } from 'next/navigation'
 import { SectionHead } from '@/components/domain/Sections'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { formatSiteDateTime } from '@/lib/datetime'
-import { participantEntryHasOwner } from '@/lib/queries/participant-passkey-challenges'
+import { getCurrentParticipant } from '@/lib/participant-auth'
+import { participantRegistrationReturnPath } from '@/lib/participant-return'
+import { participantEntryOwnerPrincipal } from '@/lib/queries/participant-entry-attachment'
 import {
   getManagedRegistration,
   type ManagedRegistrationTeam,
@@ -76,7 +78,19 @@ export default async function RegistrationStatusPage({
   const deadline = registration.tournament.regDeadline
     ? formatSiteDateTime(registration.tournament.regDeadline)
     : null
-  const claimed = await participantEntryHasOwner(cloudflareBindings().db, registration.team.id)
+  const [participant, ownerPrincipalId] = await Promise.all([
+    getCurrentParticipant(),
+    participantEntryOwnerPrincipal(cloudflareBindings().db, registration.team.id),
+  ])
+  const ownershipState = ownerPrincipalId
+    ? participant?.principalId === ownerPrincipalId
+      ? 'owned-by-current'
+      : 'owned-by-other'
+    : participant
+      ? 'signed-in-unclaimed'
+      : 'anonymous-unclaimed'
+  const returnTo = participantRegistrationReturnPath(slug, token) ?? '/me'
+  const loginHref = `/login?returnTo=${encodeURIComponent(returnTo)}`
   return (
     <section className="section">
       <div className="wrap">
@@ -100,7 +114,9 @@ export default async function RegistrationStatusPage({
           teamTag={registration.team.tag}
           teamName={registration.team.name}
           statusLabel={STATUS_LABEL[registration.team.status]}
-          claimed={claimed}
+          ownershipState={ownershipState}
+          loginHref={loginHref}
+          hasActiveParticipant={Boolean(participant)}
         />
 
         {registration.editable ? (

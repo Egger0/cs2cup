@@ -2,6 +2,7 @@
 
 import { browserSupportsWebAuthn, startAuthentication } from '@simplewebauthn/browser'
 import { useEffect, useState } from 'react'
+import { safeParticipantReturnPath } from '@/lib/participant-return'
 
 import styles from './login.module.css'
 
@@ -11,7 +12,7 @@ type AuthenticationOptions = Parameters<typeof startAuthentication>[0]['optionsJ
 
 const LOGIN_ERROR = '未完成登录，可以再次尝试。'
 
-export default function PasskeyLogin() {
+export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }) {
   const [support, setSupport] = useState<SupportState>('checking')
   const [loginState, setLoginState] = useState<LoginState>('idle')
 
@@ -51,8 +52,8 @@ export default function PasskeyLogin() {
       if (!verificationResponse.ok) throw new Error('verification failed')
 
       // A full navigation picks up the participant session cookie returned by verification.
-      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-      window.location.assign('/me')
+      const safeReturnTo = safeParticipantReturnPath(returnTo)
+      window.location.assign(safeReturnTo)
     } catch {
       setLoginState('error')
     }

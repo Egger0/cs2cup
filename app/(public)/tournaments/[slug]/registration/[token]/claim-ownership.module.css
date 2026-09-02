@@ -1,0 +1,181 @@
+.choice,
+.attach {
+  display: grid;
+  min-width: 0;
+  gap: 12px;
+}
+
+.choice > div:first-child strong,
+.attachLead strong,
+.confirmation strong {
+  font-size: 0.82rem;
+}
+
+.choice > div:first-child p,
+.attachLead p,
+.confirmation p,
+.switchNotice p {
+  margin-top: 4px;
+  color: var(--pass-muted);
+  font-size: 0.66rem;
+  line-height: 1.5;
+}
+
+.loginLink {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--pass-blue);
+  color: var(--pass-blue);
+  font-size: 0.74rem;
+  font-weight: 750;
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.loginLink:hover {
+  background: rgba(21, 93, 140, 0.08);
+  transform: translate(-2px, -2px);
+}
+
+.orRule,
+.sessionMark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--pass-muted);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.orRule::after {
+  height: 1px;
+  flex: 1;
+  background: rgba(21, 93, 140, 0.25);
+  content: '';
+}
+
+.sessionMark {
+  width: fit-content;
+  padding: 5px 7px;
+  border: 1px solid rgba(21, 93, 140, 0.44);
+  color: var(--pass-blue);
+}
+
+.confirmation {
+  padding: 14px;
+  border: 1px solid var(--pass-blue);
+  background: rgba(238, 241, 237, 0.82);
+  animation: deploy-confirmation 180ms cubic-bezier(0.2, 0.75, 0.3, 1) both;
+}
+
+.confirmation strong {
+  overflow-wrap: anywhere;
+}
+
+.confirmActions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.confirmActions button {
+  min-height: 42px;
+  padding: 8px 11px;
+  border: 1px solid var(--pass-blue);
+  border-radius: 0;
+  background: transparent;
+  color: var(--pass-blue);
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 740;
+}
+
+.confirmActions .confirmButton {
+  background: var(--pass-blue);
+  color: #f7f5eb;
+}
+
+.confirmActions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.switchNotice {
+  padding-top: 10px;
+  border-top: 1px dashed rgba(21, 93, 140, 0.32);
+}
+
+.switchNotice button {
+  margin-top: 5px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  border-radius: 0;
+  background: transparent;
+  color: var(--pass-blue);
+  cursor: pointer;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.54rem;
+  font-weight: 700;
+}
+
+.switchNotice button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.neutralStamp {
+  border-color: #68777a;
+  color: #4e5c60;
+  transform: rotate(1deg);
+}
+
+.otherOwner small {
+  color: var(--pass-muted);
+  font-size: 0.62rem;
+  line-height: 1.45;
+}
+
+@keyframes deploy-confirmation {
+  from {
+    opacity: 0;
+    transform: translateY(-7px);
+    clip-path: inset(0 0 72% 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    clip-path: inset(0);
+  }
+}
+
+@media (max-width: 760px) {
+  .loginLink,
+  .confirmActions button {
+    width: 100%;
+  }
+
+  .confirmActions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loginLink {
+    transition: none;
+  }
+
+  .confirmation {
+    animation: none;
+  }
+}
