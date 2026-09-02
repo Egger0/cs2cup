@@ -12,7 +12,12 @@ interface ScheduleFiltersProps {
 
 export function ScheduleFilters({ base, state, teams, selectedTeam }: ScheduleFiltersProps) {
   return (
-    <form className={styles.filters} action={base} method="get">
+    <form
+      key={`${state}:${selectedTeam?.id ?? 'all'}`}
+      className={styles.filters}
+      action={base}
+      method="get"
+    >
       <label className={styles.field}>
         <span className={styles.fieldLabel}>进度</span>
         <select name="state" defaultValue={state} className={styles.select}>

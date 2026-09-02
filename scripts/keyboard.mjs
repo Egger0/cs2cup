@@ -80,6 +80,39 @@ check(
   JSON.stringify(landmarks),
 )
 
+await page.goto(`${BASE}/tournaments/2026-nlc/schedule?state=completed&team=FLC`, {
+  waitUntil: 'domcontentloaded',
+})
+const emptyScheduleLink = page.getByRole('link', { name: '查看该队全部赛程' })
+const emptyScheduleHref = await emptyScheduleLink.getAttribute('href')
+const emptyScheduleUrl = new URL(emptyScheduleHref ?? '', BASE)
+check(
+  'Empty schedule recovery keeps its team filter',
+  emptyScheduleUrl.searchParams.get('state') === 'all' &&
+    emptyScheduleUrl.searchParams.get('team') === 'FLC',
+  emptyScheduleHref ?? 'missing link',
+)
+await emptyScheduleLink.focus()
+await Promise.all([
+  page.waitForURL(
+    url => url.searchParams.get('state') === 'all' && url.searchParams.get('team') === 'FLC',
+  ),
+  page.keyboard.press('Enter'),
+])
+await page.waitForFunction(() => {
+  const state = document.querySelector('select[name="state"]')
+  const team = document.querySelector('select[name="team"]')
+  return state instanceof HTMLSelectElement && state.value === 'all' && team?.value === 'FLC'
+})
+const recoveredScheduleLinks = page.locator('main a[href^="/tournaments/2026-nlc/matches/"]')
+await recoveredScheduleLinks.first().waitFor()
+check(
+  'Recovered schedule controls reflect the active filters',
+  (await page.locator('select[name="state"]').inputValue()) === 'all' &&
+    (await page.locator('select[name="team"]').inputValue()) === 'FLC',
+)
+check('Recovered team schedule exposes match links', (await recoveredScheduleLinks.count()) > 0)
+
 await page.goto(`${BASE}/tournaments/2026-nlc/schedule`, { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(1200)
 const scheduleTeamFilter = page.locator('select[name="team"]')

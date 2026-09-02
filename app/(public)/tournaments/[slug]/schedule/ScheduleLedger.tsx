@@ -5,18 +5,21 @@ import matchStyles from './ScheduleMatch.module.css'
 import styles from './ScheduleLedger.module.css'
 
 interface ScheduleLedgerProps {
-  base: string
   slug: string
   groups: ScheduleDayGroup[]
   nextEntry: ScheduleEntry | null
+  emptyAction?: {
+    href: string
+    label: string
+  }
 }
 
-export function ScheduleLedger({ base, slug, groups, nextEntry }: ScheduleLedgerProps) {
+export function ScheduleLedger({ slug, groups, nextEntry, emptyAction }: ScheduleLedgerProps) {
   if (groups.length === 0) {
     return (
       <div className={styles.empty}>
         <p>当前筛选条件下没有比赛。</p>
-        <Link href={`${base}?state=all`}>查看全部赛程</Link>
+        {emptyAction ? <Link href={emptyAction.href}>{emptyAction.label}</Link> : null}
       </div>
     )
   }
