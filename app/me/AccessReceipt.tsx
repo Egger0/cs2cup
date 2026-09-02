@@ -11,15 +11,17 @@ function accessTime(value: number) {
 }
 
 function DeviceReport({ receipt }: { receipt: ParticipantAccessReceipt }) {
-  if (receipt.backedUp) {
-    return <p>设备报告此通行密钥已备份。备份由设备平台维护，本站不保存或接触它。</p>
-  }
-
   if (receipt.deviceType === 'multiDevice') {
-    return <p>这是可同步的通行密钥；设备报告当前未备份，此状态可能随平台同步而变化。</p>
+    return receipt.backedUp ? (
+      <p>
+        最近一次设备报告：这把通行密钥具备多设备能力，并处于已备份状态。能否在其他设备使用由设备平台决定。
+      </p>
+    ) : (
+      <p>最近一次设备报告：这把通行密钥具备多设备能力，但当时未报告已备份。</p>
+    )
   }
 
-  return <p>此通行密钥由独立验证器保存。请继续妥善保留原报名管理链接。</p>
+  return <p>最近一次设备报告：这把通行密钥不具备多设备备份能力。</p>
 }
 
 export function AccessReceipt({
@@ -85,13 +87,21 @@ export function AccessReceipt({
       <footer className={styles.device}>
         <span>{receipt.deviceType === 'multiDevice' ? 'MULTI DEVICE' : 'SINGLE DEVICE'}</span>
         <div>
-          <strong>设备保存状态</strong>
+          <strong>设备报告状态</strong>
           <DeviceReport receipt={receipt} />
         </div>
       </footer>
 
+      <div className={styles.recoveryBoundary}>
+        <span>RECOVERY / 恢复准备</span>
+        <p>
+          <strong>把报名管理和赛事通行分开保管。</strong>
+          通行密钥的备份与跨设备可用性由你的设备或平台管理，本站不会接触或代为找回。请妥善保留原报名管理链接；它是独立的报名管理入口，不是通行密钥备份。
+        </p>
+      </div>
+
       <p className={styles.sessionNote}>
-        访问到期后只需再次由设备确认；你的报名与通行密钥不会发生变化。
+        访问到期后，如这把通行密钥仍可用，可再次由设备确认；你的报名记录不会因会话到期而改变。
       </p>
     </section>
   )

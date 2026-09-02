@@ -48,6 +48,7 @@
 .verified,
 .facts dt,
 .device > span,
+.recoveryBoundary > span,
 .sessionNote {
   font-family: var(--font-mono), ui-monospace, monospace;
   letter-spacing: 0.1em;
@@ -220,6 +221,32 @@
   font-size: 0.68rem;
 }
 
+.recoveryBoundary {
+  display: grid;
+  gap: 10px;
+  padding: 16px clamp(18px, 4vw, 46px);
+  border-top: 1px dashed rgba(121, 185, 216, 0.22);
+  background: rgba(32, 129, 182, 0.06);
+}
+
+.recoveryBoundary > span {
+  color: #82b7d0;
+  font-size: 0.48rem;
+}
+
+.recoveryBoundary p {
+  max-width: 760px;
+  color: #a1b0b6;
+  font-size: 0.72rem;
+  line-height: 1.75;
+}
+
+.recoveryBoundary strong {
+  margin-right: 0.35em;
+  color: #d8e8ee;
+  font-family: 'NLC Role Sans', var(--font-body);
+}
+
 .sessionNote {
   padding: 12px clamp(18px, 4vw, 46px);
   border-top: 1px dashed rgba(121, 185, 216, 0.22);
@@ -244,7 +271,8 @@
     grid-template-columns: 92px minmax(0, 1fr);
   }
 
-  .device {
+  .device,
+  .recoveryBoundary {
     grid-template-columns: 132px minmax(0, 1fr);
   }
 }
