@@ -1,7 +1,9 @@
 export type ParseResult<T> = { ok: true; value: T } | { ok: false; error: string }
 
 export const TOURNAMENT_FORM_LIMITS = {
+  slug: 100,
   title: 120,
+  season: 80,
   heroBottom: 120,
   heroEyebrow: 80,
   lede: 500,

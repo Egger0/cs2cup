@@ -1,8 +1,9 @@
-import { Button, ButtonLink, Empty, Field } from '@/components/ui'
+import { ButtonLink, Empty, Field } from '@/components/ui'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { requireAdmin } from '@/lib/auth'
 import { adminListGames, adminListTournaments } from '@/lib/queries/content'
-import { createTournament } from '../actions/tournaments'
+import { TOURNAMENT_FORM_LIMITS } from '@/lib/tournament-form-validation'
+import { TournamentCreateForm } from './TournamentCreateForm'
 import { TournamentDeleteButton } from './TournamentDeleteButton'
 import styles from '../admin.module.css'
 
@@ -31,14 +32,24 @@ export default async function AdminTournamentsPage() {
       />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>开一届新赛事</h2>
-        <form className={styles.editor} action={createTournament}>
+        <TournamentCreateForm>
           <div className={styles.pair}>
-            <Field id="nt-slug" name="slug" label="链接标识" required placeholder="例:2027-nlc" />
+            <Field
+              id="nt-slug"
+              name="slug"
+              label="链接标识"
+              required
+              maxLength={TOURNAMENT_FORM_LIMITS.slug}
+              pattern="[a-z0-9](?:[a-z0-9]|-){0,99}"
+              hint="小写字母、数字和连字符"
+              placeholder="例:2027-nlc"
+            />
             <Field
               id="nt-title"
               name="title"
               label="赛事名称"
               required
+              maxLength={TOURNAMENT_FORM_LIMITS.title}
               placeholder="例:第五届宁理杯"
             />
           </div>
@@ -53,7 +64,14 @@ export default async function AdminTournamentsPage() {
                 ))}
               </select>
             </label>
-            <Field id="nt-season" name="season" label="赛季" required placeholder="例:2027 春季" />
+            <Field
+              id="nt-season"
+              name="season"
+              label="赛季"
+              required
+              maxLength={TOURNAMENT_FORM_LIMITS.season}
+              placeholder="例:2027 春季"
+            />
           </div>
           <div className={styles.pair}>
             <Field
@@ -61,6 +79,7 @@ export default async function AdminTournamentsPage() {
               name="edition"
               type="number"
               min={1}
+              step={1}
               label="第几届"
               required
               defaultValue={5}
@@ -70,15 +89,14 @@ export default async function AdminTournamentsPage() {
               name="teamCap"
               type="number"
               min={2}
+              max={TOURNAMENT_FORM_LIMITS.teamCap}
+              step={1}
               label="席位数"
               required
               defaultValue={16}
             />
           </div>
-          <Button type="submit" variant="primary">
-            创建为草稿
-          </Button>
-        </form>
+        </TournamentCreateForm>
       </section>
 
       <section className={styles.panel}>
