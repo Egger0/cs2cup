@@ -36,6 +36,10 @@ export const participantSessionCookie = {
   },
 }
 
+export function participantSessionRemainingMs(expiresAt: number) {
+  return Number.isSafeInteger(expiresAt) ? expiresAt - Date.now() : 0
+}
+
 export async function createParticipantSessionDraft() {
   const token = createOpaqueToken()
   return {
@@ -59,21 +63,6 @@ export function clearParticipantSessionCookie(response: NextResponse) {
     maxAge: 0,
   })
   return response
-}
-
-export async function endParticipantSession() {
-  const store = await cookies()
-  const token = store.get(COOKIE_NAME)?.value
-  if (token && isOpaqueToken(token)) {
-    await cloudflareBindings()
-      .db.prepare('DELETE FROM participant_session WHERE token_hash = ?')
-      .bind(await hashOpaqueToken(token))
-      .run()
-  }
-  store.set(COOKIE_NAME, '', {
-    ...participantSessionCookie.options,
-    maxAge: 0,
-  })
 }
 
 export const getCurrentParticipant = cache(async (): Promise<ParticipantIdentity | null> => {

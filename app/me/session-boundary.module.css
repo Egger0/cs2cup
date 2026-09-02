@@ -1,0 +1,118 @@
+.initialGate {
+  visibility: hidden;
+}
+
+.safeShell {
+  position: relative;
+  display: grid;
+  width: min(680px, 100%);
+  min-height: 360px;
+  align-content: center;
+  gap: 14px;
+  margin: clamp(70px, 14vw, 150px) auto 0;
+  padding: clamp(28px, 7vw, 68px);
+  overflow: hidden;
+  border: 1px solid rgba(121, 185, 216, 0.45);
+  background:
+    linear-gradient(90deg, transparent 31px, rgba(121, 185, 216, 0.055) 32px, transparent 33px),
+    #11191d;
+  background-size: 64px 100%;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+}
+
+.safeShell::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: #2081b6;
+  content: '';
+}
+
+.code {
+  color: #75a9c5;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+}
+
+.indicator {
+  width: 42px;
+  height: 6px;
+  background: #61b3dc;
+  box-shadow: 0 0 0 6px rgba(97, 179, 220, 0.1);
+  animation: session-scan 900ms steps(3, end) infinite;
+}
+
+.safeShell h1 {
+  margin-top: 12px;
+  font-family: 'NLC Serif', 'Songti SC', serif;
+  font-size: clamp(2.1rem, 8vw, 4.6rem);
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+
+.safeShell > p:last-of-type {
+  max-width: 520px;
+  color: #9ca8ac;
+  font-size: 0.76rem;
+  line-height: 1.7;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-top: 16px;
+}
+
+.actions button,
+.actions a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 8px 0 5px;
+  border: 0;
+  border-bottom: 1px solid #75a9c5;
+  border-radius: 0;
+  background: transparent;
+  color: #b8d9e9;
+  cursor: pointer;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+}
+
+.actions button:focus-visible,
+.actions a:focus-visible {
+  outline: 2px solid #b8d9e9;
+  outline-offset: 5px;
+}
+
+@keyframes session-scan {
+  50% {
+    opacity: 0.38;
+    transform: translateX(12px);
+  }
+}
+
+@media (max-width: 420px) {
+  .safeShell {
+    min-height: 320px;
+    margin-top: 44px;
+  }
+
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .actions button,
+  .actions a {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicator {
+    animation: none;
+  }
+}
