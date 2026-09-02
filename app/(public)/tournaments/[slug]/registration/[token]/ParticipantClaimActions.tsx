@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { RefObject } from 'react'
+import { ownedEntryRecoveryAction } from '@/lib/participant-owner-recovery'
 
 import ownershipStyles from './claim-ownership.module.css'
 import styles from './claim-passkey.module.css'
@@ -16,7 +17,7 @@ export type SwitchState = 'idle' | 'working' | 'error'
 
 const CLAIM_ERROR = '没有完成创建。报名和管理链接都没有变化，可以再次尝试。'
 const ATTACH_ERROR = '暂时没能加入。报名和管理链接都没有变化，请稍后重试。'
-const SWITCH_ERROR = '暂时没能退出当前通行证，请稍后重试。'
+const SWITCH_ERROR = '暂时未能确认退出结果；报名和归属不会因此改变。可以重新尝试。'
 
 export function AnonymousClaimAction({
   support,
@@ -187,35 +188,78 @@ export function OtherOwnerAction({
   conflict,
   hasActiveParticipant,
   loginHref,
+  switchState,
+  switchButton,
+  onSwitch,
 }: {
   conflict: boolean
   hasActiveParticipant: boolean
   loginHref: string
+  switchState: SwitchState
+  switchButton: RefObject<HTMLButtonElement | null>
+  onSwitch: () => void
 }) {
-  const canConfirmByLogin = !hasActiveParticipant && !conflict
+  const recovery = ownedEntryRecoveryAction(hasActiveParticipant, conflict)
+  const switching = switchState === 'working'
   return (
-    <div className={`${styles.complete} ${ownershipStyles.otherOwner}`} role="status">
+    <div className={`${styles.complete} ${ownershipStyles.otherOwner}`}>
       <span className={`${styles.stamp} ${ownershipStyles.neutralStamp}`} aria-hidden="true">
         已有归属
       </span>
       <div>
         <strong>
           {conflict
-            ? '这份报名刚刚完成归属'
-            : canConfirmByLogin
+            ? '这份报名刚刚归入另一份通行证'
+            : recovery === 'login-and-confirm'
               ? '这份报名已绑定赛事通行证'
-              : '这份报名已有归属'}
+              : recovery === 'switch-participant'
+                ? '这份报名在另一份赛事通行证中'
+                : '这份报名已有归属'}
         </strong>
         <p>
-          {canConfirmByLogin
+          {recovery === 'login-and-confirm'
             ? '登录后可以确认它是否在你的“我的赛事”中。'
-            : `${conflict ? '它未加入当前通行证，且' : '它'}不能重复加入。原管理链接仍可照常使用。`}
+            : recovery === 'switch-participant'
+              ? '你当前打开的是另一份通行证。若这是你的报名，可先退出，再由报名持有人使用其通行密钥确认；原管理链接仍可照常使用。'
+              : `${conflict ? '它未加入当前通行证，且' : '它'}不能重复加入。原管理链接仍可照常使用。`}
         </p>
       </div>
-      {canConfirmByLogin ? (
+      {recovery === 'login-and-confirm' ? (
         <Link className={ownershipStyles.loginLink} href={loginHref}>
           登录并确认 <span aria-hidden="true">↗</span>
         </Link>
+      ) : recovery === 'switch-participant' ? (
+        <div className={ownershipStyles.switchNotice}>
+          <p>此操作只关闭当前设备上的访问，不会修改报名，也不会转移归属。</p>
+          <button
+            ref={switchButton}
+            type="button"
+            className={ownershipStyles.ownerSwitchButton}
+            disabled={switching}
+            onClick={onSwitch}
+          >
+            <span>
+              {switching
+                ? '正在安全退出…'
+                : switchState === 'error'
+                  ? '重试更换通行证'
+                  : '退出并更换通行证'}
+            </span>
+            <span aria-hidden="true">↗</span>
+          </button>
+          <div
+            className={ownershipStyles.switchFeedback}
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {switchState === 'idle' && conflict ? (
+              <p>状态已刷新：这份报名未加入当前通行证。</p>
+            ) : null}
+            {switching ? <p>正在关闭当前通行证，随后返回设备确认。</p> : null}
+            {switchState === 'error' ? <p className={styles.error}>{SWITCH_ERROR}</p> : null}
+          </div>
+        </div>
       ) : (
         <small>如果归属有误，请联系赛事负责人处理。</small>
       )}
