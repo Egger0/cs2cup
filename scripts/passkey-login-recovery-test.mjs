@@ -4,9 +4,9 @@ import {
   participantLoginReceiptPath,
   passkeyLoginDeviceFailure,
   passkeyLoginHttpFailure,
-  passkeyLoginRetryAfterSeconds,
   passkeyLoginShouldResumeSession,
 } from '../lib/passkey-login-recovery.ts'
+import { passkeyRetryAfterSeconds } from '../lib/passkey-retry-cooldown.ts'
 
 const REFRESH_REQUIRED = {
   code: 'refresh-required',
@@ -72,7 +72,7 @@ for (const [header, expected] of [
   ['1.5', 60],
   ['-1', 60],
 ]) {
-  assert.equal(passkeyLoginRetryAfterSeconds(header), expected)
+  assert.equal(passkeyRetryAfterSeconds(header), expected)
 }
 
 const secret = 'raw authenticator message must stay private'

@@ -49,15 +49,6 @@ const INTERRUPTED_OR_UNAVAILABLE: PasskeyLoginFeedback = {
   action: 'retry',
 }
 
-const RETRY_AFTER_FALLBACK_SECONDS = 60
-const RETRY_AFTER_MAX_SECONDS = 10 * 60
-
-export function passkeyLoginRetryAfterSeconds(value: string | null): number {
-  if (!value || !/^[1-9][0-9]{0,2}$/.test(value)) return RETRY_AFTER_FALLBACK_SECONDS
-  const seconds = Number(value)
-  return seconds <= RETRY_AFTER_MAX_SECONDS ? seconds : RETRY_AFTER_FALLBACK_SECONDS
-}
-
 export function passkeyLoginHttpFailure(
   stage: PasskeyLoginStage,
   status: number,

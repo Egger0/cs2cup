@@ -11,7 +11,10 @@ import {
 import { PasskeyRequestError, passkeyError, privateJson, readPasskeyJson } from '@/lib/passkey-http'
 import { getCurrentParticipant } from '@/lib/participant-auth'
 import { participantRegistrationOptions } from '@/lib/participant-passkeys'
-import { beginClaimCeremony } from '@/lib/queries/participant-passkey-challenges'
+import {
+  beginClaimCeremony,
+  participantPasskeyRetryAfterSeconds,
+} from '@/lib/queries/participant-passkey-challenges'
 import { ParticipantPasskeyError } from '@/lib/queries/participant-passkey-shared'
 import { clientFingerprint } from '@/lib/ratelimit'
 import { resolveWebAuthnConfig } from '@/lib/webauthn-config'
@@ -21,11 +24,15 @@ interface ClaimOptionsBody {
   token?: unknown
 }
 
-function claimOptionsError(error: unknown) {
+function claimOptionsError(error: unknown, now: number) {
   if (error instanceof CsrfError) return passkeyError(403, '请求来源无法确认，请刷新页面重试。')
   if (error instanceof PasskeyRequestError) return passkeyError(400)
   if (error instanceof ParticipantPasskeyError) {
-    if (error.code === 'rate_limited') return passkeyError(429, '尝试过于频繁，请稍后再试。')
+    if (error.code === 'rate_limited') {
+      const response = passkeyError(429, '尝试过于频繁，请稍后再试。')
+      response.headers.set('Retry-After', String(participantPasskeyRetryAfterSeconds(now)))
+      return response
+    }
     if (error.code === 'entry_already_claimed') {
       return passkeyError(409, '这份报名已经绑定通行密钥。')
     }
@@ -35,6 +42,7 @@ function claimOptionsError(error: unknown) {
 }
 
 export async function POST(request: NextRequest) {
+  const now = Date.now()
   try {
     assertCsrfRequest(request)
     if (await getCurrentParticipant()) {
@@ -56,7 +64,7 @@ export async function POST(request: NextRequest) {
       principalId,
       userHandle,
       previousToken: ceremonyTokenFromRequest(request),
-      now: Date.now(),
+      now,
     })
     const config = resolveWebAuthnConfig()
     const options = await participantRegistrationOptions({
@@ -68,6 +76,6 @@ export async function POST(request: NextRequest) {
     })
     return setCeremonyCookie(privateJson(options), ceremonyToken)
   } catch (error) {
-    return clearCeremonyCookie(claimOptionsError(error))
+    return clearCeremonyCookie(claimOptionsError(error, now))
   }
 }
