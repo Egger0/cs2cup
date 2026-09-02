@@ -29,6 +29,7 @@ const NAV_ENGLISH: Record<string, string> = {
   '/about': 'ABOUT',
   '/guestbook': 'GUESTBOOK',
   '/search': 'SEARCH',
+  '/me': 'MY EVENTS',
 }
 
 export function SiteHeader({ setting, links, status }: SiteHeaderProps) {

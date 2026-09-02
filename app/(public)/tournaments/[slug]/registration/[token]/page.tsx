@@ -1,11 +1,14 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { SectionHead } from '@/components/domain/Sections'
+import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { formatSiteDateTime } from '@/lib/datetime'
+import { participantEntryHasOwner } from '@/lib/queries/participant-passkey-challenges'
 import {
   getManagedRegistration,
   type ManagedRegistrationTeam,
 } from '@/lib/queries/registration-management'
+import { ParticipantPasskeyClaim } from './ParticipantPasskeyClaim'
 import { RegistrationManager } from './RegistrationManager'
 import styles from './management.module.css'
 
@@ -73,6 +76,7 @@ export default async function RegistrationStatusPage({
   const deadline = registration.tournament.regDeadline
     ? formatSiteDateTime(registration.tournament.regDeadline)
     : null
+  const claimed = await participantEntryHasOwner(cloudflareBindings().db, registration.team.id)
   return (
     <section className="section">
       <div className="wrap">
@@ -88,6 +92,16 @@ export default async function RegistrationStatusPage({
             <span>{deadline ? `报名截止 ${deadline}` : '未设置报名截止时间'}</span>
           </div>
         </section>
+
+        <ParticipantPasskeyClaim
+          slug={slug}
+          token={token}
+          tournamentTitle={registration.tournament.title}
+          teamTag={registration.team.tag}
+          teamName={registration.team.name}
+          statusLabel={STATUS_LABEL[registration.team.status]}
+          claimed={claimed}
+        />
 
         {registration.editable ? (
           <RegistrationManager

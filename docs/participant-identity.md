@@ -22,33 +22,51 @@ profile, and authorization features.
 ## Bootstrap and recovery
 
 The first participant flow starts from an existing registration-management link. Visiting a link
-does not create an account or claim an entry. A future explicit enrollment ceremony will create a
-principal, verify a Passkey, and claim the entry in one atomic write boundary.
+does not create an account or claim an entry. Only the explicit Passkey enrollment action starts a
+ceremony. Successful verification creates the principal, claims the entry, stores the credential,
+and opens a participant session in one atomic D1 batch.
 
 A namespaced external identity resolves to the same principal after a lost session, which provides
 the foundation for verified recovery without converting event contact fields into credentials.
-Recovery, credential deletion, and ownership transfer still require explicit audit and lifecycle
-work before they are exposed to participants.
+Recovery, additional credential enrollment, credential deletion, and ownership transfer still
+require explicit audit and lifecycle work before they are exposed to participants. Until recovery
+exists, the management link remains the editing capability and must not be cleared after a claim.
 
 ## Passkey boundary
 
 The production relying-party origin is `https://cn.nbtesportsclub.online` and the initial RP ID is
 the exact host `cn.nbtesportsclub.online`. Local ceremonies use `http://localhost:3000` and RP ID
-`localhost`. Worker preview domains do not share credentials with the custom domain. Future
-WebAuthn routes must derive this configuration from the trusted canonical site setting, require
-HTTPS outside localhost, and never trust request host headers.
+`localhost`. Worker preview domains do not share credentials with the custom domain. WebAuthn
+routes derive this configuration from the trusted canonical site setting, require HTTPS outside
+localhost, and never trust request host headers.
 
-Credential, challenge, and participant-session tables are deliberately deferred to the next
-vertical slice. No inert Passkey UI or half-implemented ceremony is introduced by this migration.
+Registration and usernameless authentication require user verification and discoverable
+credentials. Ceremony tokens and participant-session tokens are random, stored hash-only, and
+carried in `__Host-` cookies. Challenges expire after five minutes and are atomically consumed
+before cryptographic verification, including failed attempts. Authentication updates the signature
+counter through a credential revision compare-and-swap before issuing the session.
+
+The initial participant surface is intentionally narrow: enrollment on the management receipt,
+Passkey-only sign-in, a read-only owned-entry archive, and sign-out. It does not imply recovery,
+credential management, or authorization for tournament mutations.
+
+## UX references
+
+The ceremony placement, device-local privacy language, and explicit user control follow the
+[FIDO Alliance passkey UX guidelines](https://fidoalliance.org/new-design-guidelines-optimizing-user-sign-in-experience-with-passkeys/) and
+[Google's passkey interface guidance](https://developers.google.com/identity/passkeys/ux/user-interface-design).
+Platform language is cross-checked against
+[Apple's passkey overview](https://developer.apple.com/passkeys/), while ceremony behavior follows
+[WebAuthn Level 3](https://www.w3.org/TR/webauthn-3/). The visual treatment and repository assets are
+original to this project; no third-party artwork is bundled by this slice.
 
 ## Rollout and rollback
 
-Apply the additive migration before enabling any participant account route. Anonymous registration,
-management links, public reads, and the singleton administrator path do not depend on the new
-tables and continue unchanged.
+Apply additive migrations `0009` and `0010` before enabling participant routes. Anonymous
+registration, management links, public reads, and the singleton administrator path do not depend
+on participant sessions and continue unchanged.
 
-To pause rollout, stop new identity and claim writes; existing public and administrator behavior
-requires no database rollback. If the unused foundation must be removed, first verify that no
-participant feature references it, export any private identity data required by policy, and remove
-the four new relations in reverse dependency order. Production migration and destructive rollback
-remain protected maintainer operations.
+To pause rollout, disable the participant Passkey routes and navigation entry; existing public and
+administrator behavior requires no database rollback. Preserve participant data and management
+links while sessions expire. Production migration and destructive rollback remain protected
+maintainer operations.

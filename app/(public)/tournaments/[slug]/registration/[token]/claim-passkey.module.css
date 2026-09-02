@@ -1,0 +1,284 @@
+.pass {
+  --pass-blue: #155d8c;
+  --pass-blue-soft: rgba(21, 93, 140, 0.1);
+  --pass-paper: #eef1ed;
+  --pass-ink: #17242a;
+  --pass-muted: #5d696c;
+  position: relative;
+  max-width: 1040px;
+  margin-bottom: 36px;
+  overflow: hidden;
+  border: 1px solid #8a9ba0;
+  border-left: 5px solid var(--pass-blue);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 31px, rgba(21, 93, 140, 0.045) 32px),
+    var(--pass-paper);
+  box-shadow: 10px 12px 0 rgba(23, 36, 42, 0.07);
+  color: var(--pass-ink);
+}
+
+.pass::after {
+  position: absolute;
+  top: 0;
+  right: 298px;
+  height: 100%;
+  border-left: 1px dashed rgba(21, 93, 140, 0.34);
+  content: '';
+  pointer-events: none;
+}
+
+.header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 24px 26px 20px;
+  border-bottom: 2px solid var(--pass-ink);
+}
+
+.kicker,
+.serial,
+.facts dt,
+.notes strong,
+.actionStatus,
+.complete a {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  letter-spacing: 0.1em;
+}
+
+.kicker {
+  color: var(--pass-blue);
+  font-size: 0.62rem;
+  font-weight: 750;
+}
+
+.header h2 {
+  max-width: 680px;
+  margin-top: 8px;
+  font-family: 'NLC Serif', 'Songti SC', serif;
+  font-size: clamp(1.85rem, 4vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+}
+
+.serial {
+  flex: none;
+  padding: 7px 9px;
+  border: 1px solid var(--pass-blue);
+  color: var(--pass-blue);
+  font-size: 0.54rem;
+  font-weight: 700;
+  transform: rotate(1.5deg);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 298px;
+}
+
+.facts {
+  display: grid;
+  grid-column: 1;
+  grid-row: 1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 24px 26px 0;
+  background: rgba(23, 36, 42, 0.2);
+}
+
+.facts > div {
+  min-width: 0;
+  padding: 12px 13px;
+  background: rgba(238, 241, 237, 0.96);
+}
+
+.facts dt {
+  color: var(--pass-muted);
+  font-size: 0.56rem;
+}
+
+.facts dd {
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  font-size: 0.79rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.notes {
+  display: grid;
+  grid-column: 1;
+  grid-row: 2;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  padding: 20px 26px 26px;
+  color: var(--pass-muted);
+  font-size: 0.7rem;
+}
+
+.notes p {
+  padding-top: 10px;
+  border-top: 1px solid rgba(21, 93, 140, 0.3);
+}
+
+.notes strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--pass-blue);
+  font-size: 0.55rem;
+}
+
+.action {
+  display: flex;
+  min-width: 0;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  flex-direction: column;
+  justify-content: center;
+  padding: 24px;
+  background: var(--pass-blue-soft);
+}
+
+.claimButton {
+  display: grid;
+  width: 100%;
+  min-height: 58px;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 12px;
+  border: 1px solid var(--pass-blue);
+  border-radius: 0;
+  background: var(--pass-blue);
+  color: #f7f5eb;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 720;
+  text-align: left;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.claimButton:not(:disabled):hover {
+  background: #0e486f;
+}
+
+.claimButton:disabled {
+  border-color: #88979a;
+  background: #d8ddda;
+  color: #697578;
+  cursor: not-allowed;
+}
+
+.keyMark {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid currentColor;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.08em;
+}
+
+.actionStatus {
+  min-height: 42px;
+  margin-top: 11px;
+  color: var(--pass-muted);
+  font-size: 0.57rem;
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+}
+
+.error {
+  padding-left: 9px;
+  border-left: 2px solid #9b3535;
+  color: #842d2d;
+}
+
+.complete {
+  display: grid;
+  gap: 13px;
+}
+
+.stamp {
+  width: fit-content;
+  padding: 6px 9px 5px;
+  border: 3px double var(--pass-blue);
+  color: var(--pass-blue);
+  font-family: 'NLC Role Sans', var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  transform: rotate(-2deg);
+}
+
+.complete strong {
+  font-size: 0.91rem;
+}
+
+.complete p {
+  margin-top: 4px;
+  color: var(--pass-muted);
+  font-size: 0.68rem;
+}
+
+.complete a {
+  width: fit-content;
+  padding-bottom: 3px;
+  border-bottom: 1px solid currentColor;
+  color: var(--pass-blue);
+  font-size: 0.61rem;
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .pass::after {
+    display: none;
+  }
+
+  .header {
+    padding: 20px 18px 16px;
+  }
+
+  .serial {
+    display: none;
+  }
+
+  .header h2 {
+    font-size: clamp(1.75rem, 9vw, 2.55rem);
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .action {
+    padding: 16px 18px;
+    border-bottom: 1px dashed rgba(21, 93, 140, 0.34);
+  }
+
+  .actionStatus {
+    min-height: 0;
+  }
+
+  .facts {
+    grid-template-columns: 1fr;
+    margin: 18px 18px 0;
+  }
+
+  .notes {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .claimButton {
+    transition: none;
+  }
+}

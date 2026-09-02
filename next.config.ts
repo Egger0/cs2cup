@@ -2,7 +2,14 @@ import type { NextConfig } from 'next'
 import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
 import { PRIVATE_NO_STORE } from './lib/http-cache'
 
-const PRIVATE_ROUTE_SOURCES = ['/admin/:path*', '/media/:path*', '/photos/:path*']
+const PRIVATE_ROUTE_SOURCES = [
+  '/admin/:path*',
+  '/api/participant/:path*',
+  '/login',
+  '/me',
+  '/media/:path*',
+  '/photos/:path*',
+]
 const REGISTRATION_MANAGEMENT_SOURCE = '/tournaments/:slug/registration/:token'
 
 if (process.env.NODE_ENV === 'development') {

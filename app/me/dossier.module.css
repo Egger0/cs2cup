@@ -1,0 +1,248 @@
+.dossier {
+  position: relative;
+  padding: clamp(24px, 5vw, 62px) clamp(18px, 5vw, 68px) 20px;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 27px, rgba(21, 65, 88, 0.045) 28px), var(--paper);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+  color: var(--paper-ink);
+  animation: fileIn 0.56s var(--ease-out) both;
+}
+
+.dossier::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--stamp);
+  content: '';
+}
+
+.fileHeader {
+  display: grid;
+  gap: 24px;
+  padding-bottom: 26px;
+  border-bottom: 2px solid var(--paper-ink);
+}
+
+.slug,
+.sectionLabel span,
+.fileFooter {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.slug {
+  color: var(--stamp);
+  font-size: 0.57rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.fileHeader h2 {
+  margin-top: 10px;
+  font-family: 'NLC Serif', 'Songti SC', serif;
+  font-size: clamp(2rem, 7vw, 4.3rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.teamName {
+  margin-top: 12px;
+  color: #3d474b;
+  font-family: var(--font-display), 'NLC Role Sans', sans-serif;
+  font-size: clamp(1.2rem, 4vw, 2.15rem);
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+.teamName span {
+  color: var(--stamp);
+}
+
+.status {
+  align-self: start;
+  width: fit-content;
+  padding: 8px 12px 7px;
+  border: 2px solid currentColor;
+  color: var(--stamp);
+  font-family: 'NLC Role Sans', var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  line-height: 1.05;
+  text-align: center;
+  transform: rotate(-2deg);
+}
+
+.status small {
+  display: block;
+  margin-bottom: 3px;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.48rem;
+  font-weight: 500;
+}
+
+.status[data-status='pending'] {
+  border-style: double;
+}
+
+.status[data-status='rejected'] {
+  opacity: 0.72;
+}
+
+.facts {
+  display: grid;
+  gap: 1px;
+  margin-top: 26px;
+  background: rgba(23, 32, 38, 0.18);
+}
+
+.facts > div,
+.private dl > div {
+  min-width: 0;
+  padding: 13px 14px;
+  background: rgba(238, 234, 221, 0.96);
+}
+
+.facts dt,
+.private dt {
+  color: var(--paper-muted);
+  font-size: 0.63rem;
+}
+
+.facts dd,
+.private dd {
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+  font-size: 0.82rem;
+}
+
+.roster,
+.private {
+  margin-top: 34px;
+}
+
+.sectionLabel {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgba(23, 32, 38, 0.35);
+}
+
+.sectionLabel h3 {
+  font-family: 'NLC Role Sans', var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 720;
+}
+
+.sectionLabel span {
+  color: var(--stamp);
+  font-size: 0.5rem;
+}
+
+.roster ol {
+  list-style: none;
+}
+
+.roster li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 4px;
+  border-bottom: 1px dotted rgba(23, 32, 38, 0.24);
+  font-size: 0.78rem;
+}
+
+.roster li > span:last-child,
+.order,
+.emptyRoster {
+  color: var(--paper-muted);
+  font-size: 0.64rem;
+}
+
+.order {
+  font-family: var(--font-mono), monospace;
+}
+
+.emptyRoster {
+  padding-block: 18px;
+}
+
+.private {
+  padding: 16px;
+  border: 1px solid rgba(23, 90, 126, 0.42);
+  background: rgba(23, 107, 154, 0.055);
+}
+
+.private dl {
+  display: grid;
+  gap: 1px;
+  margin-top: 1px;
+  background: rgba(23, 32, 38, 0.16);
+}
+
+.private dd {
+  white-space: pre-wrap;
+}
+
+.fileFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 30px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(23, 32, 38, 0.22);
+  color: var(--paper-muted);
+  font-size: 0.5rem;
+}
+
+.fileFooter a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  width: fit-content;
+  border-bottom: 1px solid currentColor;
+  color: var(--stamp);
+}
+
+@keyframes fileIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (min-width: 680px) {
+  .fileHeader {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .private dl {
+    grid-template-columns: minmax(180px, 0.65fr) minmax(0, 1.35fr);
+  }
+
+  .fileFooter {
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dossier {
+    animation: none;
+  }
+}
