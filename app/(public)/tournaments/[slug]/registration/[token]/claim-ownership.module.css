@@ -115,6 +115,9 @@
 }
 
 .switchNotice button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   margin-top: 5px;
   padding: 0;
   border: 0;
@@ -131,6 +134,33 @@
 .switchNotice button:disabled {
   cursor: wait;
   opacity: 0.62;
+}
+
+.switchNotice .ownerSwitchButton {
+  width: 100%;
+  min-height: 48px;
+  justify-content: space-between;
+  padding: 9px 11px;
+  border: 1px solid var(--pass-blue);
+  background: transparent;
+  font-family: 'NLC Role Sans', var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+}
+
+.ownerSwitchButton:not(:disabled):hover {
+  background: rgba(21, 93, 140, 0.08);
+}
+
+.switchFeedback {
+  min-height: 22px;
+  color: var(--pass-muted);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.55rem;
+}
+
+.switchFeedback p {
+  margin-top: 8px;
 }
 
 .neutralStamp {

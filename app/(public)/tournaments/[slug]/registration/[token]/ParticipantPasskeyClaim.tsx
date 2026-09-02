@@ -58,6 +58,8 @@ export function ParticipantPasskeyClaim({
   const [switchState, setSwitchState] = useState<SwitchState>('idle')
   const [attachConflict, setAttachConflict] = useState(false)
   const confirmButton = useRef<HTMLButtonElement>(null)
+  const switchButton = useRef<HTMLButtonElement>(null)
+  const switchInFlight = useRef(false)
   const visibleOwnership = attachConflict ? 'owned-by-other' : ownershipState
 
   useEffect(() => {
@@ -74,6 +76,10 @@ export function ParticipantPasskeyClaim({
   useEffect(() => {
     if (attachState === 'confirming') confirmButton.current?.focus()
   }, [attachState])
+
+  useEffect(() => {
+    if (attachConflict) switchButton.current?.focus()
+  }, [attachConflict])
 
   useEffect(() => {
     function refreshRestoredPage(event: PageTransitionEvent) {
@@ -160,7 +166,8 @@ export function ParticipantPasskeyClaim({
   }
 
   async function switchParticipant() {
-    if (switchState === 'working') return
+    if (switchState === 'working' || switchInFlight.current) return
+    switchInFlight.current = true
     setSwitchState('working')
     try {
       const response = await fetch('/api/participant/session', {
@@ -174,6 +181,7 @@ export function ParticipantPasskeyClaim({
       // A full navigation applies the cleared session cookie before login renders.
       window.location.assign(loginHref)
     } catch {
+      switchInFlight.current = false
       setSwitchState('error')
     }
   }
@@ -222,6 +230,9 @@ export function ParticipantPasskeyClaim({
               conflict={attachConflict}
               hasActiveParticipant={hasActiveParticipant}
               loginHref={loginHref}
+              switchState={switchState}
+              switchButton={switchButton}
+              onSwitch={switchParticipant}
             />
           ) : null}
         </div>
