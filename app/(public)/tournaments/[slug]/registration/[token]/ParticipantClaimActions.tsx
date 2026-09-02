@@ -177,7 +177,8 @@ export function CurrentOwnerAction() {
         <strong>已在你的赛事通行证中</strong>
         <p>这份报名已经出现在“我的赛事”；原管理链接继续用于修改。</p>
       </div>
-      <Link href="/me">前往我的赛事 ↗</Link>
+      {/* The private archive must not enter the client route cache. */}
+      <a href="/me">前往我的赛事 ↗</a>
     </div>
   )
 }

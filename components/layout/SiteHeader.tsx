@@ -224,24 +224,42 @@ export function SiteHeader({ setting, links, status }: SiteHeaderProps) {
           <ol className={menuStyles.menuList}>
             {links.map((link, index) => {
               const active = isActive(link.href)
+              const content = (
+                <>
+                  <span className={menuStyles.number}>{String(index + 1).padStart(2, '0')}</span>
+                  <span className={menuStyles.menuLabel}>
+                    <strong>{link.label}</strong>
+                    <small>{NAV_ENGLISH[link.href]}</small>
+                  </span>
+                  <span className={menuStyles.arrow} aria-hidden="true">
+                    ↗
+                  </span>
+                </>
+              )
               return (
                 <li key={link.href}>
-                  <Link
-                    ref={index === focusMenuIndex ? menuFocusRef : undefined}
-                    href={link.href}
-                    className={active ? menuStyles.active : undefined}
-                    aria-current={active ? 'page' : undefined}
-                    onClick={() => setOpen(false)}
-                  >
-                    <span className={menuStyles.number}>{String(index + 1).padStart(2, '0')}</span>
-                    <span className={menuStyles.menuLabel}>
-                      <strong>{link.label}</strong>
-                      <small>{NAV_ENGLISH[link.href]}</small>
-                    </span>
-                    <span className={menuStyles.arrow} aria-hidden="true">
-                      ↗
-                    </span>
-                  </Link>
+                  {link.href === '/me' ? (
+                    /* A document navigation keeps the private archive outside the router cache. */
+                    <a
+                      ref={index === focusMenuIndex ? menuFocusRef : undefined}
+                      href={link.href}
+                      className={active ? menuStyles.active : undefined}
+                      aria-current={active ? 'page' : undefined}
+                      onClick={() => setOpen(false)}
+                    >
+                      {content}
+                    </a>
+                  ) : (
+                    <Link
+                      ref={index === focusMenuIndex ? menuFocusRef : undefined}
+                      href={link.href}
+                      className={active ? menuStyles.active : undefined}
+                      aria-current={active ? 'page' : undefined}
+                      onClick={() => setOpen(false)}
+                    >
+                      {content}
+                    </Link>
+                  )}
                 </li>
               )
             })}

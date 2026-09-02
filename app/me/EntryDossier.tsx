@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { d1UtcTimestampToIso, formatSiteDateTime, isIsoInstant } from '@/lib/datetime'
 import type { ParticipantTournamentEntry } from '@/lib/queries/participant-account'
 import styles from './dossier.module.css'
@@ -98,9 +97,9 @@ export function EntryDossier({ entry }: { entry: ParticipantTournamentEntry }) {
       </section>
 
       <footer className={styles.fileFooter}>
-        <Link href={`/tournaments/${encodeURIComponent(entry.tournament.slug)}`}>
+        <a href={`/tournaments/${encodeURIComponent(entry.tournament.slug)}`}>
           查看公开赛事页 <span aria-hidden="true">↗</span>
-        </Link>
+        </a>
         <span>资料修改 / 使用报名回执中的原管理链接</span>
       </footer>
     </article>

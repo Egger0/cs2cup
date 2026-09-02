@@ -2,6 +2,7 @@
 
 import { browserSupportsWebAuthn, startRegistration } from '@simplewebauthn/browser'
 import { useEffect, useRef, useState } from 'react'
+import { publishParticipantSessionEnded } from '@/lib/participant-session-events'
 
 import {
   AnonymousClaimAction,
@@ -169,6 +170,7 @@ export function ParticipantPasskeyClaim({
       })
       if (response.status !== 204) throw new Error('participant logout failed')
 
+      publishParticipantSessionEnded()
       // A full navigation applies the cleared session cookie before login renders.
       window.location.assign(loginHref)
     } catch {
