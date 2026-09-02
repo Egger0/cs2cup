@@ -7,16 +7,12 @@ import { usePathname } from 'next/navigation'
 import { Badge } from '@/components/ui'
 import type { SiteSetting } from '@/lib/types'
 import menuStyles from './SiteMenu.module.css'
+import { SiteHeaderFallback, type SiteNavLink } from './SiteHeaderFallback'
 import styles from './SiteHeader.module.css'
-
-interface NavLink {
-  href: string
-  label: string
-}
 
 interface SiteHeaderProps {
   setting: SiteSetting
-  links: NavLink[]
+  links: SiteNavLink[]
   status?: { label: string; open: boolean }
 }
 
@@ -37,6 +33,7 @@ export function SiteHeader({ setting, links, status }: SiteHeaderProps) {
   const isHome = pathname === '/'
   const [open, setOpen] = useState(false)
   const [homeTone, setHomeTone] = useState<'dark' | 'light'>('dark')
+  const [clientReady, setClientReady] = useState(false)
   const brandRef = useRef<HTMLAnchorElement>(null)
   const menuFocusRef = useRef<HTMLAnchorElement>(null)
   const menuRef = useRef<HTMLElement>(null)
@@ -49,6 +46,16 @@ export function SiteHeader({ setting, links, status }: SiteHeaderProps) {
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
   const activeMenuIndex = links.findIndex(link => isActive(link.href))
   const focusMenuIndex = activeMenuIndex >= 0 ? activeMenuIndex : 0
+
+  useEffect(() => {
+    let active = true
+    Promise.resolve().then(() => {
+      if (active) setClientReady(true)
+    })
+    return () => {
+      active = false
+    }
+  }, [])
 
   useEffect(() => {
     if (!isHome) return
@@ -191,22 +198,26 @@ export function SiteHeader({ setting, links, status }: SiteHeaderProps) {
               {status.label}
             </Badge>
           ) : null}
-          <button
-            ref={toggleRef}
-            type="button"
-            className={styles.toggle}
-            aria-controls="site-menu"
-            aria-expanded={open}
-            aria-label={open ? '关闭全站目录' : '打开全站目录'}
-            onClick={() => setOpen(value => !value)}
-          >
-            <span className={styles.toggleLabel}>{open ? '关闭' : '目录'}</span>
-            <small>{String(links.length).padStart(2, '0')}</small>
-            <span className={styles.menuIcon} aria-hidden="true">
-              <i />
-              <i />
-            </span>
-          </button>
+          {clientReady ? (
+            <button
+              ref={toggleRef}
+              type="button"
+              className={styles.toggle}
+              aria-controls="site-menu"
+              aria-expanded={open}
+              aria-label={open ? '关闭全站目录' : '打开全站目录'}
+              onClick={() => setOpen(value => !value)}
+            >
+              <span className={styles.toggleLabel}>{open ? '关闭' : '目录'}</span>
+              <small>{String(links.length).padStart(2, '0')}</small>
+              <span className={styles.menuIcon} aria-hidden="true">
+                <i />
+                <i />
+              </span>
+            </button>
+          ) : (
+            <SiteHeaderFallback links={links} />
+          )}
         </div>
       </div>
 
