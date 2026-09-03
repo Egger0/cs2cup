@@ -26,7 +26,7 @@ const NAV_ENGLISH: Record<string, string> = {
   '/about': 'ABOUT',
   '/guestbook': 'GUESTBOOK',
   '/search': 'SEARCH',
-  '/me': 'MY PASS',
+  '/me': 'MY EVENTS',
 }
 
 export function SiteHeader({ setting, links, status }: SiteHeaderProps) {
@@ -202,14 +202,13 @@ export function SiteHeader({ setting, links, status }: SiteHeaderProps) {
           <a
             href="/me"
             className={open ? `${passStyles.pass} ${passStyles.hidden}` : passStyles.pass}
-            aria-label="我的通行证"
             aria-hidden={open ? 'true' : undefined}
             tabIndex={open ? -1 : undefined}
           >
             <small className={passStyles.code} aria-hidden="true">
-              <span>ENTRY / </span>PASS
+              <span>MY / </span>EVENTS
             </small>
-            <span className={passStyles.label}>我的通行证</span>
+            <span className={passStyles.label}>我的赛事</span>
           </a>
           {clientReady ? (
             <button
