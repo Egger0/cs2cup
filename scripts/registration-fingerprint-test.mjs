@@ -14,6 +14,7 @@ assert.match(first, /^v1:[0-9a-f]{64}$/)
 assert.equal(first, fingerprintAddress(' 203.0.113.10 ', secret))
 assert.notEqual(first, fingerprintAddress('203.0.113.11', secret))
 assert.notEqual(first, fingerprintAddress('203.0.113.10', otherSecret))
+assert.notEqual(first, fingerprintAddress('203.0.113.10', secret, 'admin-login'))
 
 assert.equal(
   fingerprintAddress('2001:0db8:0:0:0:0:0:1', secret),
