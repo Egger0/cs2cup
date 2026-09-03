@@ -1,4 +1,7 @@
-import { participantRegistrationReturnPath } from './participant-return.ts'
+import {
+  participantRegistrationReturnPath,
+  safeParticipantReturnPath,
+} from './participant-return.ts'
 
 export interface ParticipantLoginNotice {
   readonly signal: string
@@ -33,6 +36,13 @@ export interface PasskeyLoginFeedback {
 }
 
 type PasskeyLoginStage = 'options' | 'verification'
+
+export function replaceParticipantLoginHistory(
+  location: Pick<Location, 'replace'>,
+  returnTo: unknown,
+) {
+  location.replace(safeParticipantReturnPath(returnTo))
+}
 
 export function participantLoginNotice(reason: unknown): ParticipantLoginNotice | null {
   if (reason === 'expired') return EXPIRED_NOTICE
