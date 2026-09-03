@@ -13,7 +13,6 @@
     "prebuild": "node scripts/generate-static-images.mjs",
     "build": "next build",
     "cf:build": "opennextjs-cloudflare build",
-    "postcf:build": "node scripts/workers-production-migrate.mjs",
     "cf:build:local": "opennextjs-cloudflare build --config wrangler.local.jsonc",
     "cf:size": "node scripts/worker-size-test.mjs",
     "deploy": "node scripts/workers-deploy.mjs",

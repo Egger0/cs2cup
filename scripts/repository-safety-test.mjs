@@ -22,7 +22,7 @@ for (const [name, command] of Object.entries(scripts)) {
 
 assert.match(scripts.dev, /^npm run db:local:migrate && next dev$/)
 assert.equal(scripts.deploy, 'node scripts/workers-deploy.mjs')
-assert.equal(scripts['postcf:build'], 'node scripts/workers-production-migrate.mjs')
+assert.equal(scripts['postcf:build'], undefined)
 assert.doesNotMatch(scripts['cf:build'], /wrangler\.local\.jsonc/)
 assert.match(scripts['cf:build:local'], /--config wrangler\.local\.jsonc/)
 assert.equal(scripts['cf:preview'], undefined)
@@ -52,7 +52,6 @@ for (const binding of localConfig.r2_buckets ?? []) {
 
 const localDatabase = await read('scripts/local-database.mjs')
 const workersDeploy = await read('scripts/workers-deploy.mjs')
-const workersProductionMigrate = await read('scripts/workers-production-migrate.mjs')
 const localEnvironment = await read('wrangler.local.env')
 const developmentEnvironment = await read('.env.development')
 assert.match(localDatabase, /configPath: CONFIG_PATH/)
@@ -64,9 +63,6 @@ assert.match(workersDeploy, /WORKERS_CI_BRANCH/)
 assert.match(workersDeploy, /migrations.*apply.*CS2CUP_DB.*--remote/s)
 assert.match(workersDeploy, /opennextjs-cloudflare.*deploy/s)
 assert.match(workersDeploy, /opennextjs-cloudflare.*upload/s)
-assert.match(workersProductionMigrate, /WORKERS_CI/)
-assert.match(workersProductionMigrate, /WORKERS_CI_BRANCH/)
-assert.match(workersProductionMigrate, /migrations.*apply.*CS2CUP_DB.*--remote/s)
 
 const nextConfig = await read('next.config.ts')
 assert.match(nextConfig, /configPath: ['"]\.\/wrangler\.local\.jsonc['"]/)

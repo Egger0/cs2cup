@@ -40,12 +40,13 @@ bindings are local-only, remote bindings are disabled in code, and telemetry is 
 Browser checks also reject non-loopback origins and outbound requests.
 
 [`wrangler.jsonc`](./wrangler.jsonc) is deployment configuration. `npm run cf:build` uses it to
-produce the same bundle as Workers Builds without deploying. In a production-branch Workers Build,
-its guarded post-build hook applies pending D1 migrations before publication. Use
-`npm run cf:build:local` to validate the local-only bindings. The protected Workers Builds deploy
-command is `npm run deploy`; it rechecks migrations before publishing the already-built Worker.
-Non-production Workers Builds upload an isolated preview version without migrations or traffic
-promotion. Contributors must not run remote migrations or deploy from local machines.
+produce the same bundle as Workers Builds without deploying or accessing remote data. Use
+`npm run cf:build:local` to validate the local-only bindings. The protected production-branch
+Workers Builds deploy command is `npm run deploy`; it applies pending D1 migrations and publishes
+the already-built Worker only after migration succeeds. Non-production Workers Builds upload an
+isolated preview version without migrations or traffic promotion. The Workers Builds API token must
+include D1 Edit permission. Contributors must not run remote migrations or deploy from local
+machines.
 
 ## Configuration
 
