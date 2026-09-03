@@ -4,12 +4,28 @@ import { registerHooks } from 'node:module'
 import { createMigratedDatabase } from './sqlite-fixture.mjs'
 
 const source = path => new URL(path, import.meta.url).href
-const authModule = 'data:text/javascript,export async function requireAdmin(){return {uid:"test"}}'
+const authSource = `
+  export class TournamentStaffAccessError extends Error {}
+  export async function requireAdmin() { return { uid: 'test' } }
+  export async function requireTournamentStaffCapability(tournamentId, capability) {
+    globalThis.__teamAuthCalls.push({ kind: 'require', tournamentId, capability })
+    if (globalThis.__teamAuthRejectInner) throw new TournamentStaffAccessError()
+    return { kind: 'admin', adminId: 1 }
+  }
+  export async function getCurrentTournamentStaffAccess(tournamentId, capability) {
+    globalThis.__teamAuthCalls.push({ kind: 'access', tournamentId, capability })
+    return globalThis.__teamStaffAccess
+  }
+`
+const authModule = `data:text/javascript,${encodeURIComponent(authSource)}`
 const bindingsModule =
   'data:text/javascript,export function cloudflareBindings(){return globalThis.__teamCheckInBindings}'
 const actionsQueryModule = `data:text/javascript,${encodeURIComponent(`
   function call(name, args) {
     globalThis.__teamActionCalls.push({ name, args })
+    if (name === 'setTeamCheckedIn' && globalThis.__teamActionError) {
+      throw globalThis.__teamActionError
+    }
     return globalThis.__teamActionRows[name] ?? []
   }
   export async function assignTeamSeed(...args) { return call('assignTeamSeed', args) }
@@ -87,6 +103,10 @@ const { listTeamsWithContact, removeTeam, setTeamCheckedIn, setTeamStatus } =
 
 const database = await createMigratedDatabase()
 
+globalThis.__teamAuthCalls = []
+globalThis.__teamAuthRejectInner = false
+globalThis.__teamStaffAccess = { ok: true, actor: { kind: 'admin', adminId: 1 } }
+
 try {
   database.exec(`
     INSERT INTO game (id, slug, name) VALUES (1, 'cs2', 'CS2');
@@ -126,8 +146,18 @@ try {
   assert.deepEqual(rosterQuery.parameters, [1])
   assert.equal(d1.queries.filter(query => query.sql.includes('FROM player')).length, 0)
 
+  globalThis.__teamAuthRejectInner = true
+  const deniedQueryCount = d1.queries.length
+  await assert.rejects(() => setTeamCheckedIn(10, 1, true, null))
+  assert.equal(d1.queries.length, deniedQueryCount, 'denied check-in must not reach D1')
+  globalThis.__teamAuthRejectInner = false
+
   const checkedInRows = await setTeamCheckedIn(10, 1, true, null)
   assert.equal(checkedInRows.length, 1)
+  assert.deepEqual(Object.keys(checkedInRows[0]).sort(), ['checked_in_at', 'id', 'tournament_id'])
+  const checkInQuery = d1.queries.find(query => query.sql.includes('UPDATE team'))
+  assert.doesNotMatch(checkInQuery.sql, /contact|note|seed|\*/i)
+  assert.match(checkInQuery.sql, /id = \?[\s\S]*tournament_id = \?[\s\S]*status = 'approved'/)
   const firstCheckIn = checkedInRows[0].checked_in_at
   assert.equal(typeof firstCheckIn, 'string')
   assert.equal((await setTeamCheckedIn(10, 1, true, null)).length, 0)
@@ -165,6 +195,7 @@ try {
 globalThis.__teamActionCalls = []
 globalThis.__teamActionRows = {}
 globalThis.__teamActionTags = []
+globalThis.__teamActionError = null
 
 const { deleteTeam, updateTeamCheckIn, updateTeamStatus } =
   await import('../app/admin/(console)/actions/teams.ts')
@@ -175,18 +206,47 @@ assert.equal((await updateTeamCheckIn(1, false, 'invalid', 1)).ok, false)
 assert.equal((await updateTeamCheckIn(1, true, '2026-08-31T00:00:00.000Z', 1)).ok, false)
 assert.equal((await updateTeamStatus(1, 'deleted', 1)).ok, false)
 assert.equal(globalThis.__teamActionCalls.length, 0)
+assert.equal(globalThis.__teamAuthCalls.filter(call => call.kind === 'access').length, 0)
+
+globalThis.__teamStaffAccess = {
+  ok: false,
+  reason: 'forbidden',
+  hadAdminCookie: false,
+  hadParticipantCookie: true,
+}
+const denied = await updateTeamCheckIn(1, true, null, 7)
+assert.equal(denied.code, 'forbidden')
+assert.equal(globalThis.__teamActionCalls.length, 0)
+assert.deepEqual(globalThis.__teamActionTags, [])
+
+globalThis.__teamStaffAccess = { ok: true, actor: { kind: 'participant', principalId: 'test' } }
+
+const auth = await import(authModule)
+globalThis.__teamActionError = new auth.TournamentStaffAccessError()
+const innerDenied = await updateTeamCheckIn(1, true, null, 7)
+assert.equal(innerDenied.code, 'forbidden')
+assert.deepEqual(globalThis.__teamActionTags, [])
+globalThis.__teamActionError = null
 
 const conflict = await updateTeamCheckIn(1, true, null, 7)
 assert.equal(conflict.ok, false)
-assert.match(conflict.error, /刷新/)
+assert.match(conflict.error, /同步/)
 
-globalThis.__teamActionRows.setTeamCheckedIn = [{ id: 1 }]
-assert.equal((await updateTeamCheckIn(1, true, null, 7)).ok, true)
+const checkInInstant = '2026-09-03T04:00:00.000Z'
+globalThis.__teamActionRows.setTeamCheckedIn = [{ id: 1, checked_in_at: checkInInstant }]
+const checkInSuccess = await updateTeamCheckIn(1, true, null, 7)
+assert.equal(checkInSuccess.ok, true)
+assert.equal(checkInSuccess.checkedInAt, checkInInstant)
 assert.deepEqual(globalThis.__teamActionCalls.at(-1), {
   name: 'setTeamCheckedIn',
   args: [1, 7, true, null],
 })
 assert.deepEqual(globalThis.__teamActionTags, ['teams:7'])
+assert.deepEqual(globalThis.__teamAuthCalls.filter(call => call.kind === 'access').at(-1), {
+  kind: 'access',
+  tournamentId: 7,
+  capability: 'tournament.check_in.write',
+})
 
 globalThis.__teamActionRows.setTeamStatus = [{ id: 1 }]
 assert.equal((await updateTeamStatus(1, 'approved', 7)).ok, true)

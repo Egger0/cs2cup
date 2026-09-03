@@ -9,11 +9,13 @@ import {
   participantAccessReceipt,
 } from '@/lib/queries/participant-account'
 import { participantNextMatch } from '@/lib/queries/participant-next-match'
+import { listCurrentParticipantCheckInWorkspaces } from '@/lib/queries/staff-check-in'
 import { AccessReceipt } from './AccessReceipt'
 import { EntryDossier } from './EntryDossier'
 import styles from './me.module.css'
 import { NextMatchBrief } from './NextMatchBrief'
 import { ParticipantSessionBoundary, ParticipantSignOut } from './ParticipantSessionBoundary'
+import { StaffWorkspaces } from './StaffWorkspaces'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,7 +41,7 @@ export default async function ParticipantAccountPage({
       return undefined
     },
   )
-  const [entries, receipt, nextMatch] = await Promise.all([
+  const [entries, receipt, nextMatch, staffWorkspaces] = await Promise.all([
     listParticipantTournamentEntries(participant.principalId),
     participantAccessReceipt(
       cloudflareBindings().db,
@@ -47,6 +49,7 @@ export default async function ParticipantAccountPage({
       participant.credentialId,
     ),
     nextMatchRequest,
+    listCurrentParticipantCheckInWorkspaces(),
   ])
   if (!receipt) redirect('/login?reason=expired')
   const briefNow =
@@ -91,6 +94,8 @@ export default async function ParticipantAccountPage({
             </p>
           </aside>
         </div>
+
+        <StaffWorkspaces workspaces={staffWorkspaces} />
 
         {nextMatch !== undefined && (hasApprovedEntry || hasPendingEntry) ? (
           <NextMatchBrief

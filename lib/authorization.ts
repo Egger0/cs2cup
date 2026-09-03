@@ -15,6 +15,7 @@ export const STAFF_CAPABILITIES = [
 ] as const
 
 export type StaffCapability = (typeof STAFF_CAPABILITIES)[number]
+export type TournamentStaffCapability = Exclude<StaffCapability, 'platform.manage'>
 export type StaffRole = 'platform_owner' | 'organizer' | 'referee' | 'check_in_operator'
 export type StaffActor =
   | { kind: 'admin'; adminId: number }
@@ -74,6 +75,12 @@ export function staffRoleAllows(role: string, capability: StaffCapability) {
   return ROLE_CAPABILITIES[role as StaffRole].includes(capability)
 }
 
+export function participantRolesForCapability(capability: TournamentStaffCapability) {
+  return STAFF_ROLES.filter(
+    role => role !== 'platform_owner' && staffRoleAllows(role, capability),
+  ) as Exclude<StaffRole, 'platform_owner'>[]
+}
+
 export async function hasStaffCapability(
   db: AuthorizationDatabase,
   actor: StaffActor,
@@ -101,9 +108,7 @@ export async function hasStaffCapability(
   }
 
   if (resource.kind !== 'tournament') return false
-  const roles = STAFF_ROLES.filter(
-    role => role !== 'platform_owner' && staffRoleAllows(role, capability),
-  )
+  const roles = participantRolesForCapability(capability as TournamentStaffCapability)
   if (!roles.length) return false
   const placeholders = roles.map(() => '?').join(', ')
   const row = await db

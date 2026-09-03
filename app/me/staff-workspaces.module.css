@@ -1,0 +1,127 @@
+.switcher {
+  display: grid;
+  max-width: 1180px;
+  gap: clamp(24px, 4vw, 42px);
+  margin: 0 auto clamp(42px, 7vw, 82px);
+  padding: clamp(24px, 5vw, 46px);
+  border: 1px solid rgba(121, 185, 216, 0.36);
+  background:
+    linear-gradient(115deg, rgba(32, 129, 182, 0.15), transparent 46%),
+    repeating-linear-gradient(90deg, transparent 0 47px, rgba(121, 185, 216, 0.035) 48px), #11191d;
+}
+
+.switcher header > p {
+  color: #75b7d8;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.56rem;
+  letter-spacing: 0.15em;
+}
+
+.switcher h2 {
+  margin-top: 8px;
+  font-family: var(--font-display), 'NLC Role Sans', sans-serif;
+  font-size: clamp(2.3rem, 7vw, 4.4rem);
+  font-weight: 680;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.switcher header > span {
+  display: block;
+  max-width: 620px;
+  margin-top: 12px;
+  color: #9ba9ae;
+  font-size: 0.76rem;
+}
+
+.switcher ul {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+}
+
+.switcher a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 15px;
+  align-items: center;
+  min-height: 88px;
+  padding: 16px 18px;
+  border: 1px solid rgba(121, 185, 216, 0.2);
+  background: rgba(8, 13, 16, 0.74);
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    transform 180ms var(--ease-out);
+}
+
+.switcher a:hover {
+  border-color: #75b7d8;
+  background: rgba(20, 38, 47, 0.86);
+  transform: translateX(3px);
+}
+
+.signal {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #69bce5;
+  box-shadow: 0 0 0 6px rgba(105, 188, 229, 0.1);
+}
+
+.copy {
+  display: grid;
+  min-width: 0;
+}
+
+.copy small {
+  color: #79919c;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.08em;
+}
+
+.copy strong {
+  margin-top: 3px;
+  overflow: hidden;
+  color: #e2edf0;
+  font-family: 'NLC Role Sans', var(--font-body);
+  font-size: 0.98rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action {
+  color: #acd8e9;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.61rem;
+  letter-spacing: 0.06em;
+}
+
+@media (min-width: 900px) {
+  .switcher {
+    grid-template-columns: minmax(280px, 0.7fr) minmax(0, 1.3fr);
+    align-items: start;
+  }
+}
+
+@media (max-width: 540px) {
+  .switcher {
+    margin-inline: -2px;
+    padding: 22px 16px;
+  }
+
+  .switcher a {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .action {
+    grid-column: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .switcher a {
+    transition: none;
+  }
+}

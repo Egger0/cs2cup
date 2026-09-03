@@ -18,11 +18,11 @@ import {
   publishParticipantSessionEnded,
 } from '@/lib/participant-session-events'
 import { PARTICIPANT_SIGNED_OUT_LOGIN_PATH } from '@/lib/passkey-login-recovery'
+import { safeParticipantReturnPath } from '@/lib/participant-return'
 
 import pageStyles from './me.module.css'
 import styles from './session-boundary.module.css'
 
-const EXPIRED_LOGIN = '/login?reason=expired&returnTo=%2Fme'
 const MAX_TIMER_DELAY = 2_147_000_000
 
 type BoundaryMode = 'checking' | 'open' | 'signing-out' | 'sign-out-error' | 'closed'
@@ -35,7 +35,16 @@ interface SessionClock {
 }
 
 interface SessionBoundaryContextValue {
+  prepareForNavigation: () => void
   requestSignOut: () => void
+}
+
+interface PrivateSessionBoundaryProps {
+  children: ReactNode
+  observeParticipantSession?: boolean
+  returnTo?: string
+  sessionEndDestination?: string
+  sessionRemainingMs: number
 }
 
 const SessionBoundaryContext = createContext<SessionBoundaryContextValue | null>(null)
@@ -46,13 +55,21 @@ function isHistoryRestore() {
     .some(entry => (entry as PerformanceNavigationTiming).type === 'back_forward')
 }
 
-export function ParticipantSessionBoundary({
+export function PrivateSessionBoundary({
   children,
+  observeParticipantSession = false,
+  returnTo = '/me',
+  sessionEndDestination,
   sessionRemainingMs,
-}: {
-  children: ReactNode
-  sessionRemainingMs: number
-}) {
+}: PrivateSessionBoundaryProps) {
+  const returnPath = safeParticipantReturnPath(returnTo)
+  const expiredLogin = `/login?reason=expired&returnTo=${encodeURIComponent(returnPath)}`
+  const safeSessionEndDestination =
+    sessionEndDestination === '/admin/login'
+      ? sessionEndDestination
+      : safeParticipantReturnPath(sessionEndDestination) === sessionEndDestination
+        ? sessionEndDestination
+        : expiredLogin
   const [mode, setMode] = useState<BoundaryMode>('checking')
   const navigationStarted = useRef(false)
   const signOutPending = useRef(false)
@@ -75,8 +92,12 @@ export function ParticipantSessionBoundary({
   )
 
   const expireSession = useCallback(() => {
-    leavePrivatePage(EXPIRED_LOGIN)
-  }, [leavePrivatePage])
+    leavePrivatePage(safeSessionEndDestination)
+  }, [leavePrivatePage, safeSessionEndDestination])
+
+  const prepareForNavigation = useCallback(() => {
+    if (!navigationStarted.current) scrub('signing-out')
+  }, [scrub])
 
   const startSessionClock = useCallback(() => {
     if (sessionClock.current?.sourceRemainingMs === sessionRemainingMs) {
@@ -141,7 +162,7 @@ export function ParticipantSessionBoundary({
   useLayoutEffect(() => {
     const remaining = remainingSessionTime()
     const expired = !Number.isFinite(remaining) || remaining <= 0
-    const destination = expired ? EXPIRED_LOGIN : isHistoryRestore() ? '/me' : null
+    const destination = expired ? safeSessionEndDestination : isHistoryRestore() ? returnPath : null
 
     if (destination) {
       if (!navigationStarted.current) {
@@ -154,7 +175,7 @@ export function ParticipantSessionBoundary({
     // The initial gate is only revealed after the session and history state pass pre-paint checks.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMode('open')
-  }, [remainingSessionTime])
+  }, [remainingSessionTime, returnPath, safeSessionEndDestination])
 
   useEffect(() => {
     const scheduleExpiryCheck = () => {
@@ -180,7 +201,7 @@ export function ParticipantSessionBoundary({
     }
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
-        leavePrivatePage('/me')
+        leavePrivatePage(returnPath)
       } else {
         checkExpiry()
       }
@@ -193,18 +214,20 @@ export function ParticipantSessionBoundary({
     }
 
     let channel: BroadcastChannel | null = null
-    try {
-      channel = new BroadcastChannel(PARTICIPANT_SESSION_CHANNEL)
-      channel.addEventListener('message', handleChannelMessage)
-    } catch {
-      channel = null
+    if (observeParticipantSession) {
+      try {
+        channel = new BroadcastChannel(PARTICIPANT_SESSION_CHANNEL)
+        channel.addEventListener('message', handleChannelMessage)
+      } catch {
+        channel = null
+      }
     }
 
     document.addEventListener('visibilitychange', handleVisibility)
     window.addEventListener('focus', checkExpiry)
     window.addEventListener('pagehide', handlePageHide)
     window.addEventListener('pageshow', handlePageShow)
-    window.addEventListener('storage', handleStorage)
+    if (observeParticipantSession) window.addEventListener('storage', handleStorage)
     scheduleExpiryCheck()
 
     return () => {
@@ -213,15 +236,22 @@ export function ParticipantSessionBoundary({
       window.removeEventListener('focus', checkExpiry)
       window.removeEventListener('pagehide', handlePageHide)
       window.removeEventListener('pageshow', handlePageShow)
-      window.removeEventListener('storage', handleStorage)
+      if (observeParticipantSession) window.removeEventListener('storage', handleStorage)
       channel?.removeEventListener('message', handleChannelMessage)
       channel?.close()
     }
-  }, [expireSession, leavePrivatePage, remainingSessionTime, scrub])
+  }, [
+    expireSession,
+    leavePrivatePage,
+    observeParticipantSession,
+    remainingSessionTime,
+    returnPath,
+    scrub,
+  ])
 
   if (mode === 'checking') {
     return (
-      <SessionBoundaryContext.Provider value={{ requestSignOut }}>
+      <SessionBoundaryContext.Provider value={{ prepareForNavigation, requestSignOut }}>
         <div className={styles.initialGate} aria-hidden="true">
           {children}
         </div>
@@ -264,19 +294,42 @@ export function ParticipantSessionBoundary({
   }
 
   return (
-    <SessionBoundaryContext.Provider value={{ requestSignOut }}>
+    <SessionBoundaryContext.Provider value={{ prepareForNavigation, requestSignOut }}>
       {children}
     </SessionBoundaryContext.Provider>
   )
 }
 
-export function ParticipantSignOut() {
+export function ParticipantSessionBoundary(
+  props: Omit<PrivateSessionBoundaryProps, 'observeParticipantSession'>,
+) {
+  return <PrivateSessionBoundary {...props} observeParticipantSession />
+}
+
+export function PrivateSessionActionForm({
+  action,
+  label,
+}: {
+  action: (formData: FormData) => void | Promise<void>
+  label: string
+}) {
+  const boundary = useContext(SessionBoundaryContext)
+  if (!boundary) throw new Error('PrivateSessionActionForm requires PrivateSessionBoundary')
+
+  return (
+    <form action={action} onSubmit={boundary.prepareForNavigation}>
+      <button type="submit">{label}</button>
+    </form>
+  )
+}
+
+export function ParticipantSignOut({ label = '退出赛事通行' }: { label?: string }) {
   const boundary = useContext(SessionBoundaryContext)
   if (!boundary) throw new Error('ParticipantSignOut requires ParticipantSessionBoundary')
 
   return (
     <button type="button" onClick={boundary.requestSignOut}>
-      退出赛事通行
+      {label}
     </button>
   )
 }

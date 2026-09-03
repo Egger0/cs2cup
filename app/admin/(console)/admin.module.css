@@ -210,9 +210,24 @@
   margin-bottom: 0;
 }
 
+.panelActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.panelActions > a {
+  min-height: 44px;
+  padding: 8px 13px;
+  font-size: 0.76rem;
+}
+
 .panelAction {
   flex: none;
-  min-height: 38px;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   padding: 7px 11px;
   border: 1px solid var(--admin-line-strong, var(--line-strong));
   color: var(--admin-blue-strong, var(--ink));

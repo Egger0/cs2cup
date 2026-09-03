@@ -1,5 +1,5 @@
 import 'server-only'
-import { requireAdmin } from '../../auth'
+import { requireAdmin, requireTournamentStaffCapability } from '../../auth'
 import { cloudflareBindings } from '../../cloudflare-bindings'
 import { updatePrivateRows } from '../../rdb'
 import type { Team, TeamStatus } from '../../types'
@@ -117,20 +117,37 @@ export function setTeamCheckedIn(
   checkedIn: boolean,
   expectedCheckedInAt: string | null,
 ) {
-  return adminMutation(() =>
-    updatePrivateRows<TeamRow>(
-      'team',
-      { checked_in_at: checkedIn ? new Date().toISOString() : null },
-      {
-        filters: {
-          id: `eq.${id}`,
-          tournament_id: `eq.${tournamentId}`,
-          status: 'eq.approved',
-          checked_in_at: expectedCheckedInAt === null ? 'is.null' : `eq.${expectedCheckedInAt}`,
-        },
-      },
-    ),
-  )
+  return tournamentCheckInMutation(id, tournamentId, checkedIn, expectedCheckedInAt)
+}
+
+async function tournamentCheckInMutation(
+  id: number,
+  tournamentId: number,
+  checkedIn: boolean,
+  expectedCheckedInAt: string | null,
+) {
+  await requireTournamentStaffCapability(tournamentId, 'tournament.check_in.write')
+  const nextCheckedInAt = checkedIn ? new Date().toISOString() : null
+  const expectedClause =
+    expectedCheckedInAt === null ? 'checked_in_at IS NULL' : 'checked_in_at = ?'
+  const bindings =
+    expectedCheckedInAt === null
+      ? [nextCheckedInAt, id, tournamentId]
+      : [nextCheckedInAt, id, tournamentId, expectedCheckedInAt]
+  return (
+    await cloudflareBindings()
+      .db.prepare(
+        `UPDATE team
+         SET checked_in_at = ?
+         WHERE id = ?
+           AND tournament_id = ?
+           AND status = 'approved'
+           AND ${expectedClause}
+         RETURNING id, tournament_id, checked_in_at`,
+      )
+      .bind(...bindings)
+      .all<Pick<TeamRow, 'id' | 'tournament_id' | 'checked_in_at'>>()
+  ).results
 }
 
 export function removeTeam(id: number, tournamentId: number) {

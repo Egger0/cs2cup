@@ -1,4 +1,5 @@
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
+import { ButtonLink } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
 import { listAdminMatches, listTeamsWithContact } from '@/lib/queries/admin'
 import { getCurrentTournament, getPublicTeams } from '@/lib/queries/public'
@@ -51,13 +52,18 @@ export default async function AdminPage() {
             报名审核 · 共 {teams.length} 支 · 待审核 {pending} · 已通过 {approved}/
             {tournament.teamCap} · 已签到 {checkedIn}
           </h2>
-          <a
-            className={styles.panelAction}
-            href={`/admin/tournaments/${tournament.id}/teams.csv`}
-            download
-          >
-            导出 CSV
-          </a>
+          <div className={styles.panelActions}>
+            <ButtonLink href={`/admin/tournaments/${tournament.id}/check-in`} variant="primary">
+              打开签到台
+            </ButtonLink>
+            <a
+              className={styles.panelAction}
+              href={`/admin/tournaments/${tournament.id}/teams.csv`}
+              download
+            >
+              导出 CSV
+            </a>
+          </div>
         </div>
         <TeamTable teams={teams} tournamentId={tournament.id} />
       </section>
