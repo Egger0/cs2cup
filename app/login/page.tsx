@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getCurrentParticipant } from '@/lib/participant-auth'
+import { participantLoginNotice } from '@/lib/passkey-login-recovery'
 import { safeParticipantReturnPath } from '@/lib/participant-return'
 
 import PasskeyLogin from './PasskeyLogin'
@@ -26,7 +27,7 @@ export default async function ParticipantLoginPage({
   const participant = await getCurrentParticipant()
   if (participant) redirect(returnTo)
 
-  const accessExpired = params.reason === 'expired'
+  const notice = participantLoginNotice(params.reason)
 
   return (
     <main id="main" className={styles.page}>
@@ -62,14 +63,17 @@ export default async function ParticipantLoginPage({
           <p>系统将打开你已保存的通行密钥；无需输入账号或密码。</p>
         </header>
 
-        {accessExpired ? (
-          <aside className={noticeStyles.notice}>
-            <span>SESSION / CLOSED</span>
+        {notice ? (
+          <aside
+            className={noticeStyles.notice}
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <span aria-hidden="true">{notice.signal}</span>
             <div>
-              <strong>访问窗口已结束</strong>
-              <p>
-                为了保护报名档案，本次访问已关闭。报名与通行密钥都没有变化，重新由设备确认即可。
-              </p>
+              <strong>{notice.title}</strong>
+              <p>{notice.description}</p>
             </div>
           </aside>
         ) : null}

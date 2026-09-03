@@ -17,6 +17,7 @@ import {
   PARTICIPANT_SESSION_ENDED_MESSAGE,
   publishParticipantSessionEnded,
 } from '@/lib/participant-session-events'
+import { PARTICIPANT_SIGNED_OUT_LOGIN_PATH } from '@/lib/passkey-login-recovery'
 
 import pageStyles from './me.module.css'
 import styles from './session-boundary.module.css'
@@ -128,7 +129,7 @@ export function ParticipantSessionBoundary({
         if (response.status !== 204) throw new Error('participant logout failed')
         if (navigationStarted.current) return
         publishParticipantSessionEnded()
-        leavePrivatePage('/')
+        leavePrivatePage(PARTICIPANT_SIGNED_OUT_LOGIN_PATH)
       } catch {
         if (navigationStarted.current) return
         signOutPending.current = false

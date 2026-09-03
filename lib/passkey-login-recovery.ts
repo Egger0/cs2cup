@@ -1,5 +1,25 @@
 import { participantRegistrationReturnPath } from './participant-return.ts'
 
+export interface ParticipantLoginNotice {
+  readonly signal: string
+  readonly title: string
+  readonly description: string
+}
+
+export const PARTICIPANT_SIGNED_OUT_LOGIN_PATH = '/login?reason=signed-out'
+
+const EXPIRED_NOTICE: ParticipantLoginNotice = {
+  signal: 'SESSION / CLOSED',
+  title: '访问窗口已结束',
+  description: '为了保护报名档案，本次访问已关闭。报名与通行密钥都没有变化，重新由设备确认即可。',
+}
+
+const SIGNED_OUT_NOTICE: ParticipantLoginNotice = {
+  signal: 'SESSION / CLOSED',
+  title: '赛事通行已安全退出',
+  description: '这台设备上的本次访问已关闭。报名与通行密钥都没有变化；需要时可再次由设备确认。',
+}
+
 export interface PasskeyLoginFeedback {
   readonly code:
     | 'refresh-required'
@@ -13,6 +33,12 @@ export interface PasskeyLoginFeedback {
 }
 
 type PasskeyLoginStage = 'options' | 'verification'
+
+export function participantLoginNotice(reason: unknown): ParticipantLoginNotice | null {
+  if (reason === 'expired') return EXPIRED_NOTICE
+  if (reason === 'signed-out') return SIGNED_OUT_NOTICE
+  return null
+}
 
 const REFRESH_REQUIRED: PasskeyLoginFeedback = {
   code: 'refresh-required',
