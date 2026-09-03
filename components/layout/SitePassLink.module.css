@@ -51,9 +51,17 @@
   transform: translateY(-1px);
 }
 
+.pass:focus-visible {
+  outline-color: var(--header-accent);
+}
+
 .pass:hover .code,
 .pass:focus-visible .code {
   transform: translateX(2px);
+}
+
+.pass:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .hidden {
@@ -64,7 +72,7 @@
 
 @media (max-width: 900px) {
   .pass {
-    width: 44px;
+    width: 60px;
     padding: 0;
     justify-items: center;
     border: 1px solid var(--header-line);
@@ -80,9 +88,13 @@
       12px 0 0 var(--header-accent);
   }
 
-  .code span,
-  .label {
+  .code span {
     display: none;
+  }
+
+  .label {
+    font-size: 0.56rem;
+    letter-spacing: 0.04em;
   }
 }
 

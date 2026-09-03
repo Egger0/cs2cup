@@ -8,6 +8,7 @@ const check = (name, pass, detail = '') => {
   results.push(pass)
   console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? '  — ' + detail : ''}`)
 }
+const hasFocus = locator => locator.evaluate(element => element === document.activeElement)
 
 const browser = await chromium.launch(
   process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : undefined,
@@ -21,7 +22,7 @@ const page = await ctx.newPage()
 
 await page.goto(`${BASE}/tournaments/2026-nlc`, { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(1200)
-const passLink = page.getByRole('link', { name: '我的通行证' })
+const passLink = page.getByRole('link', { name: '我的赛事' })
 check('Header exposes the participant pass', (await passLink.getAttribute('href')) === '/me')
 
 await page.keyboard.press('Tab')
@@ -122,18 +123,13 @@ await page.goto(`${BASE}/tournaments/2026-nlc/schedule`, { waitUntil: 'domconten
 await page.waitForTimeout(1200)
 const scheduleTeamFilter = page.locator('select[name="team"]')
 await scheduleTeamFilter.focus()
-check(
-  'Schedule team filter accepts focus',
-  await scheduleTeamFilter.evaluate(element => element === document.activeElement),
-)
+check('Schedule team filter accepts focus', await hasFocus(scheduleTeamFilter))
 await page.keyboard.press('f')
 const selectedTeam = await scheduleTeamFilter.inputValue()
 check('Keyboard changes the schedule team filter', selectedTeam.length > 0, selectedTeam)
 await page.keyboard.press('Tab')
-const scheduleSubmitFocused = await page
-  .getByRole('button', { name: '查看日程' })
-  .evaluate(element => element === document.activeElement)
-check('Tab reaches the schedule filter submit button', scheduleSubmitFocused)
+const scheduleSubmit = page.getByRole('button', { name: '查看日程' })
+check('Tab reaches the schedule filter submit button', await hasFocus(scheduleSubmit))
 await Promise.all([
   page.waitForURL(url => new URL(url).searchParams.get('team') === selectedTeam),
   page.keyboard.press('Enter'),
@@ -195,42 +191,22 @@ const mobile = await ctx.newPage()
 await mobile.setViewportSize({ width: 390, height: 760 })
 await mobile.goto(BASE, { waitUntil: 'domcontentloaded' })
 await mobile.waitForLoadState('networkidle')
-await mobile.locator('[aria-controls="site-menu"]').press('Enter')
+const mobileToggle = mobile.locator('[aria-controls="site-menu"]')
+const firstMobileMenuLink = mobile.locator('#site-menu a').first()
+await mobileToggle.press('Enter')
 await mobile.waitForTimeout(600)
-check(
-  'Keyboard opens the mobile directory',
-  await mobile.locator('#site-menu a').first().isVisible(),
-)
+check('Keyboard opens the mobile directory', await firstMobileMenuLink.isVisible())
 check(
   'Directory exposes its expanded state',
-  (await mobile.locator('[aria-controls="site-menu"]').getAttribute('aria-expanded')) === 'true',
+  (await mobileToggle.getAttribute('aria-expanded')) === 'true',
 )
-check(
-  'Focus moves into the directory',
-  await mobile
-    .locator('#site-menu a')
-    .first()
-    .evaluate(element => element === document.activeElement),
-)
+check('Focus moves into the directory', await hasFocus(firstMobileMenuLink))
 await mobile.keyboard.press('Shift+Tab')
-check(
-  'Reverse tab reaches the close control',
-  await mobile
-    .locator('[aria-controls="site-menu"]')
-    .evaluate(element => element === document.activeElement),
-)
+check('Reverse tab reaches the close control', await hasFocus(mobileToggle))
 await mobile.keyboard.press('Escape')
 await mobile.waitForTimeout(350)
-check(
-  'Escape closes the directory',
-  (await mobile.locator('[aria-controls="site-menu"]').getAttribute('aria-expanded')) === 'false',
-)
-check(
-  'Focus returns to the directory control',
-  await mobile
-    .locator('[aria-controls="site-menu"]')
-    .evaluate(element => element === document.activeElement),
-)
+check('Escape closes the directory', (await mobileToggle.getAttribute('aria-expanded')) === 'false')
+check('Focus returns to the directory control', await hasFocus(mobileToggle))
 
 await mobile.goto(`${BASE}/tournaments/2026-nlc/register`, { waitUntil: 'domcontentloaded' })
 const mobileTabs = mobile.getByRole('navigation', { name: '赛事导航' })
@@ -270,6 +246,30 @@ check(
     mobileTabState.activeCount === 1 &&
     mobileTabState.activeHref?.endsWith('/register') === true,
 )
+await ctx.clearCookies()
+await mobile.setViewportSize({ width: 320, height: 760 })
+await mobile.goto(BASE, { waitUntil: 'domcontentloaded' })
+await mobile.waitForLoadState('networkidle')
+const smallPass = mobile.getByRole('link', { name: '我的赛事' })
+const smallPassBox = await smallPass.boundingBox()
+const smallPageFits = await mobile.evaluate(
+  () => document.documentElement.scrollWidth === document.documentElement.clientWidth,
+)
+check(
+  '320px header keeps a labelled, touch-sized participant entry without overflow',
+  (await smallPass.isVisible()) &&
+    (await smallPass.getByText('我的赛事', { exact: true }).isVisible()) &&
+    smallPassBox !== null &&
+    smallPassBox.width >= 44 &&
+    smallPassBox.height >= 44 &&
+    smallPageFits,
+)
+await Promise.all([
+  mobile.waitForURL(url => url.pathname === '/login' && url.search === ''),
+  smallPass.click(),
+])
+await mobile.getByRole('heading', { name: '回到你的赛事' }).waitFor()
+check('Anonymous participant entry reaches the login page', mobile.url() === `${BASE}/login`)
 await mobile.close()
 
 const degraded = await browser.newContext({

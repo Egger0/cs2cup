@@ -17,7 +17,7 @@ const LINKS = [
   { href: '/about', label: '关于' },
   { href: '/guestbook', label: '留言' },
   { href: '/search', label: '搜索' },
-  { href: '/me', label: '我的通行证' },
+  { href: '/me', label: '我的赛事' },
 ]
 
 const FALLBACK_SETTING = {
