@@ -8,10 +8,13 @@
     "node": ">=24 <25"
   },
   "scripts": {
+    "predev": "node scripts/generate-static-images.mjs",
     "dev": "npm run db:local:migrate && next dev",
+    "prebuild": "node scripts/generate-static-images.mjs",
     "build": "next build",
     "cf:build": "opennextjs-cloudflare build",
     "cf:build:local": "opennextjs-cloudflare build --config wrangler.local.jsonc",
+    "cf:size": "node scripts/worker-size-test.mjs",
     "db:local:migrate": "node scripts/local-database.mjs migrate",
     "db:local:seed": "node scripts/local-database.mjs seed",
     "db:local:reset": "node scripts/local-database.mjs reset",
@@ -87,6 +90,7 @@
     "eslint-config-next": "16.3.3",
     "playwright": "^1.62.1",
     "prettier": "3.8.1",
+    "sharp": "0.35.3",
     "typescript": "^6.0.3",
     "wrangler": "^4.127.0"
   }

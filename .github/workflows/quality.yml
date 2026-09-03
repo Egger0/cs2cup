@@ -44,3 +44,6 @@ jobs:
 
       - name: Build Cloudflare Worker
         run: npm run cf:build
+
+      - name: Enforce Worker size budget
+        run: npm run cf:size
