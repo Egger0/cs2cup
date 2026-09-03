@@ -44,9 +44,13 @@ produce the same bundle as Workers Builds without deploying or accessing remote 
 `npm run cf:build:local` to validate the local-only bindings. The protected production-branch
 Workers Builds deploy command is `npm run deploy`; it applies pending D1 migrations and publishes
 the already-built Worker only after migration succeeds. Non-production Workers Builds upload an
-isolated preview version without migrations or traffic promotion. The Workers Builds API token must
-include D1 Edit permission. Contributors must not run remote migrations or deploy from local
-machines.
+isolated preview version without migrations or traffic promotion.
+
+The Cloudflare owner must configure these external values under Workers **Settings > Build**;
+Workers Builds does not read them from `wrangler.jsonc`: production branch `main`, build command
+`npm run cf:build`, production deploy command `npm run deploy`, and a Workers Builds API token that
+includes D1 Edit plus Worker publication permissions. Contributors must not run remote migrations
+or deploy from local machines.
 
 ## Configuration
 
