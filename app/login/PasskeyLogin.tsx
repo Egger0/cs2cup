@@ -7,9 +7,9 @@ import {
   passkeyLoginDeviceFailure,
   passkeyLoginHttpFailure,
   passkeyLoginShouldResumeSession,
+  replaceParticipantLoginHistory,
   type PasskeyLoginFeedback,
 } from '@/lib/passkey-login-recovery'
-import { safeParticipantReturnPath } from '@/lib/participant-return'
 import { usePasskeyRetryCooldown } from '@/lib/passkey-retry-cooldown'
 
 import styles from './login.module.css'
@@ -78,7 +78,6 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
     setFailure(current => (current?.action === 'wait' ? null : current))
   })
   const loginInFlight = useRef(false)
-  const safeReturnTo = safeParticipantReturnPath(returnTo)
   const receiptPath = participantLoginReceiptPath(returnTo)
 
   useEffect(() => {
@@ -104,7 +103,7 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
 
   function handleRejectedResponse(stage: 'options' | 'verification', response: Response) {
     if (passkeyLoginShouldResumeSession(response.status)) {
-      window.location.replace(safeReturnTo)
+      replaceParticipantLoginHistory(window.location, returnTo)
       return
     }
 
@@ -158,8 +157,8 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
         return
       }
 
-      // A full navigation picks up the participant session cookie returned by verification.
-      window.location.assign(safeReturnTo)
+      // A full replacement picks up the session cookie without retaining the transient login page.
+      replaceParticipantLoginHistory(window.location, returnTo)
     } catch {
       finishWithFailure(passkeyLoginHttpFailure(requestStage, 0))
     }

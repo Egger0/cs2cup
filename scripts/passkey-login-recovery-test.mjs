@@ -7,6 +7,7 @@ import {
   passkeyLoginDeviceFailure,
   passkeyLoginHttpFailure,
   passkeyLoginShouldResumeSession,
+  replaceParticipantLoginHistory,
 } from '../lib/passkey-login-recovery.ts'
 import { passkeyRetryAfterSeconds } from '../lib/passkey-retry-cooldown.ts'
 
@@ -52,6 +53,26 @@ const SIGNED_OUT_NOTICE = {
 }
 
 assert.equal(PARTICIPANT_SIGNED_OUT_LOGIN_PATH, '/login?reason=signed-out')
+
+const allowedLoginReturn = `/tournaments/autumn-cup-2026/registration/${'A'.repeat(43)}`
+for (const [returnTo, expected] of [
+  ['/me', '/me'],
+  [allowedLoginReturn, allowedLoginReturn],
+  [undefined, '/me'],
+  ['https://example.com/me', '/me'],
+]) {
+  const destinations = []
+  replaceParticipantLoginHistory(
+    {
+      replace(destination) {
+        destinations.push(destination)
+      },
+    },
+    returnTo,
+  )
+  assert.deepEqual(destinations, [expected])
+}
+
 assert.deepEqual(participantLoginNotice('expired'), EXPIRED_NOTICE)
 assert.deepEqual(participantLoginNotice('signed-out'), SIGNED_OUT_NOTICE)
 for (const reason of [
