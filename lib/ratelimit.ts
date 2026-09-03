@@ -4,6 +4,7 @@ import { headers } from 'next/headers'
 import {
   fingerprintFromHeaders,
   MIN_FINGERPRINT_SECRET_BYTES,
+  type RateLimitFingerprintScope,
   registrationClientIpSource,
 } from './ratelimit-fingerprint'
 
@@ -25,7 +26,7 @@ function fingerprintSource() {
   )
 }
 
-export async function clientFingerprint() {
+export async function clientFingerprint(scope: RateLimitFingerprintScope = 'registration') {
   const source = fingerprintSource()
   const secret = fingerprintSecret()
   const store = await headers()
@@ -33,5 +34,6 @@ export async function clientFingerprint() {
     clientIpSource: source,
     secret,
     fallbackAddress: process.env.NODE_ENV === 'development' ? '127.0.0.1' : undefined,
+    scope,
   })
 }

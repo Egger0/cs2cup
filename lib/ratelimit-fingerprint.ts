@@ -5,8 +5,12 @@ const REGISTRATION_FINGERPRINT_VERSION = 'v1'
 export const MIN_FINGERPRINT_SECRET_BYTES = 32
 
 type RegistrationClientIpSource = 'x-real-ip' | 'cf-connecting-ip'
+export type RateLimitFingerprintScope = 'registration' | 'admin-login'
 
-const FINGERPRINT_CONTEXT = 'cs2cup:registration-rate-limit'
+const FINGERPRINT_CONTEXT: Record<RateLimitFingerprintScope, string> = {
+  registration: 'cs2cup:registration-rate-limit',
+  'admin-login': 'cs2cup:admin-login-rate-limit',
+}
 
 function normalizeIpAddress(value: string) {
   let address = value.trim()
@@ -67,7 +71,11 @@ export function registrationClientIpSource(
   throw new Error('REGISTRATION_CLIENT_IP_SOURCE must be x-real-ip or cf-connecting-ip')
 }
 
-export function fingerprintAddress(address: string, secret: string) {
+export function fingerprintAddress(
+  address: string,
+  secret: string,
+  scope: RateLimitFingerprintScope = 'registration',
+) {
   if (Buffer.byteLength(secret, 'utf8') < MIN_FINGERPRINT_SECRET_BYTES) {
     throw new Error(
       `REGISTRATION_FINGERPRINT_SECRET must contain at least ${MIN_FINGERPRINT_SECRET_BYTES} bytes`,
@@ -76,7 +84,7 @@ export function fingerprintAddress(address: string, secret: string) {
 
   const normalizedAddress = normalizeIpAddress(address)
   const digest = createHmac('sha256', secret)
-    .update(FINGERPRINT_CONTEXT)
+    .update(FINGERPRINT_CONTEXT[scope])
     .update('\0')
     .update(normalizedAddress)
     .digest('hex')
@@ -90,6 +98,7 @@ export function fingerprintFromHeaders(
     clientIpSource?: RegistrationClientIpSource
     secret: string
     fallbackAddress?: string
+    scope?: RateLimitFingerprintScope
   },
 ) {
   const clientIpSource = options.clientIpSource ?? 'x-real-ip'
@@ -99,5 +108,5 @@ export function fingerprintFromHeaders(
     throw new Error(`Trusted client IP header ${clientIpSource} is missing`)
   }
 
-  return fingerprintAddress(address, options.secret)
+  return fingerprintAddress(address, options.secret, options.scope)
 }

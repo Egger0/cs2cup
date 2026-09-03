@@ -19,6 +19,7 @@ const PAGES = [
   '/news',
   '/about',
   '/search',
+  '/admin/login?error=rate',
 ]
 
 const browser = await chromium.launch()

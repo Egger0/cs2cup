@@ -3,6 +3,7 @@ import { cache } from 'react'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { cloudflareBindings } from './cloudflare-bindings'
+import type { AdminLoginAdmission } from './queries/admin-login-attempts'
 
 interface AdminIdentity {
   uid: string
@@ -69,7 +70,7 @@ export async function credentialsAccepted(username: string, password: string) {
   )
 }
 
-export async function createAdminSession(username: string) {
+export async function createAdminSession(username: string, admission: AdminLoginAdmission) {
   const admin = await getAdminAccount()
   if (!admin || !sameValue(await hash(username), await hash(admin.username))) {
     throw new Error('Admin login is not configured')
@@ -83,6 +84,9 @@ export async function createAdminSession(username: string) {
     db
       .prepare('INSERT INTO admin_session (token_hash, admin_id, expires_at) VALUES (?, ?, ?)')
       .bind(hex(await hash(token)), admin.id, Date.now() + SESSION_MAX_AGE * 1000),
+    db
+      .prepare('DELETE FROM admin_login_attempt WHERE bucket_start = ? AND fingerprint = ?')
+      .bind(admission.bucketStart, admission.fingerprint),
   ])
   return token
 }

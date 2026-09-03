@@ -50,10 +50,11 @@ belong only in protected maintainer automation and are intentionally absent from
 | --------------------------------- | ---------- | -------------------------------------- |
 | `NEXT_PUBLIC_SITE_URL`            | Required   | Canonical HTTP(S) origin               |
 | `HOME_PREVIEW_COUNTDOWN`          | Optional   | Allows fallback data in local previews |
-| `REGISTRATION_FINGERPRINT_SECRET` | Required   | HMAC secret with at least 32 bytes     |
+| `REGISTRATION_FINGERPRINT_SECRET` | Required   | HMAC secret for anonymous abuse limits |
 | `REGISTRATION_CLIENT_IP_SOURCE`   | Required   | Trusted client IP header               |
 
 Never commit credentials or production secrets.
+The fingerprint secret is domain-separated between registration and administrator sign-in use.
 
 ## Quality
 

@@ -122,9 +122,15 @@
   font-size: 0.84rem;
 }
 
+.rate {
+  border-left-color: #6da5d3;
+  color: #a9c9e2;
+  background: rgba(109, 165, 211, 0.08);
+}
+
 .note {
   margin-top: 24px;
-  color: #7c7f7a;
+  color: #949792;
   font-size: 0.56rem;
 }
 
