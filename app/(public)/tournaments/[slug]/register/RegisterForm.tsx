@@ -38,6 +38,7 @@ export function RegisterForm({
   siteOrigin: string
 }) {
   const [error, setError] = useState('')
+  const [recoveryPath, setRecoveryPath] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const [receipt, setReceipt] = useState<{ url: string; seatsLeft: number | null } | null>(null)
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle')
@@ -59,11 +60,13 @@ export function RegisterForm({
 
   async function submit(form: FormData) {
     setError('')
+    setRecoveryPath(null)
     setPending(true)
     try {
       const result = await registerTeam(slug, form)
       if (!result.ok) {
         setError(result.error ?? '提交失败，请稍后重试')
+        setRecoveryPath(result.redirectTo ?? null)
         return
       }
       if (!result.managementPath) {
@@ -196,15 +199,18 @@ export function RegisterForm({
         />
 
         {error ? (
-          <p
-            ref={errorRef}
-            className={styles.error}
-            role="alert"
-            aria-live="assertive"
-            tabIndex={-1}
-          >
-            {error}
-          </p>
+          <div className={styles.errorBlock}>
+            <p
+              ref={errorRef}
+              className={styles.error}
+              role="alert"
+              aria-live="assertive"
+              tabIndex={-1}
+            >
+              {error}
+            </p>
+            {recoveryPath ? <Link href={recoveryPath}>前往处理 →</Link> : null}
+          </div>
         ) : null}
 
         <Button type="submit" variant="primary">

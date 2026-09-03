@@ -1,6 +1,9 @@
 'use server'
 
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
+import { getAuthContext } from '@/lib/identity/kernel'
+import { getMembershipState } from '@/lib/identity/membership-service'
+import { createApprovedTournamentRegistration } from '@/lib/identity/tournament-registration'
 import { clientFingerprint } from '@/lib/ratelimit'
 import { createRegistrationAccess } from '@/lib/registration-access'
 import { parseRegistrationForm } from '@/lib/registration-form'
@@ -11,7 +14,8 @@ export interface RegisterResult {
   error?: string
   seatsLeft?: number
   managementPath?: string
-  code?: 'RATE_LIMITED' | 'SUBMISSION_FAILED'
+  code?: 'AUTH_REQUIRED' | 'MEMBERSHIP_REQUIRED' | 'RATE_LIMITED' | 'SUBMISSION_FAILED'
+  redirectTo?: string
   retryAfterSeconds?: number
 }
 
@@ -20,13 +24,30 @@ export async function registerTeam(slug: string, form: FormData): Promise<Regist
     return { ok: false, error: '当前赛事不存在或不可报名' }
   }
 
-  const parsed = parseRegistrationForm(form)
-  if (!parsed.ok) return { ok: false, error: parsed.error }
-  const team = parsed.values
-  const tag = team.tag
-
   try {
     const { db } = cloudflareBindings()
+    const context = await getAuthContext({ database: db })
+    if (context.kind === 'anonymous') {
+      return {
+        ok: false,
+        code: 'AUTH_REQUIRED',
+        error: '登录已失效，请重新登录后提交报名。',
+        redirectTo: `/login?redirectKey=registration&tournamentSlug=${encodeURIComponent(slug)}`,
+      }
+    }
+    const membership = await getMembershipState(db, context)
+    if (!membership.ok || membership.membership?.status !== 'approved') {
+      return {
+        ok: false,
+        code: 'MEMBERSHIP_REQUIRED',
+        error: '最终提交赛事报名前，需要先通过成员资格审核。',
+        redirectTo: '/account',
+      }
+    }
+    const parsed = parseRegistrationForm(form)
+    if (!parsed.ok) return { ok: false, error: parsed.error }
+    const team = parsed.values
+    const tag = team.tag
     const tournament = await db
       .prepare(
         "SELECT t.id, t.team_cap AS teamCap, t.status, t.reg_deadline AS regDeadline, COUNT(team.id) AS taken, unixepoch('now') * 1000 AS nowMs FROM tournament t LEFT JOIN team ON team.tournament_id = t.id AND team.status != 'rejected' WHERE t.slug = ? GROUP BY t.id",
@@ -61,57 +82,31 @@ export async function registerTeam(slug: string, form: FormData): Promise<Regist
       .first()
     if (duplicate) return { ok: false, error: '战队名称或 TAG 已被占用' }
     const access = await createRegistrationAccess()
-    const statements = [
-      db
-        .prepare(
-          "INSERT INTO team (tournament_id,name,tag,captain,contact,dept,note,status,management_token_hash) SELECT id,?,?,?,?,?,?,'pending',? FROM tournament WHERE id = ? AND status IN ('registration','postponed') AND (reg_deadline IS NULL OR unixepoch(reg_deadline) > unixepoch('now'))",
-        )
-        .bind(
-          team.name,
-          tag,
-          team.captain,
-          team.contact,
-          team.dept || null,
-          team.note || null,
-          access.tokenHash,
-          tournament.id,
-        ),
-      ...team.players.map((player, index) =>
-        db
-          .prepare(
-            'INSERT INTO player (team_id,nickname,is_substitute,sort_order) SELECT id,?,?,? FROM team WHERE tournament_id = ? AND tag = ? AND management_token_hash = ?',
-          )
-          .bind(
-            player.nickname,
-            player.substitute ? 1 : 0,
-            index + 1,
-            tournament.id,
-            tag,
-            access.tokenHash,
-          ),
-      ),
-      db
-        .prepare(
-          'INSERT INTO registration_attempt (fingerprint,tournament_id,accepted) SELECT ?,tournament_id,1 FROM team WHERE tournament_id = ? AND tag = ? AND management_token_hash = ?',
-        )
-        .bind(fingerprint, tournament.id, tag, access.tokenHash),
-    ]
-    await db.batch(statements)
-    const [inserted, taken] = await Promise.all([
-      db
-        .prepare(
-          'SELECT id FROM team WHERE tournament_id = ? AND tag = ? AND management_token_hash = ?',
-        )
-        .bind(tournament.id, tag, access.tokenHash)
-        .first(),
-      db
-        .prepare(
-          "SELECT COUNT(*) AS count FROM team WHERE tournament_id = ? AND status != 'rejected'",
-        )
-        .bind(tournament.id)
-        .first<{ count: number }>(),
-    ])
-    if (!inserted) return { ok: false, error: '报名已截止或赛事状态已变更，请刷新后重试' }
+    const now = Date.now()
+    const created = await createApprovedTournamentRegistration(db, context, {
+      tournamentId: tournament.id,
+      team,
+      managementTokenHash: access.tokenHash,
+      fingerprint,
+      now,
+    })
+    if (!created.ok) {
+      return {
+        ok: false,
+        code: created.reason === 'authorization_changed' ? 'MEMBERSHIP_REQUIRED' : undefined,
+        error:
+          created.reason === 'authorization_changed'
+            ? '报名资格或登录状态刚刚发生变化，请前往账号中心查看。'
+            : '报名截止时间或赛事状态刚刚发生变化，请刷新后重试。',
+        redirectTo: created.reason === 'authorization_changed' ? '/account' : undefined,
+      }
+    }
+    const taken = await db
+      .prepare(
+        "SELECT COUNT(*) AS count FROM team WHERE tournament_id = ? AND status != 'rejected'",
+      )
+      .bind(tournament.id)
+      .first<{ count: number }>()
     return {
       ok: true,
       seatsLeft: Math.max(0, tournament.teamCap - (taken?.count ?? tournament.teamCap)),

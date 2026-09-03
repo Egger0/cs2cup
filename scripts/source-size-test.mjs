@@ -25,8 +25,15 @@ function sourceLines(source) {
 
 const files = await sourceFiles()
 const oversized = []
+let checked = 0
 for (const file of files) {
-  const lines = sourceLines(await readFile(file, 'utf8'))
+  const source = await readFile(file, 'utf8').catch(error => {
+    if (error?.code === 'ENOENT') return null
+    throw error
+  })
+  if (source === null) continue
+  checked += 1
+  const lines = sourceLines(source)
   if (lines > MAX_LINES) oversized.push({ file, lines })
 }
 
@@ -35,4 +42,4 @@ if (oversized.length) {
   throw new Error(`Source files must stay within ${MAX_LINES} non-empty lines`)
 }
 
-console.log(`${files.length} source files stay within ${MAX_LINES} non-empty lines`)
+console.log(`${checked} source files stay within ${MAX_LINES} non-empty lines`)

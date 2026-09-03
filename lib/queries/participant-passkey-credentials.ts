@@ -37,6 +37,12 @@ export interface ParticipantSessionDraft {
   expiresAt: number
 }
 
+function validateOptionalSessionHash(value: string | null | undefined) {
+  if (value !== null && value !== undefined && !/^[0-9a-f]{64}$/.test(value)) {
+    throw new ParticipantPasskeyError('conflict')
+  }
+}
+
 export interface ParticipantCredentialWrite {
   id: string
   publicKey: string
@@ -80,12 +86,14 @@ export async function finishParticipantClaim(
     ceremony: ConsumedPasskeyCeremony
     credential: ParticipantCredentialWrite
     session: ParticipantSessionDraft
+    opposingAdminSessionHash?: string | null
     now: number
   },
 ) {
   const { ceremony } = input
   validateCredential(input.credential)
   validateSession(input.session, input.now)
+  validateOptionalSessionHash(input.opposingAdminSessionHash)
   if (
     ceremony.kind !== 'claim' ||
     !ceremony.principalId ||
@@ -132,9 +140,12 @@ export async function finishParticipantClaim(
         ),
       db
         .prepare(
-          'INSERT INTO participant_session (token_hash, principal_id, credential_id, created_at, expires_at) VALUES (?, (SELECT principal_id FROM participant_passkey_credential WHERE credential_id = ? AND principal_id = ? AND revision = 0 AND write_nonce = ?), ?, ?, ?)',
+          'INSERT INTO participant_session (token_hash, principal_id, credential_id, created_at, expires_at) VALUES (CASE WHEN ? IS NULL OR NOT EXISTS (SELECT 1 FROM admin_session WHERE token_hash = ? AND expires_at > ?) THEN ? ELSE NULL END, (SELECT principal_id FROM participant_passkey_credential WHERE credential_id = ? AND principal_id = ? AND revision = 0 AND write_nonce = ?), ?, ?, ?)',
         )
         .bind(
+          input.opposingAdminSessionHash ?? null,
+          input.opposingAdminSessionHash ?? null,
+          input.now,
           input.session.tokenHash,
           credential.id,
           ceremony.principalId,
@@ -198,10 +209,12 @@ export async function finishParticipantAuthentication(
     deviceType: 'singleDevice' | 'multiDevice'
     backedUp: boolean
     session: ParticipantSessionDraft
+    opposingAdminSessionHash?: string | null
     now: number
   },
 ) {
   validateSession(input.session, input.now)
+  validateOptionalSessionHash(input.opposingAdminSessionHash)
   if (
     input.ceremony.kind !== 'authentication' ||
     !validInteger(input.newCounter) ||
@@ -236,9 +249,12 @@ export async function finishParticipantAuthentication(
         ),
       db
         .prepare(
-          'INSERT INTO participant_session (token_hash, principal_id, credential_id, created_at, expires_at) VALUES (?, (SELECT principal_id FROM participant_passkey_credential WHERE credential_id = ? AND principal_id = ? AND revision = ? AND write_nonce = ?), ?, ?, ?)',
+          'INSERT INTO participant_session (token_hash, principal_id, credential_id, created_at, expires_at) VALUES (CASE WHEN ? IS NULL OR NOT EXISTS (SELECT 1 FROM admin_session WHERE token_hash = ? AND expires_at > ?) THEN ? ELSE NULL END, (SELECT principal_id FROM participant_passkey_credential WHERE credential_id = ? AND principal_id = ? AND revision = ? AND write_nonce = ?), ?, ?, ?)',
         )
         .bind(
+          input.opposingAdminSessionHash ?? null,
+          input.opposingAdminSessionHash ?? null,
+          input.now,
           input.session.tokenHash,
           input.credential.id,
           input.credential.principalId,

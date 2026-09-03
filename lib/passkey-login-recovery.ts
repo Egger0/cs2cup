@@ -23,6 +23,12 @@ const SIGNED_OUT_NOTICE: ParticipantLoginNotice = {
   description: '这台设备上的本次访问已关闭。报名与通行密钥都没有变化；需要时可再次由设备确认。',
 }
 
+const CONFLICT_NOTICE: ParticipantLoginNotice = {
+  signal: 'SESSION / CONFLICT',
+  title: '检测到另一份旧身份会话',
+  description: '系统不会猜测你现在要切换到哪份身份。请先安全清除这台设备上的旧会话，再重新登录。',
+}
+
 export interface PasskeyLoginFeedback {
   readonly code:
     | 'refresh-required'
@@ -47,6 +53,7 @@ export function replaceParticipantLoginHistory(
 export function participantLoginNotice(reason: unknown): ParticipantLoginNotice | null {
   if (reason === 'expired') return EXPIRED_NOTICE
   if (reason === 'signed-out') return SIGNED_OUT_NOTICE
+  if (reason === 'conflict') return CONFLICT_NOTICE
   return null
 }
 

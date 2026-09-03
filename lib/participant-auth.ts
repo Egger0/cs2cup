@@ -16,6 +16,10 @@ interface ParticipantSessionRow {
   expires_at: number
 }
 
+interface AdminSessionRow {
+  admin_id: number
+}
+
 export interface ParticipantIdentity {
   principalId: string
   credentialId: string
@@ -23,6 +27,7 @@ export interface ParticipantIdentity {
 }
 
 const COOKIE_NAME = PARTICIPANT_SESSION_COOKIE
+export const LEGACY_ADMIN_SESSION_COOKIE = 'cs2cup_admin'
 const SESSION_MAX_AGE = 60 * 60 * 8
 
 export const participantSessionCookie = {
@@ -65,26 +70,59 @@ export function clearParticipantSessionCookie(response: NextResponse) {
   return response
 }
 
-export const getCurrentParticipant = cache(async (): Promise<ParticipantIdentity | null> => {
-  const token = (await cookies()).get(COOKIE_NAME)?.value
-  if (!token || !isOpaqueToken(token)) return null
-  const session = await cloudflareBindings()
-    .db.prepare(
-      'SELECT principal_id, credential_id, expires_at FROM participant_session WHERE token_hash = ? AND expires_at > ?',
-    )
-    .bind(await hashOpaqueToken(token), Date.now())
-    .first<ParticipantSessionRow>()
-  return session
-    ? {
-        principalId: session.principal_id,
-        credentialId: session.credential_id,
-        sessionExpiresAt: session.expires_at,
-      }
-    : null
+// Exported only so the legacy admin guard can compare both server-validated subjects without
+// creating an auth-module import cycle. Ordinary callers must use getCurrentParticipant().
+export const getCurrentLegacyParticipantSession = cache(
+  async (): Promise<ParticipantIdentity | null> => {
+    const token = (await cookies()).get(COOKIE_NAME)?.value
+    if (!token || !isOpaqueToken(token)) return null
+    const session = await cloudflareBindings()
+      .db.prepare(
+        'SELECT principal_id, credential_id, expires_at FROM participant_session WHERE token_hash = ? AND expires_at > ?',
+      )
+      .bind(await hashOpaqueToken(token), Date.now())
+      .first<ParticipantSessionRow>()
+    return session
+      ? {
+          principalId: session.principal_id,
+          credentialId: session.credential_id,
+          sessionExpiresAt: session.expires_at,
+        }
+      : null
+  },
+)
+
+const getCurrentParticipantAccess = cache(async () => {
+  const participant = await getCurrentLegacyParticipantSession()
+  if (!participant) return { participant: null, conflict: false } as const
+
+  const adminToken = (await cookies()).get(LEGACY_ADMIN_SESSION_COOKIE)?.value
+  if (!adminToken) return { participant, conflict: false } as const
+
+  const adminSession = await cloudflareBindings()
+    .db.prepare('SELECT admin_id FROM admin_session WHERE token_hash = ? AND expires_at > ?')
+    .bind(await hashOpaqueToken(adminToken), Date.now())
+    .first<AdminSessionRow>()
+
+  return adminSession
+    ? ({ participant: null, conflict: true } as const)
+    : ({ participant, conflict: false } as const)
 })
 
+export const getCurrentParticipant = cache(async (): Promise<ParticipantIdentity | null> => {
+  return (await getCurrentParticipantAccess()).participant
+})
+
+export async function hasConflictingLegacyParticipantSession() {
+  return (await getCurrentParticipantAccess()).conflict
+}
+
 export async function requireParticipant() {
-  const hasSessionCookie = Boolean((await cookies()).get(COOKIE_NAME)?.value)
+  const token = (await cookies()).get(COOKIE_NAME)?.value
+  const hasSessionCookie = Boolean(token)
+  if (await hasConflictingLegacyParticipantSession()) {
+    redirect('/login?reason=conflict')
+  }
   const participant = await getCurrentParticipant()
   if (!participant) redirect(hasSessionCookie ? '/login?reason=expired' : '/login')
   return participant

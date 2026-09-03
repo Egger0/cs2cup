@@ -60,7 +60,12 @@ export default async function TournamentCheckInPage({
     ) {
       redirect('/admin/login')
     }
-    const reason = error.access.reason === 'expired' ? 'reason=expired&' : ''
+    const reason =
+      error.access.reason === 'expired'
+        ? 'reason=expired&'
+        : error.access.reason === 'conflict'
+          ? 'reason=conflict&'
+          : ''
     redirect(`/login?${reason}returnTo=${encodeURIComponent(returnTo)}`)
   }
   if (!desk) notFound()

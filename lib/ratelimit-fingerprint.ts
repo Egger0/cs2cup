@@ -12,7 +12,7 @@ const FINGERPRINT_CONTEXT: Record<RateLimitFingerprintScope, string> = {
   'admin-login': 'cs2cup:admin-login-rate-limit',
 }
 
-function normalizeIpAddress(value: string) {
+export function normalizeRateLimitAddress(value: string) {
   let address = value.trim()
 
   if (address.startsWith('[') && address.endsWith(']')) {
@@ -82,7 +82,7 @@ export function fingerprintAddress(
     )
   }
 
-  const normalizedAddress = normalizeIpAddress(address)
+  const normalizedAddress = normalizeRateLimitAddress(address)
   const digest = createHmac('sha256', secret)
     .update(FINGERPRINT_CONTEXT[scope])
     .update('\0')

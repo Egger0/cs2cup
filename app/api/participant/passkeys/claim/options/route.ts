@@ -9,6 +9,7 @@ import {
   setCeremonyCookie,
 } from '@/lib/passkey-ceremony'
 import { PasskeyRequestError, passkeyError, privateJson, readPasskeyJson } from '@/lib/passkey-http'
+import { legacySessionStateFromRequest } from '@/lib/legacy-session-state'
 import { getCurrentParticipant } from '@/lib/participant-auth'
 import { participantRegistrationOptions } from '@/lib/participant-passkeys'
 import {
@@ -45,6 +46,11 @@ export async function POST(request: NextRequest) {
   const now = Date.now()
   try {
     assertCsrfRequest(request)
+    if ((await legacySessionStateFromRequest(request, now)).adminActive) {
+      return clearCeremonyCookie(
+        passkeyError(409, '旧管理员会话仍在使用，请先安全清除后重新登录。'),
+      )
+    }
     if (await getCurrentParticipant()) {
       return clearCeremonyCookie(
         passkeyError(409, '当前赛事通行已打开，请刷新页面后加入当前通行证。'),

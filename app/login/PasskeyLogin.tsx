@@ -70,7 +70,15 @@ function RecoveryPanel({
   )
 }
 
-export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }) {
+export default function PasskeyLogin({
+  returnTo = '/account',
+  redirectKey = 'account',
+  tournamentSlug = '',
+}: {
+  returnTo?: string
+  redirectKey?: string
+  tournamentSlug?: string
+}) {
   const [support, setSupport] = useState<SupportState>('checking')
   const [loginState, setLoginState] = useState<LoginState>('idle')
   const [failure, setFailure] = useState<PasskeyLoginFeedback | null>(null)
@@ -123,7 +131,9 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
     setLoginState('working')
     let requestStage: 'options' | 'verification' = 'options'
     try {
-      const optionsResponse = await fetch('/api/participant/passkeys/authenticate/options', {
+      const query = new URLSearchParams({ redirectKey })
+      if (tournamentSlug) query.set('tournamentSlug', tournamentSlug)
+      const optionsResponse = await fetch(`/api/auth/passkeys/authenticate/options?${query}`, {
         method: 'POST',
         credentials: 'same-origin',
         headers: { Accept: 'application/json' },
@@ -143,7 +153,7 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
       }
 
       requestStage = 'verification'
-      const verificationResponse = await fetch('/api/participant/passkeys/authenticate/verify', {
+      const verificationResponse = await fetch('/api/auth/passkeys/authenticate/verify', {
         method: 'POST',
         credentials: 'same-origin',
         headers: {
@@ -157,8 +167,9 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
         return
       }
 
-      // A full replacement picks up the session cookie without retaining the transient login page.
-      replaceParticipantLoginHistory(window.location, returnTo)
+      const result = (await verificationResponse.json()) as { redirectTo?: string }
+      // A full replacement picks up the unified session cookie without retaining the transient page.
+      replaceParticipantLoginHistory(window.location, result.redirectTo ?? returnTo)
     } catch {
       finishWithFailure(passkeyLoginHttpFailure(requestStage, 0))
     }
@@ -191,7 +202,7 @@ export default function PasskeyLogin({ returnTo = '/me' }: { returnTo?: string }
                 : '使用通行密钥登录'
 
   return (
-    <div className={styles.loginControl} aria-busy={isWorking}>
+    <div className={styles.passkeyControl} aria-busy={isWorking}>
       <button
         type="button"
         className={styles.passkeyButton}

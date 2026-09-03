@@ -52,6 +52,18 @@
   outline: none;
 }
 
+.errorBlock {
+  display: grid;
+  gap: 9px;
+}
+
+.errorBlock a {
+  width: fit-content;
+  color: var(--ct);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .receipt {
   display: grid;
   gap: 16px;

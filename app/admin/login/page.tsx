@@ -2,7 +2,14 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Button, Field } from '@/components/ui'
 import { MAX_ADMIN_PASSWORD_LENGTH, MAX_ADMIN_USERNAME_LENGTH } from '@/lib/admin-login-request'
-import { getCurrentPlatformOwner } from '@/lib/auth'
+import {
+  getCurrentUnifiedPlatformOwner,
+  hasConflictingLegacySessions,
+  hasCurrentLegacyAdminSession,
+  hasUnifiedPlatformOwnerProvisioned,
+} from '@/lib/auth'
+import { getAuthContext } from '@/lib/identity/kernel'
+import { getCurrentLegacyParticipantSession } from '@/lib/participant-auth'
 import styles from './login.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -14,8 +21,21 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ error?: string | string[] }>
 }) {
-  const [params, admin] = await Promise.all([searchParams, getCurrentPlatformOwner()])
-  if (admin) redirect('/admin')
+  const [params, context, owner, legacyAdmin, ownerProvisioned, participant, sessionConflict] =
+    await Promise.all([
+      searchParams,
+      getAuthContext(),
+      getCurrentUnifiedPlatformOwner(),
+      hasCurrentLegacyAdminSession(),
+      hasUnifiedPlatformOwnerProvisioned(),
+      getCurrentLegacyParticipantSession(),
+      hasConflictingLegacySessions(),
+    ])
+  if (participant || sessionConflict) redirect('/login?reason=conflict&reauth=admin')
+  if (owner) redirect('/admin')
+  if (context.kind === 'authenticated') redirect('/account')
+  if (legacyAdmin) redirect('/admin/bootstrap')
+  if (ownerProvisioned) redirect('/login?redirectKey=workspaces')
 
   const errorCode = params.error
   const rejected = errorCode === '1'
@@ -75,7 +95,7 @@ export default async function LoginPage({
             进入控制台
           </Button>
         </form>
-        <p className={styles.note}>仅限授权成员 · 会话受到安全策略保护</p>
+        <p className={styles.note}>仅用于首次迁移 · 完成后统一从普通登录入口进入</p>
       </section>
     </main>
   )

@@ -162,13 +162,13 @@ try {
     '__Host-cs2cup_participant': token('A'),
     cs2cup_admin: adminToken,
   }
-  assert.equal((await access(1)).actor.kind, 'participant', 'least privilege wins')
+  assert.equal((await access(1)).reason, 'conflict', 'two authenticated subjects fail closed')
 
   globalThis.__staffSessionCookies = {
     '__Host-cs2cup_participant': token('C'),
     cs2cup_admin: adminToken,
   }
-  assert.equal((await access(1)).actor.kind, 'admin', 'owner is the compatibility fallback')
+  assert.equal((await access(1)).reason, 'conflict', 'authorization cannot choose between subjects')
 
   globalThis.__staffSessionCookies = {
     '__Host-cs2cup_participant': token('Z'),
@@ -190,9 +190,9 @@ try {
     cs2cup_admin: adminToken,
   }
   assert.equal(
-    (await access(1)).actor.kind,
-    'admin',
-    'a revoked participant grant cannot mask owner',
+    (await access(1)).reason,
+    'conflict',
+    'a revoked role does not make a second authenticated subject safe',
   )
 
   database.prepare('UPDATE tournament_role_assignment SET revoked_at = NULL').run()

@@ -1,7 +1,7 @@
-import { Button, ButtonLink } from '@/components/ui'
+import { ButtonLink } from '@/components/ui'
 import { requireAdmin } from '@/lib/auth'
 import { AdminNav } from './AdminNav'
-import { signOut } from './actions/auth'
+import { AdminSignOut } from './AdminSignOut'
 import styles from './shell.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -29,11 +29,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <ButtonLink href="/" size="mini">
               回到网站
             </ButtonLink>
-            <form action={signOut}>
-              <Button type="submit" size="mini">
-                退出
-              </Button>
-            </form>
+            <AdminSignOut />
           </div>
         </div>
       </header>

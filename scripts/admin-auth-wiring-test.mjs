@@ -22,9 +22,20 @@ const navigationModule = dataModule(`
   export function redirect(path) { interrupt('redirect', path) }
   export function notFound() { interrupt('not-found') }
 `)
+const identityKernelModule = dataModule(`
+  export async function getAuthContext() {
+    return globalThis.__adminUnifiedContext ?? { kind: 'anonymous' }
+  }
+  export async function authorize() {
+    return globalThis.__adminUnifiedDecision ?? { ok: false, reason: 'forbidden' }
+  }
+`)
 const mediaAuthModule = dataModule(`
   export async function getCurrentPlatformOwner() {
     return globalThis.__mediaPlatformOwner
+  }
+  export async function getCurrentUnifiedPlatformOwner() {
+    return globalThis.__mediaUnifiedPlatformOwner
   }
 `)
 const rdbModule = dataModule(`
@@ -54,6 +65,9 @@ registerHooks({
     }
     if (specifier === './cloudflare-bindings') {
       return { url: bindingsModule, shortCircuit: true }
+    }
+    if (specifier === './identity/kernel') {
+      return { url: identityKernelModule, shortCircuit: true }
     }
     if (specifier === '@/lib/auth') return { url: mediaAuthModule, shortCircuit: true }
     if (specifier === '@/lib/http-cache') {
@@ -107,6 +121,8 @@ globalThis.__adminAuthCookies = {
       : undefined
   },
 }
+globalThis.__adminUnifiedContext = { kind: 'anonymous' }
+globalThis.__adminUnifiedDecision = { ok: false, reason: 'forbidden' }
 
 async function authModule(label) {
   return import(new URL(`../lib/auth.ts?${label}`, import.meta.url))
@@ -121,9 +137,41 @@ try {
   `)
   globalThis.__adminAuthToken = token
 
+  globalThis.__adminUnifiedContext = {
+    kind: 'authenticated',
+    account: {
+      id: 'U'.repeat(43),
+      displayName: 'Unified Owner',
+      verificationState: 'legacy_unverified',
+    },
+    session: { id: 'S'.repeat(43) },
+  }
+  globalThis.__adminUnifiedDecision = {
+    ok: true,
+    accountId: 'U'.repeat(43),
+    capability: 'platform.configure',
+    resource: { kind: 'platform' },
+    assurance: 'recent',
+  }
+  const unified = await authModule('unified')
+  assert.deepEqual(await unified.getCurrentUnifiedPlatformOwner(), {
+    accountId: 'U'.repeat(43),
+    uid: 'Unified Owner',
+  })
+  assert.deepEqual(await unified.requireAdmin(), {
+    kind: 'unified',
+    accountId: 'U'.repeat(43),
+    uid: 'Unified Owner',
+  })
+
+  globalThis.__adminUnifiedContext = { kind: 'anonymous' }
+  globalThis.__adminUnifiedDecision = { ok: false, reason: 'forbidden' }
   const active = await authModule('active')
   assert.deepEqual(await active.getCurrentPlatformOwner(), { adminId: 1, uid: 'owner' })
-  assert.deepEqual(await active.requireAdmin(), { adminId: 1, uid: 'owner' })
+  await assert.rejects(
+    () => active.requireAdmin(),
+    error => error.kind === 'redirect' && error.path === '/admin/bootstrap',
+  )
 
   database.exec('UPDATE platform_role_assignment SET revoked_at = granted_at WHERE admin_id = 1')
   const revoked = await authModule('revoked')
@@ -166,6 +214,7 @@ try {
   globalThis.__mediaPublished = false
   globalThis.__mediaPrivate = true
   globalThis.__mediaPlatformOwner = null
+  globalThis.__mediaUnifiedPlatformOwner = null
   globalThis.__mediaReads = 0
 
   const denied = await GET(request, mediaParams)

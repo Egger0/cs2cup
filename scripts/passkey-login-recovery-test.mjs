@@ -51,6 +51,11 @@ const SIGNED_OUT_NOTICE = {
   title: '赛事通行已安全退出',
   description: '这台设备上的本次访问已关闭。报名与通行密钥都没有变化；需要时可再次由设备确认。',
 }
+const CONFLICT_NOTICE = {
+  signal: 'SESSION / CONFLICT',
+  title: '检测到另一份旧身份会话',
+  description: '系统不会猜测你现在要切换到哪份身份。请先安全清除这台设备上的旧会话，再重新登录。',
+}
 
 assert.equal(PARTICIPANT_SIGNED_OUT_LOGIN_PATH, '/login?reason=signed-out')
 
@@ -75,6 +80,7 @@ for (const [returnTo, expected] of [
 
 assert.deepEqual(participantLoginNotice('expired'), EXPIRED_NOTICE)
 assert.deepEqual(participantLoginNotice('signed-out'), SIGNED_OUT_NOTICE)
+assert.deepEqual(participantLoginNotice('conflict'), CONFLICT_NOTICE)
 for (const reason of [
   undefined,
   null,
@@ -83,6 +89,7 @@ for (const reason of [
   {},
   ['expired'],
   ['signed-out'],
+  ['conflict'],
   'SIGNED-OUT',
   'signed-out ',
   'unknown',

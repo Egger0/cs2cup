@@ -4,13 +4,26 @@ import { PRIVATE_NO_STORE } from './lib/http-cache'
 
 const PRIVATE_ROUTE_SOURCES = [
   '/admin/:path*',
+  '/account/:path*',
+  '/auth/:path*',
+  '/api/auth/:path*',
   '/api/participant/:path*',
+  '/invitations/:path*',
   '/login',
   '/me',
   '/media/:path*',
   '/photos/:path*',
+  '/registrations/:path*',
 ]
 const REGISTRATION_MANAGEMENT_SOURCE = '/tournaments/:slug/registration/:token'
+const GLOBAL_SECURITY_HEADERS = [
+  {
+    key: 'Content-Security-Policy',
+    value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'",
+  },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'X-Frame-Options', value: 'DENY' },
+]
 
 if (process.env.NODE_ENV === 'development') {
   void initOpenNextCloudflareForDev({
@@ -27,6 +40,7 @@ const config: NextConfig = {
   expireTime: 600,
   async headers() {
     return [
+      { source: '/:path*', headers: GLOBAL_SECURITY_HEADERS },
       ...PRIVATE_ROUTE_SOURCES.map(source => ({
         source,
         headers: [
