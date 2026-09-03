@@ -42,9 +42,23 @@ a fresh database creates that account after migrations have run. There is no imp
 authorization bypass.
 
 The first enforcement stage protects the existing control room with `platform.manage`; its visible
-behavior remains unchanged for the assigned owner. A later, separate stage may expose only the
-two check-in capabilities to an assigned Passkey principal. All other current admin surfaces remain
-owner-only until individually migrated and tested.
+behavior remains unchanged for the assigned owner. The first tournament-scoped surface exposes
+only the two check-in capabilities to an assigned Passkey principal. All other current admin
+surfaces remain owner-only until individually migrated and tested.
+
+The owner-facing check-in access desk intentionally manages only `check_in_operator`. Candidates
+are Passkey principals already connected to a claimed entry in that tournament, so the owner can
+identify them by event context without exposing credentials, sessions, contact fields, or provider
+identities. Grants last 8 hours, 24 hours, or 7 days and can be revoked early. Organizer and referee
+management, non-participant staff invitations, and a general member directory remain separate
+future work; a role with no tested workspace is not offered in the UI.
+
+This task-first role presentation follows
+[GitHub's role guidance](https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/repository-roles-for-an-organization):
+choose the role that fits a person's function without granting more access than needed. Required
+expiry follows [Google Cloud IAM's temporary-access guidance](https://docs.cloud.google.com/iam/docs/temporary-elevated-access).
+The assignment table stores current state, not an audit log; actor-attributed immutable history
+remains tracked separately in issue #39.
 
 Rolling application code back leaves the additive assignment tables unused, but it also restores
 the legacy singleton behavior and stops honoring assignment revocation. If rollback follows an

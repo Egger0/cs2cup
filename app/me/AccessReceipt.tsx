@@ -25,9 +25,11 @@ function DeviceReport({ receipt }: { receipt: ParticipantAccessReceipt }) {
 }
 
 export function AccessReceipt({
+  participantReference,
   receipt,
   sessionExpiresAt,
 }: {
+  participantReference: string
   receipt: ParticipantAccessReceipt
   sessionExpiresAt: number
 }) {
@@ -55,6 +57,11 @@ export function AccessReceipt({
           <h2 id="access-receipt-title">由通行密钥确认</h2>
           <p className={styles.summary}>
             这张凭条只描述本次登录所使用的通行密钥，不包含凭据编号或设备生物识别信息。
+          </p>
+          <p className={styles.reference}>
+            <span>PASS REFERENCE / 通行编号</span>
+            <strong>{participantReference}</strong>
+            <small>它不是密码；仅在负责人核对赛事工作授权时提供。</small>
           </p>
         </div>
       </div>

@@ -10,6 +10,7 @@ import {
 } from '@/lib/queries/participant-account'
 import { participantNextMatch } from '@/lib/queries/participant-next-match'
 import { listCurrentParticipantCheckInWorkspaces } from '@/lib/queries/staff-check-in'
+import { maskParticipantPrincipal } from '@/lib/tournament-staff-management'
 import { AccessReceipt } from './AccessReceipt'
 import { EntryDossier } from './EntryDossier'
 import styles from './me.module.css'
@@ -121,7 +122,11 @@ export default async function ParticipantAccountPage({
           </section>
         )}
 
-        <AccessReceipt receipt={receipt} sessionExpiresAt={participant.sessionExpiresAt} />
+        <AccessReceipt
+          participantReference={maskParticipantPrincipal(participant.principalId)}
+          receipt={receipt}
+          sessionExpiresAt={participant.sessionExpiresAt}
+        />
       </main>
     </ParticipantSessionBoundary>
   )
