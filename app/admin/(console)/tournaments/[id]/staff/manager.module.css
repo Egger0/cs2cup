@@ -1,0 +1,356 @@
+:is(.managerHeader p, .sectionNumber, .ledgerHeading span),
+:is(.ledgerHeading small, .assignmentMeta dt, .count span) {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  letter-spacing: 0.11em;
+}
+
+.manager {
+  border: 1px solid var(--admin-line);
+  border-left: 3px solid var(--admin-blue);
+  background: #1b1d1c;
+}
+
+.managerHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  padding: clamp(22px, 3vw, 34px);
+  border-bottom: 1px solid var(--admin-line);
+}
+
+.managerHeader p {
+  color: var(--admin-blue);
+  font-size: 0.56rem;
+}
+
+.managerHeader h2 {
+  margin-top: 8px;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.45rem, 3vw, 2.35rem);
+  font-weight: 680;
+  letter-spacing: -0.035em;
+}
+
+.count {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.count strong {
+  color: var(--admin-blue-strong);
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 650;
+  line-height: 0.78;
+}
+
+.count span {
+  color: var(--admin-muted);
+  font-size: 0.47rem;
+  line-height: 1.55;
+}
+
+.managerGrid {
+  display: grid;
+  grid-template-columns: minmax(270px, 0.72fr) minmax(0, 1.28fr);
+}
+
+.grant,
+.ledger {
+  min-width: 0;
+  padding: clamp(22px, 3vw, 34px);
+}
+
+.grant {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+  border-right: 1px solid var(--admin-line);
+  background:
+    linear-gradient(rgba(109, 165, 211, 0.025) 1px, transparent 1px) 0 0 / 100% 42px,
+    #151716;
+}
+
+.sectionNumber {
+  color: rgba(109, 165, 211, 0.55);
+  font-size: 0.58rem;
+}
+
+.grant h3,
+.ledgerHeading h3 {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.03rem;
+  font-weight: 650;
+}
+
+.grant > div:nth-child(2) p {
+  margin-top: 6px;
+  color: var(--admin-muted);
+  font-size: 0.73rem;
+}
+
+.grant label {
+  display: grid;
+  gap: 8px;
+  color: var(--admin-muted);
+  font-size: 0.72rem;
+}
+
+.grant select {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 36px 10px 12px;
+  border: 1px solid var(--admin-line-strong);
+  background: #101211;
+  color: var(--ink);
+  font-family: var(--font-body), sans-serif;
+}
+
+.grant select:focus-visible {
+  border-color: var(--admin-blue);
+}
+
+.emptyHint {
+  padding-top: 14px;
+  border-top: 1px dashed var(--admin-line-strong);
+  color: var(--admin-muted);
+  font-size: 0.69rem;
+  line-height: 1.65;
+}
+
+.ledgerHeading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.ledgerHeading > div {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.ledgerHeading span {
+  color: rgba(109, 165, 211, 0.55);
+  font-size: 0.58rem;
+}
+
+.ledgerHeading small {
+  color: #747975;
+  font-size: 0.45rem;
+}
+
+.assignmentList {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+}
+
+.assignmentList > li,
+.emptyLedger {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--admin-line);
+  background: #161817;
+}
+
+.assignmentTop {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.person {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.personMark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--admin-line-strong);
+  color: var(--admin-blue-strong);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.54rem;
+}
+
+.person > div {
+  min-width: 0;
+}
+
+.person strong {
+  display: block;
+  overflow: hidden;
+  font-size: 0.84rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.person > div > span {
+  display: block;
+  overflow: hidden;
+  color: var(--admin-muted);
+  font-size: 0.66rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--admin-muted);
+  font-size: 0.62rem;
+}
+
+.state i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #666;
+}
+
+.state[data-state='active'] {
+  color: #a8d8be;
+}
+
+.state[data-state='active'] i {
+  background: #62bb8b;
+  box-shadow: 0 0 0 4px rgba(98, 187, 139, 0.1);
+}
+
+.state[data-state='revoked'] {
+  color: #d6a49d;
+}
+
+.state[data-state='revoked'] i {
+  background: #b96054;
+}
+
+.assignmentMeta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 15px;
+  padding-top: 13px;
+  border-top: 1px solid var(--admin-line);
+}
+
+.assignmentMeta dt {
+  color: #737b77;
+  font-size: 0.44rem;
+}
+
+.assignmentMeta dd {
+  margin-top: 4px;
+  color: #b8bdb9;
+  font-size: 0.62rem;
+  overflow-wrap: anywhere;
+}
+
+.revoke {
+  margin-top: 14px;
+}
+
+.revoke[data-armed] {
+  display: grid;
+  gap: 11px;
+  padding: 12px;
+  border-left: 2px solid #b96054;
+  background: rgba(185, 96, 84, 0.07);
+}
+
+.revoke p {
+  color: #d9b5af;
+  font-size: 0.69rem;
+}
+
+.revoke > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.revoke button {
+  min-height: 42px;
+}
+
+.emptyLedger {
+  color: var(--admin-muted);
+}
+
+.emptyLedger strong {
+  color: var(--ink);
+  font-size: 0.86rem;
+}
+
+.emptyLedger p {
+  margin-top: 5px;
+  font-size: 0.7rem;
+}
+
+.success,
+.failure {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-left: 3px solid;
+  font-size: 0.72rem;
+}
+
+.success {
+  border-color: #62bb8b;
+  background: rgba(98, 187, 139, 0.07);
+  color: #b9dec9;
+}
+
+.failure {
+  border-color: #b96054;
+  background: rgba(185, 96, 84, 0.07);
+  color: #e0b6b0;
+}
+
+@media (max-width: 860px) {
+  .managerGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .grant {
+    border-right: 0;
+    border-bottom: 1px solid var(--admin-line);
+  }
+}
+
+@media (max-width: 620px) {
+  .managerHeader,
+  .assignmentTop {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .assignmentMeta {
+    grid-template-columns: 1fr;
+  }
+
+  .count {
+    align-self: flex-start;
+  }
+
+  .ledgerHeading {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .state {
+    align-self: flex-start;
+    margin-left: 54px;
+  }
+}

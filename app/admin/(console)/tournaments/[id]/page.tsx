@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { Empty } from '@/components/ui'
+import { ButtonLink, Empty } from '@/components/ui'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { requireAdmin } from '@/lib/auth'
 import { adminListGames, adminListTournaments } from '@/lib/queries/content'
@@ -39,13 +39,18 @@ export default async function AdminTournamentPage({ params }: { params: Promise<
       <section className={styles.panel}>
         <div className={styles.panelHeading}>
           <h2 className={styles.panelHead}>赛事设置</h2>
-          <a
-            className={styles.panelAction}
-            href={`/admin/tournaments/${tournamentId}/teams.csv`}
-            download
-          >
-            导出战队 CSV
-          </a>
+          <div className={styles.panelActions}>
+            <ButtonLink href={`/admin/tournaments/${tournamentId}/staff`} size="mini">
+              签到权限
+            </ButtonLink>
+            <a
+              className={styles.panelAction}
+              href={`/admin/tournaments/${tournamentId}/teams.csv`}
+              download
+            >
+              导出战队 CSV
+            </a>
+          </div>
         </div>
         <TournamentEditor tournament={tournament} games={games} />
       </section>

@@ -144,6 +144,39 @@
   font-size: 0.72rem;
 }
 
+.reference {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 7px 12px;
+  max-width: 660px;
+  margin-top: 18px;
+  padding-top: 13px;
+  border-top: 1px dashed rgba(121, 185, 216, 0.25);
+}
+
+.reference span,
+.reference small {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  letter-spacing: 0.07em;
+}
+
+.reference span {
+  color: #5e9fc1;
+  font-size: 0.48rem;
+}
+
+.reference strong {
+  color: #d7edf5;
+  font-size: 0.74rem;
+}
+
+.reference small {
+  flex-basis: 100%;
+  color: #72868f;
+  font-size: 0.48rem;
+}
+
 .facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
