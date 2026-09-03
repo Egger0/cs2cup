@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 
 import {
+  PARTICIPANT_SIGNED_OUT_LOGIN_PATH,
+  participantLoginNotice,
   participantLoginReceiptPath,
   passkeyLoginDeviceFailure,
   passkeyLoginHttpFailure,
@@ -37,6 +39,34 @@ const INTERRUPTED_OR_UNAVAILABLE = {
   title: '验证未完成',
   description: '验证可能被取消、超时或当前设备暂不可用，请重新尝试。',
   action: 'retry',
+}
+const EXPIRED_NOTICE = {
+  signal: 'SESSION / CLOSED',
+  title: '访问窗口已结束',
+  description: '为了保护报名档案，本次访问已关闭。报名与通行密钥都没有变化，重新由设备确认即可。',
+}
+const SIGNED_OUT_NOTICE = {
+  signal: 'SESSION / CLOSED',
+  title: '赛事通行已安全退出',
+  description: '这台设备上的本次访问已关闭。报名与通行密钥都没有变化；需要时可再次由设备确认。',
+}
+
+assert.equal(PARTICIPANT_SIGNED_OUT_LOGIN_PATH, '/login?reason=signed-out')
+assert.deepEqual(participantLoginNotice('expired'), EXPIRED_NOTICE)
+assert.deepEqual(participantLoginNotice('signed-out'), SIGNED_OUT_NOTICE)
+for (const reason of [
+  undefined,
+  null,
+  '',
+  7,
+  {},
+  ['expired'],
+  ['signed-out'],
+  'SIGNED-OUT',
+  'signed-out ',
+  'unknown',
+]) {
+  assert.equal(participantLoginNotice(reason), null)
 }
 
 for (const [stage, status, expected] of [
