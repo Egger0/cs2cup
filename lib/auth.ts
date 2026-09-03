@@ -4,11 +4,40 @@ import { cookies } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 import { hasStaffCapability } from './authorization'
 import { cloudflareBindings } from './cloudflare-bindings'
+import { getCurrentParticipant, participantSessionCookie } from './participant-auth'
+import type { StaffActor, TournamentStaffCapability } from './authorization'
 import type { AdminLoginAdmission } from './queries/admin-login-attempts'
 
 export interface AdminIdentity {
   adminId: number
   uid: string
+}
+
+export type TournamentStaffIdentity =
+  | ({ kind: 'admin'; sessionExpiresAt: number } & AdminIdentity)
+  | { kind: 'participant'; principalId: string; sessionExpiresAt: number }
+
+export type TournamentStaffAccess =
+  | { ok: true; actor: TournamentStaffIdentity }
+  | {
+      ok: false
+      reason: 'anonymous' | 'expired' | 'forbidden'
+      hadAdminCookie: boolean
+      hadParticipantCookie: boolean
+    }
+
+export class TournamentStaffAccessError extends Error {
+  readonly access: Extract<TournamentStaffAccess, { ok: false }>
+
+  constructor(access: Extract<TournamentStaffAccess, { ok: false }>) {
+    super('Tournament staff authorization failed')
+    this.name = 'TournamentStaffAccessError'
+    this.access = access
+  }
+}
+
+export function staffSessionRemainingMs(expiresAt: number) {
+  return Number.isSafeInteger(expiresAt) ? expiresAt - Date.now() : 0
 }
 
 interface AdminAccount {
@@ -21,6 +50,11 @@ interface AdminAccount {
 interface AdminSession {
   admin_id: number
   username: string
+  expires_at: number
+}
+
+interface AdminSessionIdentity extends AdminIdentity {
+  sessionExpiresAt: number
 }
 
 const COOKIE_NAME = 'cs2cup_admin'
@@ -111,16 +145,22 @@ export async function endAdminSession() {
   ;(await cookies()).delete(COOKIE_NAME)
 }
 
-const getCurrentAdminSessionIdentity = cache(async (): Promise<AdminIdentity | null> => {
+const getCurrentAdminSessionIdentity = cache(async (): Promise<AdminSessionIdentity | null> => {
   const token = (await cookies()).get(COOKIE_NAME)?.value
   if (!token) return null
   const session = await cloudflareBindings()
     .db.prepare(
-      'SELECT a.id AS admin_id, a.username FROM admin_session s JOIN admin_account a ON a.id = s.admin_id WHERE s.token_hash = ? AND s.expires_at > ?',
+      'SELECT a.id AS admin_id, a.username, s.expires_at FROM admin_session s JOIN admin_account a ON a.id = s.admin_id WHERE s.token_hash = ? AND s.expires_at > ?',
     )
     .bind(hex(await hash(token)), Date.now())
     .first<AdminSession>()
-  return session ? { adminId: session.admin_id, uid: session.username } : null
+  return session
+    ? {
+        adminId: session.admin_id,
+        uid: session.username,
+        sessionExpiresAt: session.expires_at,
+      }
+    : null
 })
 
 const currentAdminCanManagePlatform = cache((adminId: number) =>
@@ -132,12 +172,72 @@ const currentAdminCanManagePlatform = cache((adminId: number) =>
 export const getCurrentPlatformOwner = cache(async (): Promise<AdminIdentity | null> => {
   const admin = await getCurrentAdminSessionIdentity()
   if (!admin || !(await currentAdminCanManagePlatform(admin.adminId))) return null
-  return admin
+  return { adminId: admin.adminId, uid: admin.uid }
 })
+
+export async function getCurrentTournamentStaffAccess(
+  tournamentId: number,
+  capability: TournamentStaffCapability,
+): Promise<TournamentStaffAccess> {
+  const cookieStore = await cookies()
+  const hadAdminCookie = Boolean(cookieStore.get(adminSessionCookie.name)?.value)
+  const hadParticipantCookie = Boolean(cookieStore.get(participantSessionCookie.name)?.value)
+  const [participant, admin] = await Promise.all([
+    getCurrentParticipant(),
+    getCurrentAdminSessionIdentity(),
+  ])
+  const db = cloudflareBindings().db
+  const resource = { kind: 'tournament' as const, tournamentId }
+  const now = Date.now()
+
+  if (participant) {
+    const actor: StaffActor = { kind: 'participant', principalId: participant.principalId }
+    if (await hasStaffCapability(db, actor, capability, resource, now)) {
+      return {
+        ok: true,
+        actor: {
+          ...actor,
+          sessionExpiresAt: participant.sessionExpiresAt,
+        },
+      }
+    }
+  }
+
+  if (admin) {
+    const actor: StaffActor = { kind: 'admin', adminId: admin.adminId }
+    if (await hasStaffCapability(db, actor, capability, resource, now)) {
+      return {
+        ok: true,
+        actor: { ...actor, uid: admin.uid, sessionExpiresAt: admin.sessionExpiresAt },
+      }
+    }
+  }
+
+  return {
+    ok: false,
+    reason:
+      participant || admin
+        ? 'forbidden'
+        : hadAdminCookie || hadParticipantCookie
+          ? 'expired'
+          : 'anonymous',
+    hadAdminCookie,
+    hadParticipantCookie,
+  }
+}
+
+export async function requireTournamentStaffCapability(
+  tournamentId: number,
+  capability: TournamentStaffCapability,
+) {
+  const access = await getCurrentTournamentStaffAccess(tournamentId, capability)
+  if (!access.ok) throw new TournamentStaffAccessError(access)
+  return access.actor
+}
 
 export async function requireAdmin(): Promise<AdminIdentity> {
   const admin = await getCurrentAdminSessionIdentity()
   if (!admin) redirect('/admin/login')
   if (!(await currentAdminCanManagePlatform(admin.adminId))) notFound()
-  return admin
+  return { adminId: admin.adminId, uid: admin.uid }
 }

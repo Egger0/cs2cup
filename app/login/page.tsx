@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getCurrentParticipant } from '@/lib/participant-auth'
 import { participantLoginNotice } from '@/lib/passkey-login-recovery'
-import { safeParticipantReturnPath } from '@/lib/participant-return'
+import { isParticipantStaffReturnPath, safeParticipantReturnPath } from '@/lib/participant-return'
 
 import PasskeyLogin from './PasskeyLogin'
 import noticeStyles from './login-notice.module.css'
@@ -24,6 +24,7 @@ export default async function ParticipantLoginPage({
 }) {
   const params = await searchParams
   const returnTo = safeParticipantReturnPath(params.returnTo)
+  const isStaffReturn = isParticipantStaffReturnPath(returnTo)
   const participant = await getCurrentParticipant()
   if (participant) redirect(returnTo)
 
@@ -46,8 +47,12 @@ export default async function ParticipantLoginPage({
           <p className={styles.eyebrow}>
             <span>ENTRY PASS</span> / 赛事通行
           </p>
-          <h1 id="participant-login-title">回到你的赛事</h1>
-          <p className={styles.lede}>查看已经绑定的报名状态、阵容与下一场比赛。</p>
+          <h1 id="participant-login-title">{isStaffReturn ? '回到社团工作台' : '回到你的赛事'}</h1>
+          <p className={styles.lede}>
+            {isStaffReturn
+              ? '由设备确认身份后，系统会重新检查本届赛事工作权限。'
+              : '查看已经绑定的报名状态、阵容与下一场比赛。'}
+          </p>
         </div>
 
         <p className={styles.assurances}>
@@ -82,9 +87,9 @@ export default async function ParticipantLoginPage({
 
         <footer className={styles.passFooter}>
           <p>
-            还没绑定？
+            {isStaffReturn ? '还没有工作权限？' : '还没绑定？'}
             <br />
-            请打开报名回执中的专属管理链接。
+            {isStaffReturn ? '请联系本届赛事负责人确认授权。' : '请打开报名回执中的专属管理链接。'}
           </p>
           <Link href="/tournaments" className={styles.backLink}>
             <span aria-hidden="true">←</span> 返回公开赛事

@@ -1,7 +1,11 @@
 'use server'
 
 import { updateTag } from 'next/cache'
-import { requireAdmin } from '@/lib/auth'
+import {
+  getCurrentTournamentStaffAccess,
+  requireAdmin,
+  TournamentStaffAccessError,
+} from '@/lib/auth'
 import { isIsoInstant } from '@/lib/datetime'
 import { assignTeamSeed, removeTeam, setTeamCheckedIn, setTeamStatus } from '@/lib/queries/admin'
 import type { TeamStatus } from '@/lib/types'
@@ -59,30 +63,54 @@ export async function updateTeamCheckIn(
   expectedCheckedInAt: string | null,
   tournamentId: number,
 ) {
-  await requireAdmin()
   if (!validId(id) || !validId(tournamentId)) {
-    return { ok: false as const, error: '战队或赛事编号无效' }
+    return { ok: false as const, code: 'invalid' as const, error: '战队或赛事编号无效' }
   }
   if (typeof checkedIn !== 'boolean') {
-    return { ok: false as const, error: '签到状态无效' }
+    return { ok: false as const, code: 'invalid' as const, error: '签到状态无效' }
   }
   if (
     (expectedCheckedInAt !== null && !isIsoInstant(expectedCheckedInAt)) ||
     checkedIn === (expectedCheckedInAt !== null)
   ) {
-    return { ok: false as const, error: '签到状态无效' }
+    return { ok: false as const, code: 'invalid' as const, error: '签到状态无效' }
   }
 
+  let checkedInAt: string | null
   try {
+    const access = await getCurrentTournamentStaffAccess(tournamentId, 'tournament.check_in.write')
+    if (!access.ok) {
+      return {
+        ok: false as const,
+        code: 'forbidden' as const,
+        error: '签到权限已失效，请重新进入签到台。',
+      }
+    }
     const rows = await setTeamCheckedIn(id, tournamentId, checkedIn, expectedCheckedInAt)
     if (!rows.length) {
-      return { ok: false as const, error: '签到状态已更新，请刷新后重试' }
+      return {
+        ok: false as const,
+        code: 'conflict' as const,
+        error: '签到状态已变化，正在同步最新记录。',
+      }
     }
+    checkedInAt = rows[0]?.checked_in_at ?? null
   } catch (error) {
-    return { ok: false as const, error: writeError(error, '签到状态保存失败') }
+    if (error instanceof TournamentStaffAccessError) {
+      return {
+        ok: false as const,
+        code: 'forbidden' as const,
+        error: '签到权限已失效，请重新进入签到台。',
+      }
+    }
+    return {
+      ok: false as const,
+      code: 'unavailable' as const,
+      error: writeError(error, '签到状态保存失败'),
+    }
   }
   updateTag(`teams:${tournamentId}`)
-  return { ok: true as const }
+  return { ok: true as const, checkedInAt }
 }
 
 export async function deleteTeam(id: number, tournamentId: number) {

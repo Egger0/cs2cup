@@ -3,9 +3,11 @@ import assert from 'node:assert/strict'
 import {
   DEFAULT_PARTICIPANT_RETURN_PATH,
   isParticipantReturnPath,
+  isParticipantStaffReturnPath,
   participantEntryAddedId,
   participantEntryAddedPath,
   participantRegistrationReturnPath,
+  participantStaffCheckInPath,
   safeParticipantReturnPath,
 } from '../lib/participant-return.ts'
 
@@ -21,6 +23,7 @@ for (const path of [
   registrationPath,
   `/tournaments/a/registration/${token}`,
   `/tournaments/${longestSlug}/registration/${token}`,
+  '/admin/tournaments/42/check-in',
 ]) {
   assert.equal(isParticipantReturnPath(path), true, `expected allowed path: ${path}`)
   assert.equal(safeParticipantReturnPath(path), path)
@@ -37,6 +40,11 @@ assert.equal(participantEntryAddedId('037'), null)
 assert.equal(participantEntryAddedId('9007199254740992'), null)
 assert.equal(participantEntryAddedPath(0), null)
 assert.equal(participantEntryAddedPath(Number.MAX_SAFE_INTEGER + 1), null)
+assert.equal(participantStaffCheckInPath(42), '/admin/tournaments/42/check-in')
+assert.equal(isParticipantStaffReturnPath('/admin/tournaments/42/check-in'), true)
+assert.equal(isParticipantStaffReturnPath('/me'), false)
+assert.equal(participantStaffCheckInPath(0), null)
+assert.equal(participantStaffCheckInPath(Number.MAX_SAFE_INTEGER + 1), null)
 assert.equal(isParticipantReturnPath(entryAddedPath), false)
 assert.equal(safeParticipantReturnPath(entryAddedPath), DEFAULT_PARTICIPANT_RETURN_PATH)
 
@@ -51,6 +59,13 @@ for (const value of [
   '/me/',
   '/me?continue=1',
   '/me#entry',
+  '/admin/tournaments/0/check-in',
+  '/admin/tournaments/01/check-in',
+  '/admin/tournaments/42/check-in/',
+  '/admin/tournaments/42/check-in?next=/admin',
+  '/admin/tournaments/9007199254740992/check-in',
+  '/admin//tournaments/42/check-in',
+  '/admin/tournaments%2F42%2Fcheck-in',
   '//example.com/me',
   'https://example.com/me',
   'javascript:alert(1)',
