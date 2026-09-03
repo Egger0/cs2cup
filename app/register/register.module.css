@@ -1,0 +1,29 @@
+.form small {
+  color: #777d7b;
+  font-size: 0.64rem;
+  font-weight: 450;
+  line-height: 1.45;
+}
+
+.nameGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.after {
+  color: #686f70;
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+
+.footer {
+  padding-top: 16px;
+  border-top: 1px solid #c5c2b9;
+}
+
+@media (max-width: 1100px) {
+  .nameGrid {
+    grid-template-columns: 1fr;
+  }
+}

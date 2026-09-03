@@ -39,22 +39,31 @@ Contributor commands use [`wrangler.local.jsonc`](./wrangler.local.jsonc). Its D
 bindings are local-only, remote bindings are disabled in code, and telemetry is disabled.
 Browser checks also reject non-loopback origins and outbound requests.
 
-[`wrangler.jsonc`](./wrangler.jsonc) is deployment configuration. `npm run cf:build`
-uses it to produce the same bundle as Workers Builds without deploying. Use
-`npm run cf:build:local` to validate the local-only bindings. Remote migrations and deployment
-belong only in protected maintainer automation and are intentionally absent from package scripts.
+[`wrangler.jsonc`](./wrangler.jsonc) is deployment configuration. `npm run cf:build` uses it to
+produce the same bundle as Workers Builds without deploying. In a production-branch Workers Build,
+its guarded post-build hook applies pending D1 migrations before publication. Use
+`npm run cf:build:local` to validate the local-only bindings. The protected Workers Builds deploy
+command is `npm run deploy`; it rechecks migrations before publishing the already-built Worker.
+Non-production Workers Builds upload an isolated preview version without migrations or traffic
+promotion. Contributors must not run remote migrations or deploy from local machines.
 
 ## Configuration
 
-| Variable                          | Production | Purpose                                |
-| --------------------------------- | ---------- | -------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`            | Required   | Canonical HTTP(S) origin               |
-| `HOME_PREVIEW_COUNTDOWN`          | Optional   | Allows fallback data in local previews |
-| `REGISTRATION_FINGERPRINT_SECRET` | Required   | HMAC secret for anonymous abuse limits |
-| `REGISTRATION_CLIENT_IP_SOURCE`   | Required   | Trusted client IP header               |
+| Variable                                   | Production | Purpose                                           |
+| ------------------------------------------ | ---------- | ------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`                     | Required   | Canonical HTTP(S) origin                          |
+| `HOME_PREVIEW_COUNTDOWN`                   | Optional   | Allows fallback data in local previews            |
+| `REGISTRATION_FINGERPRINT_SECRET`          | Required   | Root secret for abuse and identity key derivation |
+| `REGISTRATION_CLIENT_IP_SOURCE`            | Required   | Trusted client IP header                          |
+| `IDENTITY_PASSWORD_PEPPERS`                | Optional   | Versioned dedicated password pepper JSON          |
+| `IDENTITY_PASSWORD_ACTIVE_PEPPER_VERSION`  | Optional   | Active password pepper version                    |
+| `IDENTITY_AUTH_FINGERPRINT_KEYS`           | Optional   | Versioned dedicated auth fingerprint key JSON     |
+| `IDENTITY_AUTH_FINGERPRINT_ACTIVE_VERSION` | Optional   | Active auth fingerprint key version               |
 
-Never commit credentials or production secrets.
-The fingerprint secret is domain-separated between registration and administrator sign-in use.
+Never commit credentials or production secrets. If the dedicated identity key pairs are omitted,
+the required registration fingerprint secret is domain-separated into stable password-pepper and
+authentication-fingerprint keys. Configure both values of a dedicated pair together and retain old
+password pepper versions while credentials still reference them.
 
 ## Quality
 
@@ -74,8 +83,20 @@ npm run keyboard
 npm run perf
 ```
 
-Repository documentation, configuration, comments, identifiers, and file names use English.
-User-facing copy may use Chinese. Source files are limited to 300 non-empty lines.
+Repository documentation, configuration, comments, identifiers, and file names use English, except
+for explicitly localized product-copy specifications. User-facing copy may use Chinese. Source files
+are limited to 300 non-empty lines.
+
+## Architecture contracts
+
+- [`docs/identity-architecture.md`](./docs/identity-architecture.md) defines the unified account,
+  authentication, session, authorization, recovery, migration, and identity UI contract.
+- [`docs/identity-stack-decision.md`](./docs/identity-stack-decision.md) assigns implementation
+  ownership and records the authentication-stack decision.
+- [`docs/identity-product-language.zh-CN.md`](./docs/identity-product-language.zh-CN.md) is the
+  localized identity terminology and interface-copy contract.
+- [`docs/performance-budget.md`](./docs/performance-budget.md) defines Worker and browser budgets and
+  explains which resources belong in the Worker, Static Assets, or R2.
 
 ## Structure
 

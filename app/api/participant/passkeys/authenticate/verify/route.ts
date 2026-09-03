@@ -3,6 +3,8 @@ import { type NextRequest } from 'next/server'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { assertCsrfRequest, CsrfError } from '@/lib/csrf'
 import { base64UrlToBytes } from '@/lib/opaque-token'
+import { clearAdminSessionCookie } from '@/lib/auth'
+import { legacySessionStateFromRequest } from '@/lib/legacy-session-state'
 import {
   createParticipantSessionDraft,
   getCurrentParticipant,
@@ -29,6 +31,12 @@ function authenticationVerificationError(error: unknown) {
 export async function POST(request: NextRequest) {
   try {
     assertCsrfRequest(request)
+    const legacySessions = await legacySessionStateFromRequest(request)
+    if (legacySessions.adminActive) {
+      return clearCeremonyCookie(
+        passkeyError(409, '旧管理员会话仍在使用，请先安全清除后重新登录。'),
+      )
+    }
     if (await getCurrentParticipant()) {
       return clearCeremonyCookie(passkeyError(409, '当前赛事通行已打开，请返回继续。'))
     }
@@ -66,9 +74,12 @@ export async function POST(request: NextRequest) {
       deviceType: verification.authenticationInfo.credentialDeviceType,
       backedUp: verification.authenticationInfo.credentialBackedUp,
       session,
+      opposingAdminSessionHash: legacySessions.adminTokenHash,
       now,
     })
-    return clearCeremonyCookie(setParticipantSessionCookie(privateEmpty(), session.token))
+    return clearAdminSessionCookie(
+      clearCeremonyCookie(setParticipantSessionCookie(privateEmpty(), session.token)),
+    )
   } catch (error) {
     return clearCeremonyCookie(authenticationVerificationError(error))
   }

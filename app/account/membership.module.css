@@ -1,0 +1,228 @@
+.panel {
+  --blue: #0b5d94;
+  --line: rgba(255, 255, 255, 0.16);
+  padding: clamp(25px, 4vw, 48px);
+  border: 1px solid var(--line);
+  background: rgba(20, 26, 27, 0.78);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.19);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.header p {
+  color: #73acd2;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.57rem;
+  letter-spacing: 0.14em;
+}
+
+.header h2 {
+  margin-top: 9px;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2rem, 4vw, 3.7rem);
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.state {
+  flex: 0 0 auto;
+  padding: 7px 9px;
+  border: 1px solid #667174;
+  color: #9aa5a5;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.1em;
+}
+
+.state[data-state='approved'] {
+  border-color: #50a47f;
+  color: #74d2a8;
+}
+
+.state[data-state='changes_requested'],
+.state[data-state='rejected'] {
+  border-color: #bd7d5f;
+  color: #e0a487;
+}
+
+.state[data-state='pending'],
+.state[data-state='in_review'] {
+  border-color: #73acd2;
+  color: #9bd3f6;
+}
+
+.summary {
+  max-width: 580px;
+  margin-top: 15px;
+  color: #9ea9a7;
+  font-size: 0.78rem;
+}
+
+.timeline {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 30px;
+  border-block: 1px solid var(--line);
+}
+
+.timeline div {
+  display: grid;
+  gap: 7px;
+  padding: 16px 18px 16px 0;
+}
+
+.timeline div + div {
+  padding-left: 18px;
+  border-left: 1px solid var(--line);
+}
+
+.timeline small {
+  color: #71807f;
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+}
+
+.timeline strong {
+  font-size: 0.73rem;
+}
+
+.reviewNote {
+  margin-top: 26px;
+  padding: 16px 18px;
+  border-left: 3px solid #c08264;
+  background: rgba(192, 130, 100, 0.09);
+}
+
+.reviewNote strong {
+  color: #e1b19a;
+  font-size: 0.7rem;
+}
+
+.reviewNote p {
+  margin-top: 5px;
+  color: #c0c6c3;
+  font-size: 0.75rem;
+}
+
+.form {
+  display: grid;
+  gap: 17px;
+  margin-top: 30px;
+}
+
+.form label {
+  display: grid;
+  gap: 8px;
+}
+
+.form label span {
+  color: #a5afad;
+  font-size: 0.68rem;
+  font-weight: 680;
+}
+
+.form input,
+.form textarea {
+  width: 100%;
+  border: 1px solid #455052;
+  border-radius: 0;
+  outline: none;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px 13px;
+  color: #f0eee6;
+  font: inherit;
+  font-size: 0.78rem;
+  resize: vertical;
+}
+
+.form input {
+  min-height: 50px;
+}
+
+.form input:focus,
+.form textarea:focus {
+  border-color: #73acd2;
+  box-shadow: 0 0 0 1px #73acd2;
+}
+
+.form button,
+.pendingActions button {
+  min-height: 48px;
+  border: 1px solid #73acd2;
+  border-radius: 0;
+  background: transparent;
+  padding: 10px 16px;
+  color: #a9d8f6;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 720;
+}
+
+.form button {
+  margin-top: 5px;
+  background: var(--blue);
+  color: #f7f3e9;
+}
+
+.form button:disabled,
+.pendingActions button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.error {
+  padding: 10px 12px;
+  border-left: 3px solid #c76666;
+  background: rgba(199, 102, 102, 0.08);
+  color: #efb3b3;
+  font-size: 0.72rem;
+}
+
+.pendingActions {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.pendingActions > p {
+  max-width: 610px;
+  color: #a0aaa8;
+  font-size: 0.74rem;
+}
+
+.pendingActions > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 17px;
+}
+
+.pendingActions button:last-child {
+  border-color: #596264;
+  color: #a8afad;
+}
+
+@media (max-width: 620px) {
+  .header {
+    display: grid;
+  }
+
+  .state {
+    width: fit-content;
+  }
+
+  .timeline {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline div + div {
+    padding-left: 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+}

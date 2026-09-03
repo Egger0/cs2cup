@@ -1,0 +1,212 @@
+.page {
+  padding-bottom: 88px;
+}
+
+.shell {
+  display: grid;
+  width: min(980px, calc(100% - clamp(36px, 8vw, 120px)));
+  gap: 22px;
+  margin-inline: auto;
+  padding-top: clamp(42px, 7vw, 86px);
+}
+
+.intro {
+  margin-bottom: clamp(16px, 3vw, 34px);
+}
+
+.intro p,
+.section header p {
+  color: #73acd2;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.57rem;
+  letter-spacing: 0.14em;
+}
+
+.intro h1 {
+  max-width: 850px;
+  margin-top: 11px;
+  font-family: 'NLC Serif', 'Songti SC', serif;
+  font-size: clamp(2.8rem, 6.8vw, 6.4rem);
+  font-weight: 800;
+  letter-spacing: -0.065em;
+  line-height: 0.98;
+}
+
+.intro > span {
+  display: block;
+  margin-top: 14px;
+  color: #7f8a89;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.68rem;
+}
+
+.section {
+  padding: clamp(24px, 4vw, 42px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(18, 24, 25, 0.82);
+}
+
+.section > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.section h2 {
+  margin-top: 6px;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.7rem, 4vw, 3rem);
+  letter-spacing: -0.04em;
+}
+
+.section header > span {
+  padding: 6px 8px;
+  border: 1px solid #586467;
+  color: #a7b0af;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.55rem;
+}
+
+.explanation {
+  max-width: 700px;
+  margin-top: 14px;
+  color: #98a3a1;
+  font-size: 0.76rem;
+}
+
+.passkeyList {
+  margin-top: 27px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  list-style: none;
+}
+
+.passkeyList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-block: 17px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.passkeyList li > div {
+  display: grid;
+  gap: 3px;
+}
+
+.passkeyList strong {
+  font-size: 0.82rem;
+}
+
+.passkeyList span,
+.passkeyList small {
+  color: #84908e;
+  font-size: 0.64rem;
+}
+
+.passkeyList button,
+.section > button,
+.enroll button {
+  min-height: 42px;
+  border: 1px solid #637074;
+  border-radius: 0;
+  background: transparent;
+  padding: 8px 13px;
+  color: #c1c7c5;
+  cursor: pointer;
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.passkeyList button[data-confirming='true'] {
+  border-color: #c87878;
+  color: #e4a3a3;
+}
+
+.section > button {
+  margin-top: 21px;
+  border-color: #73acd2;
+  color: #a9d8f6;
+}
+
+.enroll {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 24px;
+}
+
+.enroll label {
+  display: grid;
+  gap: 7px;
+  color: #a5afad;
+  font-size: 0.65rem;
+}
+
+.enroll input {
+  min-height: 46px;
+  border: 1px solid #4d595b;
+  border-radius: 0;
+  outline: none;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 9px 12px;
+}
+
+.enroll input:focus {
+  border-color: #73acd2;
+  box-shadow: 0 0 0 1px #73acd2;
+}
+
+.enroll button {
+  min-height: 46px;
+  border-color: #0b5d94;
+  background: #0b5d94;
+  color: #f7f3e9;
+}
+
+.passkeyList button:disabled,
+.section > button:disabled,
+.enroll button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.empty {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px dashed #495557;
+  color: #899492;
+  font-size: 0.72rem;
+}
+
+.error {
+  margin-top: 17px;
+  padding: 10px 12px;
+  border-left: 3px solid #c76666;
+  background: rgba(199, 102, 102, 0.08);
+  color: #efb3b3;
+  font-size: 0.7rem;
+}
+
+@media (max-width: 620px) {
+  .shell {
+    width: min(100% - 32px, 980px);
+  }
+
+  .section > header,
+  .passkeyList li,
+  .enroll {
+    grid-template-columns: 1fr;
+  }
+
+  .section > header,
+  .passkeyList li {
+    display: grid;
+  }
+
+  .section header > span {
+    width: fit-content;
+  }
+}

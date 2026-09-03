@@ -5,6 +5,7 @@ import { promisify } from 'node:util'
 import ts from 'typescript'
 
 const HAN = /\p{Script=Han}/u
+const localizedDocuments = new Set(['docs/identity-product-language.zh-CN.md'])
 const documentExtensions = new Set(['.md', '.json', '.jsonc', '.yaml', '.yml'])
 const sourceExtensions = new Set([
   '.cjs',
@@ -59,7 +60,9 @@ for (const path of stdout.split('\0').filter(Boolean)) {
     throw error
   })
   if (source === null) continue
-  if (fullText ? HAN.test(source) : commentHasHan(source, extension)) {
+  if (
+    fullText ? !localizedDocuments.has(path) && HAN.test(source) : commentHasHan(source, extension)
+  ) {
     violations.push(`${path}: repository text`)
   }
 }

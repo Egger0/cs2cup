@@ -3,6 +3,7 @@ import { type NextRequest } from 'next/server'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { assertCsrfRequest, CsrfError } from '@/lib/csrf'
 import { exactParticipantEntryAttachmentBody } from '@/lib/participant-entry-attachment-request'
+import { legacySessionStateFromRequest } from '@/lib/legacy-session-state'
 import {
   clearParticipantSessionCookie,
   participantSessionHashFromRequest,
@@ -41,6 +42,9 @@ function attachmentError(error: unknown) {
 export async function POST(request: NextRequest) {
   try {
     assertCsrfRequest(request)
+    if ((await legacySessionStateFromRequest(request)).adminActive) {
+      return errorResponse(409, '旧管理员会话仍在使用，请先安全清除后重新登录。')
+    }
     const sessionTokenHash = await participantSessionHashFromRequest(request)
     if (!sessionTokenHash) throw new ParticipantEntryAttachmentError('invalid_session')
 

@@ -1,7 +1,9 @@
 import { type NextRequest } from 'next/server'
 
+import { adminSessionCookie, clearAdminSessionCookie } from '@/lib/auth'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { assertCsrfRequest, CsrfError } from '@/lib/csrf'
+import { hashOpaqueToken } from '@/lib/opaque-token'
 import {
   clearParticipantSessionCookie,
   participantSessionHashFromRequest,
@@ -18,14 +20,27 @@ function sessionError(error: unknown) {
 export async function DELETE(request: NextRequest) {
   try {
     assertCsrfRequest(request)
-    const sessionTokenHash = await participantSessionHashFromRequest(request)
-    if (sessionTokenHash) {
-      await cloudflareBindings()
-        .db.prepare('DELETE FROM participant_session WHERE token_hash = ?')
-        .bind(sessionTokenHash)
-        .run()
+    const adminToken = request.cookies.get(adminSessionCookie.name)?.value
+    const [participantTokenHash, adminTokenHash] = await Promise.all([
+      participantSessionHashFromRequest(request),
+      adminToken ? hashOpaqueToken(adminToken) : null,
+    ])
+    const db = cloudflareBindings().db
+    const deletions = []
+    if (participantTokenHash) {
+      deletions.push(
+        db
+          .prepare('DELETE FROM participant_session WHERE token_hash = ?')
+          .bind(participantTokenHash),
+      )
     }
-    return clearParticipantSessionCookie(privateEmpty())
+    if (adminTokenHash) {
+      deletions.push(
+        db.prepare('DELETE FROM admin_session WHERE token_hash = ?').bind(adminTokenHash),
+      )
+    }
+    if (deletions.length > 0) await db.batch(deletions)
+    return clearAdminSessionCookie(clearParticipantSessionCookie(privateEmpty()))
   } catch (error) {
     return sessionError(error)
   }

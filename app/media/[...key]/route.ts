@@ -1,5 +1,5 @@
 import { posix } from 'node:path'
-import { getCurrentPlatformOwner } from '@/lib/auth'
+import { getCurrentPlatformOwner, getCurrentUnifiedPlatformOwner } from '@/lib/auth'
 import { PRIVATE_NO_STORE_HEADERS } from '@/lib/http-cache'
 import { selectPrivateRow, selectPublicRow } from '@/lib/rdb'
 import { getObject } from '@/lib/storage'
@@ -17,8 +17,11 @@ async function canReadPhoto(storageKey: string) {
   }).catch(() => null)
   if (published) return true
 
-  const admin = await getCurrentPlatformOwner().catch(() => null)
-  if (!admin) return false
+  const [admin, unifiedOwner] = await Promise.all([
+    getCurrentPlatformOwner().catch(() => null),
+    getCurrentUnifiedPlatformOwner().catch(() => null),
+  ])
+  if (!admin && !unifiedOwner) return false
 
   const privatePhoto = await selectPrivateRow<{ id: number }>('photo', {
     filters: { storage_key: `eq.${storageKey}` },

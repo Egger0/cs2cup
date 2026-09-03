@@ -7,6 +7,7 @@ import styles from './shell.module.css'
 
 const LINKS = [
   { href: '/admin', label: '报名与赛果', exact: true },
+  { href: '/admin/identity', label: '资格审核' },
   { href: '/admin/tournaments', label: '赛事' },
   { href: '/admin/games', label: '项目' },
   { href: '/admin/posts', label: '动态' },

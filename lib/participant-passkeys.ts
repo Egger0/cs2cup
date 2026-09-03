@@ -20,6 +20,7 @@ export async function participantRegistrationOptions(input: {
   userHandle: string
   accountLabel: string
   displayLabel: string
+  excludeCredentialIds?: readonly string[]
 }) {
   return generateRegistrationOptions({
     rpName: input.config.rpName,
@@ -30,6 +31,7 @@ export async function participantRegistrationOptions(input: {
     challenge: base64UrlToBytes(input.challenge),
     timeout: PASSKEY_CEREMONY_TTL_MS,
     attestationType: 'none',
+    excludeCredentials: input.excludeCredentialIds?.map(id => ({ id })),
     authenticatorSelection: {
       residentKey: 'required',
       userVerification: 'required',

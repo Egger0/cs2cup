@@ -18,6 +18,16 @@ const { parseRegistrationForm } = await import('../lib/registration-form.ts')
 const { default: nextConfig } = await import('../next.config.ts')
 
 const headerRules = await nextConfig.headers()
+const globalHeaders = headerRules.find(rule => rule.source === '/:path*')
+assert.ok(globalHeaders, 'all routes must define baseline security headers')
+assert.deepEqual(
+  Object.fromEntries(globalHeaders.headers.map(header => [header.key, header.value])),
+  {
+    'Content-Security-Policy': "frame-ancestors 'none'; base-uri 'self'; object-src 'none'",
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+  },
+)
 const managementHeaders = headerRules.find(
   rule => rule.source === '/tournaments/:slug/registration/:token',
 )
@@ -31,7 +41,16 @@ assert.deepEqual(
   },
 )
 
-for (const source of ['/api/participant/:path*', '/login', '/me']) {
+for (const source of [
+  '/account/:path*',
+  '/api/auth/:path*',
+  '/api/participant/:path*',
+  '/auth/:path*',
+  '/invitations/:path*',
+  '/login',
+  '/me',
+  '/registrations/:path*',
+]) {
   const rule = headerRules.find(candidate => candidate.source === source)
   assert.ok(rule, `${source} must define private response headers`)
   assert.equal(

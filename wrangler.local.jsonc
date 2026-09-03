@@ -7,6 +7,7 @@
   "send_metrics": false,
   "vars": {
     "REGISTRATION_CLIENT_IP_SOURCE": "x-real-ip",
+    "REGISTRATION_FINGERPRINT_SECRET": "local-only-identity-root-do-not-use-in-production-2026",
   },
   "assets": {
     "directory": ".open-next/assets",

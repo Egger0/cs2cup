@@ -3,6 +3,8 @@ import { type NextRequest } from 'next/server'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { assertCsrfRequest } from '@/lib/csrf'
 import { bytesToBase64Url } from '@/lib/opaque-token'
+import { clearAdminSessionCookie } from '@/lib/auth'
+import { legacySessionStateFromRequest } from '@/lib/legacy-session-state'
 import {
   createParticipantSessionDraft,
   getCurrentParticipant,
@@ -31,6 +33,12 @@ function claimVerificationError(error: unknown) {
 export async function POST(request: NextRequest) {
   try {
     assertCsrfRequest(request)
+    const legacySessions = await legacySessionStateFromRequest(request)
+    if (legacySessions.adminActive) {
+      return clearCeremonyCookie(
+        passkeyError(409, '旧管理员会话仍在使用，请先安全清除后重新登录。'),
+      )
+    }
     if (await getCurrentParticipant()) {
       return clearCeremonyCookie(
         passkeyError(409, '当前赛事通行已打开，请刷新页面后加入当前通行证。'),
@@ -78,9 +86,10 @@ export async function POST(request: NextRequest) {
         backedUp: info.credentialBackedUp,
       },
       session,
+      opposingAdminSessionHash: legacySessions.adminTokenHash,
       now,
     })
-    return successResponse
+    return clearAdminSessionCookie(successResponse)
   } catch (error) {
     return clearCeremonyCookie(claimVerificationError(error))
   }
