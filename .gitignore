@@ -9,6 +9,8 @@ Thumbs.db
 !.env.development
 .next/
 .open-next/
+/app/opengraph-image.png
+/public/brand/douyin-qr-display.png
 .local/
 .wrangler/
 node_modules/

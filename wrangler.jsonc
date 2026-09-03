@@ -2,6 +2,8 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "nbt",
   "main": ".open-next/worker.js",
+  "minify": true,
+  "upload_source_maps": true,
   "compatibility_date": "2026-08-28",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "vars": {

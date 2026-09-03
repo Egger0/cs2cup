@@ -26,10 +26,11 @@ export function SiteFooter({ setting }: { setting: SiteSetting }) {
           <figure className={styles.douyin}>
             <Image
               className={styles.qrImage}
-              src="/brand/douyin-qr.png"
+              src="/brand/douyin-qr-display.png"
               alt="抖音账号关注码"
               width={112}
               height={112}
+              unoptimized
             />
             <figcaption>
               <strong>关注抖音</strong>

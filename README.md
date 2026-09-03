@@ -61,6 +61,7 @@ The fingerprint secret is domain-separated between registration and administrato
 ```sh
 npm run check
 npm run cf:build
+npm run cf:size
 npm run cf:build:local
 ```
 

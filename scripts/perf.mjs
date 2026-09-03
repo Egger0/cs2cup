@@ -65,7 +65,14 @@ for (const path of PAGES) {
     else if (type === 'font') sizes.font += bytes
   })
 
-  await page.goto(BASE + path, { waitUntil: 'load' })
+  const response = await page.goto(BASE + path, { waitUntil: 'load' })
+  if (!response?.ok()) {
+    failed += 1
+    console.log(`FAIL  ${path.padEnd(32)} HTTP ${response?.status() ?? 'no response'}`)
+    outboundGuard.assertSafe()
+    await ctx.close()
+    continue
+  }
   await page.waitForTimeout(2500)
 
   const vitals = await page.evaluate(
