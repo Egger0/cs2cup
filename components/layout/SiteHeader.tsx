@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation'
 import { Badge } from '@/components/ui'
 import type { SiteSetting } from '@/lib/types'
 import menuStyles from './SiteMenu.module.css'
+import passStyles from './SitePassLink.module.css'
 import { SiteHeaderFallback, type SiteNavLink } from './SiteHeaderFallback'
 import styles from './SiteHeader.module.css'
 
@@ -25,7 +26,7 @@ const NAV_ENGLISH: Record<string, string> = {
   '/about': 'ABOUT',
   '/guestbook': 'GUESTBOOK',
   '/search': 'SEARCH',
-  '/me': 'MY EVENTS',
+  '/me': 'MY PASS',
 }
 
 export function SiteHeader({ setting, links, status }: SiteHeaderProps) {
@@ -198,6 +199,18 @@ export function SiteHeader({ setting, links, status }: SiteHeaderProps) {
               {status.label}
             </Badge>
           ) : null}
+          <a
+            href="/me"
+            className={open ? `${passStyles.pass} ${passStyles.hidden}` : passStyles.pass}
+            aria-label="我的通行证"
+            aria-hidden={open ? 'true' : undefined}
+            tabIndex={open ? -1 : undefined}
+          >
+            <small className={passStyles.code} aria-hidden="true">
+              <span>ENTRY / </span>PASS
+            </small>
+            <span className={passStyles.label}>我的通行证</span>
+          </a>
           {clientReady ? (
             <button
               ref={toggleRef}
