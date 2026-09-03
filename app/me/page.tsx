@@ -15,6 +15,7 @@ import { AccessReceipt } from './AccessReceipt'
 import { EntryDossier } from './EntryDossier'
 import styles from './me.module.css'
 import { NextMatchBrief } from './NextMatchBrief'
+import { PassReference } from './PassReference'
 import { ParticipantSessionBoundary, ParticipantSignOut } from './ParticipantSessionBoundary'
 import { StaffWorkspaces } from './StaffWorkspaces'
 
@@ -96,6 +97,8 @@ export default async function ParticipantAccountPage({
           </aside>
         </div>
 
+        <PassReference participantReference={maskParticipantPrincipal(participant.principalId)} />
+
         <StaffWorkspaces workspaces={staffWorkspaces} />
 
         {nextMatch !== undefined && (hasApprovedEntry || hasPendingEntry) ? (
@@ -122,11 +125,7 @@ export default async function ParticipantAccountPage({
           </section>
         )}
 
-        <AccessReceipt
-          participantReference={maskParticipantPrincipal(participant.principalId)}
-          receipt={receipt}
-          sessionExpiresAt={participant.sessionExpiresAt}
-        />
+        <AccessReceipt receipt={receipt} sessionExpiresAt={participant.sessionExpiresAt} />
       </main>
     </ParticipantSessionBoundary>
   )

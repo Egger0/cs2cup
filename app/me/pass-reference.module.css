@@ -1,0 +1,158 @@
+.pass {
+  display: grid;
+  max-width: 1180px;
+  min-width: 0;
+  grid-template-columns: minmax(160px, 0.55fr) auto minmax(220px, 1fr) auto;
+  align-items: center;
+  gap: 14px clamp(18px, 3vw, 34px);
+  margin: 0 auto clamp(28px, 5vw, 54px);
+  padding: 15px clamp(16px, 3vw, 26px);
+  border: 1px solid rgba(121, 185, 216, 0.34);
+  border-left: 3px solid #2081b6;
+  background:
+    linear-gradient(90deg, rgba(32, 129, 182, 0.1), transparent 38%), rgba(15, 23, 27, 0.94);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.18);
+}
+
+.heading {
+  display: grid;
+  gap: 4px;
+}
+
+.heading span,
+.feedback,
+.failure {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  letter-spacing: 0.08em;
+}
+
+.heading span {
+  color: #72afd0;
+  font-size: 0.48rem;
+}
+
+.heading h2 {
+  color: #e4edf0;
+  font-family: 'NLC Role Sans', var(--font-body);
+  font-size: 0.86rem;
+  font-weight: 680;
+}
+
+.reference {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 11px;
+  overflow: hidden;
+  border: 1px solid rgba(121, 185, 216, 0.3);
+  background: rgba(6, 12, 15, 0.72);
+  color: #d6edf6;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reference:focus-visible {
+  outline: 2px solid #79b9d8;
+  outline-offset: 2px;
+}
+
+.note {
+  max-width: 480px;
+  color: #8fa0a7;
+  font-size: 0.68rem;
+  line-height: 1.65;
+}
+
+.copy {
+  min-width: 94px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid #6eafd0;
+  background: transparent;
+  color: #c8e7f4;
+  cursor: pointer;
+  font-family: 'NLC Role Sans', var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 680;
+  letter-spacing: 0.06em;
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms var(--ease-out);
+}
+
+.copy:hover:not(:disabled),
+.copy:focus-visible {
+  background: #79b9d8;
+  color: #071116;
+}
+
+.copy:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.copy:disabled {
+  opacity: 0.56;
+  cursor: wait;
+}
+
+.feedback,
+.failure {
+  grid-column: 1 / -1;
+  min-height: 0;
+  color: #8bb9ce;
+  font-size: 0.51rem;
+}
+
+.feedback:empty,
+.failure:empty {
+  display: none;
+}
+
+.failure {
+  color: #e0aaa3;
+}
+
+@media (max-width: 760px) {
+  .pass {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .heading,
+  .note,
+  .feedback,
+  .failure {
+    grid-column: 1 / -1;
+  }
+
+  .reference {
+    grid-column: 1;
+  }
+
+  .copy {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 380px) {
+  .pass {
+    gap: 12px;
+  }
+
+  .reference {
+    font-size: 0.64rem;
+  }
+
+  .copy {
+    min-width: 88px;
+    padding-inline: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copy {
+    transition: none;
+  }
+}
