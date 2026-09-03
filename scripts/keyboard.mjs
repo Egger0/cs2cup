@@ -21,6 +21,8 @@ const page = await ctx.newPage()
 
 await page.goto(`${BASE}/tournaments/2026-nlc`, { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(1200)
+const passLink = page.getByRole('link', { name: '我的通行证' })
+check('Header exposes the participant pass', (await passLink.getAttribute('href')) === '/me')
 
 await page.keyboard.press('Tab')
 const first = await page.evaluate(() => {
@@ -276,7 +278,8 @@ const degraded = await browser.newContext({
 })
 const degradedGuard = await installLoopbackRequestGuard(degraded)
 let blockedClientScripts = 0
-await degraded.route('**/_next/static/chunks/**', async route => {
+// Keep the streaming runtime; block only the client component boundary.
+await degraded.route('**/_next/static/chunks/components_*.js', async route => {
   if (route.request().resourceType() !== 'script') return route.fallback()
   blockedClientScripts += 1
   await route.abort('failed')
@@ -284,6 +287,7 @@ await degraded.route('**/_next/static/chunks/**', async route => {
 const degradedPage = await degraded.newPage()
 await degradedPage.goto(BASE, { waitUntil: 'load' })
 const fallback = degradedPage.locator('[data-site-header-fallback]')
+await fallback.waitFor({ state: 'visible' })
 await fallback.locator('summary').press('Enter')
 const fallbackLinks = degradedPage.getByRole('navigation', { name: '基础站点目录链接' })
 const fallbackHrefs = await fallbackLinks
