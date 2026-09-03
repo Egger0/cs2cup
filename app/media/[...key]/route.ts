@@ -1,5 +1,5 @@
 import { posix } from 'node:path'
-import { getCurrentAdmin } from '@/lib/auth'
+import { getCurrentPlatformOwner } from '@/lib/auth'
 import { PRIVATE_NO_STORE_HEADERS } from '@/lib/http-cache'
 import { selectPrivateRow, selectPublicRow } from '@/lib/rdb'
 import { getObject } from '@/lib/storage'
@@ -17,7 +17,7 @@ async function canReadPhoto(storageKey: string) {
   }).catch(() => null)
   if (published) return true
 
-  const admin = await getCurrentAdmin().catch(() => null)
+  const admin = await getCurrentPlatformOwner().catch(() => null)
   if (!admin) return false
 
   const privatePhoto = await selectPrivateRow<{ id: number }>('photo', {

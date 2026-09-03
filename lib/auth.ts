@@ -1,11 +1,13 @@
 import 'server-only'
 import { cache } from 'react'
 import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
+import { hasStaffCapability } from './authorization'
 import { cloudflareBindings } from './cloudflare-bindings'
 import type { AdminLoginAdmission } from './queries/admin-login-attempts'
 
-interface AdminIdentity {
+export interface AdminIdentity {
+  adminId: number
   uid: string
 }
 
@@ -17,6 +19,7 @@ interface AdminAccount {
 }
 
 interface AdminSession {
+  admin_id: number
   username: string
 }
 
@@ -108,20 +111,33 @@ export async function endAdminSession() {
   ;(await cookies()).delete(COOKIE_NAME)
 }
 
-export const getCurrentAdmin = cache(async (): Promise<AdminIdentity | null> => {
+const getCurrentAdminSessionIdentity = cache(async (): Promise<AdminIdentity | null> => {
   const token = (await cookies()).get(COOKIE_NAME)?.value
   if (!token) return null
   const session = await cloudflareBindings()
     .db.prepare(
-      'SELECT a.username FROM admin_session s JOIN admin_account a ON a.id = s.admin_id WHERE s.token_hash = ? AND s.expires_at > ?',
+      'SELECT a.id AS admin_id, a.username FROM admin_session s JOIN admin_account a ON a.id = s.admin_id WHERE s.token_hash = ? AND s.expires_at > ?',
     )
     .bind(hex(await hash(token)), Date.now())
     .first<AdminSession>()
-  return session ? { uid: session.username } : null
+  return session ? { adminId: session.admin_id, uid: session.username } : null
+})
+
+const currentAdminCanManagePlatform = cache((adminId: number) =>
+  hasStaffCapability(cloudflareBindings().db, { kind: 'admin', adminId }, 'platform.manage', {
+    kind: 'platform',
+  }),
+)
+
+export const getCurrentPlatformOwner = cache(async (): Promise<AdminIdentity | null> => {
+  const admin = await getCurrentAdminSessionIdentity()
+  if (!admin || !(await currentAdminCanManagePlatform(admin.adminId))) return null
+  return admin
 })
 
 export async function requireAdmin(): Promise<AdminIdentity> {
-  const admin = await getCurrentAdmin()
+  const admin = await getCurrentAdminSessionIdentity()
   if (!admin) redirect('/admin/login')
+  if (!(await currentAdminCanManagePlatform(admin.adminId))) notFound()
   return admin
 }

@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Button, Field } from '@/components/ui'
 import { MAX_ADMIN_PASSWORD_LENGTH, MAX_ADMIN_USERNAME_LENGTH } from '@/lib/admin-login-request'
-import { getCurrentAdmin } from '@/lib/auth'
+import { getCurrentPlatformOwner } from '@/lib/auth'
 import styles from './login.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -14,7 +14,7 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ error?: string | string[] }>
 }) {
-  const [params, admin] = await Promise.all([searchParams, getCurrentAdmin()])
+  const [params, admin] = await Promise.all([searchParams, getCurrentPlatformOwner()])
   if (admin) redirect('/admin')
 
   const errorCode = params.error
