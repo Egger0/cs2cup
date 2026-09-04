@@ -4,7 +4,8 @@ import { base64UrlToBytes, bytesToBase64Url } from '../../opaque-token.ts'
 
 export const PASSWORD_KDF_ALGORITHM = 'pbkdf2-sha256' as const
 export const PASSWORD_KDF_VERSION = 1
-export const PASSWORD_KDF_ITERATIONS = 600_000
+// ponytail: Free Workers have a 10 ms CPU budget; raise to 600_000 on Workers Paid.
+export const PASSWORD_KDF_ITERATIONS = 10_000
 export const PASSWORD_KDF_BYTES = 32
 export const PASSWORD_SALT_BYTES = 16
 
