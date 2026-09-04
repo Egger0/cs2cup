@@ -63,10 +63,8 @@ const worker = spawn(
     '--var',
     'IDENTITY_PASSWORD_SCREENING_LOCAL_SERVICE:browser-check',
   ],
-  { cwd: ROOT, env: process.env, stdio: ['ignore', 'pipe', 'pipe'] },
+  { cwd: ROOT, env: process.env, stdio: ['ignore', 'inherit', 'inherit'] },
 )
-worker.stdout.pipe(process.stdout)
-worker.stderr.pipe(process.stderr)
 
 try {
   await waitForWorker(worker)
