@@ -20,7 +20,8 @@ export type QqCommand =
   | { kind: 'check_in' }
   | { kind: 'leaderboard' }
   | { kind: 'current_tournament' }
-  | { kind: 'bind'; code: string }
+  | { kind: 'bind'; username: string }
+  | { kind: 'unbind' }
 
 interface QqAccessToken {
   value: string
@@ -46,6 +47,8 @@ const COMMAND_PANEL = {
     { type: 'command', name: '/签到', desc: '完成今天的社团打卡' },
     { type: 'command', name: '/签到排行', desc: '查看连续签到排名' },
     { type: 'command', name: '/最近赛事', desc: '查看当前赛事安排' },
+    { type: 'command', name: '/绑定 用户名', desc: '绑定网站用户名' },
+    { type: 'command', name: '/解绑', desc: '解除当前 QQ 绑定' },
   ],
   remark: COMMAND_PANEL_REMARK,
 }
@@ -166,8 +169,9 @@ export function qqCommand(content: string): QqCommand | null {
   if (command === '签到') return { kind: 'check_in' }
   if (command === '签到排行') return { kind: 'leaderboard' }
   if (command === '最近赛事') return { kind: 'current_tournament' }
-  const binding = /^\/绑定\s+([A-HJ-NP-Z2-9]{8})$/i.exec(normalized)
-  return binding?.[1] ? { kind: 'bind', code: binding[1].toUpperCase() } : null
+  const binding = /^\/绑定\s+(\S+)$/.exec(normalized)
+  if (binding?.[1]) return { kind: 'bind', username: binding[1] }
+  return normalized === '/解绑' ? { kind: 'unbind' } : null
 }
 
 async function accessToken(config: QqBotConfig, forceRefresh = false) {

@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server'
 
 import { cloudflareBindings, cloudflareEnvironment } from '@/lib/cloudflare-bindings'
-import { checkInFromQq, linkQqAccount, qqCheckInLeaderboard } from '@/lib/qq-daily-check-in'
+import {
+  checkInFromQq,
+  linkQqAccountByUsername,
+  qqCheckInLeaderboard,
+  unlinkQqAccount,
+} from '@/lib/qq-daily-check-in'
 import {
   qqBotConfig,
   qqCommand,
@@ -37,17 +42,26 @@ async function commandReply(
 ) {
   const database = cloudflareBindings().db
   if (command.kind === 'bind') {
-    const linked = await linkQqAccount(database, { groupOpenId, memberOpenId, code: command.code })
+    const linked = await linkQqAccountByUsername(database, {
+      groupOpenId,
+      memberOpenId,
+      username: command.username,
+    })
     if (linked.ok) return '绑定成功。现在可以发送“签到”参加社团每日打卡。'
     if (linked.reason === 'already_bound') return '这个 QQ 已经绑定过网站账号，不能覆盖绑定。'
     if (linked.reason === 'account_bound')
       return '这个网站账号已经绑定过 QQ；如需换绑，请联系平台负责人。'
-    return '绑定码无效或已过期。请登录网站，在“我的账号”重新获取一次性绑定码。'
+    if (linked.reason === 'username_not_found') return '该用户名未注册，请前往官网创建账号。'
+    return '用户名格式不正确。请使用网站登录时的用户名。'
+  }
+  if (command.kind === 'unbind') {
+    const unlinked = await unlinkQqAccount(database, { groupOpenId, memberOpenId })
+    return unlinked.ok ? '已解除当前 QQ 的网站账号绑定。' : '当前 QQ 没有可解除的绑定。'
   }
   if (command.kind === 'check_in') {
     const result = await checkInFromQq(database, { groupOpenId, memberOpenId })
     if (result.kind === 'unbound') {
-      return '请先登录网站，在“我的账号”获取绑定码，再发送“/绑定 绑定码”。'
+      return '请先发送“/绑定 你的用户名”。'
     }
     if (result.kind === 'already_checked_in') return `今天已经签到，当前连续 ${result.streak} 天。`
     return `签到成功：连续 ${result.streak} 天，当前第 ${result.rank} 名。`

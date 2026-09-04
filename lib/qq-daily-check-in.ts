@@ -1,20 +1,15 @@
 import 'server-only'
 
-import { hashOpaqueToken } from './opaque-token.ts'
-import type { AuthenticatedAuthContext, IdentityDatabase } from './identity/internal/contracts.ts'
+import { evaluateUsernamePolicy } from './identity/internal/username-policy.ts'
+import type { IdentityDatabase } from './identity/internal/contracts.ts'
 
-const BINDING_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-const BINDING_CODE_LENGTH = 8
-const BINDING_CODE_LIFETIME_MS = 10 * 60 * 1000
 const SHANGHAI = 'Asia/Shanghai'
-
-export type QqBindingCodeResult =
-  | { ok: true; code: string; expiresAt: number }
-  | { ok: false; reason: 'session_invalid' | 'recovery_restricted' }
 
 export type QqLinkResult =
   | { ok: true }
-  | { ok: false; reason: 'invalid_code' | 'already_bound' | 'account_bound' }
+  | { ok: false; reason: 'invalid_username' | 'username_not_found' | 'already_bound' | 'account_bound' }
+
+export type QqUnlinkResult = { ok: true } | { ok: false; reason: 'not_bound' }
 
 export type QqCheckInResult =
   | { kind: 'unbound' }
@@ -39,18 +34,6 @@ interface StreakRow {
 
 function validOpenId(value: string) {
   return value.length > 0 && value.length <= 256 && value === value.trim()
-}
-
-function randomCode() {
-  const bytes = new Uint8Array(BINDING_CODE_LENGTH)
-  crypto.getRandomValues(bytes)
-  return Array.from(bytes, byte => BINDING_CODE_ALPHABET[byte % BINDING_CODE_ALPHABET.length]).join(
-    '',
-  )
-}
-
-function codeHash(code: string) {
-  return hashOpaqueToken(`qq.binding\0${code}`)
 }
 
 function shanghaiDate(now: number) {
@@ -83,65 +66,28 @@ async function activeLink(database: IdentityDatabase, groupOpenId: string, membe
     .first<LinkRow>()
 }
 
-export async function generateQqBindingCode(
+export async function linkQqAccountByUsername(
   database: IdentityDatabase,
-  context: AuthenticatedAuthContext,
-  now = Date.now(),
-): Promise<QqBindingCodeResult> {
-  if (context.session.recoveryRestricted) return { ok: false, reason: 'recovery_restricted' }
-  const code = randomCode()
-  const hash = await codeHash(code)
-  const expiresAt = now + BINDING_CODE_LIFETIME_MS
-  await database.batch([
-    database.prepare('DELETE FROM qq_binding_code WHERE account_id = ?').bind(context.account.id),
-    database
-      .prepare(
-        `INSERT INTO qq_binding_code (code_hash, account_id, expires_at, created_at)
-         SELECT ?, account.id, ?, ?
-         FROM identity_account AS account
-         JOIN identity_session AS session ON session.account_id = account.id
-         WHERE account.id = ? AND account.status = 'active' AND session.id = ?
-           AND session.revoked_at IS NULL AND session.recovery_restricted = 0
-           AND session.security_version = account.security_version
-           AND session.idle_expires_at > ? AND session.absolute_expires_at > ?`,
-      )
-      .bind(hash, expiresAt, now, context.account.id, context.session.id, now, now),
-  ])
-  const stored = await database
-    .prepare('SELECT 1 AS present FROM qq_binding_code WHERE code_hash = ? AND account_id = ?')
-    .bind(hash, context.account.id)
-    .first<{ present: number }>()
-  return stored ? { ok: true, code, expiresAt } : { ok: false, reason: 'session_invalid' }
-}
-
-export async function linkQqAccount(
-  database: IdentityDatabase,
-  input: { groupOpenId: string; memberOpenId: string; code: string },
+  input: { groupOpenId: string; memberOpenId: string; username: string },
   now = Date.now(),
 ): Promise<QqLinkResult> {
   const { groupOpenId, memberOpenId } = input
-  const code = input.code.trim().toUpperCase()
-  if (
-    !validOpenId(groupOpenId) ||
-    !validOpenId(memberOpenId) ||
-    !/^[A-HJ-NP-Z2-9]{8}$/.test(code)
-  ) {
-    return { ok: false, reason: 'invalid_code' }
-  }
+  const username = evaluateUsernamePolicy(input.username)
+  if (!validOpenId(groupOpenId) || !validOpenId(memberOpenId) || !username.ok)
+    return { ok: false, reason: 'invalid_username' }
   if (await activeLink(database, groupOpenId, memberOpenId))
     return { ok: false, reason: 'already_bound' }
-  const hash = await codeHash(code)
   const candidate = await database
     .prepare(
-      `SELECT code.account_id
-       FROM qq_binding_code AS code
-       JOIN identity_account AS account ON account.id = code.account_id
-       WHERE code.code_hash = ? AND code.expires_at > ? AND account.status = 'active'
+      `SELECT account.id AS account_id
+       FROM identity_password_credential AS credential
+       JOIN identity_account AS account ON account.id = credential.account_id
+       WHERE credential.username = ? AND account.status = 'active'
        LIMIT 1`,
     )
-    .bind(hash, now)
+    .bind(username.username)
     .first<LinkRow>()
-  if (!candidate) return { ok: false, reason: 'invalid_code' }
+  if (!candidate) return { ok: false, reason: 'username_not_found' }
   const accountLinked = await database
     .prepare('SELECT 1 AS present FROM qq_account_link WHERE account_id = ? LIMIT 1')
     .bind(candidate.account_id)
@@ -155,12 +101,27 @@ export async function linkQqAccount(
          VALUES (?, ?, ?, ?)`,
       )
       .bind(candidate.account_id, groupOpenId, memberOpenId, now),
-    database.prepare('DELETE FROM qq_binding_code WHERE code_hash = ?').bind(hash),
   ])
   const linked = await activeLink(database, groupOpenId, memberOpenId)
   return linked?.account_id === candidate.account_id
     ? { ok: true }
     : { ok: false, reason: 'already_bound' }
+}
+
+export async function unlinkQqAccount(
+  database: IdentityDatabase,
+  input: { groupOpenId: string; memberOpenId: string },
+): Promise<QqUnlinkResult> {
+  const { groupOpenId, memberOpenId } = input
+  if (!validOpenId(groupOpenId) || !validOpenId(memberOpenId)) return { ok: false, reason: 'not_bound' }
+  if (!(await activeLink(database, groupOpenId, memberOpenId))) return { ok: false, reason: 'not_bound' }
+  await database
+    .prepare('DELETE FROM qq_account_link WHERE group_openid = ? AND member_openid = ?')
+    .bind(groupOpenId, memberOpenId)
+    .run()
+  return (await activeLink(database, groupOpenId, memberOpenId))
+    ? { ok: false, reason: 'not_bound' }
+    : { ok: true }
 }
 
 export async function checkInFromQq(
