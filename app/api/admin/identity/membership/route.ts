@@ -6,7 +6,11 @@ import { withPrivateNoStore } from '@/lib/http-cache'
 import { IdentityRequestError, readIdentityForm } from '@/lib/identity/internal/http'
 import { getAuthContext } from '@/lib/identity/kernel'
 import {
+  acceptMembershipReviewTransfer,
+  changeMembershipStatus,
   claimMembershipApplication,
+  isMembershipReviewReasonCompatible,
+  offerMembershipReviewTransfer,
   reviewMembershipApplication,
 } from '@/lib/identity/membership-service'
 
@@ -17,7 +21,11 @@ const FIELDS = [
   'submissionVersion',
   'submissionDigest',
   'decision',
+  'reasonCategory',
   'reason',
+  'targetReviewerAccountId',
+  'transferId',
+  'membershipId',
 ] as const
 
 function response(status: number, error: string, reauthenticate = false) {
@@ -46,6 +54,7 @@ function serviceFailure(reason: string) {
   if (reason === 'forbidden') return response(403, '当前账号没有成员资格审核权限。')
   if (reason === 'invalid_input') return response(400, '请检查审核决定和说明。')
   if (reason === 'not_found') return response(404, '申请不存在或已被处理。')
+  if (reason === 'invalid_target') return response(400, '请选择仍有审核权限的审核员。')
   if (reason === 'conflict') return response(409, '申请已被其他审核员更新，请刷新队列。')
   return response(409, '当前申请状态不支持这个操作。')
 }
@@ -71,20 +80,59 @@ export async function POST(request: NextRequest) {
         ? withPrivateNoStore(NextResponse.json({ ok: true, application: result.application }))
         : serviceFailure(result.reason)
     }
+    if (fields.operation === 'transfer_offer') {
+      const result = await offerMembershipReviewTransfer(database, context, {
+        applicationId: fields.applicationId,
+        revision,
+        targetReviewerAccountId: fields.targetReviewerAccountId,
+        reason: fields.reason,
+      })
+      return result.ok
+        ? withPrivateNoStore(NextResponse.json({ ok: true, transfer: result.transfer }))
+        : serviceFailure(result.reason)
+    }
+    if (fields.operation === 'transfer_accept') {
+      const result = await acceptMembershipReviewTransfer(database, context, {
+        applicationId: fields.applicationId,
+        revision,
+        transferId: fields.transferId,
+      })
+      return result.ok
+        ? withPrivateNoStore(NextResponse.json({ ok: true, application: result.application }))
+        : serviceFailure(result.reason)
+    }
+    if (
+      ['membership_suspend', 'membership_restore', 'membership_revoke'].includes(fields.operation)
+    ) {
+      const result = await changeMembershipStatus(database, context, {
+        membershipId: fields.membershipId,
+        revision,
+        operation: fields.operation.slice('membership_'.length) as 'suspend' | 'restore' | 'revoke',
+        reason: fields.reason,
+      })
+      return result.ok
+        ? withPrivateNoStore(NextResponse.json({ ok: true }))
+        : serviceFailure(result.reason)
+    }
     if (fields.operation !== 'review') return response(400, '不支持的审核操作。')
     const submissionVersion = integer(fields.submissionVersion)
     if (
       submissionVersion === null ||
-      !['approved', 'changes_requested', 'rejected'].includes(fields.decision)
-    ) {
-      return response(400, '审核提交内容无效。')
-    }
+      !isMembershipReviewReasonCompatible(fields.decision, fields.reasonCategory)
+    )
+      return serviceFailure('invalid_input')
     const result = await reviewMembershipApplication(database, context, {
       applicationId: fields.applicationId,
       revision,
       submissionVersion,
       submissionDigest: fields.submissionDigest,
       decision: fields.decision as 'approved' | 'changes_requested' | 'rejected',
+      reasonCategory: fields.reasonCategory as
+        | 'eligible'
+        | 'insufficient_evidence'
+        | 'not_eligible'
+        | 'duplicate'
+        | 'other',
       reason: fields.reason,
     })
     return result.ok

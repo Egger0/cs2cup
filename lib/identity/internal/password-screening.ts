@@ -1,11 +1,25 @@
 import 'server-only'
 
+import { getCloudflareContext } from '@opennextjs/cloudflare'
+
 const RANGE_ENDPOINT = 'https://api.pwnedpasswords.com/range/'
 const RANGE_PREFIX = /^[0-9A-F]{5}$/
 const RANGE_LINE = /^([0-9A-F]{35}):([0-9]+)$/
 const MAX_RESPONSE_BYTES = 128 * 1024
 const MAX_RESPONSE_LINES = Math.ceil(MAX_RESPONSE_BYTES / 37)
 const DEFAULT_TIMEOUT_MS = 4_000
+
+declare global {
+  interface CloudflareEnv {
+    IDENTITY_PASSWORD_RANGE?: PasswordRangeService
+    IDENTITY_PASSWORD_SCREENING_LOCAL_SERVICE?: string
+    NEXT_PUBLIC_SITE_URL?: string
+  }
+}
+
+interface PasswordRangeService {
+  fetch(input: string | URL | Request, init?: RequestInit): Promise<Response>
+}
 
 export class PasswordScreeningUnavailableError extends Error {
   constructor(message = 'Password screening service is unavailable') {
@@ -22,6 +36,65 @@ export interface PwnedPasswordResult {
 export interface PwnedPasswordOptions {
   fetcher?: typeof fetch
   timeoutMs?: number
+}
+
+function configurationUnavailable(): never {
+  throw new PasswordScreeningUnavailableError('Local password range configuration is invalid')
+}
+
+export function resolveLocalPasswordRangeService(
+  siteOrigin: unknown,
+  configured: unknown,
+  service: unknown,
+): PasswordRangeService | null {
+  if (configured === undefined) return null
+  if (
+    typeof siteOrigin !== 'string' ||
+    !siteOrigin ||
+    siteOrigin !== siteOrigin.trim() ||
+    configured !== 'browser-check' ||
+    !service ||
+    typeof service !== 'object' ||
+    !('fetch' in service) ||
+    typeof service.fetch !== 'function'
+  ) {
+    configurationUnavailable()
+  }
+
+  let site: URL
+  try {
+    site = new URL(siteOrigin)
+  } catch {
+    configurationUnavailable()
+  }
+  if (
+    site.origin !== siteOrigin ||
+    site.protocol !== 'http:' ||
+    site.hostname !== 'localhost' ||
+    site.username ||
+    site.password ||
+    site.pathname !== '/' ||
+    site.search ||
+    site.hash
+  ) {
+    configurationUnavailable()
+  }
+  return service as PasswordRangeService
+}
+
+async function runtimeRangeFetch(input: string | URL | Request, init?: RequestInit) {
+  const env = getCloudflareContext().env
+  const localService = resolveLocalPasswordRangeService(
+    env.NEXT_PUBLIC_SITE_URL,
+    env.IDENTITY_PASSWORD_SCREENING_LOCAL_SERVICE,
+    env.IDENTITY_PASSWORD_RANGE,
+  )
+  if (!localService) return fetch(input, init)
+
+  const requested = String(input)
+  const prefix = requested.startsWith(RANGE_ENDPOINT) ? requested.slice(RANGE_ENDPOINT.length) : ''
+  if (!RANGE_PREFIX.test(prefix)) configurationUnavailable()
+  return localService.fetch(`https://password-range.browser.invalid/range/${prefix}`, init)
 }
 
 function bytesToHex(bytes: Uint8Array) {
@@ -111,14 +184,14 @@ export async function checkPwnedPassword(
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
   try {
-    const response = await (options.fetcher ?? fetch)(`${RANGE_ENDPOINT}${prefix}`, {
+    const response = await (options.fetcher ?? runtimeRangeFetch)(`${RANGE_ENDPOINT}${prefix}`, {
       method: 'GET',
       headers: {
         Accept: 'text/plain',
         'Add-Padding': 'true',
         'User-Agent': 'cs2cup-password-screening/1',
       },
-      redirect: 'error',
+      redirect: 'manual',
       signal: controller.signal,
     })
     if (!response.ok || response.status !== 200) {

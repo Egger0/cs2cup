@@ -1,5 +1,9 @@
 # Staff authorization foundation
 
+> Legacy rollout record. New work uses the unified roles and capabilities defined in
+> `identity-architecture.md`; this document only describes compatibility behavior that remains
+> during cutover.
+
 Authentication proves which private subject is present. Authorization decides what that subject
 may do to a concrete platform or tournament resource. Those facts stay separate: roles are never
 stored in session cookies and are checked against D1 on every protected request.
@@ -57,8 +61,8 @@ This task-first role presentation follows
 [GitHub's role guidance](https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/repository-roles-for-an-organization):
 choose the role that fits a person's function without granting more access than needed. Required
 expiry follows [Google Cloud IAM's temporary-access guidance](https://docs.cloud.google.com/iam/docs/temporary-elevated-access).
-The assignment table stores current state, not an audit log; actor-attributed immutable history
-remains tracked separately in issue #39.
+The assignment table stores current state, while actor-attributed immutable history is recorded in
+`identity_security_event` and exposed through the unified identity operations console.
 
 Rolling application code back leaves the additive assignment tables unused, but it also restores
 the legacy singleton behavior and stops honoring assignment revocation. If rollback follows an

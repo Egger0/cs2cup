@@ -5,7 +5,7 @@ import type { RegistrationFormValues } from '../registration-form.ts'
 import type { AuthenticatedAuthContext, IdentityDatabase } from './internal/contracts.ts'
 
 export type TournamentRegistrationResult =
-  | { readonly ok: true; readonly relationshipId: string }
+  | { readonly ok: true; readonly relationshipId: string; readonly teamId: number }
   | { readonly ok: false; readonly reason: 'authorization_changed' | 'registration_changed' }
 
 export interface TournamentRegistrationInput {
@@ -148,6 +148,34 @@ export async function createApprovedTournamentRegistration(
         context.account.id,
         now,
       ),
+    database
+      .prepare(
+        `DELETE FROM identity_registration_draft
+         WHERE account_id = ? AND tournament_id = ? AND EXISTS (
+           SELECT 1 FROM identity_registration_membership
+           WHERE id = ? AND account_id = ? AND team_id IN (
+             SELECT id FROM team WHERE tournament_id = ? AND management_token_hash = ?
+           )
+         )`,
+      )
+      .bind(
+        context.account.id,
+        input.tournamentId,
+        relationshipId,
+        context.account.id,
+        input.tournamentId,
+        input.managementTokenHash,
+      ),
+    database
+      .prepare(
+        `UPDATE team SET management_token_hash = NULL
+         WHERE tournament_id = ? AND management_token_hash = ? AND EXISTS (
+           SELECT 1 FROM identity_registration_membership
+           WHERE id = ? AND team_id = team.id AND account_id = ?
+             AND relationship = 'owner' AND revoked_at IS NULL
+         )`,
+      )
+      .bind(input.tournamentId, input.managementTokenHash, relationshipId, context.account.id),
   ]
 
   try {
@@ -164,5 +192,13 @@ export async function createApprovedTournamentRegistration(
     }
     throw error
   }
-  return { ok: true, relationshipId }
+  const relationship = await database
+    .prepare(
+      `SELECT team_id FROM identity_registration_membership
+       WHERE id = ? AND account_id = ? AND relationship = 'owner' AND revoked_at IS NULL`,
+    )
+    .bind(relationshipId, context.account.id)
+    .first<{ team_id: number }>()
+  if (!relationship) return { ok: false, reason: 'registration_changed' }
+  return { ok: true, relationshipId, teamId: relationship.team_id }
 }

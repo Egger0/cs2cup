@@ -3,6 +3,9 @@ import { createHash } from 'node:crypto'
 import { registerHooks } from 'node:module'
 
 const dataModule = code => `data:text/javascript,${encodeURIComponent(code)}`
+const bindingsModule = dataModule(
+  `export function cloudflareBindings() { return globalThis.__legacyBootstrapBindings }`,
+)
 registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier === 'server-only') return { url: dataModule('export {}'), shortCircuit: true }
@@ -14,15 +17,19 @@ registerHooks({
         shortCircuit: true,
       }
     }
+    if (specifier === './cloudflare-bindings') {
+      return { url: bindingsModule, shortCircuit: true }
+    }
     return nextResolve(specifier, context)
   },
 })
 
+const { createAdminSession } = await import('../lib/legacy-admin-session-issuer.ts')
 const { bootstrapLegacyPlatformOwner } = await import('../lib/identity/legacy-owner-bootstrap.ts')
 const { authorize, getAuthContext } = await import('../lib/identity/kernel.ts')
 const { createMigratedDatabase } = await import('./sqlite-fixture.mjs')
 
-function d1Adapter(database) {
+function d1Adapter(database, beforeBatch) {
   return {
     prepare(query) {
       const statement = database.prepare(query)
@@ -43,14 +50,16 @@ function d1Adapter(database) {
       }
     },
     async batch(statements) {
-      database.exec('BEGIN IMMEDIATE')
+      beforeBatch?.()
+      const nested = database.isTransaction
+      if (!nested) database.exec('BEGIN IMMEDIATE')
       try {
         const results = []
         for (const statement of statements) results.push(await statement.run())
-        database.exec('COMMIT')
+        if (!nested) database.exec('COMMIT')
         return results
       } catch (error) {
-        database.exec('ROLLBACK')
+        if (!nested) database.exec('ROLLBACK')
         throw error
       }
     },
@@ -78,6 +87,7 @@ const cleanRange = async () => new Response(`${'A'.repeat(35)}:1\r\n`, { status:
 
 const database = await createMigratedDatabase()
 const db = d1Adapter(database)
+globalThis.__legacyBootstrapBindings = { db }
 
 try {
   database
@@ -91,6 +101,37 @@ try {
   )
   legacySession.run(currentLegacyHash, now + 2 * 60 * 60 * 1000)
   legacySession.run(otherLegacyHash, now + 2 * 60 * 60 * 1000)
+
+  database.exec('SAVEPOINT stale_admin_preflight')
+  const racedAccountId = 'R'.repeat(43)
+  database
+    .prepare(
+      `INSERT INTO identity_account
+        (id, webauthn_user_handle, display_name, status, verification_state, created_at, updated_at)
+       VALUES (?, ?, 'Raced owner', 'active', 'verified', 1, 1)`,
+    )
+    .run(racedAccountId, racedAccountId)
+  globalThis.__legacyBootstrapBindings = {
+    db: d1Adapter(database, () =>
+      database
+        .prepare(
+          `INSERT INTO identity_legacy_subject_map
+            (subject_type, subject_id, account_id, source_revision, source_snapshot_hash,
+             migration_version, mapped_at)
+           VALUES ('admin_account', '1', ?, 0, ?, 1, 1)`,
+        )
+        .run(racedAccountId, hash('stale admin preflight')),
+    ),
+  }
+  await assert.rejects(() =>
+    createAdminSession('legacy-owner', {
+      bucketStart: now,
+      fingerprint: `v1:${'e'.repeat(64)}`,
+    }),
+  )
+  assert.equal(count(database, 'admin_session'), 2)
+  database.exec('ROLLBACK TO stale_admin_preflight; RELEASE stale_admin_preflight')
+  globalThis.__legacyBootstrapBindings = { db }
 
   database
     .prepare('INSERT INTO participant_principal (id, webauthn_user_handle) VALUES (?, ?)')
@@ -147,8 +188,14 @@ try {
     fetcher: cleanRange,
   })
   assert.equal(result.ok, true)
-  if (!result.ok) throw new Error(`Bootstrap failed: ${result.reason}`)
   assert.equal(count(database, 'admin_session'), 0)
+  await assert.rejects(() =>
+    createAdminSession('legacy-owner', {
+      bucketStart: now,
+      fingerprint: `v1:${'f'.repeat(64)}`,
+    }),
+  )
+  assert.equal(count(database, 'admin_session'), 0, 'a stale login cannot issue after cutover')
 
   const evidence = database
     .prepare(
@@ -191,6 +238,19 @@ try {
     },
   )
   assert.match(audit.actor_session_id, /^[A-Za-z0-9_-]{43}$/)
+  assert.deepEqual(
+    {
+      ...database
+        .prepare(
+          `SELECT map.account_id, cutover.phase, cutover.cohort_key
+           FROM identity_legacy_subject_map AS map
+           JOIN identity_cutover AS cutover ON cutover.account_id = map.account_id
+           WHERE map.subject_type = 'admin_account' AND map.subject_id = '1'`,
+        )
+        .get(),
+    },
+    { account_id: result.accountId, phase: 3, cohort_key: 'legacy_admin' },
+  )
 
   const context = await getAuthContext({ database: db, token: result.token, now: now + 1 })
   assert.equal(context.kind, 'authenticated')
@@ -250,5 +310,6 @@ try {
 
   console.log('legacy owner bootstrap service tests passed')
 } finally {
+  delete globalThis.__legacyBootstrapBindings
   database.close()
 }

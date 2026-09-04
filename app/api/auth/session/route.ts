@@ -18,6 +18,7 @@ import {
 } from '@/lib/identity/internal/http'
 import { authenticatePassword } from '@/lib/identity/internal/password-authentication'
 import { passwordPepperSet } from '@/lib/identity/internal/password-config'
+import { clientSessionLabel } from '@/lib/identity/internal/session-display'
 import { normalizeUsername } from '@/lib/identity/internal/username-policy'
 import { clearIdentitySessionCookie, setIdentitySessionCookie } from '@/lib/identity/kernel'
 import { isIdentityRedirectKey, resolveIdentityRedirect } from '@/lib/identity/redirects'
@@ -25,10 +26,12 @@ import { legacySessionStateFromRequest } from '@/lib/legacy-session-state'
 import { createOpaqueToken, hashOpaqueToken } from '@/lib/opaque-token'
 import { clearParticipantSessionCookie } from '@/lib/participant-auth'
 import { resolveSiteOrigin } from '@/lib/site-config'
+import { isParticipantReturnPath } from '@/lib/participant-return'
 
-const FIELDS = ['username', 'password', 'redirectKey', 'tournamentSlug'] as const
+const FIELDS = ['username', 'password', 'redirectKey', 'tournamentSlug', 'returnTo'] as const
 
-function destination(redirectKey: string, tournamentSlug: string) {
+function destination(redirectKey: string, tournamentSlug: string, returnTo: string) {
+  if (isParticipantReturnPath(returnTo)) return returnTo
   return isIdentityRedirectKey(redirectKey)
     ? resolveIdentityRedirect(redirectKey, { tournamentSlug })
     : resolveIdentityRedirect('account')
@@ -66,7 +69,7 @@ export async function POST(request: NextRequest) {
   try {
     assertCsrfRequest(request)
     const fields = await readIdentityForm(request, FIELDS)
-    target = destination(fields.redirectKey, fields.tournamentSlug)
+    target = destination(fields.redirectKey, fields.tournamentSlug, fields.returnTo)
     const username = normalizeUsername(fields.username) ?? fields.username.trim().toLowerCase()
     const fingerprintKey = await activeAuthFingerprintKey()
     const [networkCharge, usernameCharge] = await Promise.all([
@@ -94,6 +97,7 @@ export async function POST(request: NextRequest) {
         legacyAdminTokenHash: legacy.adminTokenHash,
         legacyParticipantTokenHash: legacy.participantTokenHash,
       },
+      clientSessionLabel(request.headers),
     )
     if (!result.ok) {
       const locked = result.reason === 'temporarily_locked'

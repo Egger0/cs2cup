@@ -24,11 +24,13 @@ const { resubmitMembershipApplication, submitMembershipApplication } =
   await import('../lib/identity/membership-application.ts')
 const { claimMembershipApplication, reviewMembershipApplication } =
   await import('../lib/identity/membership-review.ts')
+const { acceptMembershipReviewTransfer, offerMembershipReviewTransfer } =
+  await import('../lib/identity/membership-review-transfer.ts')
 const { listMembershipReviewQueue, recordMembershipReviewReminder } =
   await import('../lib/identity/membership-review-queue.ts')
 const { MEMBERSHIP_REVIEW_OVERDUE_MS } =
   await import('../lib/identity/internal/membership-policy.ts')
-const { accountIds, createIdentityKernelFixture, credentialIds, passwordCredentialIds } =
+const { accountIds, createIdentityKernelFixture, credentialIds, opaque, passwordCredentialIds } =
   await import('./identity-kernel-test-fixture.mjs')
 
 const fixture = await createIdentityKernelFixture()
@@ -66,6 +68,16 @@ try {
   const reviewer = await fixture.session(accountIds.reviewer, {
     method: 'password',
     passwordCredentialId: passwordCredentialIds.reviewer,
+  })
+  fixture.execute(
+    `INSERT INTO identity_role_assignment
+      (id, account_id, role, scope_type, grant_reason, granted_at)
+     VALUES (?, ?, 'identity_reviewer', 'platform', 'Transfer target', ?)`,
+    [opaque('H'), accountIds.weakStaff, now - 1_000],
+  )
+  const secondReviewer = await fixture.session(accountIds.weakStaff, {
+    method: 'password',
+    passwordCredentialId: passwordCredentialIds.weakStaff,
   })
   const application = await createSubmitted(
     applicant.context,
@@ -105,24 +117,52 @@ try {
         submissionVersion: claimed.application.submissionVersion,
         submissionDigest: '0'.repeat(64),
         decision: 'approved',
+        reasonCategory: 'eligible',
         reason: 'Digest mismatch must fail',
       },
       { now: now + 6 },
     ),
     { ok: false, reason: 'conflict' },
   )
-  const changesRequested = await reviewMembershipApplication(
+  const offered = await offerMembershipReviewTransfer(
     db,
     reviewer.context,
     {
       applicationId: application.id,
       revision: claimed.application.revision,
-      submissionVersion: claimed.application.submissionVersion,
-      submissionDigest: claimed.application.submissionDigest,
-      decision: 'changes_requested',
-      reason: 'Please clarify the eligibility evidence',
+      targetReviewerAccountId: accountIds.weakStaff,
+      reason: 'Second reviewer has the relevant roster',
     },
     { now: now + 7 },
+  )
+  assert.equal(offered.ok, true)
+  if (!offered.ok) throw new Error('Expected transfer offer')
+  const accepted = await acceptMembershipReviewTransfer(
+    db,
+    secondReviewer.context,
+    {
+      applicationId: application.id,
+      revision: claimed.application.revision,
+      transferId: offered.transfer.id,
+    },
+    { now: now + 8 },
+  )
+  assert.equal(accepted.ok, true)
+  if (!accepted.ok) throw new Error('Expected accepted transfer')
+  assert.equal(accepted.application.assignedReviewerAccountId, accountIds.weakStaff)
+  const changesRequested = await reviewMembershipApplication(
+    db,
+    secondReviewer.context,
+    {
+      applicationId: application.id,
+      revision: accepted.application.revision,
+      submissionVersion: accepted.application.submissionVersion,
+      submissionDigest: accepted.application.submissionDigest,
+      decision: 'changes_requested',
+      reasonCategory: 'insufficient_evidence',
+      reason: 'Please clarify the eligibility evidence',
+    },
+    { now: now + 9 },
   )
   assert.equal(changesRequested.ok, true)
   if (!changesRequested.ok) throw new Error('Expected changes request')
@@ -137,17 +177,24 @@ try {
       contact: 'owner@example.test',
       applicationReason: 'Tournament eligibility',
     },
-    { now: now + 8 },
+    { now: now + 10 },
   )
   assert.equal(resubmitted.ok, true)
   if (!resubmitted.ok) throw new Error('Expected resubmission')
   assert.equal(resubmitted.application.submissionVersion, 2)
   assert.notEqual(resubmitted.application.submissionDigest, application.submissionDigest)
+  const historyQueue = await listMembershipReviewQueue(db, reviewer.context, { now: now + 10 })
+  assert.equal(historyQueue.ok && historyQueue.summary.total, 1)
+  assert.equal(
+    historyQueue.ok && historyQueue.applications[0]?.history[0]?.reasonCategory,
+    'insufficient_evidence',
+  )
+  assert.equal(historyQueue.ok && historyQueue.applications[0]?.transfers.length, 1)
   const reclaimed = await claimMembershipApplication(
     db,
     reviewer.context,
     { applicationId: application.id, revision: resubmitted.application.revision },
-    { now: now + 9 },
+    { now: now + 11 },
   )
   if (!reclaimed.ok) throw new Error('Expected reclaimed application')
   const approved = await reviewMembershipApplication(
@@ -159,13 +206,14 @@ try {
       submissionVersion: reclaimed.application.submissionVersion,
       submissionDigest: reclaimed.application.submissionDigest,
       decision: 'approved',
+      reasonCategory: 'eligible',
       reason: 'Eligibility evidence accepted',
     },
-    { now: now + 10 },
+    { now: now + 12 },
   )
   assert.equal(approved.ok, true)
   assert.match(approved.ok ? approved.membershipId : '', /^[A-Za-z0-9_-]{43}$/)
-  const approvedState = await getMembershipState(db, applicant.context, { now: now + 11 })
+  const approvedState = await getMembershipState(db, applicant.context, { now: now + 13 })
   assert.equal(approvedState.ok && approvedState.membership?.status, 'approved')
 
   const pending = await createSubmitted(
@@ -233,6 +281,7 @@ try {
       submissionVersion: pendingClaim.application.submissionVersion,
       submissionDigest: pendingClaim.application.submissionDigest,
       decision: 'rejected',
+      reasonCategory: 'not_eligible',
       reason: 'Evidence is not currently eligible',
     },
     { now: dueAt + 4 },

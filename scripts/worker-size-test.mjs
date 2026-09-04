@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process'
 import { access } from 'node:fs/promises'
 import { promisify } from 'node:util'
 
-const MAX_GZIP_KIB = 2900
+const MAX_GZIP_KIB = 2300
 const run = promisify(execFile)
 const wrangler = 'node_modules/wrangler/bin/wrangler.js'
 

@@ -1,17 +1,17 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { SectionHead } from '@/components/domain/Sections'
 import { participantCheckInReceipt } from '@/lib/check-in-receipt'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { formatSiteDateTime } from '@/lib/datetime'
-import { getCurrentParticipant } from '@/lib/participant-auth'
+import { getAuthContext } from '@/lib/identity/kernel'
+import { accountRegistrationRelationship } from '@/lib/identity/registration-workflow'
 import { participantRegistrationReturnPath } from '@/lib/participant-return'
-import { participantEntryOwnerPrincipal } from '@/lib/queries/participant-entry-attachment'
 import {
   getManagedRegistration,
   type ManagedRegistrationTeam,
 } from '@/lib/queries/registration-management'
-import { ParticipantPasskeyClaim } from './ParticipantPasskeyClaim'
+import { LegacyRegistrationAttach } from './LegacyRegistrationAttach'
 import { RegistrationManager } from './RegistrationManager'
 import styles from './management.module.css'
 
@@ -73,6 +73,11 @@ export default async function RegistrationStatusPage({
   params: Promise<{ slug: string; token: string }>
 }) {
   const { slug, token } = await params
+  const database = cloudflareBindings().db
+  const context = await getAuthContext({ database })
+  if (context.kind === 'authenticated' && context.session.recoveryRestricted) {
+    redirect('/account/security?recovery=1')
+  }
   const registration = await getManagedRegistration(slug, token)
   if (!registration) notFound()
 
@@ -80,17 +85,10 @@ export default async function RegistrationStatusPage({
     ? formatSiteDateTime(registration.tournament.regDeadline)
     : null
   const checkIn = participantCheckInReceipt(registration.team.status, registration.team.checkedInAt)
-  const [participant, ownerPrincipalId] = await Promise.all([
-    getCurrentParticipant(),
-    participantEntryOwnerPrincipal(cloudflareBindings().db, registration.team.id),
-  ])
-  const ownershipState = ownerPrincipalId
-    ? participant?.principalId === ownerPrincipalId
-      ? 'owned-by-current'
-      : 'owned-by-other'
-    : participant
-      ? 'signed-in-unclaimed'
-      : 'anonymous-unclaimed'
+  const relationship =
+    context.kind === 'authenticated'
+      ? await accountRegistrationRelationship(database, context, registration.team.id)
+      : null
   const returnTo = participantRegistrationReturnPath(slug, token) ?? '/me'
   const loginHref = `/login?returnTo=${encodeURIComponent(returnTo)}`
   return (
@@ -116,21 +114,19 @@ export default async function RegistrationStatusPage({
           </div>
         </section>
 
-        <ParticipantPasskeyClaim
+        <LegacyRegistrationAttach
           teamId={registration.team.id}
           slug={slug}
           token={token}
-          tournamentTitle={registration.tournament.title}
-          teamTag={registration.team.tag}
-          teamName={registration.team.name}
-          statusLabel={STATUS_LABEL[registration.team.status]}
-          ownershipState={ownershipState}
+          signedIn={context.kind === 'authenticated'}
+          relationship={relationship?.relationship ?? null}
+          accountOwned={registration.accountOwned}
           loginHref={loginHref}
-          hasActiveParticipant={Boolean(participant)}
         />
 
         {registration.editable ? (
           <RegistrationManager
+            access="legacy"
             slug={slug}
             token={token}
             team={registration.team}

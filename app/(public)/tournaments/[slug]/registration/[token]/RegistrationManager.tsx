@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Button, Field, TextField } from '@/components/ui'
 import type { ManagedRegistrationTeam } from '@/lib/queries/registration-management'
+import { updateAccountRegistration } from '@/app/me/registrations/actions'
 import { updateManagedRegistration } from './actions'
 import styles from './management.module.css'
 
@@ -15,17 +16,13 @@ function playerValues(team: ManagedRegistrationTeam) {
   ]
 }
 
-export function RegistrationManager({
-  slug,
-  token,
-  team,
-  revision: initialRevision,
-}: {
-  slug: string
-  token: string
+type RegistrationManagerProps = {
   team: ManagedRegistrationTeam
   revision: number
-}) {
+} & ({ access: 'account'; teamId: number } | { access: 'legacy'; slug: string; token: string })
+
+export function RegistrationManager(props: RegistrationManagerProps) {
+  const { team, revision: initialRevision } = props
   const [pending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<{ ok: boolean; message: string } | null>(null)
   const [revision, setRevision] = useState(initialRevision)
@@ -38,7 +35,10 @@ export function RegistrationManager({
         setFeedback(null)
         startTransition(async () => {
           try {
-            const result = await updateManagedRegistration(slug, token, revision, form)
+            const result =
+              props.access === 'account'
+                ? await updateAccountRegistration(props.teamId, revision, form)
+                : await updateManagedRegistration(props.slug, props.token, revision, form)
             if (result.ok && result.revision !== undefined) setRevision(result.revision)
             setFeedback({
               ok: result.ok,

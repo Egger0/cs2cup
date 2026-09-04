@@ -22,7 +22,8 @@ for (const [name, command] of Object.entries(scripts)) {
 
 assert.match(scripts.dev, /^npm run db:local:migrate && next dev$/)
 assert.equal(scripts.deploy, 'node scripts/workers-deploy.mjs')
-assert.equal(scripts['postcf:build'], 'node scripts/workers-production-migrate.mjs')
+assert.equal(scripts['cf:release'], 'npm run cf:build && npm run cf:size')
+assert.equal(scripts['postcf:build'], undefined)
 assert.doesNotMatch(scripts['cf:build'], /wrangler\.local\.jsonc/)
 assert.match(scripts['cf:build:local'], /--config wrangler\.local\.jsonc/)
 assert.equal(scripts['cf:preview'], undefined)
@@ -51,8 +52,12 @@ for (const binding of localConfig.r2_buckets ?? []) {
 }
 
 const localDatabase = await read('scripts/local-database.mjs')
+const browserCheck = await read('scripts/browser-check.mjs')
+const passwordRangeConfig = await read('wrangler.browser-password-range.jsonc')
 const workersDeploy = await read('scripts/workers-deploy.mjs')
-const workersProductionMigrate = await read('scripts/workers-production-migrate.mjs')
+const productionConfig = await read('wrangler.jsonc')
+const parsedProductionConfig = ts.parseConfigFileTextToJson('wrangler.jsonc', productionConfig)
+if (parsedProductionConfig.error) throw new Error('wrangler.jsonc is invalid')
 const localEnvironment = await read('wrangler.local.env')
 const developmentEnvironment = await read('.env.development')
 assert.match(localDatabase, /configPath: CONFIG_PATH/)
@@ -64,9 +69,6 @@ assert.match(workersDeploy, /WORKERS_CI_BRANCH/)
 assert.match(workersDeploy, /migrations.*apply.*CS2CUP_DB.*--remote/s)
 assert.match(workersDeploy, /opennextjs-cloudflare.*deploy/s)
 assert.match(workersDeploy, /opennextjs-cloudflare.*upload/s)
-assert.match(workersProductionMigrate, /WORKERS_CI/)
-assert.match(workersProductionMigrate, /WORKERS_CI_BRANCH/)
-assert.match(workersProductionMigrate, /migrations.*apply.*CS2CUP_DB.*--remote/s)
 
 const nextConfig = await read('next.config.ts')
 assert.match(nextConfig, /configPath: ['"]\.\/wrangler\.local\.jsonc['"]/)
@@ -75,9 +77,36 @@ assert.match(nextConfig, /remoteBindings: false/)
 assert.match(nextConfig, /persist: \{ path: ['"]\.\/\.local\/cloudflare\/v3['"] \}/)
 assert.doesNotMatch(localEnvironment, /^[A-Z_][A-Z0-9_]*=/m)
 assert.equal(developmentEnvironment.trim(), 'NEXT_PUBLIC_SITE_URL=http://localhost:3000')
+assert.doesNotMatch(productionConfig, /IDENTITY_PASSWORD_(?:RANGE|SCREENING_LOCAL_SERVICE)/)
+assert.doesNotMatch(localConfigSource, /IDENTITY_PASSWORD_SCREENING_LOCAL_SERVICE/)
+assert.deepEqual(localConfig.assets.run_worker_first, ['/photos', '/photos/*'])
+assert.deepEqual(parsedProductionConfig.config.assets.run_worker_first, ['/photos', '/photos/*'])
+assert.match(await read('public/.assetsignore'), /^photos\/$/m)
+assert.deepEqual(localConfig.services, [
+  {
+    binding: 'IDENTITY_PASSWORD_RANGE',
+    service: 'cs2cup-browser-check-password-range',
+    remote: false,
+  },
+])
+assert.match(browserCheck, /--var[\s\S]*IDENTITY_PASSWORD_SCREENING_LOCAL_SERVICE:browser-check/)
+assert.match(browserCheck, /wrangler\.browser-password-range\.jsonc/)
+assert.match(browserCheck, /'--persist-to',\s*'\.local\/cloudflare'/)
+assert.match(browserCheck, /'--env-file',\s*'wrangler\.local\.env'/)
+const parsedPasswordRangeConfig = ts.parseConfigFileTextToJson(
+  'wrangler.browser-password-range.jsonc',
+  passwordRangeConfig,
+)
+if (parsedPasswordRangeConfig.error) throw new Error('password range Worker config is invalid')
+assert.equal(parsedPasswordRangeConfig.config.workers_dev, false)
+assert.equal(parsedPasswordRangeConfig.config.preview_urls, false)
+assert.match(parsedPasswordRangeConfig.config.name, /browser-check/)
 
 const qualityWorkflow = await read('.github/workflows/quality.yml')
 assert.doesNotMatch(qualityWorkflow, /secrets\./)
 assert.doesNotMatch(qualityWorkflow, /\bdeploy\b/i)
+assert.doesNotMatch(qualityWorkflow, /npm audit/)
+assert.match(qualityWorkflow, /npm ci --prefer-offline --no-audit --fund=false/)
+assert.match(qualityWorkflow, /browser:smoke -- --skip-build/)
 
 console.log('repository safety tests passed')

@@ -95,7 +95,7 @@ export function AccessReceipt({
       <div className={styles.recoveryBoundary}>
         <span>RECOVERY / 恢复准备</span>
         <p>
-          <strong>把报名管理和赛事通行分开保管。</strong>
+          <strong>把报名管理链接和旧登录方式分开保管。</strong>
           通行密钥的备份与跨设备可用性由你的设备或平台管理，本站不会接触或代为找回。请妥善保留原报名管理链接；它是独立的报名管理入口，不是通行密钥备份。
         </p>
       </div>

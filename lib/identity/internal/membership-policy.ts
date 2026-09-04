@@ -15,6 +15,34 @@ export type MembershipApplicationStatus =
   | 'withdrawn'
 
 export type MembershipReviewDecision = 'approved' | 'changes_requested' | 'rejected'
+export const MEMBERSHIP_REVIEW_REASON_CATEGORIES = [
+  'eligible',
+  'insufficient_evidence',
+  'not_eligible',
+  'duplicate',
+  'other',
+] as const
+export type MembershipReviewReasonCategory = (typeof MEMBERSHIP_REVIEW_REASON_CATEGORIES)[number]
+
+const MEMBERSHIP_REVIEW_REASONS: Record<
+  MembershipReviewDecision,
+  readonly MembershipReviewReasonCategory[]
+> = {
+  approved: ['eligible', 'other'],
+  changes_requested: ['insufficient_evidence', 'other'],
+  rejected: ['not_eligible', 'duplicate', 'other'],
+}
+
+export function isMembershipReviewReasonCompatible(decision: unknown, reasonCategory: unknown) {
+  return (
+    typeof decision === 'string' &&
+    typeof reasonCategory === 'string' &&
+    Object.hasOwn(MEMBERSHIP_REVIEW_REASONS, decision) &&
+    MEMBERSHIP_REVIEW_REASONS[decision as MembershipReviewDecision].includes(
+      reasonCategory as MembershipReviewReasonCategory,
+    )
+  )
+}
 
 export interface MembershipApplicationFields {
   readonly identityClaim?: string | null
@@ -122,4 +150,8 @@ export function isMembershipReminderEligible(
 
 export function normalizeMembershipReviewReason(value: unknown) {
   return normalizeField(value, 3, 1000, false)
+}
+
+export function normalizeMembershipTransferReason(value: unknown) {
+  return normalizeField(value, 3, 500, false)
 }

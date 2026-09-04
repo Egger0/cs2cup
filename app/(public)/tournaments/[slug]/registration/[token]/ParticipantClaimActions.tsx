@@ -50,13 +50,13 @@ export function AnonymousClaimAction({
               ? `${retryDelayLabel}后可重试`
               : failure
                 ? '重新开始设备确认'
-                : '创建赛事通行证'
+                : '使用设备确认'
 
   return (
     <div className={ownershipStyles.choice}>
       <div>
-        <strong>已有赛事通行证？</strong>
-        <p>先登录，再把多份报名放进同一份赛事卷宗。</p>
+        <strong>已有账号？</strong>
+        <p>先登录，再从“我的赛事”统一查看多份报名。</p>
       </div>
       <Link className={ownershipStyles.loginLink} href={loginHref}>
         登录并加入 <span aria-hidden="true">↗</span>
@@ -126,7 +126,7 @@ export function SignedInAttachAction({
 
   return (
     <div className={ownershipStyles.attach}>
-      <p className={ownershipStyles.sessionMark}>CURRENT PASS / 已登录</p>
+      <p className={ownershipStyles.sessionMark}>CURRENT ACCOUNT / 已登录</p>
       {confirming ? (
         <div className={ownershipStyles.confirmation} role="group" aria-labelledby="attach-title">
           <strong id="attach-title">
@@ -151,21 +151,21 @@ export function SignedInAttachAction({
       ) : (
         <>
           <div className={ownershipStyles.attachLead}>
-            <strong>这份报名尚未归档</strong>
+            <strong>这份报名尚未关联</strong>
             <p>加入后，它会出现在你当前的“我的赛事”中。</p>
           </div>
           <button ref={attachButton} type="button" className={styles.claimButton} onClick={onArm}>
             <span className={styles.keyMark} aria-hidden="true">
               +1
             </span>
-            <span>加入当前通行证</span>
+            <span>加入我的赛事</span>
             <span aria-hidden="true">↗</span>
           </button>
         </>
       )}
 
       <div className={styles.actionStatus} aria-live="polite">
-        {working ? <p>正在把报名加入当前通行证。</p> : null}
+        {working ? <p>正在把报名加入“我的赛事”。</p> : null}
         {attachState === 'error' ? (
           <p className={styles.error} role="alert">
             {ATTACH_ERROR}
@@ -173,9 +173,9 @@ export function SignedInAttachAction({
         ) : null}
       </div>
       <div className={ownershipStyles.switchNotice}>
-        <p>公用设备，或不确定当前是谁的通行证？请先退出，再由报名持有人登录。</p>
+        <p>公用设备，或不确定当前登录的是谁？请先退出，再由报名持有人登录。</p>
         <button type="button" disabled={switchState === 'working'} onClick={onSwitch}>
-          {switchState === 'working' ? '正在退出…' : '退出并更换通行证'}
+          {switchState === 'working' ? '正在退出…' : '退出并更换账号'}
         </button>
         <div aria-live="polite">
           {switchState === 'error' ? (
@@ -193,10 +193,10 @@ export function CurrentOwnerAction() {
   return (
     <div className={styles.complete} role="status">
       <span className={styles.stamp} aria-hidden="true">
-        已归档
+        已关联
       </span>
       <div>
-        <strong>已在你的赛事通行证中</strong>
+        <strong>已在你的“我的赛事”中</strong>
         <p>这份报名已经出现在“我的赛事”；原管理链接继续用于修改。</p>
       </div>
       {/* The private archive must not enter the client route cache. */}
@@ -230,19 +230,19 @@ export function OtherOwnerAction({
       <div>
         <strong>
           {conflict
-            ? '这份报名刚刚归入另一份通行证'
+            ? '这份报名刚刚归入另一个账号'
             : recovery === 'login-and-confirm'
-              ? '这份报名已绑定赛事通行证'
+              ? '这份报名已关联账号'
               : recovery === 'switch-participant'
-                ? '这份报名在另一份赛事通行证中'
+                ? '这份报名在另一个账号中'
                 : '这份报名已有归属'}
         </strong>
         <p>
           {recovery === 'login-and-confirm'
             ? '登录后可以确认它是否在你的“我的赛事”中。'
             : recovery === 'switch-participant'
-              ? '你当前打开的是另一份通行证。若这是你的报名，可先退出，再由报名持有人使用其通行密钥确认；原管理链接仍可照常使用。'
-              : `${conflict ? '它未加入当前通行证，且' : '它'}不能重复加入。原管理链接仍可照常使用。`}
+              ? '你当前登录的是另一个账号。若这是你的报名，可先退出，再由报名持有人使用通行密钥确认；报名管理链接仍可照常使用。'
+              : `${conflict ? '它未加入当前账号，且' : '它'}不能重复加入。报名管理链接仍可照常使用。`}
         </p>
       </div>
       {recovery === 'login-and-confirm' ? (
@@ -263,8 +263,8 @@ export function OtherOwnerAction({
               {switching
                 ? '正在安全退出…'
                 : switchState === 'error'
-                  ? '重试更换通行证'
-                  : '退出并更换通行证'}
+                  ? '重试更换账号'
+                  : '退出并更换账号'}
             </span>
             <span aria-hidden="true">↗</span>
           </button>
@@ -275,9 +275,9 @@ export function OtherOwnerAction({
             aria-atomic="true"
           >
             {switchState === 'idle' && conflict ? (
-              <p>状态已刷新：这份报名未加入当前通行证。</p>
+              <p>状态已刷新：这份报名未加入当前账号。</p>
             ) : null}
-            {switching ? <p>正在关闭当前通行证，随后返回设备确认。</p> : null}
+            {switching ? <p>正在退出当前账号，随后返回设备确认。</p> : null}
             {switchState === 'error' ? <p className={styles.error}>{SWITCH_ERROR}</p> : null}
           </div>
         </div>
@@ -295,7 +295,7 @@ export function OwnershipNotes({ state }: { state: ParticipantEntryOwnershipStat
         <strong>{state === 'anonymous-unclaimed' ? '设备本地验证' : '报名归属'}</strong>
         {state === 'anonymous-unclaimed'
           ? '设备负责保护通行密钥；本站不接收你的面容或指纹数据。'
-          : '一份报名只能归入一份赛事通行证，避免私人资料重复暴露。'}
+          : '一份报名只能归入一个账号，避免私人资料重复暴露。'}
       </p>
       <p>
         <strong>管理链接保留</strong>

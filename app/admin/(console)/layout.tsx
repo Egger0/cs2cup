@@ -1,5 +1,5 @@
 import { ButtonLink } from '@/components/ui'
-import { requireAdmin } from '@/lib/auth'
+import { requirePlatformConsole } from '@/lib/auth'
 import { AdminNav } from './AdminNav'
 import { AdminSignOut } from './AdminSignOut'
 import styles from './shell.module.css'
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 export const metadata = { title: '后台管理' }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const admin = await requireAdmin()
+  const admin = await requirePlatformConsole()
 
   return (
     <div className={styles.shell}>
@@ -35,7 +35,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </header>
       <div className={styles.navDock}>
         <div className="wrap">
-          <AdminNav />
+          <AdminNav capabilities={admin.capabilities} hasTournamentWork={admin.hasTournamentWork} />
         </div>
       </div>
       <main id="main" className={`wrap ${styles.main}`}>

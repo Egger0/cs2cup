@@ -100,6 +100,11 @@ export async function hasStaffCapability(
            AND role = 'platform_owner'
            AND revoked_at IS NULL
            AND (expires_at IS NULL OR expires_at > ?)
+           AND NOT EXISTS (
+             SELECT 1 FROM identity_legacy_subject_map AS migrated
+             WHERE migrated.subject_type = 'admin_account'
+               AND migrated.subject_id = CAST(platform_role_assignment.admin_id AS TEXT)
+           )
          LIMIT 1`,
       )
       .bind(actor.adminId, now)
@@ -120,6 +125,11 @@ export async function hasStaffCapability(
          AND role IN (${placeholders})
          AND revoked_at IS NULL
          AND (expires_at IS NULL OR expires_at > ?)
+         AND NOT EXISTS (
+           SELECT 1 FROM identity_legacy_subject_map AS migrated
+           WHERE migrated.subject_type = 'participant_principal'
+             AND migrated.subject_id = tournament_role_assignment.principal_id
+         )
        LIMIT 1`,
     )
     .bind(actor.principalId, resource.tournamentId, ...roles, now)

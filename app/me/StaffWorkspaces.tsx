@@ -9,7 +9,17 @@ const STATUS_LABEL = {
   postponed: '已延期',
 } as const
 
-export function StaffWorkspaces({ workspaces }: { workspaces: ParticipantCheckInWorkspace[] }) {
+export function StaffWorkspaces({
+  workspaces,
+  total,
+  page,
+  pages,
+}: {
+  workspaces: readonly ParticipantCheckInWorkspace[]
+  total: number
+  page: number
+  pages: number
+}) {
   if (!workspaces.length) return null
 
   return (
@@ -18,9 +28,9 @@ export function StaffWorkspaces({ workspaces }: { workspaces: ParticipantCheckIn
         <p>STAFF ACCESS / 工作权限</p>
         <h2 id="staff-workspaces-title">社团工作台</h2>
         <span>
-          {workspaces.length === 1
+          {total === 1
             ? '你有一个可用的现场签到工作区。进入后仅可处理本届赛事现场签到。'
-            : `你有 ${workspaces.length} 个可用的现场签到工作区。请选择本次值班赛事。`}
+            : `你有 ${total} 个可用的现场签到工作区。请选择本次值班赛事。`}
         </span>
       </header>
       <ul>
@@ -40,6 +50,19 @@ export function StaffWorkspaces({ workspaces }: { workspaces: ParticipantCheckIn
           </li>
         ))}
       </ul>
+      {pages > 1 ? (
+        <nav className={styles.pagination} aria-label="现场签到工作区分页">
+          {page > 1 ? (
+            <a href={page === 2 ? '/me' : `/me?staffPage=${page - 1}`}>上一页</a>
+          ) : (
+            <span />
+          )}
+          <span>
+            第 {page} / {pages} 页
+          </span>
+          {page < pages ? <a href={`/me?staffPage=${page + 1}`}>下一页</a> : <span />}
+        </nav>
+      ) : null}
     </section>
   )
 }

@@ -75,13 +75,15 @@
   font-size: 0.76rem;
 }
 
-.passkeyList {
+.passkeyList,
+.sessionList {
   margin-top: 27px;
   border-top: 1px solid rgba(255, 255, 255, 0.14);
   list-style: none;
 }
 
-.passkeyList li {
+.passkeyList li,
+.sessionList li {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -90,24 +92,31 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
 }
 
-.passkeyList li > div {
+.passkeyList li > div,
+.sessionList li > div {
   display: grid;
   gap: 3px;
 }
 
-.passkeyList strong {
+.passkeyList strong,
+.sessionList strong {
   font-size: 0.82rem;
 }
 
 .passkeyList span,
-.passkeyList small {
+.passkeyList small,
+.sessionList span,
+.sessionList small {
   color: #84908e;
   font-size: 0.64rem;
 }
 
 .passkeyList button,
+.sessionList button,
 .section > button,
-.enroll button {
+.enroll button,
+.securityForm button,
+.codeReceipt button {
   min-height: 42px;
   border: 1px solid #637074;
   border-radius: 0;
@@ -119,7 +128,9 @@
   font-weight: 700;
 }
 
-.passkeyList button[data-confirming='true'] {
+.passkeyList button[data-confirming='true'],
+.sessionList button[data-confirming='true'],
+.section > button[data-confirming='true'] {
   border-color: #c87878;
   color: #e4a3a3;
 }
@@ -128,6 +139,95 @@
   margin-top: 21px;
   border-color: #73acd2;
   color: #a9d8f6;
+}
+
+.securityForm {
+  display: grid;
+  max-width: 680px;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.securityForm label {
+  display: grid;
+  gap: 7px;
+  color: #a5afad;
+  font-size: 0.65rem;
+}
+
+.securityForm input {
+  min-height: 46px;
+  border: 1px solid #4d595b;
+  border-radius: 0;
+  outline: none;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 9px 12px;
+}
+
+.securityForm input:focus {
+  border-color: #73acd2;
+  box-shadow: 0 0 0 1px #73acd2;
+}
+
+.securityForm small {
+  color: #75817f;
+}
+
+.securityForm button {
+  justify-self: start;
+  border-color: #0b5d94;
+  background: #0b5d94;
+  color: #f7f3e9;
+}
+
+.sessionList {
+  list-style: none;
+}
+
+.currentBadge {
+  color: #8fc8a2 !important;
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+.codeReceipt {
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px solid rgba(115, 172, 210, 0.45);
+  background: rgba(11, 93, 148, 0.08);
+}
+
+.codeReceipt > strong {
+  color: #c5e3f5;
+  font-size: 0.76rem;
+}
+
+.codeReceipt ol {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 28px;
+  margin: 16px 0 18px;
+  padding-left: 26px;
+  color: #eef5f7;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+}
+
+.success {
+  margin-top: 17px;
+  padding: 10px 12px;
+  border-left: 3px solid #65a97c;
+  background: rgba(101, 169, 124, 0.08);
+  color: #aee0bc;
+  font-size: 0.7rem;
+}
+
+.inlineLink {
+  display: inline-block;
+  margin-top: 14px;
+  color: #a9d8f6;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .enroll {
@@ -167,8 +267,10 @@
 }
 
 .passkeyList button:disabled,
+.sessionList button:disabled,
 .section > button:disabled,
-.enroll button:disabled {
+.enroll button:disabled,
+.securityForm button:disabled {
   opacity: 0.55;
   cursor: wait;
 }
@@ -197,6 +299,7 @@
 
   .section > header,
   .passkeyList li,
+  .sessionList li,
   .enroll {
     grid-template-columns: 1fr;
   }
@@ -204,6 +307,14 @@
   .section > header,
   .passkeyList li {
     display: grid;
+  }
+
+  .sessionList li {
+    display: grid;
+  }
+
+  .codeReceipt ol {
+    grid-template-columns: 1fr;
   }
 
   .section header > span {

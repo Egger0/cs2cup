@@ -103,6 +103,24 @@ try {
     assert.equal(await hasStaffCapability(db, owner, capability, tournament(2), now), true)
   }
 
+  database.exec(`
+    SAVEPOINT mapped_admin_authorization;
+    INSERT INTO identity_account
+      (id, webauthn_user_handle, display_name, status, verification_state, created_at, updated_at)
+    VALUES ('${'M'.repeat(43)}', '${'M'.repeat(43)}', 'Migrated owner',
+            'active', 'verified', 1, 1);
+    INSERT INTO identity_legacy_subject_map
+      (subject_type, subject_id, account_id, source_revision, source_snapshot_hash,
+       migration_version, mapped_at)
+    VALUES ('admin_account', '1', '${'M'.repeat(43)}', 0, '${'f'.repeat(64)}', 1, 1);
+  `)
+  assert.equal(await hasStaffCapability(db, owner, 'platform.manage', platform, now), false)
+  assert.equal(
+    await hasStaffCapability(db, owner, 'tournament.check_in.write', tournament(2), now),
+    false,
+  )
+  database.exec('ROLLBACK TO mapped_admin_authorization; RELEASE mapped_admin_authorization')
+
   const checkIn = participant('a')
   for (const capability of [
     'tournament.view',
@@ -119,6 +137,22 @@ try {
     await hasStaffCapability(db, checkIn, 'tournament.check_in.read', tournament(2), now),
     false,
     'a tournament assignment must not cross scope',
+  )
+  database.exec(`
+    SAVEPOINT mapped_participant_authorization;
+    INSERT INTO identity_account
+      (id, webauthn_user_handle, display_name, status, verification_state, created_at, updated_at)
+    VALUES ('${'N'.repeat(43)}', '${userHandle('a')}', 'Migrated participant',
+            'active', 'legacy_unverified', 1, 1);
+    INSERT INTO identity_legacy_subject_map
+      (subject_type, subject_id, account_id, source_revision, source_snapshot_hash,
+       migration_version, mapped_at)
+    VALUES ('participant_principal', '${principal('a')}', '${'N'.repeat(43)}', 0,
+            '${'e'.repeat(64)}', 1, 1);
+  `)
+  assert.equal(await hasStaffCapability(db, checkIn, 'tournament.view', tournament(1), now), false)
+  database.exec(
+    'ROLLBACK TO mapped_participant_authorization; RELEASE mapped_participant_authorization',
   )
 
   assert.equal(

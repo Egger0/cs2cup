@@ -6,11 +6,7 @@ import { publishParticipantSessionEnded } from '@/lib/participant-session-events
 import styles from './login.module.css'
 import recoveryStyles from './passkey-recovery.module.css'
 
-export default function LegacySessionConflictRecovery({
-  destination,
-}: {
-  destination: '/admin/login' | '/login?reason=signed-out'
-}) {
+export default function LegacySessionConflictRecovery({ destination }: { destination: string }) {
   const [state, setState] = useState<'idle' | 'working' | 'failed'>('idle')
   const inFlight = useRef(false)
 
@@ -61,7 +57,7 @@ export default function LegacySessionConflictRecovery({
         <p>
           {state === 'failed'
             ? '暂时无法清除旧会话，请检查网络后重试。任何私人内容都不会因此开放。'
-            : '此操作只结束当前设备上的访问，不会删除账号、报名或通行密钥。'}
+            : '此操作只结束当前设备上的旧访问，不会删除账号、报名或登录方式。'}
         </p>
       </div>
     </div>

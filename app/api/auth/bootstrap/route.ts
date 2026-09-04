@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
           : compromised
             ? '这个密码曾出现在公开泄露记录中，请换一个只在这里使用的密码。'
             : completed
-              ? '管理员账号迁移已经完成，请使用统一登录入口。'
+              ? '负责人账号迁移已经完成，请使用统一登录入口。'
               : conflict
                 ? '这个用户名不可用，或迁移状态已经改变，请刷新后重试。'
                 : result.reason === 'unauthorized'

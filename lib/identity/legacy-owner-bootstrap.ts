@@ -14,6 +14,7 @@ import {
   type PwnedPasswordOptions,
 } from './internal/password-screening.ts'
 import { securityEventStatement } from './internal/security-event.ts'
+import { legacyCutoverStatements } from './internal/legacy-cutover.ts'
 import {
   evaluateSelfRegistration,
   type SelfRegistrationFailure,
@@ -196,6 +197,15 @@ export async function bootstrapLegacyPlatformOwner(
            VALUES (?, ?, ?, 'active', 'legacy_unverified', ?, ?)`,
         )
         .bind(accountId, createOpaqueToken(), policy.value.displayName, now, now),
+      ...legacyCutoverStatements(database, {
+        subjectType: 'admin_account',
+        subjectId: '1',
+        accountId,
+        sourceRevision: 0,
+        sourceSnapshotHash: await hashOpaqueToken('legacy-admin:1'),
+        cohortKey: 'legacy_admin',
+        now,
+      }),
       database
         .prepare(
           `INSERT INTO identity_password_credential

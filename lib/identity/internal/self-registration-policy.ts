@@ -33,7 +33,7 @@ export type SelfRegistrationPolicyResult =
   | { readonly ok: true; readonly value: SelfRegistrationInput }
   | { readonly ok: false; readonly issue: SelfRegistrationFailure }
 
-function displayNamePolicy(value: unknown) {
+export function evaluateDisplayName(value: unknown) {
   if (typeof value !== 'string') return { ok: false, reason: 'required' } as const
   const displayName = value.trim().normalize('NFC')
   const length = Array.from(displayName).length
@@ -58,7 +58,7 @@ export function evaluateSelfRegistration(
       },
     }
   }
-  const displayName = displayNamePolicy(fields.displayName)
+  const displayName = evaluateDisplayName(fields.displayName)
   if (!displayName.ok) {
     return {
       ok: false,

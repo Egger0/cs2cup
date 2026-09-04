@@ -17,6 +17,7 @@ export type IdentityPasskeyErrorCode =
   | 'not_authenticated'
   | 'recovery_restricted'
   | 'reauth_required'
+  | 'last_credential'
   | 'not_found'
   | 'conflict'
 

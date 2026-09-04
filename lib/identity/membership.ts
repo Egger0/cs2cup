@@ -51,7 +51,7 @@ export async function getMembershipState(
     .bind(context.account.id)
     .first<{
       id: string
-      status: 'approved' | 'revoked'
+      status: 'approved' | 'suspended' | 'revoked'
       approved_at: number
       revoked_at: number | null
     }>()

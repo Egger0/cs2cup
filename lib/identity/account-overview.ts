@@ -14,7 +14,7 @@ export type MembershipApplicationState =
 export interface AccountOverview {
   readonly account: { id: string; displayName: string; username: string | null }
   readonly membership: {
-    status: 'approved' | 'revoked' | null
+    status: 'approved' | 'suspended' | 'revoked' | null
     application: {
       id: string
       identityClaim: string | null
@@ -25,6 +25,7 @@ export interface AccountOverview {
       updatedAt: number
       revision: number
       latestReviewReason: string | null
+      lastReminderAt: number | null
     } | null
   }
   readonly security: { activePasskeys: number; activeSessions: number }
@@ -35,7 +36,7 @@ interface OverviewRow {
   id: string
   display_name: string
   username: string | null
-  membership_status: 'approved' | 'revoked' | null
+  membership_status: 'approved' | 'suspended' | 'revoked' | null
   application_id: string | null
   identity_claim: string | null
   contact: string | null
@@ -45,6 +46,7 @@ interface OverviewRow {
   application_updated_at: number | null
   application_revision: number | null
   latest_review_reason: string | null
+  last_reminder_at: number | null
   active_passkeys: number
   active_sessions: number
   has_work_access: number
@@ -76,6 +78,10 @@ export async function accountOverview(
               application.updated_at AS application_updated_at,
               application.revision AS application_revision,
               review.reason AS latest_review_reason,
+              (SELECT MAX(event.created_at) FROM identity_security_event AS event
+               WHERE event.event_type = 'membership.application.review_reminder'
+                 AND event.resource_type = 'membership_application'
+                 AND event.resource_id = application.id) AS last_reminder_at,
               (SELECT COUNT(*) FROM identity_passkey_credential AS passkey
                WHERE passkey.account_id = account.id AND passkey.status = 'active') AS active_passkeys,
               (SELECT COUNT(*) FROM identity_session AS active_session
@@ -118,6 +124,7 @@ export async function accountOverview(
           updatedAt: row.application_updated_at,
           revision: row.application_revision,
           latestReviewReason: row.latest_review_reason,
+          lastReminderAt: row.last_reminder_at,
         }
       : null
   return {

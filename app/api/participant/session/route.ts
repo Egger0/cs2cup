@@ -13,7 +13,7 @@ import { privateEmpty, privateJson } from '@/lib/passkey-http'
 function sessionError(error: unknown) {
   const status = error instanceof CsrfError ? 403 : 503
   const message =
-    status === 403 ? '请求来源无法确认，请刷新页面重试。' : '暂时无法退出赛事通行，请稍后重试。'
+    status === 403 ? '请求来源无法确认，请刷新页面重试。' : '暂时无法退出旧登录状态，请稍后重试。'
   return privateJson({ error: message }, { status })
 }
 

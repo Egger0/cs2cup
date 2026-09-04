@@ -82,6 +82,27 @@ export async function readIdentityForm<const Field extends string>(
   }
 }
 
+export async function readIdentityJson<Result extends Record<string, unknown>>(
+  request: Request,
+  maxBytes = DEFAULT_MAX_BODY_BYTES,
+): Promise<Result> {
+  const contentType = request.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase()
+  if (contentType !== 'application/json') throw new IdentityRequestError()
+  try {
+    const source = new TextDecoder('utf-8', { fatal: true }).decode(
+      await boundedRequestBytes(request, maxBytes),
+    )
+    const value: unknown = JSON.parse(source)
+    if (!value || Array.isArray(value) || typeof value !== 'object') {
+      throw new IdentityRequestError()
+    }
+    return value as Result
+  } catch (error) {
+    if (error instanceof IdentityRequestError) throw error
+    throw new IdentityRequestError()
+  }
+}
+
 export function identityWantsJson(request: Request) {
   return Boolean(
     request.headers

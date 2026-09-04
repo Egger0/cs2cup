@@ -113,6 +113,67 @@
   font-size: 0.7rem;
 }
 
+.intro > div > button {
+  margin-top: 16px;
+  padding: 8px 12px;
+  border: 1px solid #3c4a4d;
+  background: transparent;
+  color: #b8c2c0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.68rem;
+}
+
+.intro > div > form {
+  display: grid;
+  max-width: 360px;
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.intro > div > form label,
+.intro > div > form div {
+  display: flex;
+  gap: 9px;
+}
+
+.intro > div > form label {
+  flex-direction: column;
+  color: #aab3b2;
+  font-size: 0.68rem;
+}
+
+.intro > div > form input {
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid #52605f;
+  background: #161c1c;
+  color: #fff;
+  font: inherit;
+}
+
+.intro > div > form button {
+  min-height: 38px;
+  padding-inline: 14px;
+  border: 1px solid #52605f;
+  background: transparent;
+  color: #d9dfdd;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.68rem;
+}
+
+.intro > div > form button[type='submit'] {
+  border-color: #73acd2;
+  background: #73acd2;
+  color: #101414;
+}
+
+.intro > div > form > span {
+  color: #ffaaa0;
+  font-size: 0.68rem;
+}
+
 .intro aside {
   display: grid;
   gap: 5px;
@@ -155,6 +216,10 @@
   letter-spacing: -0.035em;
 }
 
+.security > p {
+  color: var(--blue);
+}
+
 .security dl {
   margin-block: 28px;
   border-top: 1px solid #c1beb5;
@@ -170,7 +235,7 @@
 }
 
 .security dt {
-  color: #6a716f;
+  color: #5c6361;
 }
 
 .security dd {

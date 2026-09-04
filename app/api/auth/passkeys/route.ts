@@ -39,7 +39,10 @@ function failure(error: unknown) {
       return passkeyError(403, '请先完成账号恢复，再管理通行密钥。')
     }
     if (error.code === 'reauth_required') {
-      return passkeyError(403, '请重新登录后再撤销通行密钥。')
+      return passkeyError(428, '登录确认已超过 15 分钟，请重新登录后移除 Passkey。')
+    }
+    if (error.code === 'last_credential') {
+      return passkeyError(409, '请先完成账号设置或添加另一个 Passkey，再移除这个登录方式。')
     }
     if (error.code === 'not_found') return passkeyError(404, '没有找到这个通行密钥。')
     if (error.code === 'conflict') return passkeyError(409, '安全状态已变化，请刷新后重试。')

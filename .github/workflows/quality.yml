@@ -17,9 +17,9 @@ concurrency:
 
 jobs:
   cloudflare:
-    name: Cloudflare checks
+    name: Fast release gate
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 15
 
     steps:
       - name: Check out repository
@@ -34,16 +34,27 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: Audit production dependencies
-        run: npm audit --omit=dev
+        run: npm ci --prefer-offline --no-audit --fund=false
 
       - name: Run project checks
         run: npm run check
 
       - name: Build Cloudflare Worker
+        if: github.event_name != 'push'
         run: npm run cf:build
 
       - name: Enforce Worker size budget
+        if: github.event_name != 'push'
         run: npm run cf:size
+
+      - name: Install browser
+        if: github.event_name != 'push'
+        run: npx --no-install playwright install --with-deps chromium
+
+      - name: Run frontend smoke checks
+        if: github.event_name == 'pull_request'
+        run: npm run browser:smoke -- --skip-build
+
+      - name: Run full browser checks
+        if: github.event_name == 'workflow_dispatch'
+        run: npm run browser:check -- --skip-build

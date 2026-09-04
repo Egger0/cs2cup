@@ -14,6 +14,7 @@ const {
   MEMBERSHIP_REVIEW_OVERDUE_MS,
   isMembershipReminderEligible,
   isMembershipReviewOverdue,
+  isMembershipReviewReasonCompatible,
   membershipSubmissionDigest,
   normalizeMembershipApplicationFields,
   normalizeMembershipReviewReason,
@@ -54,6 +55,20 @@ await assert.rejects(
 )
 assert.equal(normalizeMembershipReviewReason(' yes ').ok, true)
 assert.equal(normalizeMembershipReviewReason('x').ok, false)
+for (const [decision, category] of [
+  ['approved', 'eligible'],
+  ['approved', 'other'],
+  ['changes_requested', 'insufficient_evidence'],
+  ['changes_requested', 'other'],
+  ['rejected', 'not_eligible'],
+  ['rejected', 'duplicate'],
+  ['rejected', 'other'],
+]) {
+  assert.equal(isMembershipReviewReasonCompatible(decision, category), true)
+}
+assert.equal(isMembershipReviewReasonCompatible('approved', 'not_eligible'), false)
+assert.equal(isMembershipReviewReasonCompatible('rejected', 'eligible'), false)
+assert.equal(isMembershipReviewReasonCompatible('forged', 'other'), false)
 
 const submittedAt = 1_000
 const dueAt = submittedAt + MEMBERSHIP_REVIEW_OVERDUE_MS

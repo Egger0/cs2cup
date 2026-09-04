@@ -208,3 +208,56 @@
     flex-direction: column;
   }
 }
+.accountHandoff {
+  display: grid;
+  gap: 14px;
+  align-items: center;
+  margin-block: 26px;
+  padding: 18px 20px;
+  border: 1px solid color-mix(in srgb, var(--ct) 48%, var(--line));
+  background: var(--ct-dim);
+}
+
+.accountHandoff > span {
+  color: var(--ct);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.accountHandoff > div {
+  display: grid;
+  gap: 4px;
+}
+
+.accountHandoff strong {
+  font-size: 0.86rem;
+}
+
+.accountHandoff p {
+  color: var(--muted);
+  font-size: 0.73rem;
+}
+
+.accountHandoff > a,
+.attachError a {
+  width: fit-content;
+  border-bottom: 1px solid currentColor;
+  color: var(--ct);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.attachError {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  color: var(--c4) !important;
+}
+
+@media (min-width: 760px) {
+  .accountHandoff {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+}

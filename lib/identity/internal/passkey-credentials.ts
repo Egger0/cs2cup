@@ -9,9 +9,8 @@ import {
   validDeviceType,
   validPasskeyCredentialId,
 } from './passkey-shared.ts'
+import { hasRecentAuthentication, RECENT_AUTHENTICATION_MS } from './recent-authentication.ts'
 import { privateSessionContext } from './session-context.ts'
-
-const RECENT_AUTHENTICATION_MS = 15 * 60 * 1000
 
 export interface AccountPasskey {
   readonly credentialId: string
@@ -30,6 +29,11 @@ interface PasskeyRow {
   created_at: number
   last_used_at: number | null
   revision: number
+}
+
+interface RevocablePasskeyRow extends PasskeyRow {
+  active_passkey_count: number
+  has_password: number
 }
 
 function validTime(value: unknown): value is number {
@@ -167,14 +171,20 @@ export async function revokeAccountPasskey(
   const privateContext = privateSessionContext(context)
   if (!privateContext) throw new IdentityPasskeyError('not_authenticated')
   if (context.session.recoveryRestricted) throw new IdentityPasskeyError('recovery_restricted')
-  if (context.session.authenticatedAt < now - RECENT_AUTHENTICATION_MS) {
+  if (!hasRecentAuthentication(context, now)) {
     throw new IdentityPasskeyError('reauth_required')
   }
   const credential = await database
     .prepare(
       `SELECT credential.credential_id, credential.label, credential.device_type,
               credential.backed_up, credential.created_at, credential.last_used_at,
-              credential.revision
+              credential.revision,
+              (SELECT COUNT(*) FROM identity_passkey_credential AS active_passkey
+               WHERE active_passkey.account_id = credential.account_id
+                 AND active_passkey.status = 'active') AS active_passkey_count,
+              EXISTS(SELECT 1 FROM identity_password_credential AS password
+                     WHERE password.account_id = credential.account_id
+                       AND password.status = 'active') AS has_password
        FROM identity_passkey_credential AS credential
        JOIN identity_session AS session ON session.account_id = credential.account_id
        JOIN identity_account AS account ON account.id = credential.account_id
@@ -190,9 +200,12 @@ export async function revokeAccountPasskey(
       now,
       now,
     )
-    .first<PasskeyRow>()
+    .first<RevocablePasskeyRow>()
   if (!credential) throw new IdentityPasskeyError('not_found')
   accountPasskey(credential)
+  if (Number(credential.active_passkey_count) <= 1 && credential.has_password !== 1) {
+    throw new IdentityPasskeyError('last_credential')
+  }
   const credentialNonce = createOpaqueToken()
   const accountNonce = createOpaqueToken()
   const credentialUpdate = database
@@ -248,6 +261,9 @@ export async function revokeAccountPasskey(
       }),
     ])
   } catch (error) {
+    if (error instanceof Error && /last login credential/i.test(error.message)) {
+      throw new IdentityPasskeyError('last_credential')
+    }
     if (
       error instanceof Error &&
       /(?:conflict|constraint|unique|foreign key|requires|mismatch)/i.test(error.message)

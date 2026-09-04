@@ -28,7 +28,9 @@ export default async function RegisterPage({
     getAuthContext(),
     getCurrentParticipant(),
   ])
-  if (context.kind === 'authenticated') redirect('/account')
+  if (context.kind === 'authenticated') {
+    redirect(context.session.recoveryRestricted ? '/account/security?recovery=1' : '/account')
+  }
   if (participant) redirect('/me')
 
   return (

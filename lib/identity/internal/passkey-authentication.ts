@@ -4,36 +4,23 @@ import { createOpaqueToken, hashOpaqueToken } from '../../opaque-token.ts'
 import type { IdentityDatabase, IdentityStatement } from './contracts.ts'
 import type { ClaimedPasskeyIntent } from './passkey-intent.ts'
 import {
-  byteView,
   exactPasskeyTime,
   IdentityPasskeyError,
-  passkeyTransports,
   validCounter,
   validDeviceType,
-  validOpaqueId,
-  validPasskeyCredentialId,
 } from './passkey-shared.ts'
 import { createSessionDraft, prepareSessionInsert } from './session-draft.ts'
+import {
+  prepareVerifiedPasskeyCredential,
+  type PasskeyAuthenticationCredential,
+  type PasskeyVerificationCredential,
+} from './passkey-authentication-credential.ts'
 
-interface AuthenticationCredentialRow {
-  credential_id: string
-  account_id: string
-  webauthn_user_handle: string
-  public_key: ArrayBuffer | Uint8Array
-  counter: number
-  transports_json: string
-  revision: number
-}
-
-export interface PasskeyAuthenticationCredential {
-  readonly id: string
-  readonly accountId: string
-  readonly userHandle: string
-  readonly publicKey: Uint8Array
-  readonly counter: number
-  readonly transports: string[]
-  readonly revision: number
-}
+export {
+  passkeyAuthenticationCredential,
+  type PasskeyAuthenticationCredential,
+  type PasskeyVerificationCredential,
+} from './passkey-authentication-credential.ts'
 
 export interface PasskeySessionReplacement {
   readonly unifiedTokenHash?: string | null
@@ -45,57 +32,6 @@ const HASH = /^[0-9a-f]{64}$/
 
 function optionalHash(value: string | null | undefined) {
   return value === undefined || value === null || HASH.test(value)
-}
-
-function parseCredential(row: AuthenticationCredentialRow | null) {
-  if (
-    !row ||
-    !validPasskeyCredentialId(row.credential_id) ||
-    !validOpaqueId(row.account_id) ||
-    !validOpaqueId(row.webauthn_user_handle) ||
-    !validCounter(row.counter) ||
-    !Number.isSafeInteger(row.revision) ||
-    row.revision < 0
-  ) {
-    throw new IdentityPasskeyError('unknown_credential')
-  }
-  let transports: unknown
-  try {
-    transports = JSON.parse(row.transports_json)
-  } catch {
-    throw new IdentityPasskeyError('unknown_credential')
-  }
-  return Object.freeze({
-    id: row.credential_id,
-    accountId: row.account_id,
-    userHandle: row.webauthn_user_handle,
-    publicKey: byteView(row.public_key),
-    counter: row.counter,
-    transports: passkeyTransports(transports),
-    revision: row.revision,
-  })
-}
-
-export async function passkeyAuthenticationCredential(
-  database: IdentityDatabase,
-  credentialId: string,
-) {
-  if (!validPasskeyCredentialId(credentialId)) {
-    throw new IdentityPasskeyError('unknown_credential')
-  }
-  const row = await database
-    .prepare(
-      `SELECT credential.credential_id, credential.account_id, account.webauthn_user_handle,
-              credential.public_key, credential.counter, credential.transports_json,
-              credential.revision
-       FROM identity_passkey_credential AS credential
-       JOIN identity_account AS account ON account.id = credential.account_id
-       WHERE credential.credential_id = ? AND credential.status = 'active'
-         AND account.status = 'active' LIMIT 1`,
-    )
-    .bind(credentialId)
-    .first<AuthenticationCredentialRow>()
-  return parseCredential(row)
 }
 
 function replacementStatements(
@@ -175,15 +111,19 @@ export interface VerifiedPasskeyAuthentication {
   readonly backedUp: boolean
 }
 
-export async function completePasskeyAuthentication(
+interface PasskeyCompletionInput {
+  intent: ClaimedPasskeyIntent
+  credential: PasskeyAuthenticationCredential
+  verification: VerifiedPasskeyAuthentication
+  replacement?: PasskeySessionReplacement
+  clientLabel?: string
+  now: number
+}
+
+async function completePasskeyAuthenticationBatch(
   database: IdentityDatabase,
-  input: {
-    intent: ClaimedPasskeyIntent
-    credential: PasskeyAuthenticationCredential
-    verification: VerifiedPasskeyAuthentication
-    replacement?: PasskeySessionReplacement
-    now: number
-  },
+  input: PasskeyCompletionInput,
+  prefix: readonly IdentityStatement[],
 ) {
   const now = exactPasskeyTime(input.now)
   if (
@@ -208,6 +148,7 @@ export async function completePasskeyAuthentication(
       authenticatorCredentialId: input.credential.id,
       authIntentId: input.intent.id,
     },
+    displayMetadata: input.clientLabel ? { clientLabel: input.clientLabel } : undefined,
     now,
   })
   const credentialUpdate = database
@@ -267,6 +208,7 @@ export async function completePasskeyAuthentication(
     )
   try {
     await database.batch([
+      ...prefix,
       credentialUpdate,
       intentConsume,
       prepareSessionInsert(database, draft),
@@ -295,5 +237,38 @@ export async function completePasskeyAuthentication(
     absoluteExpiresAt: draft.record.absoluteExpiresAt,
     redirectKey: input.intent.redirectKey,
     redirectContext: input.intent.context,
+  }
+}
+
+export function completePasskeyAuthentication(
+  database: IdentityDatabase,
+  input: PasskeyCompletionInput,
+) {
+  return completePasskeyAuthenticationBatch(database, input, [])
+}
+
+export async function completeVerifiedPasskeyAuthentication(
+  database: IdentityDatabase,
+  input: Omit<PasskeyCompletionInput, 'credential'> & {
+    credential: PasskeyVerificationCredential
+  },
+) {
+  const prepared = await prepareVerifiedPasskeyCredential(database, input.credential, input.now)
+  const completion = { ...input, credential: prepared.credential }
+  try {
+    return await completePasskeyAuthenticationBatch(
+      database,
+      completion,
+      prepared.migrationStatements,
+    )
+  } catch (error) {
+    if (prepared.migrationStatements.length === 0) throw error
+    const raced = await prepareVerifiedPasskeyCredential(database, input.credential, input.now)
+    if (raced.migrationStatements.length !== 0) throw error
+    return completePasskeyAuthenticationBatch(
+      database,
+      { ...input, credential: raced.credential },
+      [],
+    )
   }
 }

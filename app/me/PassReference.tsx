@@ -6,7 +6,7 @@ import styles from './pass-reference.module.css'
 type CopyState = 'idle' | 'copying' | 'copied' | 'failed'
 
 const COPY_FEEDBACK: Record<Exclude<CopyState, 'idle' | 'copying'>, string> = {
-  copied: '脱敏通行编号已复制。',
+  copied: '脱敏旧登录编号已复制。',
   failed: '未能自动复制，请选中编号手动复制。',
 }
 
@@ -30,14 +30,14 @@ export function PassReference({ participantReference }: { participantReference: 
   return (
     <section className={styles.pass} aria-labelledby="pass-reference-title">
       <header className={styles.heading}>
-        <span>PASS REFERENCE / 通行编号</span>
+        <span>LEGACY REFERENCE / 旧登录编号</span>
         <h2 id="pass-reference-title">现场核对索引</h2>
       </header>
 
       <input
         className={styles.reference}
         value={participantReference}
-        aria-label="脱敏通行编号，可选中后手动复制"
+        aria-label="脱敏旧登录编号，可选中后手动复制"
         aria-describedby="pass-reference-note"
         autoComplete="off"
         readOnly

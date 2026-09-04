@@ -19,8 +19,10 @@ import {
   type MembershipOperationOptions,
 } from './internal/membership-store.ts'
 import {
+  isMembershipReviewReasonCompatible,
   normalizeMembershipReviewReason,
   type MembershipReviewDecision,
+  type MembershipReviewReasonCategory,
 } from './internal/membership-policy.ts'
 
 export type MembershipReviewFailure = ReviewerFailure | 'not_found' | 'invalid_state' | 'conflict'
@@ -85,6 +87,7 @@ export interface ReviewMembershipApplicationInput {
   readonly submissionVersion: number
   readonly submissionDigest: string
   readonly decision: MembershipReviewDecision
+  readonly reasonCategory: MembershipReviewReasonCategory
   readonly reason: string
 }
 
@@ -108,7 +111,7 @@ export async function reviewMembershipApplication(
     Number.isSafeInteger(input.submissionVersion) &&
     input.submissionVersion >= 1 &&
     /^[0-9a-f]{64}$/.test(input.submissionDigest) &&
-    ['approved', 'changes_requested', 'rejected'].includes(input.decision) &&
+    isMembershipReviewReasonCompatible(input.decision, input.reasonCategory) &&
     reason.ok
   if (!valid) return { ok: false, reason: 'invalid_input' }
   const denied = await reviewerAuthorizationFailure(database, context, operation.now)
@@ -135,8 +138,9 @@ export async function reviewMembershipApplication(
       .prepare(
         `INSERT INTO identity_membership_review
           (id, application_id, submission_version, submission_digest, reviewer_account_id,
-           reviewer_session_id, decision, reason, decided_at, request_correlation_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          reviewer_session_id, decision, reason, decided_at, request_correlation_id,
+          reason_category)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .bind(
         reviewId,
@@ -149,6 +153,7 @@ export async function reviewMembershipApplication(
         reason.ok ? reason.value : '',
         operation.now,
         operation.correlationId,
+        input.reasonCategory,
       ),
     database
       .prepare(
@@ -184,7 +189,11 @@ export async function reviewMembershipApplication(
       application,
       `membership.application.${input.decision}`,
       operation,
-      { reviewId, submissionVersion: input.submissionVersion },
+      {
+        reviewId,
+        submissionVersion: input.submissionVersion,
+        reasonCategory: input.reasonCategory,
+      },
     ),
   )
   try {

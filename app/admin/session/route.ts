@@ -14,7 +14,10 @@ import {
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { assertCsrfRequest, CsrfError } from '@/lib/csrf'
 import { withPrivateNoStore } from '@/lib/http-cache'
-import { legacySessionStateFromRequest } from '@/lib/legacy-session-state'
+import {
+  legacySessionStateFromRequest,
+  unifiedSessionStateFromRequest,
+} from '@/lib/legacy-session-state'
 import { clearParticipantSessionCookie } from '@/lib/participant-auth'
 import {
   AdminLoginAttemptError,
@@ -40,7 +43,15 @@ export async function POST(request: NextRequest) {
 
   try {
     assertAdminLoginRequestHeaders(request)
-    const legacySessions = await legacySessionStateFromRequest(request, now)
+    const [legacySessions, unifiedSession] = await Promise.all([
+      legacySessionStateFromRequest(request, now),
+      unifiedSessionStateFromRequest(request, now),
+    ])
+    if (unifiedSession.kind === 'authenticated') {
+      return redirectTo(
+        unifiedSession.session.recoveryRestricted ? '/account/security?recovery=1' : '/account',
+      )
+    }
     if (legacySessions.participantActive) {
       return redirectTo('/login?reason=conflict&reauth=admin')
     }

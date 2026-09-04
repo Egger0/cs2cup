@@ -53,7 +53,7 @@ export interface PasswordSessionReplacement {
   readonly legacyParticipantTokenHash?: string | null
 }
 
-function passwordForAuthentication(value: unknown) {
+export function normalizePasswordForAuthentication(value: unknown) {
   if (typeof value !== 'string' || !value || value.length > MAX_AUTH_PASSWORD_CODE_UNITS)
     return null
   for (let index = 0; index < value.length; index += 1) {
@@ -199,10 +199,11 @@ export async function authenticatePassword(
   peppers: PasswordPepperSet,
   now = Date.now(),
   replacement: PasswordSessionReplacement = {},
+  clientLabel?: string,
 ): Promise<PasswordAuthenticationResult> {
   if (!Number.isSafeInteger(now) || now < 0) throw new TypeError('Invalid authentication time')
   const username = normalizeUsername(input.username)
-  const password = passwordForAuthentication(input.password)
+  const password = normalizePasswordForAuthentication(input.password)
   const row = await credentialForUsername(database, username)
   const storedRecord = row && validCredentialState(row) ? passwordVerifierFromStorage(row) : null
   const pepper = storedRecord ? passwordPepperForRow(peppers, storedRecord.pepperVersion) : null
@@ -233,6 +234,7 @@ export async function authenticatePassword(
       passwordCredentialId: row.id,
       verificationNonce,
     },
+    displayMetadata: clientLabel ? { clientLabel } : undefined,
     now: authenticatedAt,
   })
   await database.batch([

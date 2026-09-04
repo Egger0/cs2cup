@@ -18,6 +18,7 @@ import {
   readIdentityForm,
 } from '@/lib/identity/internal/http'
 import { passwordPepperSet } from '@/lib/identity/internal/password-config'
+import { clientSessionLabel } from '@/lib/identity/internal/session-display'
 import { normalizeUsername } from '@/lib/identity/internal/username-policy'
 import { getAuthContext, setIdentitySessionCookie } from '@/lib/identity/kernel'
 import { legacySessionStateFromRequest } from '@/lib/legacy-session-state'
@@ -84,7 +85,9 @@ export async function POST(request: NextRequest) {
     ])
     const database = cloudflareBindings().db
     await chargeAuthAttempts(database, 'enrollment', [networkCharge, usernameCharge])
-    const result = await registerAccount(database, fields, await passwordPepperSet())
+    const result = await registerAccount(database, fields, await passwordPepperSet(), {
+      clientLabel: clientSessionLabel(request.headers),
+    })
 
     if (!result.ok) {
       if (result.reason === 'invalid_input') {

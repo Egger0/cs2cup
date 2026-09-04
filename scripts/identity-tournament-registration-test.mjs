@@ -21,11 +21,13 @@ registerHooks({
 
 const { createApprovedTournamentRegistration } =
   await import('../lib/identity/tournament-registration.ts')
+const { saveRegistrationDraft } = await import('../lib/identity/registration-workflow.ts')
 const { createMembershipDraft } = await import('../lib/identity/membership.ts')
 const { submitMembershipApplication } = await import('../lib/identity/membership-application.ts')
 const { claimMembershipApplication, reviewMembershipApplication } =
   await import('../lib/identity/membership-review.ts')
-const { accountIds, createIdentityKernelFixture, credentialIds, opaque, passwordCredentialIds } =
+const { changeMembershipStatus } = await import('../lib/identity/membership-roster.ts')
+const { accountIds, createIdentityKernelFixture, credentialIds, passwordCredentialIds } =
   await import('./identity-kernel-test-fixture.mjs')
 
 const fixture = await createIdentityKernelFixture()
@@ -66,6 +68,7 @@ async function approveMembership(applicant, reviewer) {
       submissionVersion: claimed.application.submissionVersion,
       submissionDigest: claimed.application.submissionDigest,
       decision: 'approved',
+      reasonCategory: 'eligible',
       reason: 'Approved for registration gate test',
     },
     { now: now + 4 },
@@ -120,6 +123,19 @@ try {
   )
 
   await approveMembership(applicant.context, reviewer.context)
+  await saveRegistrationDraft(db, applicant.context, {
+    tournamentId: 72,
+    values: {
+      name: 'Team GAT2',
+      tag: 'GAT2',
+      captain: 'Captain',
+      contact: 'owner@example.test',
+      dept: '',
+      note: '',
+      players: ['One', 'Two', 'Three', 'Four', 'Five', ''],
+    },
+    now: now + 5,
+  })
   const approvedResult = await createApprovedTournamentRegistration(
     db,
     applicant.context,
@@ -128,7 +144,7 @@ try {
   assert.equal(approvedResult.ok, true)
   const created = database
     .prepare(
-      `SELECT team.id, relationship.account_id, relationship.relationship,
+      `SELECT team.id, team.management_token_hash, relationship.account_id, relationship.relationship,
               (SELECT COUNT(*) FROM player WHERE team_id = team.id) AS players
        FROM team JOIN identity_registration_membership AS relationship
          ON relationship.team_id = team.id AND relationship.revoked_at IS NULL
@@ -139,16 +155,33 @@ try {
     { accountId: created.account_id, relationship: created.relationship, players: created.players },
     { accountId: accountIds.owner, relationship: 'owner', players: 5 },
   )
+  assert.equal(created.management_token_hash, null)
+  assert.equal(
+    database
+      .prepare(
+        'SELECT COUNT(*) AS count FROM identity_registration_draft WHERE account_id = ? AND tournament_id = 72',
+      )
+      .get(accountIds.owner).count,
+    0,
+  )
 
-  database
-    .prepare(
-      `UPDATE identity_membership
-       SET status = 'revoked', revoked_by_account_id = ?, revoker_session_id = ?,
-           revoke_reason = 'Eligibility withdrawn for gate test', revoked_at = ?,
-           revision = revision + 1, write_nonce = ?
-       WHERE account_id = ?`,
-    )
-    .run(accountIds.reviewer, reviewer.context.session.id, now + 11, opaque('Z'), accountIds.owner)
+  const membership = database
+    .prepare('SELECT id, revision FROM identity_membership WHERE account_id = ?')
+    .get(accountIds.owner)
+  assert.deepEqual(
+    await changeMembershipStatus(
+      db,
+      reviewer.context,
+      {
+        membershipId: membership.id,
+        revision: membership.revision,
+        operation: 'revoke',
+        reason: 'Eligibility withdrawn for gate test',
+      },
+      { now: now + 11 },
+    ),
+    { ok: true, status: 'revoked' },
+  )
   const revokedResult = await createApprovedTournamentRegistration(db, applicant.context, {
     ...registration('GAT3'),
     now: now + 12,

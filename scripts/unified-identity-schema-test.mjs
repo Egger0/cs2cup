@@ -5,13 +5,16 @@ const schemaTests = [
   './unified-identity-recovery-context-schema-test.mjs',
   './unified-identity-attempt-schema-test.mjs',
   './unified-identity-access-schema-test.mjs',
+  './identity-registration-workflow-schema-test.mjs',
   './unified-identity-operations-schema-test.mjs',
   './unified-identity-replace-guard-schema-test.mjs',
   './moderated-enrollment-schema-test.mjs',
   './moderated-membership-schema-test.mjs',
+  './membership-review-operations-schema-test.mjs',
   './moderated-password-schema-test.mjs',
   './moderated-recovery-schema-test.mjs',
   './legacy-admin-bootstrap-schema-test.mjs',
+  './legacy-cutover-session-guard-schema-test.mjs',
   './moderated-migration-upgrade-test.mjs',
 ]
 

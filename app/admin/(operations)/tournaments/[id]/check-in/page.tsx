@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound, redirect } from 'next/navigation'
 import { signOut } from '@/app/admin/(console)/actions/auth'
+import { AccountSignOut } from '@/app/account/AccountSignOut'
 import {
   ParticipantSignOut,
   PrivateSessionActionForm,
@@ -71,6 +72,7 @@ export default async function TournamentCheckInPage({
   if (!desk) notFound()
 
   const isParticipant = desk.actor.kind === 'participant'
+  const isUnified = desk.actor.kind === 'unified'
   const page = (
     <div className={styles.page}>
       <header className={styles.topbar}>
@@ -86,13 +88,13 @@ export default async function TournamentCheckInPage({
         <div className={styles.session}>
           <span aria-hidden="true" />
           <p>
-            {isParticipant ? '签到工作人员' : '平台负责人'}
+            {isParticipant || isUnified ? '赛事工作人员' : '平台负责人'}
             <small>权限按本届赛事核验</small>
           </p>
         </div>
         <nav className={styles.nav} aria-label="签到台辅助导航">
           <a href={isParticipant ? '/me' : '/admin'}>
-            {isParticipant ? '返回我的赛事' : '返回管理台'}
+            {isParticipant ? '返回我的赛事' : isUnified ? '返回工作区' : '返回管理台'}
           </a>
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a href="/" className={styles.publicLink}>
@@ -100,6 +102,8 @@ export default async function TournamentCheckInPage({
           </a>
           {isParticipant ? (
             <ParticipantSignOut label="安全退出" />
+          ) : isUnified ? (
+            <AccountSignOut />
           ) : (
             <PrivateSessionActionForm action={signOut} label="安全退出" />
           )}
@@ -123,7 +127,9 @@ export default async function TournamentCheckInPage({
         </section>
 
         <CheckInDesk
-          authorizationRecoveryPath={isParticipant ? returnTo : '/admin/login'}
+          authorizationRecoveryPath={
+            isParticipant ? returnTo : isUnified ? '/account' : '/admin/login'
+          }
           initialTeams={desk.teams}
           tournamentId={desk.tournament.id}
         />
@@ -140,7 +146,7 @@ export default async function TournamentCheckInPage({
     <PrivateSessionBoundary
       observeParticipantSession={isParticipant}
       returnTo={returnTo}
-      sessionEndDestination={isParticipant ? returnTo : '/admin/login'}
+      sessionEndDestination={isParticipant || isUnified ? returnTo : '/admin/login'}
       sessionRemainingMs={staffSessionRemainingMs(desk.actor.sessionExpiresAt)}
     >
       {page}
