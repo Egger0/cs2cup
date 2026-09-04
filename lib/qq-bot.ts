@@ -43,9 +43,9 @@ const FIVE_MINUTES_MS = 5 * 60 * 1000
 const COMMAND_PANEL_REMARK = 'nbt-qq-group-commands'
 const COMMAND_PANEL = {
   items: [
-    { type: 'command', name: '签到', desc: '完成今天的社团打卡' },
-    { type: 'command', name: '签到排行', desc: '查看连续签到排名' },
-    { type: 'command', name: '最近赛事', desc: '查看当前赛事安排' },
+    { type: 'command', name: '/签到', desc: '完成今天的社团打卡' },
+    { type: 'command', name: '/签到排行', desc: '查看连续签到排名' },
+    { type: 'command', name: '/最近赛事', desc: '查看当前赛事安排' },
   ],
   remark: COMMAND_PANEL_REMARK,
 }
@@ -162,9 +162,10 @@ export function qqCommand(content: string): QqCommand | null {
     .replace(/<@!?[^>]+>/g, '')
     .trim()
     .replace(/\s+/g, ' ')
-  if (normalized === '签到') return { kind: 'check_in' }
-  if (normalized === '签到排行') return { kind: 'leaderboard' }
-  if (normalized === '最近赛事') return { kind: 'current_tournament' }
+  const command = normalized.startsWith('/') ? normalized.slice(1) : normalized
+  if (command === '签到') return { kind: 'check_in' }
+  if (command === '签到排行') return { kind: 'leaderboard' }
+  if (command === '最近赛事') return { kind: 'current_tournament' }
   const binding = /^\/绑定\s+([A-HJ-NP-Z2-9]{8})$/i.exec(normalized)
   return binding?.[1] ? { kind: 'bind', code: binding[1].toUpperCase() } : null
 }

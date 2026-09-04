@@ -31,6 +31,9 @@ assert.deepEqual(
 assert.deepEqual(qqCommand(' <@!robot> 签到 '), { kind: 'check_in' })
 assert.deepEqual(qqCommand('签到排行'), { kind: 'leaderboard' })
 assert.deepEqual(qqCommand('最近赛事'), { kind: 'current_tournament' })
+assert.deepEqual(qqCommand(' <@!robot> /签到 '), { kind: 'check_in' })
+assert.deepEqual(qqCommand('/签到排行'), { kind: 'leaderboard' })
+assert.deepEqual(qqCommand('/最近赛事'), { kind: 'current_tournament' })
 assert.deepEqual(qqCommand('/绑定 abcd2345'), { kind: 'bind', code: 'ABCD2345' })
 assert.equal(qqCommand('绑定 ABCD2345'), null)
 assert.equal(qqCommand('签到啊'), null)
@@ -88,9 +91,9 @@ try {
     group_openids: ['group-1'],
     panel: {
       items: [
-        { type: 'command', name: '签到', desc: '完成今天的社团打卡' },
-        { type: 'command', name: '签到排行', desc: '查看连续签到排名' },
-        { type: 'command', name: '最近赛事', desc: '查看当前赛事安排' },
+        { type: 'command', name: '/签到', desc: '完成今天的社团打卡' },
+        { type: 'command', name: '/签到排行', desc: '查看连续签到排名' },
+        { type: 'command', name: '/最近赛事', desc: '查看当前赛事安排' },
       ],
       remark: 'nbt-qq-group-commands',
     },
