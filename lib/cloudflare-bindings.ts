@@ -25,10 +25,13 @@ declare global {
   interface CloudflareEnv {
     CS2CUP_DB?: CloudflareD1
     CS2CUP_MEDIA?: CloudflareR2
+    QQ_BOT_APP_ID?: string
+    QQ_BOT_APP_SECRET?: string
+    QQ_BOT_ALLOWED_GROUP_OPEN_ID?: string
   }
 }
 
-function cloudflareEnvironment() {
+export function cloudflareEnvironment() {
   return getCloudflareContext().env
 }
 

@@ -31,6 +31,12 @@ interface UnknownRecord {
   [key: string]: unknown
 }
 
+interface QqBotEnvironment {
+  QQ_BOT_APP_ID?: string
+  QQ_BOT_APP_SECRET?: string
+  QQ_BOT_ALLOWED_GROUP_OPEN_ID?: string
+}
+
 const TOKEN_ENDPOINT = 'https://bots.qq.com/app/getAppAccessToken'
 const API_BASE = 'https://api.sgroup.qq.com/v2'
 const FIVE_MINUTES_MS = 5 * 60 * 1000
@@ -73,7 +79,9 @@ function parsedTimestamp(value: string | null, now: number) {
   return Number.isSafeInteger(milliseconds) && Math.abs(now - milliseconds) <= FIVE_MINUTES_MS
 }
 
-export function qqBotConfig(environment: NodeJS.ProcessEnv = process.env): QqBotConfig | null {
+export function qqBotConfig(
+  environment: QqBotEnvironment = process.env as QqBotEnvironment,
+): QqBotConfig | null {
   const appId = environment.QQ_BOT_APP_ID?.trim()
   const appSecret = environment.QQ_BOT_APP_SECRET?.trim()
   const allowedGroupOpenId = environment.QQ_BOT_ALLOWED_GROUP_OPEN_ID?.trim() || null

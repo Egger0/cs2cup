@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { cloudflareBindings } from '@/lib/cloudflare-bindings'
+import { cloudflareBindings, cloudflareEnvironment } from '@/lib/cloudflare-bindings'
 import { checkInFromQq, linkQqAccount, qqCheckInLeaderboard } from '@/lib/qq-daily-check-in'
 import {
   qqBotConfig,
@@ -87,7 +87,7 @@ async function commandReply(
 }
 
 export async function POST(request: Request) {
-  const config = qqBotConfig()
+  const config = qqBotConfig(cloudflareEnvironment())
   if (!config) return new NextResponse('QQ bot is not configured', { status: 503 })
   const body = await request.text()
   let payload: unknown
