@@ -104,7 +104,12 @@ export async function POST(request: Request) {
     return new NextResponse('Forbidden', { status: 403 })
   }
   const message = qqGroupMessage(payload)
-  if (!message || !config.allowedGroupOpenId || message.groupOpenId !== config.allowedGroupOpenId)
+  if (!message) return new NextResponse(null, { status: 204 })
+  if (!config.allowedGroupOpenId) {
+    console.info('[qq-bot] allowed group OpenID needed', { groupOpenId: message.groupOpenId })
+    return new NextResponse(null, { status: 204 })
+  }
+  if (message.groupOpenId !== config.allowedGroupOpenId)
     return new NextResponse(null, { status: 204 })
   const command = qqCommand(message.content)
   if (!command) return new NextResponse(null, { status: 204 })
