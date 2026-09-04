@@ -57,7 +57,7 @@
 
 .header > p {
   color: #76aecb;
-  font-size: 0.52rem;
+  font-size: 0.65rem;
 }
 
 .verified {
@@ -65,7 +65,7 @@
   align-items: center;
   gap: 7px;
   color: #cbe8f5;
-  font-size: 0.54rem;
+  font-size: 0.65rem;
 }
 
 .verified i {
@@ -124,7 +124,7 @@
 
 .overline {
   color: #5e9fc1;
-  font-size: 0.5rem;
+  font-size: 0.65rem;
 }
 
 .identity h2 {
@@ -168,7 +168,7 @@
 
 .facts dt {
   color: #668c9e;
-  font-size: 0.48rem;
+  font-size: 0.65rem;
 }
 
 .facts dd {
@@ -205,7 +205,7 @@
   padding: 6px 8px 5px;
   border: 1px solid #477d98;
   color: #82b7d0;
-  font-size: 0.46rem;
+  font-size: 0.65rem;
 }
 
 .device strong {
@@ -218,7 +218,7 @@
   max-width: 700px;
   margin-top: 4px;
   color: #899ca4;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
 }
 
 .recoveryBoundary {
@@ -231,7 +231,7 @@
 
 .recoveryBoundary > span {
   color: #82b7d0;
-  font-size: 0.48rem;
+  font-size: 0.65rem;
 }
 
 .recoveryBoundary p {
@@ -251,7 +251,7 @@
   padding: 12px clamp(18px, 4vw, 46px);
   border-top: 1px dashed rgba(121, 185, 216, 0.22);
   color: #668c9e;
-  font-size: 0.45rem;
+  font-size: 0.65rem;
   line-height: 1.8;
 }
 

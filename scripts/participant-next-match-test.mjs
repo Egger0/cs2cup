@@ -14,12 +14,13 @@ registerHooks({
   },
 })
 
-const { participantNextMatchFromDatabase } =
+const { accountNextMatchFromDatabase, participantNextMatchFromDatabase } =
   await import('../lib/queries/participant-next-match.ts')
 
 const NOW = Date.parse('2026-11-15T04:00:00Z')
 const PRINCIPAL = `p_${'A'.repeat(43)}`
 const OTHER_PRINCIPAL = `p_${'B'.repeat(43)}`
+const ACCOUNT = 'C'.repeat(43)
 
 const TIME = {
   draft: '2026-11-15T05:00:00Z',
@@ -125,6 +126,26 @@ function own(database, teamId, principalId = PRINCIPAL) {
     .run(teamId, principalId)
 }
 
+function grantAccount(database, id, teamId, expiresAt = null, revokedAt = null) {
+  database
+    .prepare(
+      `INSERT INTO identity_registration_membership
+        (id, team_id, account_id, relationship, grant_reason, granted_at, expires_at,
+         revoked_by_account_id, revoke_reason, revoked_at)
+       VALUES (?, ?, ?, 'manager', 'next match test', ?, ?, ?, ?, ?)`,
+    )
+    .run(
+      id,
+      teamId,
+      ACCOUNT,
+      NOW - 100,
+      expiresAt,
+      revokedAt ? ACCOUNT : null,
+      revokedAt ? 'test revocation' : null,
+      revokedAt,
+    )
+}
+
 function assertTwoPublicQueries(adapter) {
   assert.equal(adapter.queries.length, 2, 'one lookup must remain exactly two database queries')
   const sql = adapter.queries.join('\n')
@@ -142,6 +163,13 @@ try {
   database
     .prepare('INSERT INTO participant_principal (id, webauthn_user_handle) VALUES (?, ?)')
     .run(OTHER_PRINCIPAL, 'V'.repeat(43))
+  database
+    .prepare(
+      `INSERT INTO identity_account
+        (id, webauthn_user_handle, display_name, status, verification_state, created_at, updated_at)
+       VALUES (?, ?, 'Account owner', 'active', 'verified', 100, 100)`,
+    )
+    .run(ACCOUNT, 'W'.repeat(43))
 
   insertTournament(database, 1, 'primary-cup', 'Primary Cup', 'running')
   insertTournament(database, 2, 'cross-cup', 'Cross Cup', 'registration')
@@ -171,6 +199,9 @@ try {
 
   for (const teamId of [101, 201, 301, 401, 501, 601, 602]) own(database, teamId)
   own(database, 701, OTHER_PRINCIPAL)
+  grantAccount(database, 'M'.repeat(43), 201)
+  grantAccount(database, 'N'.repeat(43), 101, NOW - 1)
+  grantAccount(database, 'O'.repeat(43), 701, null, NOW - 1)
 
   insertMatch(database, {
     id: 1001,
@@ -234,6 +265,15 @@ try {
   }
 
   const adapter = d1Adapter(database)
+  const accountCrossTournament = await accountNextMatchFromDatabase(adapter, ACCOUNT, NOW)
+  assertTwoPublicQueries(adapter)
+  assert.equal(accountCrossTournament?.match.id, 2001)
+  database.prepare('DELETE FROM identity_registration_membership WHERE id = ?').run('M'.repeat(43))
+  adapter.reset()
+  assert.equal(await accountNextMatchFromDatabase(adapter, ACCOUNT, NOW), null)
+  assertTwoPublicQueries(adapter)
+
+  adapter.reset()
   const crossTournament = await participantNextMatchFromDatabase(adapter, PRINCIPAL, NOW)
   assertTwoPublicQueries(adapter)
   assert.deepEqual(crossTournament, {

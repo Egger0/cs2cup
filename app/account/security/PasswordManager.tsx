@@ -15,6 +15,7 @@ export function PasswordManager({ recovery }: { recovery: boolean }) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [length, setLength] = useState(0)
+  const [confirmationInvalid, setConfirmationInvalid] = useState(false)
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -25,11 +26,15 @@ export function PasswordManager({ recovery }: { recovery: boolean }) {
     const passwordConfirmation = String(data.get('passwordConfirmation') ?? '')
     if (password !== passwordConfirmation) {
       setError('两次输入的新密码不一致。')
+      setConfirmationInvalid(true)
+      const confirmation = form.elements.namedItem('passwordConfirmation')
+      if (confirmation instanceof HTMLElement) confirmation.focus()
       return
     }
     setWorking(true)
     setError('')
     setSuccess('')
+    setConfirmationInvalid(false)
     try {
       const response = await fetch('/api/account/security/password', {
         method: 'POST',
@@ -89,10 +94,11 @@ export function PasswordManager({ recovery }: { recovery: boolean }) {
             autoComplete="new-password"
             minLength={6}
             maxLength={1024}
+            aria-describedby="password-length-guidance"
             onChange={event => setLength(Array.from(event.currentTarget.value).length)}
             required
           />
-          <small>至少 6 个字符 · 当前 {length} 个字符</small>
+          <small id="password-length-guidance">至少 6 个字符 · 当前 {length} 个字符</small>
         </label>
         <label>
           <span>确认新密码</span>
@@ -102,6 +108,14 @@ export function PasswordManager({ recovery }: { recovery: boolean }) {
             autoComplete="new-password"
             minLength={6}
             maxLength={1024}
+            aria-invalid={confirmationInvalid || undefined}
+            aria-describedby={confirmationInvalid ? 'password-error' : undefined}
+            onChange={() => {
+              if (confirmationInvalid) {
+                setConfirmationInvalid(false)
+                setError('')
+              }
+            }}
             required
           />
         </label>
@@ -110,7 +124,7 @@ export function PasswordManager({ recovery }: { recovery: boolean }) {
         </button>
       </form>
       {error ? (
-        <p className={styles.error} role="alert">
+        <p id="password-error" className={styles.error} role="alert">
           {error}
         </p>
       ) : null}

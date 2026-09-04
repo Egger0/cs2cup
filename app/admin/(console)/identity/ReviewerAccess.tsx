@@ -47,6 +47,18 @@ export function ReviewerAccess({
   const [working, setWorking] = useState(false)
   const [error, setError] = useState('')
 
+  function chooseRevoke(id: string) {
+    setRevokeReason('')
+    setError('')
+    setRevokeId(id)
+  }
+
+  function cancelRevoke() {
+    setRevokeId('')
+    setRevokeReason('')
+    setError('')
+  }
+
   async function run(values: Record<string, string>) {
     setWorking(true)
     setError('')
@@ -171,12 +183,12 @@ export function ReviewerAccess({
                   onChange={event => setRevokeReason(event.currentTarget.value)}
                 />
                 <button disabled={working}>确认撤销</button>
-                <button type="button" onClick={() => setRevokeId('')}>
+                <button type="button" disabled={working} onClick={cancelRevoke}>
                   取消
                 </button>
               </form>
             ) : (
-              <button type="button" onClick={() => setRevokeId(item.id)}>
+              <button type="button" onClick={() => chooseRevoke(item.id)}>
                 撤销
               </button>
             )}

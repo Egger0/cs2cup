@@ -60,7 +60,7 @@ export default async function AccountRegistrationPage({
     : null
 
   return (
-    <main id="main" className={styles.page}>
+    <div className={styles.page}>
       <header className={styles.topbar}>
         <Link href="/" className={styles.brand}>
           <Image src="/brand/club-mark.svg" alt="" width={28} height={28} priority />
@@ -73,64 +73,66 @@ export default async function AccountRegistrationPage({
         </nav>
       </header>
 
-      <div className={styles.shell}>
-        <header className={styles.heading}>
-          <div>
-            <p>REGISTRATION / {registration.tournament.slug}</p>
-            <h1>{registration.tournament.title}</h1>
-            <span>
-              [{registration.team.tag}] {registration.team.name}
-            </span>
-          </div>
-          <aside>
-            <small>{registration.relationship === 'owner' ? '所有者' : '协作者'}</small>
-            <strong>{STATUS_LABEL[registration.team.status]}</strong>
-            <span>{deadline ? `报名截止 ${deadline}` : '未设置报名截止时间'}</span>
-          </aside>
-        </header>
-
-        <section className={styles.editor} aria-labelledby="editor-title">
-          <div className={styles.sectionHead}>
-            <p>TEAM / 报名资料</p>
-            <h2 id="editor-title">阵容与联系方式</h2>
-          </div>
-          {registration.editable ? (
-            <RegistrationManager
-              access="account"
-              teamId={teamId}
-              team={registration.team}
-              revision={registration.revision}
-            />
-          ) : (
-            <div className={styles.locked}>
-              <strong>当前报名资料已锁定</strong>
-              <p>审核完成或报名截止后，需由赛事负责人协助更正。</p>
-              <dl>
-                <div>
-                  <dt>队长</dt>
-                  <dd>{registration.team.captain}</dd>
-                </div>
-                <div>
-                  <dt>联系方式</dt>
-                  <dd>{registration.team.contact}</dd>
-                </div>
-                <div>
-                  <dt>阵容</dt>
-                  <dd>{registration.team.players.map(player => player.nickname).join('、')}</dd>
-                </div>
-              </dl>
+      <main id="main">
+        <div className={styles.shell}>
+          <header className={styles.heading}>
+            <div>
+              <p>REGISTRATION / {registration.tournament.slug}</p>
+              <h1>{registration.tournament.title}</h1>
+              <span>
+                [{registration.team.tag}] {registration.team.name}
+              </span>
             </div>
-          )}
-        </section>
+            <aside>
+              <small>{registration.relationship === 'owner' ? '所有者' : '协作者'}</small>
+              <strong>{STATUS_LABEL[registration.team.status]}</strong>
+              <span>{deadline ? `报名截止 ${deadline}` : '未设置报名截止时间'}</span>
+            </aside>
+          </header>
 
-        <RegistrationAccessPanel
-          teamId={teamId}
-          relationship={registration.relationship}
-          managers={access.managers}
-          invitations={access.invitations}
-          deletable={registration.team.status === 'pending'}
-        />
-      </div>
-    </main>
+          <section className={styles.editor} aria-labelledby="editor-title">
+            <div className={styles.sectionHead}>
+              <p>TEAM / 报名资料</p>
+              <h2 id="editor-title">阵容与联系方式</h2>
+            </div>
+            {registration.editable ? (
+              <RegistrationManager
+                access="account"
+                teamId={teamId}
+                team={registration.team}
+                revision={registration.revision}
+              />
+            ) : (
+              <div className={styles.locked}>
+                <strong>当前报名资料已锁定</strong>
+                <p>审核完成或报名截止后，需由赛事负责人协助更正。</p>
+                <dl>
+                  <div>
+                    <dt>队长</dt>
+                    <dd>{registration.team.captain}</dd>
+                  </div>
+                  <div>
+                    <dt>联系方式</dt>
+                    <dd>{registration.team.contact}</dd>
+                  </div>
+                  <div>
+                    <dt>阵容</dt>
+                    <dd>{registration.team.players.map(player => player.nickname).join('、')}</dd>
+                  </div>
+                </dl>
+              </div>
+            )}
+          </section>
+
+          <RegistrationAccessPanel
+            teamId={teamId}
+            relationship={registration.relationship}
+            managers={access.managers}
+            invitations={access.invitations}
+            deletable={registration.team.status === 'pending'}
+          />
+        </div>
+      </main>
+    </div>
   )
 }

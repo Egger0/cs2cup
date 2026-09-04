@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui'
 import { photoUrl } from '@/lib/media'
 import { deletePhotoAndFile } from '../actions/media'
@@ -14,8 +15,12 @@ export function PhotoRow({
   photo: { id: number; storageKey: string; width: number; height: number; caption: string | null }
   tournamentLabel: string
 }) {
+  const router = useRouter()
   const [pending, startTransition] = useTransition()
-  const [error, setError] = useState('')
+  const [feedback, setFeedback] = useState<{
+    tone: 'success' | 'warning' | 'error'
+    message: string
+  } | null>(null)
 
   return (
     <div className={styles.listRow}>
@@ -42,20 +47,38 @@ export function PhotoRow({
           size="mini"
           variant="danger"
           disabled={pending}
+          aria-busy={pending}
           onClick={() => {
             if (!confirm('删除这张图片?文件也会一并移除。')) return
             startTransition(async () => {
-              setError('')
-              const result = await deletePhotoAndFile(photo.id)
-              if (!result.ok) setError(result.error)
+              setFeedback(null)
+              try {
+                const result = await deletePhotoAndFile(photo.id)
+                if (!result.ok) {
+                  setFeedback({ tone: 'error', message: result.error })
+                  return
+                }
+
+                setFeedback({
+                  tone: result.warning ? 'warning' : 'success',
+                  message: result.warning ?? '图片已删除',
+                })
+                if (result.warning) window.alert(result.warning)
+                router.refresh()
+              } catch {
+                setFeedback({ tone: 'error', message: '删除失败，请检查网络后重试。' })
+              }
             })
           }}
         >
-          删除
+          {pending ? '删除中…' : '删除'}
         </Button>
-        {error ? (
-          <span className={styles.error} role="alert">
-            {error}
+        {feedback ? (
+          <span
+            className={feedback.tone === 'success' ? styles.ok : styles.error}
+            role={feedback.tone === 'success' ? 'status' : 'alert'}
+          >
+            {feedback.message}
           </span>
         ) : null}
       </div>

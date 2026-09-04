@@ -37,7 +37,7 @@
 .header > p,
 .header > h2 {
   color: var(--stamp);
-  font-size: 0.52rem;
+  font-size: 0.65rem;
   font-weight: 700;
 }
 
@@ -46,7 +46,7 @@
   align-items: center;
   gap: 7px;
   color: #35566a;
-  font-size: 0.52rem;
+  font-size: 0.65rem;
   font-weight: 700;
 }
 
@@ -77,7 +77,7 @@
 .footer span {
   color: var(--paper-muted);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.51rem;
+  font-size: 0.65rem;
   letter-spacing: 0.09em;
   text-transform: uppercase;
 }
@@ -116,7 +116,7 @@
 .clock > time small {
   color: var(--paper-muted);
   font-family: var(--font-mono), monospace;
-  font-size: 0.48rem;
+  font-size: 0.65rem;
   letter-spacing: 0.08em;
 }
 

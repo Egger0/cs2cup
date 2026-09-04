@@ -13,7 +13,7 @@ export default async function AdminGuestbookPage() {
 
   return (
     <>
-      <AdminPageHeader index="07" title="留言审核" description="处理公开状态、置顶与官方回复。" />
+      <AdminPageHeader index="08" title="留言审核" description="处理公开状态、置顶与官方回复。" />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>留言管理 · {messages.length} 条</h2>
         {messages.length === 0 ? (

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { formatSiteNumericDateTime } from '@/lib/datetime'
 import type { AccountOverview } from '@/lib/identity/account-overview'
 import styles from './membership.module.css'
@@ -74,6 +74,7 @@ export function MembershipPanel({
   lastReminderAt: number | null
 }) {
   const router = useRouter()
+  const [clockNow, setClockNow] = useState(now)
   const [working, setWorking] = useState(false)
   const [error, setError] = useState('')
   const [confirmingWithdrawal, setConfirmingWithdrawal] = useState(false)
@@ -83,6 +84,23 @@ export function MembershipPanel({
   const application = membership.application
   const state = membership.status ?? application?.status
   const editable = !state || ['draft', 'changes_requested', 'rejected', 'withdrawn'].includes(state)
+
+  useEffect(() => {
+    const updateClock = () => setClockNow(current => Math.max(current, now, Date.now()))
+    const initialTimer = window.setTimeout(updateClock, 0)
+    const interval = window.setInterval(updateClock, 30_000)
+    const handleVisibility = () => {
+      if (!document.hidden) updateClock()
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    window.addEventListener('focus', updateClock)
+    return () => {
+      window.clearTimeout(initialTimer)
+      window.clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibility)
+      window.removeEventListener('focus', updateClock)
+    }
+  }, [now])
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -127,8 +145,9 @@ export function MembershipPanel({
   }
 
   const submittedAt = application?.submittedAt ?? null
-  const overdue = Boolean(submittedAt && now - submittedAt >= DAY_MS)
-  const reminderEligible = overdue && (nextReminderAt === null || now >= nextReminderAt)
+  const liveNow = Math.max(now, clockNow)
+  const overdue = Boolean(submittedAt && liveNow - submittedAt >= DAY_MS)
+  const reminderEligible = overdue && (nextReminderAt === null || liveNow >= nextReminderAt)
   const nextAction = nextActionLabel(state, reminderEligible)
 
   return (
@@ -161,7 +180,7 @@ export function MembershipPanel({
           </div>
           <div>
             <small>已等待</small>
-            <strong>{elapsedLabel(submittedAt, now)}</strong>
+            <strong>{elapsedLabel(submittedAt, liveNow)}</strong>
           </div>
           <div>
             <small>最近更新</small>
@@ -230,7 +249,7 @@ export function MembershipPanel({
       {application && ['pending', 'in_review'].includes(state ?? '') ? (
         <div className={styles.pendingActions}>
           <p>你的账号可以正常使用。无需重复申请；通过前可准备报名资料，但暂不能最终提交。</p>
-          {nextReminderAt !== null && now < nextReminderAt ? (
+          {nextReminderAt !== null && liveNow < nextReminderAt ? (
             <p>已发送提醒，下次可在 {formatSiteNumericDateTime(nextReminderAt)} 后再次提醒。</p>
           ) : null}
           {error ? (

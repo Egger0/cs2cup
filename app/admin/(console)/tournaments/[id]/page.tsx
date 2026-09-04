@@ -32,7 +32,7 @@ export default async function AdminTournamentPage({ params }: { params: Promise<
   return (
     <>
       <AdminPageHeader
-        index="02.A"
+        index="03.A"
         title={tournament.title}
         description="维护公开信息、对阵结构与开赛时间；更改仅在明确保存或发布后生效。"
       />

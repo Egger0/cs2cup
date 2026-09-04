@@ -15,7 +15,7 @@ export default async function AdminSettingsPage() {
   return (
     <>
       <AdminPageHeader
-        index="08"
+        index="09"
         title="站点设置"
         description="维护社团身份、联系方式与页脚信息。"
       />

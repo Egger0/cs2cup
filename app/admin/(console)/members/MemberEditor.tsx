@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button, Field, TextField } from '@/components/ui'
+import { useUnsavedChangesWarning } from '@/components/admin/useUnsavedChangesWarning'
 import type { ClubMember } from '@/lib/types'
 import { removeMember, updateMember } from '../actions/content'
 import styles from '../admin.module.css'
@@ -10,10 +11,26 @@ export function MemberEditor({ member }: { member: ClubMember }) {
   const [pending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
+  const [dirty, setDirty] = useState(false)
+
+  useUnsavedChangesWarning(
+    open && dirty,
+    `「${member.name}」还有未保存的更改，离开将丢失这些内容。`,
+  )
 
   const handleDelete = () => {
     if (!confirm(`确定删除「${member.name}」?此操作不可撤销。`)) return
-    startTransition(() => void removeMember(member.id))
+    startTransition(async () => {
+      setError('')
+      setSaved(false)
+      try {
+        await removeMember(member.id)
+        setDirty(false)
+      } catch {
+        setError('删除失败，请检查网络后重试。')
+      }
+    })
   }
 
   if (!open) {
@@ -32,12 +49,24 @@ export function MemberEditor({ member }: { member: ClubMember }) {
               已保存
             </span>
           ) : null}
-          <Button size="mini" onClick={() => setOpen(true)}>
+          <Button
+            size="mini"
+            onClick={() => {
+              setDirty(false)
+              setError('')
+              setOpen(true)
+            }}
+          >
             编辑
           </Button>
           <Button size="mini" variant="danger" disabled={pending} onClick={handleDelete}>
             删除
           </Button>
+          {error ? (
+            <span className={styles.error} role="alert">
+              {error}
+            </span>
+          ) : null}
         </div>
       </div>
     )
@@ -47,11 +76,23 @@ export function MemberEditor({ member }: { member: ClubMember }) {
     <form
       className={styles.editor}
       style={{ padding: '22px 0', borderBottom: '1px solid var(--line)' }}
+      onChange={() => {
+        setDirty(true)
+        setSaved(false)
+        setError('')
+      }}
       action={formData =>
         startTransition(async () => {
-          await updateMember(member.id, formData)
-          setSaved(true)
-          setOpen(false)
+          setError('')
+          setSaved(false)
+          try {
+            await updateMember(member.id, formData)
+            setDirty(false)
+            setSaved(true)
+            setOpen(false)
+          } catch {
+            setError('保存失败，请检查网络后重试。')
+          }
         })
       }
     >
@@ -85,7 +126,15 @@ export function MemberEditor({ member }: { member: ClubMember }) {
         <Button type="submit" variant="primary" disabled={pending}>
           {pending ? '保存中…' : '保存'}
         </Button>
-        <Button type="button" onClick={() => setOpen(false)}>
+        <Button
+          type="button"
+          disabled={pending}
+          onClick={() => {
+            setError('')
+            setDirty(false)
+            setOpen(false)
+          }}
+        >
           取消
         </Button>
         <Button
@@ -97,6 +146,11 @@ export function MemberEditor({ member }: { member: ClubMember }) {
         >
           删除
         </Button>
+        {error ? (
+          <span className={styles.error} role="alert">
+            {error}
+          </span>
+        ) : null}
       </div>
     </form>
   )

@@ -3,10 +3,22 @@
 import { type ReactNode, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui'
-import { createTournament } from '../actions/tournaments'
-import styles from '../admin.module.css'
+import type { ContentCreateResult } from './actions/content'
+import styles from './admin.module.css'
 
-export function TournamentCreateForm({ children }: { children: ReactNode }) {
+export function ContentCreateForm({
+  action,
+  children,
+  submitLabel,
+  pendingLabel,
+  successMessage,
+}: {
+  action: (formData: FormData) => Promise<ContentCreateResult>
+  children: ReactNode
+  submitLabel: string
+  pendingLabel: string
+  successMessage: string
+}) {
   const router = useRouter()
   const formRef = useRef<HTMLFormElement>(null)
   const [pending, startTransition] = useTransition()
@@ -16,26 +28,22 @@ export function TournamentCreateForm({ children }: { children: ReactNode }) {
     <form
       ref={formRef}
       className={styles.editor}
-      aria-busy={pending}
       onSubmit={event => {
         event.preventDefault()
-        if (pending) return
-
         const formData = new FormData(event.currentTarget)
         setFeedback(null)
         startTransition(async () => {
           try {
-            const result = await createTournament(formData)
+            const result = await action(formData)
             if (!result.ok) {
               setFeedback({ ok: false, message: result.error })
               return
             }
-
             formRef.current?.reset()
-            setFeedback({ ok: true, message: '赛事草稿已创建' })
+            setFeedback({ ok: true, message: successMessage })
             router.refresh()
           } catch {
-            setFeedback({ ok: false, message: '创建失败，请检查网络后重试。' })
+            setFeedback({ ok: false, message: '操作失败，请检查网络后重试。' })
           }
         })
       }}
@@ -43,7 +51,7 @@ export function TournamentCreateForm({ children }: { children: ReactNode }) {
       {children}
       <div className={styles.rowActions}>
         <Button type="submit" variant="primary" disabled={pending}>
-          {pending ? '创建中…' : '创建为草稿'}
+          {pending ? pendingLabel : submitLabel}
         </Button>
         {feedback ? (
           <span

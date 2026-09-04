@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button, Field, TextField } from '@/components/ui'
+import { useUnsavedChangesWarning } from '@/components/admin/useUnsavedChangesWarning'
 import type { Game, Post } from '@/lib/types'
 import { removePost, updatePost } from '../actions/content'
 import styles from '../admin.module.css'
@@ -10,6 +11,24 @@ export function PostEditor({ post, games }: { post: Post; games: Game[] }) {
   const [pending, startTransition] = useTransition()
   const [saved, setSaved] = useState(false)
   const [open, setOpen] = useState(false)
+  const [error, setError] = useState('')
+  const [dirty, setDirty] = useState(false)
+
+  useUnsavedChangesWarning(open && dirty, `「${post.title}」还有未保存的更改，离开将丢失这些内容。`)
+
+  function handleDelete() {
+    if (!confirm(`删除「${post.title}」?`)) return
+    startTransition(async () => {
+      setError('')
+      setSaved(false)
+      try {
+        await removePost(post.id)
+        setDirty(false)
+      } catch {
+        setError('删除失败，请检查网络后重试。')
+      }
+    })
+  }
 
   if (!open) {
     return (
@@ -27,20 +46,24 @@ export function PostEditor({ post, games }: { post: Post; games: Game[] }) {
               已保存
             </span>
           ) : null}
-          <Button size="mini" onClick={() => setOpen(true)}>
-            编辑
-          </Button>
           <Button
             size="mini"
-            variant="danger"
-            disabled={pending}
             onClick={() => {
-              if (!confirm(`删除「${post.title}」?`)) return
-              startTransition(() => void removePost(post.id))
+              setDirty(false)
+              setError('')
+              setOpen(true)
             }}
           >
+            编辑
+          </Button>
+          <Button size="mini" variant="danger" disabled={pending} onClick={handleDelete}>
             删除
           </Button>
+          {error ? (
+            <span className={styles.error} role="alert">
+              {error}
+            </span>
+          ) : null}
         </div>
       </div>
     )
@@ -50,11 +73,23 @@ export function PostEditor({ post, games }: { post: Post; games: Game[] }) {
     <form
       className={styles.editor}
       style={{ padding: '22px 0', borderBottom: '1px solid var(--line)' }}
+      onChange={() => {
+        setDirty(true)
+        setSaved(false)
+        setError('')
+      }}
       action={formData =>
         startTransition(async () => {
-          await updatePost(post.id, formData)
-          setSaved(true)
-          setOpen(false)
+          setError('')
+          setSaved(false)
+          try {
+            await updatePost(post.id, formData)
+            setDirty(false)
+            setSaved(true)
+            setOpen(false)
+          } catch {
+            setError('保存失败，请检查网络后重试。')
+          }
         })
       }
     >
@@ -81,9 +116,22 @@ export function PostEditor({ post, games }: { post: Post; games: Game[] }) {
         <Button type="submit" variant="primary" disabled={pending}>
           {pending ? '保存中…' : '保存'}
         </Button>
-        <Button type="button" onClick={() => setOpen(false)}>
+        <Button
+          type="button"
+          disabled={pending}
+          onClick={() => {
+            setError('')
+            setDirty(false)
+            setOpen(false)
+          }}
+        >
           取消
         </Button>
+        {error ? (
+          <span className={styles.error} role="alert">
+            {error}
+          </span>
+        ) : null}
       </div>
     </form>
   )

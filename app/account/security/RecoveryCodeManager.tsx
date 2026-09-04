@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import styles from './security.module.css'
 
 interface Summary {
@@ -24,33 +24,45 @@ async function payload(response: Response) {
 export function RecoveryCodeManager() {
   const [summary, setSummary] = useState<Summary | null>(null)
   const [codes, setCodes] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
   const [working, setWorking] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [error, setError] = useState('')
+  const [copyFeedback, setCopyFeedback] = useState('')
   const [reauthenticate, setReauthenticate] = useState('')
 
-  async function load() {
-    const response = await fetch('/api/account/security/recovery-codes', {
-      credentials: 'same-origin',
-      headers: { Accept: 'application/json' },
-    })
-    const data = await payload(response)
-    if (!response.ok || data?.enabled === undefined) {
-      throw new Error(data?.error ?? '暂时无法读取恢复码状态。')
+  const load = useCallback(async () => {
+    setLoading(true)
+    setError('')
+    setReauthenticate('')
+    try {
+      const response = await fetch('/api/account/security/recovery-codes', {
+        credentials: 'same-origin',
+        headers: { Accept: 'application/json' },
+      })
+      const data = await payload(response)
+      if (!response.ok || data?.enabled === undefined) {
+        if (data?.redirectTo) setReauthenticate(data.redirectTo)
+        throw new Error(data?.error ?? '暂时无法读取恢复码状态。')
+      }
+      setSummary({
+        enabled: data.enabled,
+        remaining: data.remaining ?? 0,
+        createdAt: data.createdAt ?? null,
+      })
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : '暂时无法读取恢复码状态。')
+    } finally {
+      setLoading(false)
     }
-    setSummary({
-      enabled: data.enabled,
-      remaining: data.remaining ?? 0,
-      createdAt: data.createdAt ?? null,
-    })
-  }
+  }, [])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      void load().catch(caught => setError(caught instanceof Error ? caught.message : '读取失败。'))
+      void load()
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [])
+  }, [load])
 
   async function generate() {
     if (working) return
@@ -60,6 +72,7 @@ export function RecoveryCodeManager() {
     }
     setWorking(true)
     setError('')
+    setCopyFeedback('')
     setReauthenticate('')
     try {
       const response = await fetch('/api/account/security/recovery-codes', {
@@ -83,21 +96,36 @@ export function RecoveryCodeManager() {
   }
 
   async function copy() {
+    setError('')
+    setCopyFeedback('')
     try {
       await navigator.clipboard.writeText(codes.join('\n'))
+      setCopyFeedback('恢复码已复制，请立即保存到安全位置。')
     } catch {
       setError('浏览器未允许复制，请手动保存。')
     }
   }
 
   return (
-    <section className={styles.section} aria-labelledby="recovery-title" aria-busy={working}>
+    <section
+      className={styles.section}
+      aria-labelledby="recovery-title"
+      aria-busy={working || loading}
+    >
       <header>
         <div>
           <p>RECOVERY / 恢复码</p>
           <h2 id="recovery-title">账号的离线退路</h2>
         </div>
-        <span>{summary?.enabled ? `剩余 ${summary.remaining} 枚` : '尚未生成'}</span>
+        <span>
+          {summary === null
+            ? loading
+              ? '读取中…'
+              : '状态不可用'
+            : summary.enabled
+              ? `剩余 ${summary.remaining} 枚`
+              : '尚未生成'}
+        </span>
       </header>
       <p className={styles.explanation}>
         每枚恢复码只能使用一次。请保存到密码管理器或其他安全位置，不要留在这台设备的截图里。
@@ -111,25 +139,43 @@ export function RecoveryCodeManager() {
             ))}
           </ol>
           <button type="button" onClick={() => void copy()}>
-            复制全部
+            {copyFeedback ? '已复制' : '复制全部'}
           </button>
         </div>
       ) : null}
-      <button
-        type="button"
-        data-confirming={confirming}
-        disabled={working || summary === null}
-        onClick={() => void generate()}
-      >
-        {working
-          ? '正在生成…'
-          : summary?.enabled
-            ? confirming
-              ? '再次点击，旧恢复码将失效'
-              : '重新生成恢复码'
-            : '生成恢复码'}
-      </button>
-      {error ? (
+      {summary === null ? (
+        <>
+          <p className={error ? styles.error : styles.empty} role={error ? 'alert' : 'status'}>
+            {error || '正在读取恢复码状态…'}
+          </p>
+          {error ? (
+            <button type="button" disabled={loading} onClick={() => void load()}>
+              {loading ? '正在重新读取…' : '重新读取恢复码状态'}
+            </button>
+          ) : null}
+        </>
+      ) : (
+        <button
+          type="button"
+          data-confirming={confirming}
+          disabled={working}
+          onClick={() => void generate()}
+        >
+          {working
+            ? '正在生成…'
+            : summary.enabled
+              ? confirming
+                ? '再次点击，旧恢复码将失效'
+                : '重新生成恢复码'
+              : '生成恢复码'}
+        </button>
+      )}
+      {copyFeedback ? (
+        <p className={styles.success} role="status">
+          {copyFeedback}
+        </p>
+      ) : null}
+      {error && summary !== null ? (
         <p className={styles.error} role="alert">
           {error}
         </p>

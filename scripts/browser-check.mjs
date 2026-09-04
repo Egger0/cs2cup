@@ -76,6 +76,7 @@ try {
     'scripts/a11y.mjs',
     'scripts/keyboard.mjs',
     'scripts/identity-signup-browser.mjs',
+    'scripts/admin-ui-browser.mjs',
   ]
   const identityScripts = [
     'scripts/perf.mjs',

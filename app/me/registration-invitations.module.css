@@ -11,7 +11,7 @@
 .panel header p {
   color: #75a9c5;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.56rem;
+  font-size: 0.68rem;
   letter-spacing: 0.12em;
 }
 
@@ -35,18 +35,25 @@
   border-top: 1px solid rgba(117, 169, 197, 0.2);
 }
 
+.panel li > button {
+  flex: none;
+}
+
 .panel li div {
   display: grid;
+  min-width: 0;
   gap: 3px;
 }
 
 .panel li small,
 .panel li span {
+  overflow-wrap: anywhere;
   color: #8f9da2;
-  font-size: 0.64rem;
+  font-size: 0.7rem;
 }
 
 .panel li strong {
+  overflow-wrap: anywhere;
   color: #e9ece8;
   font-size: 0.82rem;
 }

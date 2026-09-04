@@ -34,7 +34,7 @@
 
 .slug {
   color: var(--stamp);
-  font-size: 0.57rem;
+  font-size: 0.68rem;
   font-weight: 700;
   overflow-wrap: anywhere;
 }
@@ -80,7 +80,7 @@
   display: block;
   margin-bottom: 3px;
   font-family: var(--font-mono), monospace;
-  font-size: 0.48rem;
+  font-size: 0.65rem;
   font-weight: 500;
 }
 
@@ -109,7 +109,7 @@
 .facts dt,
 .private dt {
   color: var(--paper-muted);
-  font-size: 0.63rem;
+  font-size: 0.68rem;
 }
 
 .facts dd,
@@ -135,7 +135,7 @@
 .checkIn time {
   color: var(--paper-muted);
   font-family: var(--font-mono), monospace;
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   letter-spacing: 0.04em;
 }
 
@@ -161,7 +161,7 @@
 
 .sectionLabel span {
   color: var(--stamp);
-  font-size: 0.5rem;
+  font-size: 0.65rem;
 }
 
 .roster ol {
@@ -182,7 +182,7 @@
 .order,
 .emptyRoster {
   color: var(--paper-muted);
-  font-size: 0.64rem;
+  font-size: 0.7rem;
 }
 
 .order {
@@ -218,7 +218,7 @@
   padding-top: 14px;
   border-top: 1px solid rgba(23, 32, 38, 0.22);
   color: var(--paper-muted);
-  font-size: 0.5rem;
+  font-size: 0.65rem;
 }
 
 .fileFooter a {

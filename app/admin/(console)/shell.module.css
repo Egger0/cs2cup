@@ -95,6 +95,20 @@
   gap: 8px;
 }
 
+.signOut {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+}
+
+.signOutError {
+  max-width: 180px;
+  color: #ef8b8e;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  text-align: right;
+}
+
 .barActions a,
 .barActions button {
   min-height: 40px;

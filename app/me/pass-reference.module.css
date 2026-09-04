@@ -28,7 +28,7 @@
 
 .heading span {
   color: #72afd0;
-  font-size: 0.48rem;
+  font-size: 0.65rem;
 }
 
 .heading h2 {
@@ -61,7 +61,7 @@
 .note {
   max-width: 480px;
   color: #8fa0a7;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   line-height: 1.65;
 }
 
@@ -103,7 +103,7 @@
   grid-column: 1 / -1;
   min-height: 0;
   color: #8bb9ce;
-  font-size: 0.51rem;
+  font-size: 0.65rem;
 }
 
 .feedback:empty,
@@ -142,7 +142,7 @@
   }
 
   .reference {
-    font-size: 0.64rem;
+    font-size: 0.68rem;
   }
 
   .copy {

@@ -1,5 +1,5 @@
 .page {
-  padding-bottom: 88px;
+  padding-bottom: 72px;
 }
 
 .shell {
@@ -7,7 +7,7 @@
   width: min(980px, calc(100% - clamp(36px, 8vw, 120px)));
   gap: 22px;
   margin-inline: auto;
-  padding-top: clamp(42px, 7vw, 86px);
+  padding-top: clamp(30px, 5vw, 64px);
 }
 
 .intro {
@@ -18,7 +18,7 @@
 .section header p {
   color: #73acd2;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.57rem;
+  font-size: 0.68rem;
   letter-spacing: 0.14em;
 }
 
@@ -26,7 +26,7 @@
   max-width: 850px;
   margin-top: 11px;
   font-family: 'NLC Serif', 'Songti SC', serif;
-  font-size: clamp(2.8rem, 6.8vw, 6.4rem);
+  font-size: clamp(2.5rem, 5.6vw, 4.8rem);
   font-weight: 800;
   letter-spacing: -0.065em;
   line-height: 0.98;
@@ -65,7 +65,7 @@
   border: 1px solid #586467;
   color: #a7b0af;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.55rem;
+  font-size: 0.66rem;
 }
 
 .explanation {
@@ -95,11 +95,13 @@
 .passkeyList li > div,
 .sessionList li > div {
   display: grid;
+  min-width: 0;
   gap: 3px;
 }
 
 .passkeyList strong,
 .sessionList strong {
+  overflow-wrap: anywhere;
   font-size: 0.82rem;
 }
 
@@ -107,8 +109,9 @@
 .passkeyList small,
 .sessionList span,
 .sessionList small {
+  overflow-wrap: anywhere;
   color: #84908e;
-  font-size: 0.64rem;
+  font-size: 0.7rem;
 }
 
 .passkeyList button,
@@ -124,7 +127,7 @@
   padding: 8px 13px;
   color: #c1c7c5;
   cursor: pointer;
-  font-size: 0.66rem;
+  font-size: 0.7rem;
   font-weight: 700;
 }
 
@@ -152,7 +155,7 @@
   display: grid;
   gap: 7px;
   color: #a5afad;
-  font-size: 0.65rem;
+  font-size: 0.72rem;
 }
 
 .securityForm input {
@@ -240,9 +243,10 @@
 
 .enroll label {
   display: grid;
+  min-width: 0;
   gap: 7px;
   color: #a5afad;
-  font-size: 0.65rem;
+  font-size: 0.72rem;
 }
 
 .enroll input {

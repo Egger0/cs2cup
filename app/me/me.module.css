@@ -10,7 +10,7 @@
   position: relative;
   z-index: 1;
   min-height: 100svh;
-  padding: 18px clamp(16px, 4vw, 68px) clamp(48px, 8vw, 112px);
+  padding: 18px clamp(16px, 4vw, 68px) clamp(44px, 6vw, 88px);
   background:
     linear-gradient(90deg, transparent 31px, var(--desk-line) 32px, transparent 33px),
     linear-gradient(var(--desk), #080b0d);
@@ -65,7 +65,7 @@
   color: #aebbc1;
   cursor: pointer;
   font-family: var(--font-mono), monospace;
-  font-size: 0.61rem;
+  font-size: 0.7rem;
   letter-spacing: 0.08em;
 }
 
@@ -78,12 +78,12 @@
   display: flex;
   align-items: center;
   gap: clamp(13px, 2vw, 28px);
-  font-size: 0.68rem;
+  font-size: 0.74rem;
 }
 
 .accountNav a {
   display: inline-flex;
-  min-height: 40px;
+  min-height: 44px;
   align-items: center;
   color: #aebbc1;
 }
@@ -96,7 +96,7 @@
   display: grid;
   max-width: 1320px;
   gap: 28px;
-  margin: clamp(44px, 9vw, 108px) auto clamp(38px, 6vw, 76px);
+  margin: clamp(32px, 6vw, 72px) auto clamp(30px, 5vw, 58px);
 }
 
 .eyebrow,
@@ -108,20 +108,21 @@
 
 .eyebrow {
   color: #7faec6;
-  font-size: 0.61rem;
+  font-size: 0.7rem;
 }
 
 .intro h1 {
   max-width: 760px;
   margin-top: 10px;
   font-family: 'NLC Serif', 'Songti SC', serif;
-  font-size: clamp(3.2rem, 11vw, 7.5rem);
+  font-size: clamp(2.8rem, 8vw, 5.8rem);
   font-weight: 800;
   letter-spacing: -0.065em;
   line-height: 0.94;
 }
 
 .intro aside {
+  min-width: 0;
   max-width: 490px;
   padding: 18px 0 0 18px;
   border-top: 1px solid #31566a;
@@ -130,6 +131,7 @@
 }
 
 .intro aside strong {
+  overflow-wrap: anywhere;
   color: #d4e8f1;
   font-family: 'NLC Role Sans', var(--font-body);
   font-size: 0.82rem;
@@ -160,7 +162,7 @@
 .drafts header > p {
   color: #75a9c5;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.56rem;
+  font-size: 0.68rem;
   letter-spacing: 0.12em;
 }
 
@@ -212,7 +214,7 @@
 
 .empty > p {
   color: #75a9c5;
-  font-size: 0.56rem;
+  font-size: 0.68rem;
 }
 
 .empty h2 {
@@ -259,5 +261,27 @@
 
   .drafts article a {
     width: fit-content;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .brand {
+    width: fit-content;
+  }
+
+  .accountNav {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 0 18px;
+  }
+
+  .accountNav > * {
+    flex: 0 0 auto;
   }
 }

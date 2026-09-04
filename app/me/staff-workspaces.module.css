@@ -13,14 +13,14 @@
 .switcher header > p {
   color: #75b7d8;
   font-family: var(--font-mono), monospace;
-  font-size: 0.56rem;
+  font-size: 0.68rem;
   letter-spacing: 0.15em;
 }
 
 .switcher h2 {
   margin-top: 8px;
   font-family: var(--font-display), 'NLC Role Sans', sans-serif;
-  font-size: clamp(2.3rem, 7vw, 4.4rem);
+  font-size: clamp(2rem, 5vw, 3.6rem);
   font-weight: 680;
   letter-spacing: -0.045em;
   line-height: 1;
@@ -77,7 +77,7 @@
 .copy small {
   color: #79919c;
   font-family: var(--font-mono), monospace;
-  font-size: 0.52rem;
+  font-size: 0.65rem;
   letter-spacing: 0.08em;
 }
 
@@ -94,7 +94,7 @@
 .action {
   color: #acd8e9;
   font-family: var(--font-mono), monospace;
-  font-size: 0.61rem;
+  font-size: 0.68rem;
   letter-spacing: 0.06em;
 }
 
@@ -104,7 +104,7 @@
   align-items: center;
   justify-content: space-between;
   color: #9ba9ae;
-  font-size: 0.66rem;
+  font-size: 0.7rem;
 }
 
 .pagination a {

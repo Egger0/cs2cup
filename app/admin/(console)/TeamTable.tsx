@@ -16,12 +16,80 @@ const STATUS_LABEL: Record<TeamStatus, string> = {
 
 const STATUS_TONE = { pending: 't', approved: 'ct', rejected: 'alert' } as const
 
+function TeamSeedInput({
+  team,
+  tournamentId,
+  approvedCount,
+  disabled,
+  onError,
+  onSavingChange,
+}: {
+  team: Team
+  tournamentId: number
+  approvedCount: number
+  disabled: boolean
+  onError: (message: string) => void
+  onSavingChange: (saving: boolean) => void
+}) {
+  const router = useRouter()
+  const serverValue = team.seed === null ? '' : String(team.seed)
+  const [value, setValue] = useState(serverValue)
+  const [saving, startSaving] = useTransition()
+
+  function restore(message: string) {
+    setValue(serverValue)
+    onError(message)
+  }
+
+  return (
+    <input
+      className={styles.seedInput}
+      type="number"
+      min={1}
+      max={approvedCount}
+      value={value}
+      placeholder="—"
+      aria-label={`${team.name} 的种子号`}
+      aria-busy={saving || undefined}
+      disabled={disabled || saving || team.status !== 'approved'}
+      onChange={event => setValue(event.currentTarget.value)}
+      onBlur={() => {
+        const raw = value.trim()
+        const seed = raw === '' ? null : Number(raw)
+        if (seed === team.seed) {
+          setValue(serverValue)
+          return
+        }
+        onSavingChange(true)
+        startSaving(async () => {
+          try {
+            const result = await updateTeamSeed(team.id, seed, tournamentId)
+            if (!result.ok) {
+              restore(result.error ?? '种子号保存失败')
+              return
+            }
+            onError('')
+            router.refresh()
+          } catch (error) {
+            console.error('team seed mutation failed', error)
+            restore('种子号保存失败，请重试')
+          } finally {
+            onSavingChange(false)
+          }
+        })
+      }}
+    />
+  )
+}
+
 export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId: number }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [keyword, setKeyword] = useState('')
   const [message, setMessage] = useState('')
+  const [seedSaving, setSeedSaving] = useState(false)
   const approvedCount = teams.filter(team => team.status === 'approved').length
+  const mutationPending = pending || seedSaving
 
   function mutate(work: () => Promise<{ ok: boolean; error?: string }>) {
     startTransition(async () => {
@@ -90,22 +158,14 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
             {rows.map(team => (
               <tr key={team.id}>
                 <td>
-                  <input
+                  <TeamSeedInput
                     key={`${team.id}:${team.seed ?? 'none'}`}
-                    className={styles.seedInput}
-                    type="number"
-                    min={1}
-                    max={approvedCount}
-                    defaultValue={team.seed ?? ''}
-                    placeholder="—"
-                    aria-label={`${team.name} 的种子号`}
-                    disabled={pending || team.status !== 'approved'}
-                    onBlur={event => {
-                      const raw = event.currentTarget.value.trim()
-                      const seed = raw === '' ? null : Number(raw)
-                      if (seed === team.seed) return
-                      mutate(() => updateTeamSeed(team.id, seed, tournamentId))
-                    }}
+                    team={team}
+                    tournamentId={tournamentId}
+                    approvedCount={approvedCount}
+                    disabled={mutationPending}
+                    onError={setMessage}
+                    onSavingChange={setSeedSaving}
                   />
                 </td>
                 <td>
@@ -113,7 +173,7 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
                     className={styles.select}
                     value={team.status}
                     aria-label={`${team.name} 的审核状态`}
-                    disabled={pending}
+                    disabled={mutationPending}
                     onChange={event => {
                       const status = event.target.value as TeamStatus
                       mutate(() => updateTeamStatus(team.id, status, tournamentId))
@@ -130,7 +190,7 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
                   <Button
                     variant={team.checkedInAt ? 'ghost' : 'primary'}
                     size="mini"
-                    disabled={pending || team.status !== 'approved'}
+                    disabled={mutationPending || team.status !== 'approved'}
                     title={team.checkedInAt ?? undefined}
                     aria-pressed={Boolean(team.checkedInAt)}
                     aria-label={`${team.name}${team.checkedInAt ? '取消签到' : '签到'}`}
@@ -168,7 +228,7 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
                   <Button
                     variant="danger"
                     size="mini"
-                    disabled={pending}
+                    disabled={mutationPending}
                     aria-label={`删除 ${team.name}`}
                     onClick={() => {
                       if (!confirm(`确定删除「${team.name}」？此操作不可撤销。`)) return

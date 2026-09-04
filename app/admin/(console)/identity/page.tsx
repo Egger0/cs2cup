@@ -127,7 +127,7 @@ export default async function IdentityReviewPage({
       ) : null}
       <header className={styles.heading}>
         <div>
-          <p>IDENTITY / MEMBERSHIP REVIEW</p>
+          <p>CONTROL / 02 · IDENTITY / MEMBERSHIP REVIEW</p>
           <h1>成员资格审核</h1>
         </div>
         <dl>

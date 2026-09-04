@@ -35,7 +35,7 @@ export default async function AccountSecurityPage() {
   const needsSetup = account.username === null
 
   return (
-    <main id="main" className={`${accountStyles.page} ${styles.page}`}>
+    <div className={`${accountStyles.page} ${styles.page}`}>
       <header className={accountStyles.topbar}>
         <Link href="/" className={accountStyles.brand}>
           <Image src="/brand/club-mark.svg" alt="" width={30} height={30} priority />
@@ -50,36 +50,38 @@ export default async function AccountSecurityPage() {
         </nav>
       </header>
 
-      <div className={styles.shell}>
-        <header className={styles.intro}>
-          <p>ACCOUNT SECURITY / 账号安全</p>
-          <h1>
-            {context.session.recoveryRestricted
-              ? '最后一步：设置新密码。'
-              : needsSetup
-                ? '完成设置，之后随时回来。'
-                : '登录方式保持简单，也留有退路。'}
-          </h1>
-          <span>
-            {account.username ? `@${account.username}` : 'PASSKEY ACCOUNT / 待设置用户名'}
-          </span>
-        </header>
+      <main id="main">
+        <div className={styles.shell}>
+          <header className={styles.intro}>
+            <p>ACCOUNT SECURITY / 账号安全</p>
+            <h1>
+              {context.session.recoveryRestricted
+                ? '最后一步：设置新密码。'
+                : needsSetup
+                  ? '完成设置，之后随时回来。'
+                  : '登录方式保持简单，也留有退路。'}
+            </h1>
+            <span>
+              {account.username ? `@${account.username}` : 'PASSKEY ACCOUNT / 待设置用户名'}
+            </span>
+          </header>
 
-        {needsSetup ? (
-          <InitialAccountSetup />
-        ) : (
-          <>
-            <PasswordManager recovery={context.session.recoveryRestricted} />
-            {!context.session.recoveryRestricted ? (
-              <>
-                <PasskeyManager />
-                <RecoveryCodeManager />
-                <SessionManager />
-              </>
-            ) : null}
-          </>
-        )}
-      </div>
-    </main>
+          {needsSetup ? (
+            <InitialAccountSetup />
+          ) : (
+            <>
+              <PasswordManager recovery={context.session.recoveryRestricted} />
+              {!context.session.recoveryRestricted ? (
+                <>
+                  <PasskeyManager />
+                  <RecoveryCodeManager />
+                  <SessionManager />
+                </>
+              ) : null}
+            </>
+          )}
+        </div>
+      </main>
+    </div>
   )
 }

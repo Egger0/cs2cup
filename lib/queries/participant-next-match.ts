@@ -96,6 +96,70 @@ function scheduleMatch(row: ParticipantScheduleMatchRow): Match {
   }
 }
 
+function nextMatchFromRows(
+  teamRows: ParticipantScheduleTeamRow[],
+  matchRows: ParticipantScheduleMatchRow[],
+  now: number,
+) {
+  const teamsByTournament = new Map<number, PublicTeam[]>()
+  const ownedTeams: ParticipantScheduleTeamRow[] = []
+
+  for (const row of teamRows) {
+    const teams = teamsByTournament.get(row.tournament_id)
+    if (teams) teams.push(scheduleTeam(row))
+    else teamsByTournament.set(row.tournament_id, [scheduleTeam(row)])
+    if (row.owned === 1) ownedTeams.push(row)
+  }
+
+  const matchesByTournament = new Map<number, Match[]>()
+  for (const row of matchRows) {
+    const matches = matchesByTournament.get(row.tournament_id)
+    if (matches) matches.push(scheduleMatch(row))
+    else matchesByTournament.set(row.tournament_id, [scheduleMatch(row)])
+  }
+
+  const candidates = ownedTeams.flatMap(owned => {
+    const entries = buildScheduleEntries(
+      matchesByTournament.get(owned.tournament_id) ?? [],
+      teamsByTournament.get(owned.tournament_id) ?? [],
+      now,
+    ).filter(entry => entry.a?.id === owned.id || entry.b?.id === owned.id)
+    const entry = selectNextScheduleEntry(entries, now)
+    return entry ? [{ entry, owned }] : []
+  })
+  const selected = selectNextScheduleEntry(
+    candidates.map(candidate => candidate.entry),
+    now,
+  )
+  const candidate = candidates.find(value => value.entry === selected)
+  if (!selected || !candidate) return null
+
+  const summaryTeam = (team: PublicTeam | null) =>
+    team ? { id: team.id, name: team.name, tag: team.tag } : null
+
+  return {
+    tournament: {
+      id: candidate.owned.tournament_id,
+      slug: candidate.owned.tournament_slug,
+      title: candidate.owned.tournament_title,
+    },
+    ownedTeam: {
+      id: candidate.owned.id,
+      name: candidate.owned.name,
+      tag: candidate.owned.tag,
+    },
+    match: {
+      id: selected.match.id,
+      roundLabel: selected.match.roundLabel,
+      bestOf: selected.match.bestOf,
+      scheduledAt: selected.match.scheduledAt,
+      status: selected.status,
+      teamA: summaryTeam(selected.a),
+      teamB: summaryTeam(selected.b),
+    },
+  } satisfies ParticipantNextMatch
+}
+
 export async function participantNextMatchFromDatabase(
   db: ParticipantNextMatchDatabase,
   principalId: string,
@@ -154,63 +218,77 @@ export async function participantNextMatchFromDatabase(
       .bind(principalId)
       .all<ParticipantScheduleMatchRow>(),
   ])
-  const teamsByTournament = new Map<number, PublicTeam[]>()
-  const ownedTeams: ParticipantScheduleTeamRow[] = []
+  return nextMatchFromRows(teamResult.results, matchResult.results, now)
+}
 
-  for (const row of teamResult.results) {
-    const teams = teamsByTournament.get(row.tournament_id)
-    if (teams) teams.push(scheduleTeam(row))
-    else teamsByTournament.set(row.tournament_id, [scheduleTeam(row)])
-    if (row.owned === 1) ownedTeams.push(row)
-  }
-
-  const matchesByTournament = new Map<number, Match[]>()
-  for (const row of matchResult.results) {
-    const matches = matchesByTournament.get(row.tournament_id)
-    if (matches) matches.push(scheduleMatch(row))
-    else matchesByTournament.set(row.tournament_id, [scheduleMatch(row)])
-  }
-
-  const candidates = ownedTeams.flatMap(owned => {
-    const entries = buildScheduleEntries(
-      matchesByTournament.get(owned.tournament_id) ?? [],
-      teamsByTournament.get(owned.tournament_id) ?? [],
-      now,
-    ).filter(entry => entry.a?.id === owned.id || entry.b?.id === owned.id)
-    const entry = selectNextScheduleEntry(entries, now)
-    return entry ? [{ entry, owned }] : []
-  })
-  const selected = selectNextScheduleEntry(
-    candidates.map(candidate => candidate.entry),
-    now,
-  )
-  const candidate = candidates.find(value => value.entry === selected)
-  if (!selected || !candidate) return null
-
-  const summaryTeam = (team: PublicTeam | null) =>
-    team ? { id: team.id, name: team.name, tag: team.tag } : null
-
-  return {
-    tournament: {
-      id: candidate.owned.tournament_id,
-      slug: candidate.owned.tournament_slug,
-      title: candidate.owned.tournament_title,
-    },
-    ownedTeam: {
-      id: candidate.owned.id,
-      name: candidate.owned.name,
-      tag: candidate.owned.tag,
-    },
-    match: {
-      id: selected.match.id,
-      roundLabel: selected.match.roundLabel,
-      bestOf: selected.match.bestOf,
-      scheduledAt: selected.match.scheduledAt,
-      status: selected.status,
-      teamA: summaryTeam(selected.a),
-      teamB: summaryTeam(selected.b),
-    },
-  }
+export async function accountNextMatchFromDatabase(
+  db: ParticipantNextMatchDatabase,
+  accountId: string,
+  now = Date.now(),
+): Promise<ParticipantNextMatch | null> {
+  if (!accountId || !Number.isSafeInteger(now) || now < 0) return null
+  const accountTournamentIds = `SELECT DISTINCT owned_team.tournament_id
+    FROM identity_registration_membership AS account_access
+    JOIN team AS owned_team ON owned_team.id = account_access.team_id
+    JOIN tournament AS owned_tournament ON owned_tournament.id = owned_team.tournament_id
+    WHERE account_access.account_id = ?
+      AND account_access.revoked_at IS NULL
+      AND account_access.granted_at <= ?
+      AND (account_access.expires_at IS NULL OR account_access.expires_at > ?)
+      AND owned_tournament.status IN ('registration', 'running')`
+  const [teamResult, matchResult] = await Promise.all([
+    db
+      .prepare(
+        `SELECT
+          public_team.id,
+          public_team.tournament_id,
+          tournament.slug AS tournament_slug,
+          tournament.title AS tournament_title,
+          public_team.name,
+          public_team.tag,
+          public_team.captain,
+          public_team.dept,
+          public_team.seed,
+          CASE WHEN EXISTS (
+            SELECT 1 FROM identity_registration_membership AS owned_access
+            WHERE owned_access.team_id = public_team.id
+              AND owned_access.account_id = ?
+              AND owned_access.revoked_at IS NULL
+              AND owned_access.granted_at <= ?
+              AND (owned_access.expires_at IS NULL OR owned_access.expires_at > ?)
+          ) THEN 1 ELSE 0 END AS owned
+        FROM team_public AS public_team
+        JOIN tournament ON tournament.id = public_team.tournament_id
+        WHERE public_team.tournament_id IN (${accountTournamentIds})
+        ORDER BY public_team.tournament_id, public_team.seed, public_team.id`,
+      )
+      .bind(accountId, now, now, accountId, now, now)
+      .all<ParticipantScheduleTeamRow>(),
+    db
+      .prepare(
+        `SELECT
+          id,
+          tournament_id,
+          round,
+          slot,
+          round_label,
+          best_of,
+          team_a_id,
+          team_b_id,
+          source_match_a_id,
+          source_match_b_id,
+          score_a,
+          score_b,
+          winner_team_id,
+          scheduled_at
+        FROM match_public
+        WHERE tournament_id IN (${accountTournamentIds})
+        ORDER BY tournament_id, round, slot, id`,
+      )
+      .bind(accountId, now, now)
+      .all<ParticipantScheduleMatchRow>(),
+  ])
+  return nextMatchFromRows(teamResult.results, matchResult.results, now)
 }
 
 export function participantNextMatch(principalId: string, now = Date.now()) {

@@ -43,6 +43,7 @@ export function RegistrationAccessPanel({
   function run(
     work: () => Promise<{ ok: boolean; error?: string; reauthenticate?: boolean }>,
     success: string,
+    onSuccess?: () => void,
   ) {
     setFeedback(null)
     startTransition(async () => {
@@ -56,7 +57,10 @@ export function RegistrationAccessPanel({
         message: result.ok ? success : (result.error ?? '操作失败，请稍后重试。'),
         reauthenticate: result.reauthenticate,
       })
-      if (result.ok) router.refresh()
+      if (result.ok) {
+        onSuccess?.()
+        router.refresh()
+      }
     })
   }
 
@@ -73,8 +77,8 @@ export function RegistrationAccessPanel({
     run(
       () => inviteRegistrationAccount(teamId, nextRelationship, values),
       nextRelationship === 'owner' ? '所有权转让邀请已发出。' : '协作者邀请已发出。',
+      () => form.reset(),
     )
-    form.reset()
   }
 
   if (relationship === 'manager') {

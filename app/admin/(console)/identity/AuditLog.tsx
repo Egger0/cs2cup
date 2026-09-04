@@ -35,7 +35,9 @@ export function AuditLog({
               {event.subject ? ` → ${event.subject}` : ''}
             </span>
             <small>{event.resource}</small>
-            {event.reason ? <small>原因：{event.reason}</small> : null}
+            {event.reason ? (
+              <small className={styles.auditReason}>原因：{event.reason}</small>
+            ) : null}
           </article>
         ))}
       </div>

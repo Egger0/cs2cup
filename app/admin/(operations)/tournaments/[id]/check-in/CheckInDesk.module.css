@@ -14,7 +14,7 @@
 }
 
 .summary p,
-.tools > p,
+.toolStatus p,
 .closed > p {
   color: var(--ops-blue);
   font-family: var(--font-mono), monospace;
@@ -64,9 +64,21 @@
   margin-top: 22px;
 }
 
-.tools > p {
-  padding-bottom: 14px;
+.toolStatus {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 2px;
+}
+
+.toolStatus p {
   color: var(--muted-2);
+}
+
+.toolStatus button {
+  min-height: 44px;
 }
 
 .success,
@@ -101,7 +113,7 @@
   padding: 18px 20px;
   border: 1px solid var(--ops-line);
   background: rgba(21, 26, 28, 0.9);
-  animation: team-enter 480ms calc(130ms + var(--team-index) * 45ms) var(--ease-out) both;
+  animation: team-enter 320ms 80ms var(--ease-out) both;
   transition:
     border-color 180ms ease,
     background 180ms ease;
@@ -230,8 +242,8 @@
     gap: 8px;
   }
 
-  .tools > p {
-    padding-bottom: 0;
+  .toolStatus {
+    justify-content: space-between;
   }
 
   .team {

@@ -34,7 +34,7 @@ export default async function AccountPage({
   if (!overview) redirect('/login?error=expired')
 
   return (
-    <main id="main" className={styles.page}>
+    <div className={styles.page}>
       <header className={styles.topbar}>
         <Link href="/" className={styles.brand}>
           <Image src="/brand/club-mark.svg" alt="" width={30} height={30} priority />
@@ -49,57 +49,59 @@ export default async function AccountPage({
         </nav>
       </header>
 
-      <div className={styles.shell}>
-        {params.welcome === '1' ? (
-          <aside className={styles.welcome} role="status">
-            <strong>账号已创建</strong>
-            <p>你已经登录。接下来可以申请成员资格；等待期间账号会保持可用。</p>
-          </aside>
-        ) : null}
+      <main id="main">
+        <div className={styles.shell}>
+          {params.welcome === '1' ? (
+            <aside className={styles.welcome} role="status">
+              <strong>账号已创建</strong>
+              <p>你已经登录。接下来可以申请成员资格；等待期间账号会保持可用。</p>
+            </aside>
+          ) : null}
 
-        <section className={styles.intro}>
-          <div>
-            <p>ACCOUNT / 账号</p>
-            <h1>{overview.account.displayName}</h1>
-            <span>
-              {overview.account.username ? `@${overview.account.username}` : 'Passkey 迁移账号'}
-            </span>
-            <ProfileNameForm displayName={overview.account.displayName} />
-          </div>
-          <aside>
-            <small>当前会话</small>
-            <strong>{context.session.authMethod === 'password' ? '账号密码' : 'Passkey'}</strong>
-            <span>{overview.security.activeSessions} 个有效登录状态</span>
-          </aside>
-        </section>
-
-        <div className={styles.grid}>
-          <MembershipPanel
-            membership={overview.membership}
-            now={now}
-            lastReminderAt={overview.membership.application?.lastReminderAt ?? null}
-          />
-          <section className={styles.security} aria-labelledby="security-title">
-            <p>SECURITY / 登录方式</p>
-            <h2 id="security-title">账号与安全</h2>
-            <dl>
-              <div>
-                <dt>密码</dt>
-                <dd>{overview.account.username ? '已设置' : '待迁移'}</dd>
-              </div>
-              <div>
-                <dt>Passkey</dt>
-                <dd>{overview.security.activePasskeys} 个</dd>
-              </div>
-              <div>
-                <dt>已登录设备</dt>
-                <dd>{overview.security.activeSessions} 个</dd>
-              </div>
-            </dl>
-            <Link href="/account/security">管理登录方式与设备 ↗</Link>
+          <section className={styles.intro}>
+            <div>
+              <p>ACCOUNT / 账号</p>
+              <h1>{overview.account.displayName}</h1>
+              <span>
+                {overview.account.username ? `@${overview.account.username}` : 'Passkey 迁移账号'}
+              </span>
+              <ProfileNameForm displayName={overview.account.displayName} />
+            </div>
+            <aside>
+              <small>当前会话</small>
+              <strong>{context.session.authMethod === 'password' ? '账号密码' : 'Passkey'}</strong>
+              <span>{overview.security.activeSessions} 个有效登录状态</span>
+            </aside>
           </section>
+
+          <div className={styles.grid}>
+            <MembershipPanel
+              membership={overview.membership}
+              now={now}
+              lastReminderAt={overview.membership.application?.lastReminderAt ?? null}
+            />
+            <section className={styles.security} aria-labelledby="security-title">
+              <p>SECURITY / 登录方式</p>
+              <h2 id="security-title">账号与安全</h2>
+              <dl>
+                <div>
+                  <dt>密码</dt>
+                  <dd>{overview.account.username ? '已设置' : '待迁移'}</dd>
+                </div>
+                <div>
+                  <dt>Passkey</dt>
+                  <dd>{overview.security.activePasskeys} 个</dd>
+                </div>
+                <div>
+                  <dt>已登录设备</dt>
+                  <dd>{overview.security.activeSessions} 个</dd>
+                </div>
+              </dl>
+              <Link href="/account/security">管理登录方式与设备 ↗</Link>
+            </section>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   )
 }

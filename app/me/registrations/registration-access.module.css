@@ -11,7 +11,7 @@
 .eyebrow {
   color: #75a9c5;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.57rem;
+  font-size: 0.68rem;
   letter-spacing: 0.12em;
 }
 
@@ -56,18 +56,25 @@
   border-bottom: 1px solid rgba(117, 169, 197, 0.18);
 }
 
+.people li > button {
+  flex: none;
+}
+
 .people span {
   display: grid;
+  min-width: 0;
   gap: 3px;
 }
 
 .people strong {
+  overflow-wrap: anywhere;
   font-size: 0.78rem;
 }
 
 .people small {
+  overflow-wrap: anywhere;
   color: #87969d;
-  font-size: 0.62rem;
+  font-size: 0.7rem;
 }
 
 .empty {
@@ -143,7 +150,7 @@
 .danger p {
   margin-top: 4px;
   color: #87969d;
-  font-size: 0.65rem;
+  font-size: 0.72rem;
 }
 
 @media (min-width: 820px) {

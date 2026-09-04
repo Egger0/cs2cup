@@ -25,6 +25,18 @@ export function MembershipRoster({
   const [working, setWorking] = useState(false)
   const [error, setError] = useState('')
 
+  function chooseOperation(id: string, operation: 'suspend' | 'restore' | 'revoke') {
+    setReason('')
+    setError('')
+    setSelected({ id, operation })
+  }
+
+  function cancelOperation() {
+    setSelected(null)
+    setReason('')
+    setError('')
+  }
+
   async function change(item: ApprovedMembershipItem) {
     if (!selected) return
     setWorking(true)
@@ -96,7 +108,7 @@ export function MembershipRoster({
                       ? '暂停'
                       : '撤销'}
                 </button>
-                <button type="button" onClick={() => setSelected(null)}>
+                <button type="button" disabled={working} onClick={cancelOperation}>
                   取消
                 </button>
               </form>
@@ -105,18 +117,12 @@ export function MembershipRoster({
                 <button
                   type="button"
                   onClick={() =>
-                    setSelected({
-                      id: item.id,
-                      operation: item.status === 'suspended' ? 'restore' : 'suspend',
-                    })
+                    chooseOperation(item.id, item.status === 'suspended' ? 'restore' : 'suspend')
                   }
                 >
                   {item.status === 'suspended' ? '恢复资格' : '暂停资格'}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setSelected({ id: item.id, operation: 'revoke' })}
-                >
+                <button type="button" onClick={() => chooseOperation(item.id, 'revoke')}>
                   永久撤销
                 </button>
               </div>

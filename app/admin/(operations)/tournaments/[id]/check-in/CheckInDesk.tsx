@@ -1,13 +1,15 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useState, useTransition } from 'react'
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { flushSync } from 'react-dom'
 import { updateTeamCheckIn } from '@/app/admin/(console)/actions/teams'
 import { Badge, Button, Empty, Field } from '@/components/ui'
 import { formatSiteTime } from '@/lib/datetime'
 import type { TournamentCheckInTeam } from '@/lib/queries/staff-check-in'
 import styles from './CheckInDesk.module.css'
+
+const AUTO_REFRESH_MS = 15_000
 
 export function CheckInDesk({
   authorizationRecoveryPath,
@@ -25,6 +27,8 @@ export function CheckInDesk({
   const [busyId, setBusyId] = useState<number | null>(null)
   const [message, setMessage] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
   const [closed, setClosed] = useState(false)
+  const writeInFlight = useRef(false)
+  const refreshInFlight = useRef(false)
   const query = keyword.trim().toLocaleLowerCase('zh-CN')
   const visibleTeams = teams.filter(team =>
     query
@@ -42,9 +46,34 @@ export function CheckInDesk({
     setTeams(initialTeams)
   }, [initialTeams])
 
-  function refreshFromServer() {
+  useEffect(() => {
+    refreshInFlight.current = refreshPending
+  }, [refreshPending])
+
+  const beginServerRefresh = useCallback(() => {
+    if (refreshInFlight.current) return
+    refreshInFlight.current = true
     startRefresh(() => router.refresh())
-  }
+  }, [router])
+
+  const refreshFromServer = useCallback(() => {
+    if (writeInFlight.current) return
+    beginServerRefresh()
+  }, [beginServerRefresh])
+
+  useEffect(() => {
+    const refreshVisibleDesk = () => {
+      if (document.visibilityState === 'visible') refreshFromServer()
+    }
+    const interval = window.setInterval(refreshVisibleDesk, AUTO_REFRESH_MS)
+    window.addEventListener('focus', refreshVisibleDesk)
+    document.addEventListener('visibilitychange', refreshVisibleDesk)
+    return () => {
+      window.clearInterval(interval)
+      window.removeEventListener('focus', refreshVisibleDesk)
+      document.removeEventListener('visibilitychange', refreshVisibleDesk)
+    }
+  }, [refreshFromServer])
 
   function clearSearch() {
     document.getElementById('team-check-in-search')?.focus()
@@ -52,9 +81,10 @@ export function CheckInDesk({
   }
 
   async function toggleCheckIn(team: TournamentCheckInTeam) {
-    if (busyId !== null) return
+    if (busyId !== null || writeInFlight.current || refreshInFlight.current) return
     if (team.checkedInAt && !confirm(`确认取消「${team.tag}」的签到记录？`)) return
 
+    writeInFlight.current = true
     setBusyId(team.id)
     setMessage(null)
     try {
@@ -71,7 +101,7 @@ export function CheckInDesk({
           return
         }
         setMessage({ tone: 'error', text: result.error })
-        if (result.code === 'conflict') refreshFromServer()
+        if (result.code === 'conflict') beginServerRefresh()
         return
       }
       setTeams(current =>
@@ -83,11 +113,12 @@ export function CheckInDesk({
         tone: 'ok',
         text: `${team.tag} ${result.checkedInAt ? '已完成签到' : '已取消签到'}`,
       })
-      refreshFromServer()
+      beginServerRefresh()
     } catch (error) {
       console.error('check-in mutation failed', error)
       setMessage({ tone: 'error', text: '签到服务暂时不可用，请稍后重试。' })
     } finally {
+      writeInFlight.current = false
       setBusyId(null)
     }
   }
@@ -103,7 +134,11 @@ export function CheckInDesk({
   }
 
   return (
-    <section className={styles.desk} aria-labelledby="desk-summary">
+    <section
+      className={styles.desk}
+      aria-labelledby="desk-summary"
+      aria-busy={refreshPending || busyId !== null || undefined}
+    >
       <div className={styles.summary}>
         <div>
           <p id="desk-summary">CHECK-IN STATUS</p>
@@ -133,9 +168,19 @@ export function CheckInDesk({
           value={keyword}
           onChange={event => setKeyword(event.target.value)}
         />
-        <p aria-hidden="true">
-          SHOWING {visibleTeams.length} / {teams.length}
-        </p>
+        <div className={styles.toolStatus}>
+          <p aria-hidden="true">
+            SHOWING {visibleTeams.length} / {teams.length} · AUTO SYNC 15S
+          </p>
+          <Button
+            type="button"
+            size="mini"
+            disabled={busyId !== null || refreshPending}
+            onClick={refreshFromServer}
+          >
+            {refreshPending ? '同步中…' : '刷新名单'}
+          </Button>
+        </div>
       </div>
 
       {message ? (
@@ -164,16 +209,11 @@ export function CheckInDesk({
         </div>
       ) : (
         <ul className={styles.list} aria-label="可签到战队">
-          {visibleTeams.map((team, index) => {
+          {visibleTeams.map(team => {
             const isBusy = busyId === team.id
             const time = team.checkedInAt ? formatSiteTime(team.checkedInAt) : null
             return (
-              <li
-                key={team.id}
-                className={styles.team}
-                aria-busy={isBusy || undefined}
-                style={{ '--team-index': index } as React.CSSProperties}
-              >
+              <li key={team.id} className={styles.team} aria-busy={isBusy || undefined}>
                 <div className={styles.teamLead}>
                   <Badge tone={team.checkedInAt ? 'ct' : 'neutral'}>{team.tag}</Badge>
                   <p className={team.checkedInAt ? styles.checked : styles.waiting}>

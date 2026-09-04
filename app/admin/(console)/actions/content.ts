@@ -1,7 +1,6 @@
 'use server'
 
 import { updateTag } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { requireAdmin } from '@/lib/auth'
 import {
   adminCreateGame,
@@ -15,20 +14,32 @@ import {
   adminSaveMember,
   adminSavePost,
 } from '@/lib/queries/content'
+import { writeError } from './_errors'
+
+export type ContentCreateResult =
+  | { ok: true }
+  | {
+      ok: false
+      error: string
+    }
 
 export async function createPost(form: FormData) {
   await requireAdmin()
   const gameId = String(form.get('gameId') ?? '')
-  await adminCreatePost({
-    slug: String(form.get('slug') ?? '').trim(),
-    title: String(form.get('title') ?? '').trim(),
-    summary: String(form.get('summary') ?? '').trim(),
-    body: String(form.get('body') ?? '').trim(),
-    gameId: gameId ? Number(gameId) : null,
-    pinned: form.get('pinned') === 'on',
-  })
+  try {
+    await adminCreatePost({
+      slug: String(form.get('slug') ?? '').trim(),
+      title: String(form.get('title') ?? '').trim(),
+      summary: String(form.get('summary') ?? '').trim(),
+      body: String(form.get('body') ?? '').trim(),
+      gameId: gameId ? Number(gameId) : null,
+      pinned: form.get('pinned') === 'on',
+    })
+  } catch (error) {
+    return { ok: false, error: writeError(error, '动态发布失败') } satisfies ContentCreateResult
+  }
   updateTag('post')
-  redirect('/admin/posts')
+  return { ok: true } satisfies ContentCreateResult
 }
 
 export async function updatePost(id: number, form: FormData) {
@@ -66,15 +77,19 @@ export async function updateGame(id: number, form: FormData) {
 
 export async function createGame(form: FormData) {
   await requireAdmin()
-  await adminCreateGame({
-    slug: String(form.get('slug') ?? '').trim(),
-    name: String(form.get('name') ?? '').trim(),
-    nameEn: String(form.get('nameEn') ?? '').trim() || null,
-    accentColor: String(form.get('accentColor') ?? '').trim() || null,
-    tagline: String(form.get('tagline') ?? '').trim() || null,
-  })
+  try {
+    await adminCreateGame({
+      slug: String(form.get('slug') ?? '').trim(),
+      name: String(form.get('name') ?? '').trim(),
+      nameEn: String(form.get('nameEn') ?? '').trim() || null,
+      accentColor: String(form.get('accentColor') ?? '').trim() || null,
+      tagline: String(form.get('tagline') ?? '').trim() || null,
+    })
+  } catch (error) {
+    return { ok: false, error: writeError(error, '项目创建失败') } satisfies ContentCreateResult
+  }
   updateTag('game')
-  redirect('/admin/games')
+  return { ok: true } satisfies ContentCreateResult
 }
 
 export async function removeGame(id: number) {
@@ -106,15 +121,19 @@ export async function updateMember(id: number, form: FormData) {
 
 export async function createMember(form: FormData) {
   await requireAdmin()
-  await adminCreateMember({
-    name: String(form.get('name') ?? '').trim(),
-    role: String(form.get('role') ?? '').trim(),
-    handle: String(form.get('handle') ?? '').trim() || null,
-    intro: String(form.get('intro') ?? '').trim() || null,
-    sortOrder: Number(form.get('sortOrder')) || 0,
-  })
+  try {
+    await adminCreateMember({
+      name: String(form.get('name') ?? '').trim(),
+      role: String(form.get('role') ?? '').trim(),
+      handle: String(form.get('handle') ?? '').trim() || null,
+      intro: String(form.get('intro') ?? '').trim() || null,
+      sortOrder: Number(form.get('sortOrder')) || 0,
+    })
+  } catch (error) {
+    return { ok: false, error: writeError(error, '成员添加失败') } satisfies ContentCreateResult
+  }
   updateTag('club_member')
-  redirect('/admin/members')
+  return { ok: true } satisfies ContentCreateResult
 }
 
 export async function removeMember(id: number) {

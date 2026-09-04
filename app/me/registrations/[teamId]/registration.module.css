@@ -1,4 +1,6 @@
 .page {
+  position: relative;
+  z-index: 1;
   min-height: 100svh;
   background:
     repeating-linear-gradient(90deg, transparent 0 79px, rgba(255, 255, 255, 0.025) 80px), #0d1215;
@@ -30,12 +32,15 @@
 
 .topbar nav {
   gap: clamp(13px, 2vw, 28px);
-  font-size: 0.68rem;
+  font-size: 0.74rem;
 }
 
 .topbar nav a,
 .topbar nav button {
-  min-height: 40px;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
   border: 0;
   background: none;
   color: #aebbc1;
@@ -51,29 +56,30 @@
 .shell {
   width: min(1120px, calc(100% - clamp(30px, 8vw, 110px)));
   margin-inline: auto;
-  padding-block: clamp(42px, 8vw, 92px) 90px;
+  padding-block: clamp(30px, 6vw, 68px) 72px;
 }
 
 .heading {
   display: grid;
   gap: 28px;
   align-items: end;
-  margin-bottom: clamp(34px, 6vw, 64px);
+  margin-bottom: clamp(28px, 5vw, 50px);
 }
 
 .heading p,
 .sectionHead p {
   color: #75a9c5;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.57rem;
+  font-size: 0.68rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .heading h1 {
   margin-top: 9px;
+  overflow-wrap: anywhere;
   font-family: 'NLC Serif', 'Songti SC', serif;
-  font-size: clamp(2.8rem, 8vw, 6.4rem);
+  font-size: clamp(2.5rem, 6vw, 4.8rem);
   font-weight: 800;
   letter-spacing: -0.055em;
   line-height: 0.94;
@@ -82,6 +88,7 @@
 .heading > div > span {
   display: block;
   margin-top: 14px;
+  overflow-wrap: anywhere;
   color: #b7c1c4;
   font-size: clamp(1rem, 2.5vw, 1.5rem);
 }
@@ -96,7 +103,7 @@
 .heading aside small,
 .heading aside span {
   color: #8f9da2;
-  font-size: 0.63rem;
+  font-size: 0.68rem;
 }
 
 .heading aside strong {
@@ -158,7 +165,7 @@
 
 .locked dt {
   color: #626a6d;
-  font-size: 0.62rem;
+  font-size: 0.68rem;
 }
 
 .locked dd {
@@ -189,5 +196,29 @@
   .topbar nav {
     flex-wrap: wrap;
     justify-content: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar {
+    display: grid;
+    align-items: stretch;
+    gap: 4px;
+    padding-inline: 16px;
+  }
+
+  .brand {
+    width: fit-content;
+    min-height: 44px;
+  }
+
+  .topbar nav {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 0 18px;
+  }
+
+  .topbar nav > * {
+    flex: 0 0 auto;
   }
 }

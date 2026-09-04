@@ -88,6 +88,7 @@ export function InitialAccountSetup() {
             maxLength={32}
             spellCheck={false}
             aria-invalid={errorField === 'username'}
+            aria-describedby={errorField === 'username' ? 'initial-account-setup-error' : undefined}
             required
           />
           <small>3–32 位小写字母、数字、点、短横线或下划线</small>
@@ -101,10 +102,15 @@ export function InitialAccountSetup() {
             minLength={6}
             maxLength={1024}
             aria-invalid={errorField === 'password'}
+            aria-describedby={
+              errorField === 'password'
+                ? 'initial-password-guidance initial-account-setup-error'
+                : 'initial-password-guidance'
+            }
             onChange={event => setPasswordLength(Array.from(event.currentTarget.value).length)}
             required
           />
-          <small>至少 6 个字符 · 当前 {passwordLength} 个字符</small>
+          <small id="initial-password-guidance">至少 6 个字符 · 当前 {passwordLength} 个字符</small>
         </label>
         <label>
           <span>确认密码</span>
@@ -115,6 +121,9 @@ export function InitialAccountSetup() {
             minLength={6}
             maxLength={1024}
             aria-invalid={errorField === 'passwordConfirmation'}
+            aria-describedby={
+              errorField === 'passwordConfirmation' ? 'initial-account-setup-error' : undefined
+            }
             required
           />
         </label>
@@ -123,7 +132,7 @@ export function InitialAccountSetup() {
         </button>
       </form>
       {error ? (
-        <p className={styles.error} role="alert">
+        <p id="initial-account-setup-error" className={styles.error} role="alert">
           {error}
         </p>
       ) : null}

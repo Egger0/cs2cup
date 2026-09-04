@@ -1,7 +1,6 @@
 'use server'
 
 import { updateTag } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { requireAdmin } from '@/lib/auth'
 import { deleteRecordThenObjects } from '@/lib/object-cleanup'
 import {
@@ -15,7 +14,12 @@ import { removeObject } from '@/lib/storage'
 import { parseTournamentCreate, parseTournamentUpdate } from '@/lib/tournament-form'
 import { writeError } from './_errors'
 
-export type TournamentCreateState = { error: string | null }
+export type TournamentCreateResult =
+  | { ok: true }
+  | {
+      ok: false
+      error: string
+    }
 
 export async function updateTournament(id: number, form: FormData) {
   await requireAdmin()
@@ -36,21 +40,18 @@ export async function updateTournament(id: number, form: FormData) {
   return { ok: true as const }
 }
 
-export async function createTournament(
-  _state: TournamentCreateState,
-  form: FormData,
-): Promise<TournamentCreateState> {
+export async function createTournament(form: FormData): Promise<TournamentCreateResult> {
   await requireAdmin()
   const parsed = parseTournamentCreate(form)
-  if (!parsed.ok) return { error: parsed.error }
+  if (!parsed.ok) return parsed
 
   try {
     await adminCreateTournament(parsed.value)
   } catch (error) {
-    return { error: writeError(error, '赛事创建失败') }
+    return { ok: false, error: writeError(error, '赛事创建失败') }
   }
   updateTag('tournament')
-  redirect('/admin/tournaments')
+  return { ok: true }
 }
 
 export async function removeTournament(id: number) {

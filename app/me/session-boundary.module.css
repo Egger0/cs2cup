@@ -31,7 +31,7 @@
 .code {
   color: #75a9c5;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.56rem;
+  font-size: 0.68rem;
   letter-spacing: 0.12em;
 }
 
@@ -78,7 +78,7 @@
   color: #b8d9e9;
   cursor: pointer;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.62rem;
+  font-size: 0.7rem;
 }
 
 .actions button:focus-visible,

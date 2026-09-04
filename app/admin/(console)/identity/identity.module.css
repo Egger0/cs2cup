@@ -95,6 +95,10 @@
   gap: 20px;
 }
 
+.card > header > div {
+  min-width: 0;
+}
+
 .card[data-overdue='true'] header p {
   color: #d69870;
 }
@@ -104,6 +108,7 @@
   font-family: var(--font-display), sans-serif;
   font-size: clamp(1.5rem, 3vw, 2.5rem);
   letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
 }
 
 .card > header > span {
@@ -252,6 +257,10 @@
   .card dl,
   .decision {
     grid-template-columns: 1fr;
+  }
+
+  .card > header {
+    flex-direction: column;
   }
 
   .card dl div + div {

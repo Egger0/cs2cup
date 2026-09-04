@@ -1,8 +1,9 @@
-import { Button, Field } from '@/components/ui'
+import { Field } from '@/components/ui'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { requireAdmin } from '@/lib/auth'
 import { adminListGames } from '@/lib/queries/content'
 import { createGame } from '../actions/content'
+import { ContentCreateForm } from '../ContentCreateForm'
 import { GameEditor } from './GameEditor'
 import styles from '../admin.module.css'
 
@@ -16,13 +17,18 @@ export default async function AdminGamesPage() {
   return (
     <>
       <AdminPageHeader
-        index="03"
+        index="04"
         title="项目库"
         description="管理比赛项目的名称、识别色与公开介绍。"
       />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>新增项目</h2>
-        <form className={styles.editor} action={createGame}>
+        <ContentCreateForm
+          action={createGame}
+          submitLabel="创建"
+          pendingLabel="创建中…"
+          successMessage="项目已创建"
+        >
           <div className={styles.pair}>
             <Field id="ng-slug" name="slug" label="链接标识" required placeholder="例:apex" />
             <Field id="ng-name" name="name" label="中文名" required placeholder="例:Apex 英雄" />
@@ -32,10 +38,7 @@ export default async function AdminGamesPage() {
             <Field id="ng-accent" name="accentColor" label="强调色" placeholder="#da292a" />
           </div>
           <Field id="ng-tagline" name="tagline" label="一句话介绍" />
-          <Button type="submit" variant="primary">
-            创建
-          </Button>
-        </form>
+        </ContentCreateForm>
       </section>
 
       <section className={styles.panel}>

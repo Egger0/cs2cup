@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui'
+import { useUnsavedChangesWarning } from '@/components/admin/useUnsavedChangesWarning'
 import { confirmScoreWrite } from '@/lib/score-confirmation'
 import { saveMatchReport } from '../../../../actions/matches'
 import { MatchReportRow } from './MatchReportRow'
@@ -17,6 +18,12 @@ import {
 } from './match-report-model'
 import styles from './MatchReportEditor.module.css'
 
+const UNSAVED_MESSAGE = '战报还有未保存的更改，离开将丢失这些内容。'
+
+function copyRows(rows: EditableRow[]) {
+  return rows.map(row => ({ ...row }))
+}
+
 export function MatchReportEditor({
   matchId,
   tournamentId,
@@ -29,11 +36,18 @@ export function MatchReportEditor({
   const router = useRouter()
   const nextKey = useRef(0)
   const [rows, setRows] = useState<EditableRow[]>(() => initialRows(initialMaps))
+  const [savedRows, setSavedRows] = useState<EditableRow[]>(() => initialRows(initialMaps))
   const [pending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<{ tone: 'ok' | 'error'; message: string } | null>(null)
   const listId = `match-${matchId}-maps`
   const target = Math.floor(bestOf / 2) + 1
   const derived = useMemo(() => summariseRows(rows), [rows])
+  const dirty = useMemo(
+    () => JSON.stringify(serialiseRows(rows)) !== JSON.stringify(serialiseRows(savedRows)),
+    [rows, savedRows],
+  )
+
+  useUnsavedChangesWarning(dirty, UNSAVED_MESSAGE)
 
   function patchRow(key: string, patch: Partial<EditableRow>) {
     setRows(current => current.map(row => (row.key === key ? { ...row, ...patch } : row)))
@@ -106,6 +120,7 @@ export function MatchReportEditor({
           tone: 'ok',
           message: `已保存，系列赛比分 ${scoreA}:${scoreB}${cleared}`,
         })
+        setSavedRows(copyRows(rows))
         router.refresh()
       } catch {
         setFeedback({ tone: 'error', message: '网络异常，战报未保存' })
@@ -187,8 +202,18 @@ export function MatchReportEditor({
           >
             {mapPool.length > 0 && rows.length >= mapPool.length ? '地图已全部录入' : '添加记录'}
           </Button>
-          <Button type="submit" variant="primary" disabled={pending}>
-            {pending ? '保存中…' : '保存战报'}
+          <Button
+            type="button"
+            disabled={pending || !dirty}
+            onClick={() => {
+              setRows(copyRows(savedRows))
+              setFeedback(null)
+            }}
+          >
+            撤销更改
+          </Button>
+          <Button type="submit" variant="primary" disabled={pending || !dirty}>
+            {pending ? '保存中…' : dirty ? '保存战报' : '已同步'}
           </Button>
           {feedback ? (
             <p

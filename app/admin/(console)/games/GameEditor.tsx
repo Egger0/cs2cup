@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button, Field, TextField } from '@/components/ui'
+import { useUnsavedChangesWarning } from '@/components/admin/useUnsavedChangesWarning'
 import type { Game } from '@/lib/types'
 import { removeGame, updateGame } from '../actions/content'
 import styles from '../admin.module.css'
@@ -11,13 +12,22 @@ export function GameEditor({ game }: { game: Game }) {
   const [open, setOpen] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+  const [dirty, setDirty] = useState(false)
+
+  useUnsavedChangesWarning(open && dirty, `「${game.name}」还有未保存的更改，离开将丢失这些内容。`)
 
   const handleDelete = () => {
     if (!confirm(`确定删除「${game.name}」?此操作不可撤销。`)) return
     startTransition(async () => {
       setError('')
-      const result = await removeGame(game.id)
-      if (!result.ok) setError(result.error)
+      setSaved(false)
+      try {
+        const result = await removeGame(game.id)
+        if (!result.ok) setError(result.error)
+        else setDirty(false)
+      } catch {
+        setError('删除失败，请检查网络后重试。')
+      }
     })
   }
 
@@ -38,7 +48,14 @@ export function GameEditor({ game }: { game: Game }) {
               已保存
             </span>
           ) : null}
-          <Button size="mini" onClick={() => setOpen(true)}>
+          <Button
+            size="mini"
+            onClick={() => {
+              setDirty(false)
+              setError('')
+              setOpen(true)
+            }}
+          >
             编辑
           </Button>
           <Button size="mini" variant="danger" disabled={pending} onClick={handleDelete}>
@@ -58,11 +75,23 @@ export function GameEditor({ game }: { game: Game }) {
     <form
       className={styles.editor}
       style={{ padding: '22px 0', borderBottom: '1px solid var(--line)' }}
+      onChange={() => {
+        setDirty(true)
+        setSaved(false)
+        setError('')
+      }}
       action={formData =>
         startTransition(async () => {
-          await updateGame(game.id, formData)
-          setSaved(true)
-          setOpen(false)
+          setError('')
+          setSaved(false)
+          try {
+            await updateGame(game.id, formData)
+            setDirty(false)
+            setSaved(true)
+            setOpen(false)
+          } catch {
+            setError('保存失败，请检查网络后重试。')
+          }
         })
       }
     >
@@ -105,7 +134,15 @@ export function GameEditor({ game }: { game: Game }) {
         <Button type="submit" variant="primary" disabled={pending}>
           {pending ? '保存中…' : '保存'}
         </Button>
-        <Button type="button" onClick={() => setOpen(false)}>
+        <Button
+          type="button"
+          disabled={pending}
+          onClick={() => {
+            setError('')
+            setDirty(false)
+            setOpen(false)
+          }}
+        >
           取消
         </Button>
         <Button

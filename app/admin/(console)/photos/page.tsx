@@ -20,7 +20,7 @@ export default async function AdminPhotosPage() {
   return (
     <>
       <AdminPageHeader
-        index="05"
+        index="06"
         title="素材库"
         description="上传赛事影像，并核对素材归属与文件信息。"
       />

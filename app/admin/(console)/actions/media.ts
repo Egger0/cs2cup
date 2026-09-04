@@ -95,7 +95,10 @@ export async function deletePhotoAndFile(id: number) {
   } catch (error) {
     console.error(`orphaned photo object requires cleanup: ${photo.storageKey}`, error)
     updateTag('photo')
-    return { ok: false as const, error: '照片已停止公开，但存储对象清理失败，请联系维护者' }
+    return {
+      ok: true as const,
+      warning: '照片已停止公开，但存储对象清理失败，请联系维护者',
+    }
   }
 
   updateTag('photo')

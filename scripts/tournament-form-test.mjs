@@ -24,8 +24,6 @@ const actionRdbModule = `data:text/javascript,
   }`
 const cacheModule =
   'data:text/javascript,export function updateTag(tag){return globalThis.__tournamentUpdateTag(tag)}'
-const navigationModule =
-  'data:text/javascript,export function redirect(path){return globalThis.__tournamentRedirect(path)}'
 const tournamentFormModule = new URL('../lib/tournament-form.ts', import.meta.url).href
 
 registerHooks({
@@ -56,7 +54,6 @@ registerHooks({
       return { url: tournamentFormModule, shortCircuit: true }
     }
     if (specifier === 'next/cache') return { url: cacheModule, shortCircuit: true }
-    if (specifier === 'next/navigation') return { url: navigationModule, shortCircuit: true }
     try {
       return nextResolve(specifier, context)
     } catch (error) {
@@ -73,6 +70,21 @@ const createPage = await readFile(
   'utf8',
 )
 assert.match(createPage, /pattern="\[a-z0-9\]\(\?:\[a-z0-9\]\|-\)\{0,99\}"/)
+
+const createForm = await readFile(
+  new URL('../app/admin/(console)/tournaments/TournamentCreateForm.tsx', import.meta.url),
+  'utf8',
+)
+for (const signal of ['onSubmit=', 'catch {', '创建中…']) assert.ok(createForm.includes(signal))
+assert.match(createForm, /role=\{feedback\.ok \? 'status' : 'alert'\}/)
+
+const deleteButton = await readFile(
+  new URL('../app/admin/(console)/tournaments/TournamentDeleteButton.tsx', import.meta.url),
+  'utf8',
+)
+for (const signal of ['confirm(', 'catch {', '删除中…']) assert.ok(deleteButton.includes(signal))
+assert.match(deleteButton, /window\.alert\(result\.warning\)/)
+assert.match(deleteButton, /role=\{feedback\.tone === 'success' \? 'status' : 'alert'\}/)
 
 function validCreateForm(overrides = {}) {
   const values = {
@@ -161,15 +173,10 @@ globalThis.__tournamentCreate = async values => {
   if (createFailure) throw createFailure
 }
 globalThis.__tournamentUpdateTag = tag => actionEvents.push({ type: 'tag', tag })
-const redirectSentinel = new Error('redirect sentinel')
-globalThis.__tournamentRedirect = path => {
-  actionEvents.push({ type: 'redirect', path })
-  throw redirectSentinel
-}
 const { createTournament } = await import('../app/admin/(console)/actions/tournaments.ts')
 
-const initialCreateState = { error: null }
-assert.deepEqual(await createTournament(initialCreateState, validCreateForm({ teamCap: '1' })), {
+assert.deepEqual(await createTournament(validCreateForm({ teamCap: '1' })), {
+  ok: false,
   error: `席位数必须在 2 到 ${TOURNAMENT_FORM_LIMITS.teamCap} 之间`,
 })
 assert.deepEqual(actionEvents, [])
@@ -178,7 +185,8 @@ createFailure = new Error('credential-canary')
 const originalConsoleError = console.error
 console.error = () => {}
 try {
-  assert.deepEqual(await createTournament(initialCreateState, validCreateForm()), {
+  assert.deepEqual(await createTournament(validCreateForm()), {
+    ok: false,
     error: '赛事创建失败',
   })
 } finally {
@@ -191,14 +199,10 @@ assert.deepEqual(
 
 actionEvents.length = 0
 createFailure = null
-await assert.rejects(
-  createTournament(initialCreateState, validCreateForm()),
-  error => error === redirectSentinel,
-)
+assert.deepEqual(await createTournament(validCreateForm()), { ok: true })
 assert.deepEqual(actionEvents, [
   { type: 'create', values: created.value },
   { type: 'tag', tag: 'tournament' },
-  { type: 'redirect', path: '/admin/tournaments' },
 ])
 
 function validForm(overrides = {}) {

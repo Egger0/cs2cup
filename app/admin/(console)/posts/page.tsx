@@ -1,8 +1,9 @@
-import { Button, Empty, Field, TextField } from '@/components/ui'
+import { Empty, Field, TextField } from '@/components/ui'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { requireAdmin } from '@/lib/auth'
 import { adminListGames, adminListPosts } from '@/lib/queries/content'
 import { createPost } from '../actions/content'
+import { ContentCreateForm } from '../ContentCreateForm'
 import { PostEditor } from './PostEditor'
 import styles from '../admin.module.css'
 
@@ -16,13 +17,18 @@ export default async function AdminPostsPage() {
   return (
     <>
       <AdminPageHeader
-        index="04"
+        index="05"
         title="内容台"
         description="发布社团动态，并维护动态页与项目页需要展示的内容。"
       />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>发布动态</h2>
-        <form className={styles.editor} action={createPost}>
+        <ContentCreateForm
+          action={createPost}
+          submitLabel="发布"
+          pendingLabel="发布中…"
+          successMessage="动态已发布"
+        >
           <div className={styles.pair}>
             <Field
               id="np-slug"
@@ -51,10 +57,7 @@ export default async function AdminPostsPage() {
               <input type="checkbox" name="pinned" /> 置顶
             </label>
           </div>
-          <Button type="submit" variant="primary">
-            发布
-          </Button>
-        </form>
+        </ContentCreateForm>
       </section>
 
       <section className={styles.panel}>

@@ -17,7 +17,7 @@
 .header p {
   color: #73acd2;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.57rem;
+  font-size: 0.68rem;
   letter-spacing: 0.14em;
 }
 
@@ -35,7 +35,7 @@
   border: 1px solid #667174;
   color: #9aa5a5;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.54rem;
+  font-size: 0.68rem;
   letter-spacing: 0.1em;
 }
 
@@ -93,7 +93,7 @@
 
 .timeline small {
   color: #71807f;
-  font-size: 0.56rem;
+  font-size: 0.68rem;
   letter-spacing: 0.08em;
 }
 

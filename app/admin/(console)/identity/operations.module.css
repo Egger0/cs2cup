@@ -226,7 +226,18 @@
 .auditList time,
 .auditList small {
   color: var(--admin-muted);
+}
+
+.auditList time,
+.auditList small,
+.auditList strong,
+.auditList span {
   overflow-wrap: anywhere;
+}
+
+.auditReason {
+  grid-column: 2 / -1;
+  padding: 0 0 4px;
 }
 
 @media (max-width: 820px) {
@@ -234,6 +245,10 @@
   .history li,
   .auditList article {
     grid-template-columns: 1fr;
+  }
+
+  .auditReason {
+    grid-column: auto;
   }
 
   .transferControls,

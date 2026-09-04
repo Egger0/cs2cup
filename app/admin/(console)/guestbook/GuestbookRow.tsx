@@ -28,9 +28,13 @@ export function GuestbookRow({ message }: { message: GuestbookMessage }) {
   function updateStatus(status: GuestbookMessageStatus) {
     startTransition(async () => {
       setError('')
-      const result = await setGuestbookMessageStatus(message.id, status)
-      if (!result.ok) setError(result.error)
-      else router.refresh()
+      try {
+        const result = await setGuestbookMessageStatus(message.id, status)
+        if (!result.ok) setError(result.error)
+        else router.refresh()
+      } catch {
+        setError('留言状态保存失败，请稍后重试。')
+      }
     })
   }
 
@@ -38,29 +42,41 @@ export function GuestbookRow({ message }: { message: GuestbookMessage }) {
     if (!confirm(`确定删除「${message.name}」的留言?此操作不可撤销。`)) return
     startTransition(async () => {
       setError('')
-      const result = await removeGuestbookMessage(message.id)
-      if (!result.ok) setError(result.error)
-      else router.refresh()
+      try {
+        const result = await removeGuestbookMessage(message.id)
+        if (!result.ok) setError(result.error)
+        else router.refresh()
+      } catch {
+        setError('留言删除失败，请稍后重试。')
+      }
     })
   }
 
   function updatePinned(pinned: boolean) {
     startTransition(async () => {
       setError('')
-      const result = await setGuestbookMessagePinned(message.id, pinned)
-      if (!result.ok) setError(result.error)
-      else router.refresh()
+      try {
+        const result = await setGuestbookMessagePinned(message.id, pinned)
+        if (!result.ok) setError(result.error)
+        else router.refresh()
+      } catch {
+        setError('置顶状态保存失败，请稍后重试。')
+      }
     })
   }
 
   function replyOfficially() {
     startTransition(async () => {
       setError('')
-      const result = await createOfficialGuestbookReply(message.id, replyBody)
-      if (!result.ok) setError(result.error)
-      else {
-        setReplyBody('')
-        router.refresh()
+      try {
+        const result = await createOfficialGuestbookReply(message.id, replyBody)
+        if (!result.ok) setError(result.error)
+        else {
+          setReplyBody('')
+          router.refresh()
+        }
+      } catch {
+        setError('官方回复发布失败，请稍后重试。')
       }
     })
   }

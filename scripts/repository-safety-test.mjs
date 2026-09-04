@@ -81,7 +81,7 @@ assert.doesNotMatch(productionConfig, /IDENTITY_PASSWORD_(?:RANGE|SCREENING_LOCA
 assert.doesNotMatch(localConfigSource, /IDENTITY_PASSWORD_SCREENING_LOCAL_SERVICE/)
 assert.deepEqual(localConfig.assets.run_worker_first, ['/photos', '/photos/*'])
 assert.deepEqual(parsedProductionConfig.config.assets.run_worker_first, ['/photos', '/photos/*'])
-assert.match(await read('public/.assetsignore'), /^photos\/$/m)
+assert.match(await read('public/.assetsignore'), /^\/photos\/$/m)
 assert.deepEqual(localConfig.services, [
   {
     binding: 'IDENTITY_PASSWORD_RANGE',

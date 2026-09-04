@@ -31,7 +31,7 @@ export default async function TournamentStaffPage({ params }: { params: Promise<
   return (
     <>
       <AdminPageHeader
-        index="02.B"
+        index="03.B"
         title="签到权限"
         description={`为「${manager.tournament.title}」临时开放现场签到；不授予后台管理权限。`}
       />

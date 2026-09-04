@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { Button, Field, TextField } from '@/components/ui'
 import type { ManagedRegistrationTeam } from '@/lib/queries/registration-management'
@@ -22,6 +23,7 @@ type RegistrationManagerProps = {
 } & ({ access: 'account'; teamId: number } | { access: 'legacy'; slug: string; token: string })
 
 export function RegistrationManager(props: RegistrationManagerProps) {
+  const router = useRouter()
   const { team, revision: initialRevision } = props
   const [pending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<{ ok: boolean; message: string } | null>(null)
@@ -39,7 +41,10 @@ export function RegistrationManager(props: RegistrationManagerProps) {
               props.access === 'account'
                 ? await updateAccountRegistration(props.teamId, revision, form)
                 : await updateManagedRegistration(props.slug, props.token, revision, form)
-            if (result.ok && result.revision !== undefined) setRevision(result.revision)
+            if (result.ok && result.revision !== undefined) {
+              setRevision(result.revision)
+              if (props.access === 'account') router.refresh()
+            }
             setFeedback({
               ok: result.ok,
               message: result.ok ? '报名信息已更新' : (result.error ?? '更新失败'),

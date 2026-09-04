@@ -1,8 +1,9 @@
-import { Button, Empty, Field, TextField } from '@/components/ui'
+import { Empty, Field, TextField } from '@/components/ui'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { requireAdmin } from '@/lib/auth'
 import { adminListMembers } from '@/lib/queries/content'
 import { createMember } from '../actions/content'
+import { ContentCreateForm } from '../ContentCreateForm'
 import { MemberEditor } from './MemberEditor'
 import styles from '../admin.module.css'
 
@@ -16,13 +17,18 @@ export default async function AdminMembersPage() {
   return (
     <>
       <AdminPageHeader
-        index="06"
+        index="07"
         title="成员名册"
         description="维护核心团队、职务与对外展示顺序。"
       />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>新增成员</h2>
-        <form className={styles.editor} action={createMember}>
+        <ContentCreateForm
+          action={createMember}
+          submitLabel="添加成员"
+          pendingLabel="添加中…"
+          successMessage="成员已添加"
+        >
           <div className={styles.pair}>
             <Field id="new-member-name" name="name" label="姓名" required />
             <Field id="new-member-role" name="role" label="职务" required placeholder="例:社长" />
@@ -38,10 +44,7 @@ export default async function AdminMembersPage() {
             />
           </div>
           <TextField id="new-member-intro" name="intro" label="职责" rows={2} />
-          <Button type="submit" variant="primary">
-            添加成员
-          </Button>
-        </form>
+        </ContentCreateForm>
       </section>
 
       <section className={styles.panel}>
