@@ -15,7 +15,8 @@ registerHooks({
 
 const { checkInFromQq, linkQqAccountByUsername, qqCheckInLeaderboard, unlinkQqAccount } =
   await import('../lib/qq-daily-check-in.ts')
-const { accountIds, createIdentityKernelFixture } = await import('./identity-kernel-test-fixture.mjs')
+const { accountIds, createIdentityKernelFixture } =
+  await import('./identity-kernel-test-fixture.mjs')
 
 const groupOpenId = 'official-group-openid'
 const ownerOpenId = 'owner-member-openid'
@@ -25,8 +26,9 @@ const at = (day, hour = 0, minute = 0) => Date.UTC(2026, 8, day, hour - 8, minut
 const fixture = await createIdentityKernelFixture()
 try {
   const displayName = accountId =>
-    fixture.database.prepare('SELECT display_name FROM identity_account WHERE id = ?').get(accountId)
-      .display_name
+    fixture.database
+      .prepare('SELECT display_name FROM identity_account WHERE id = ?')
+      .get(accountId).display_name
   const reviewerName = displayName(accountIds.reviewer)
   const staffName = displayName(accountIds.weakStaff)
 

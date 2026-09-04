@@ -79,12 +79,17 @@ globalThis.fetch = async (url, init = {}) => {
   if (String(url).endsWith('/getAppAccessToken')) {
     return new Response(JSON.stringify({ access_token: 'token', expires_in: 300 }))
   }
-  if (String(url).includes('/panels?scope=group')) return new Response(JSON.stringify({ records: panels }))
+  if (String(url).includes('/panels?scope=group'))
+    return new Response(JSON.stringify({ records: panels }))
   return new Response(JSON.stringify({ panel_id: 'panel-1' }))
 }
 try {
   assert.equal(
-    await syncQqGroupCommandPanel({ appId: 'app', appSecret: 'secret', allowedGroupOpenId: 'group-1' }),
+    await syncQqGroupCommandPanel({
+      appId: 'app',
+      appSecret: 'secret',
+      allowedGroupOpenId: 'group-1',
+    }),
     'created',
   )
   assert.deepEqual(JSON.parse(requests.at(-1).init.body), {
@@ -104,7 +109,11 @@ try {
   })
   panels = [{ panel_id: 'panel-1', panel: { remark: 'nbt-qq-group-commands' } }]
   assert.equal(
-    await syncQqGroupCommandPanel({ appId: 'app', appSecret: 'secret', allowedGroupOpenId: 'group-1' }),
+    await syncQqGroupCommandPanel({
+      appId: 'app',
+      appSecret: 'secret',
+      allowedGroupOpenId: 'group-1',
+    }),
     'updated',
   )
   assert.match(requests.at(-1).url, /\/panels\/panel-1$/)

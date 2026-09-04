@@ -7,7 +7,10 @@ const SHANGHAI = 'Asia/Shanghai'
 
 export type QqLinkResult =
   | { ok: true }
-  | { ok: false; reason: 'invalid_username' | 'username_not_found' | 'already_bound' | 'account_bound' }
+  | {
+      ok: false
+      reason: 'invalid_username' | 'username_not_found' | 'already_bound' | 'account_bound'
+    }
 
 export type QqUnlinkResult = { ok: true } | { ok: false; reason: 'not_bound' }
 
@@ -113,8 +116,10 @@ export async function unlinkQqAccount(
   input: { groupOpenId: string; memberOpenId: string },
 ): Promise<QqUnlinkResult> {
   const { groupOpenId, memberOpenId } = input
-  if (!validOpenId(groupOpenId) || !validOpenId(memberOpenId)) return { ok: false, reason: 'not_bound' }
-  if (!(await activeLink(database, groupOpenId, memberOpenId))) return { ok: false, reason: 'not_bound' }
+  if (!validOpenId(groupOpenId) || !validOpenId(memberOpenId))
+    return { ok: false, reason: 'not_bound' }
+  if (!(await activeLink(database, groupOpenId, memberOpenId)))
+    return { ok: false, reason: 'not_bound' }
   await database
     .prepare('DELETE FROM qq_account_link WHERE group_openid = ? AND member_openid = ?')
     .bind(groupOpenId, memberOpenId)

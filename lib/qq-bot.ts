@@ -237,7 +237,10 @@ async function panelRequest(
   const token = await accessToken(config, !retry)
   const response = await fetch(`${API_BASE}${path}`, {
     method,
-    headers: { authorization: `QQBot ${token}`, ...(body ? { 'content-type': 'application/json' } : {}) },
+    headers: {
+      authorization: `QQBot ${token}`,
+      ...(body ? { 'content-type': 'application/json' } : {}),
+    },
     ...(body ? { body: JSON.stringify(body) } : {}),
   })
   if (response.status === 401 && retry) return panelRequest(config, path, method, body, false)
@@ -251,8 +254,7 @@ export async function syncQqGroupCommandPanel(config: QqBotConfig) {
   const payload = (await response.json().catch(() => null)) as { records?: unknown } | null
   const records = Array.isArray(payload?.records) ? (payload.records as QqCommandPanelRecord[]) : []
   const existing = records.find(
-    record =>
-      typeof record.panel_id === 'string' && record.panel?.remark === COMMAND_PANEL_REMARK,
+    record => typeof record.panel_id === 'string' && record.panel?.remark === COMMAND_PANEL_REMARK,
   )
   if (existing && typeof existing.panel_id === 'string') {
     await panelRequest(config, `/panels/${encodeURIComponent(existing.panel_id)}`, 'PUT', {
