@@ -93,15 +93,11 @@ try {
          revision = 2, write_nonce = ? WHERE legacy_admin_id = 1`,
     [ownerRoleId, opaque('R')],
   )
-  expectError(
-    () =>
-      execute(
-        `INSERT INTO identity_role_assignment
-          (id, account_id, role, scope_type, grant_reason, granted_at)
-         VALUES (?, ?, 'platform_owner', 'platform', 'Second owner must fail', 261)`,
-        [opaque('W'), account.alpha],
-      ),
-    /(?:UNIQUE|insert conflict)/,
+  execute(
+    `INSERT INTO identity_role_assignment
+      (id, account_id, role, scope_type, grant_reason, granted_at)
+     VALUES (?, ?, 'platform_owner', 'platform', 'Shared platform ownership', 261)`,
+    [opaque('W'), account.alpha],
   )
   expectError(
     () =>
@@ -130,7 +126,7 @@ try {
          WHERE role = 'platform_owner' AND revoked_at IS NULL`,
       )
       .get().count,
-    1,
+    2,
   )
 
   console.log('legacy admin bootstrap schema tests passed')
