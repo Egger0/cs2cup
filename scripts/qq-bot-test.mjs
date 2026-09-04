@@ -9,7 +9,7 @@ registerHooks({
   },
 })
 
-const { qqBotConfig, qqCommand, qqGroupMessage, verifyQqWebhookSignature } =
+const { qqBotConfig, qqCommand, qqGroupMessage, qqWebhookVerification, verifyQqWebhookSignature } =
   await import('../lib/qq-bot.ts')
 
 assert.deepEqual(qqBotConfig({ QQ_BOT_APP_ID: 'app', QQ_BOT_APP_SECRET: 'secret' }), {
@@ -17,6 +17,10 @@ assert.deepEqual(qqBotConfig({ QQ_BOT_APP_ID: 'app', QQ_BOT_APP_SECRET: 'secret'
   appSecret: 'secret',
   allowedGroupOpenId: null,
 })
+assert.deepEqual(
+  qqWebhookVerification({ d: { plain_token: 'token', event_ts: 1_725_442_341 } }, 'test-secret'),
+  qqWebhookVerification({ d: { plain_token: 'token', event_ts: '1725442341' } }, 'test-secret'),
+)
 
 assert.deepEqual(qqCommand(' <@!robot> 签到 '), { kind: 'check_in' })
 assert.deepEqual(qqCommand('签到排行'), { kind: 'leaderboard' })

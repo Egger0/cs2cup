@@ -40,6 +40,11 @@ function stringValue(value: unknown) {
   return typeof value === 'string' ? value : null
 }
 
+function timestampValue(value: unknown) {
+  if (typeof value === 'string') return value
+  return typeof value === 'number' && Number.isSafeInteger(value) ? String(value) : null
+}
+
 function recordValue(value: unknown): UnknownRecord | null {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? (value as UnknownRecord)
@@ -102,7 +107,7 @@ export function qqWebhookVerification(payload: unknown, secret: string) {
   const source = recordValue(payload)
   const data = source ? eventData(source) : null
   const plainToken = data ? stringValue(data.plain_token) : null
-  const eventTimestamp = data ? stringValue(data.event_ts) : null
+  const eventTimestamp = data ? timestampValue(data.event_ts) : null
   if (!plainToken || !eventTimestamp) return null
   try {
     return {
