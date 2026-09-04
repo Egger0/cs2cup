@@ -6,28 +6,38 @@ uploaded separately and do not count toward that script limit.
 
 ## Current baseline
 
-Measured with Wrangler 4.127.0 on 2026-09-03:
+Measured with Wrangler 4.127.0 on 2026-09-04:
 
-| Build                                                    | Worker gzip size |
-| -------------------------------------------------------- | ---------------: |
-| OpenNext output with Wrangler's default bundling         |      3169.43 KiB |
-| OpenNext output with production minification             |      2768.78 KiB |
-| Current minified output with a build-generated static OG |      2585.97 KiB |
+| Build                                 | Worker gzip size |
+| ------------------------------------- | ---------------: |
+| Next 16 Turbopack + minified OpenNext |      2801.35 KiB |
+| Next 16 Webpack + minified OpenNext   |      1847.96 KiB |
 
-Production minification is configured in `wrangler.jsonc`. The repository budget is 2900 KiB,
-leaving space below Cloudflare Workers Free's 3072 KiB limit. CI runs `npm run cf:size` after the
-OpenNext build and fails before deployment if the budget is exceeded.
+Production pins Webpack because its current OpenNext server output is 953.39 KiB smaller after
+gzip than the equivalent Turbopack output. Production minification is configured in
+`wrangler.jsonc`. The repository budget is 2300 KiB, leaving substantial space below Cloudflare
+Workers Free's 3072 KiB script limit. CI runs `npm run cf:size` after the OpenNext build and fails
+before deployment if the budget is exceeded.
 
 Production source maps are uploaded out of band so minification does not make operational stack
 traces unreadable. They do not enter the Worker runtime or its script-size calculation.
 
 The production-local browser run passes all five representative routes. Total transfer is
-427–434 KiB, JavaScript is 145–150 KiB, images are 35 KiB, CLS is 0, and the slowest measured LCP
-is 1.58 seconds. Run the same check against the Worker preview with:
+427–439 KiB, JavaScript is 145–150 KiB, images are 35 KiB, CLS is 0, and the slowest measured LCP
+is 1.58 seconds. Local startup profiling reports 19.8 ms of active initialization CPU in a 104.2 ms
+profile window, comfortably below the platform's one-second startup limit. Run the same check
+against the Worker preview with:
 
 ```sh
 E2E_BASE_URL=http://127.0.0.1:8787 npm run perf
 ```
+
+## Runtime plan
+
+Production identity routes require Workers Paid. Password records deliberately use 600,000
+PBKDF2 iterations; local Web Crypto measurements take about 150 ms and cannot fit Workers Free's
+10 ms request CPU limit. Do not weaken the password KDF to fit that limit. Workers Paid's default
+30-second request CPU allowance leaves ample headroom without a custom increase.
 
 ## What belongs where
 

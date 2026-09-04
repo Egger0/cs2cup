@@ -11,7 +11,7 @@
     "predev": "node scripts/generate-static-images.mjs",
     "dev": "npm run db:local:migrate && next dev",
     "prebuild": "node scripts/generate-static-images.mjs",
-    "build": "next build",
+    "build": "next build --webpack",
     "cf:build": "opennextjs-cloudflare build",
     "cf:build:local": "opennextjs-cloudflare build --config wrangler.local.jsonc",
     "cf:size": "node scripts/worker-size-test.mjs",
