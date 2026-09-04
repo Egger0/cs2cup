@@ -11,9 +11,9 @@ Measured with Wrangler 4.127.0 on 2026-09-04:
 | Build                                 | Worker gzip size |
 | ------------------------------------- | ---------------: |
 | Next 16 Turbopack + minified OpenNext |      2801.35 KiB |
-| Next 16 Webpack + minified OpenNext   |      1847.96 KiB |
+| Next 16 Webpack + minified OpenNext   |      1847.47 KiB |
 
-Production pins Webpack because its current OpenNext server output is 953.39 KiB smaller after
+Production pins Webpack because its current OpenNext server output is 953.88 KiB smaller after
 gzip than the equivalent Turbopack output. Production minification is configured in
 `wrangler.jsonc`. The repository budget is 2300 KiB, leaving substantial space below Cloudflare
 Workers Free's 3072 KiB script limit. CI runs `npm run cf:size` after the OpenNext build and fails
@@ -24,7 +24,7 @@ traces unreadable. They do not enter the Worker runtime or its script-size calcu
 
 The production-local browser run passes all five representative routes. Total transfer is
 427–439 KiB, JavaScript is 145–150 KiB, images are 35 KiB, CLS is 0, and the slowest measured LCP
-is 1.58 seconds. Local startup profiling reports 19.8 ms of active initialization CPU in a 104.2 ms
+is 1.58 seconds. Local startup profiling reports 12.6 ms of active initialization CPU in an 80.0 ms
 profile window, comfortably below the platform's one-second startup limit. Run the same check
 against the Worker preview with:
 

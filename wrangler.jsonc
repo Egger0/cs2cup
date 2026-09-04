@@ -13,6 +13,7 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS",
+    "run_worker_first": ["/photos", "/photos/*"],
   },
   "d1_databases": [
     {

@@ -6,6 +6,9 @@ const ROOT = resolve(import.meta.dirname, '..')
 const BASE = 'http://localhost:3000'
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx'
+const options = new Set(process.argv.slice(2))
+const smokeOnly = options.has('--smoke')
+const skipBuild = options.has('--skip-build')
 
 function run(command, args, extraEnv = {}) {
   const result = spawnSync(command, args, {
@@ -34,7 +37,7 @@ async function waitForWorker(worker) {
   throw new Error('Local Worker did not become ready within 30 seconds')
 }
 
-run(npm, ['run', 'cf:build:local'])
+if (!skipBuild) run(npm, ['run', 'cf:build:local'])
 run(npm, ['run', 'db:local:reset'])
 run(process.execPath, [
   '--conditions=react-server',
@@ -69,14 +72,17 @@ const worker = spawn(
 try {
   await waitForWorker(worker)
   const environment = { E2E_BASE_URL: BASE }
-  for (const script of [
+  const smokeScripts = [
     'scripts/a11y.mjs',
     'scripts/keyboard.mjs',
-    'scripts/perf.mjs',
     'scripts/identity-signup-browser.mjs',
+  ]
+  const identityScripts = [
+    'scripts/perf.mjs',
     'scripts/identity-migration-browser.mjs',
     'scripts/identity-browser.mjs',
-  ]) {
+  ]
+  for (const script of smokeOnly ? smokeScripts : [...smokeScripts, ...identityScripts]) {
     run(process.execPath, [script], environment)
   }
 } finally {

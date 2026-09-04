@@ -39,18 +39,18 @@ Contributor commands use [`wrangler.local.jsonc`](./wrangler.local.jsonc). Its D
 bindings are local-only, remote bindings are disabled in code, and telemetry is disabled.
 Browser checks also reject non-loopback origins and outbound requests.
 
-[`wrangler.jsonc`](./wrangler.jsonc) is deployment configuration. `npm run cf:build` uses it to
-produce the same bundle as Workers Builds without deploying or accessing remote data. Use
-`npm run cf:build:local` to validate the local-only bindings. The protected production-branch
-Workers Builds deploy command is `npm run deploy`; it applies pending D1 migrations and publishes
-the already-built Worker only after migration succeeds. Non-production Workers Builds upload an
-isolated preview version without migrations or traffic promotion.
+[`wrangler.jsonc`](./wrangler.jsonc) is deployment configuration. `npm run cf:release` produces the
+same bundle as Workers Builds and enforces its size budget without deploying or accessing remote
+data. Use `npm run cf:build:local` to validate the local-only bindings. The protected
+production-branch Workers Builds deploy command is `npm run deploy`; it applies pending D1
+migrations and publishes the already-built Worker only after migration succeeds. Non-production
+Workers Builds upload an isolated preview version without migrations or traffic promotion.
 
 The Cloudflare owner must configure these external values under Workers **Settings > Build**;
 Workers Builds does not read them from `wrangler.jsonc`: production branch `main`, build command
-`npm run cf:build`, production deploy command `npm run deploy`, and a Workers Builds API token that
-includes D1 Edit plus Worker publication permissions. Contributors must not run remote migrations
-or deploy from local machines.
+`npm run cf:release`, production deploy command `npm run deploy`, and a Workers Builds API token
+that includes D1 Edit plus Worker publication permissions. Contributors must not run remote
+migrations or deploy from local machines.
 
 ## Configuration
 
@@ -74,20 +74,28 @@ password pepper versions while credentials still reference them.
 
 ```sh
 npm run check
+npm run cf:release
 npm run cf:build
 npm run cf:size
 npm run cf:build:local
+npm run browser:smoke
 npm run browser:check
 ```
 
 `npm run check` covers formatting, types, ESLint, deterministic offline tests, repository
-safety, and source-size limits. The browser gate builds the local Worker, resets its disposable
-`.local/cloudflare` state, starts a loopback server, and runs:
+safety, and source-size limits. Pull requests build the Worker once, enforce its size budget, and
+reuse that output for accessibility, keyboard, and account-signup smoke checks. A lightweight
+project check covers direct pushes to `main` without rebuilding the already verified commit. The
+full browser gate is available on demand; it resets disposable `.local/cloudflare` state and adds
+the performance budget and remaining identity journeys against the same loopback Worker and D1
+state:
 
 ```sh
 npm run a11y
 npm run keyboard
+node scripts/identity-signup-browser.mjs
 npm run perf
+node scripts/identity-migration-browser.mjs
 node scripts/identity-browser.mjs
 ```
 

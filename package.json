@@ -13,6 +13,7 @@
     "prebuild": "node scripts/generate-static-images.mjs",
     "build": "next build --webpack",
     "cf:build": "opennextjs-cloudflare build",
+    "cf:release": "npm run cf:build && npm run cf:size",
     "cf:build:local": "opennextjs-cloudflare build --config wrangler.local.jsonc",
     "cf:size": "node scripts/worker-size-test.mjs",
     "deploy": "node scripts/workers-deploy.mjs",
@@ -72,6 +73,7 @@
     "a11y": "node scripts/a11y.mjs",
     "keyboard": "node scripts/keyboard.mjs",
     "perf": "node scripts/perf.mjs",
+    "browser:smoke": "node scripts/browser-check.mjs --smoke",
     "browser:check": "node scripts/browser-check.mjs",
     "check": "npm run format:check && npm run typecheck && npm run lint && npm test"
   },

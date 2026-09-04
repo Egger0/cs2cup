@@ -30,6 +30,22 @@ try {
     .map(row => row.detail)
     .join(' ')
   assert.match(staleLeasePlan, /identity_notification_outbox_stale_lease_idx/)
+  assert.ok(
+    database
+      .prepare(
+        "SELECT 1 FROM sqlite_schema WHERE type = 'index' AND name = 'identity_security_event_created_idx'",
+      )
+      .get(),
+  )
+  const securityEventOrderPlan = database
+    .prepare(
+      `EXPLAIN QUERY PLAN
+       SELECT id FROM identity_security_event ORDER BY created_at DESC, id DESC LIMIT 50`,
+    )
+    .all()
+    .map(row => row.detail)
+    .join(' ')
+  assert.match(securityEventOrderPlan, /identity_security_event_created_idx/)
   execute(
     `INSERT INTO identity_security_event
       (id, event_type, actor_type, actor_account_id, target_account_id, actor_session_id,

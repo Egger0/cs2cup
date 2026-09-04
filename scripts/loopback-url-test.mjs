@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { isClientChunkUrl } from './client-chunk-blocker.mjs'
 import { installLoopbackRequestGuard, resolveE2EBaseUrl } from './loopback-url.mjs'
 
 assert.equal(resolveE2EBaseUrl(undefined), 'http://127.0.0.1:3000')
@@ -17,6 +18,22 @@ for (const value of [
   'https://example.com',
 ]) {
   assert.throws(() => resolveE2EBaseUrl(value), /loopback HTTP\(S\) origin/)
+}
+
+const base = 'http://localhost:3000'
+for (const url of [
+  `${base}/_next/static/chunks/main.js`,
+  `${base}/_next/static/chunks/app/(public)/layout-a1b2c3.js`,
+  `${base}/_next/static/chunks/app/deep/client.js?v=1`,
+]) {
+  assert.equal(isClientChunkUrl(url, base), true, url)
+}
+for (const url of [
+  `${base}/_next/static/chunks/app/(public)/layout.css`,
+  `${base}/_next/static/media/client.js`,
+  `https://example.com/_next/static/chunks/app/layout.js`,
+]) {
+  assert.equal(isClientChunkUrl(url, base), false, url)
 }
 
 let requestHandler

@@ -277,14 +277,10 @@ const degraded = await browser.newContext({
   serviceWorkers: 'block',
 })
 const degradedGuard = await installLoopbackRequestGuard(degraded)
-// Keep the streaming runtime; block only the client component boundary.
-const blockedClientScripts = await blockClientChunkContaining(
-  degraded,
-  BASE,
-  'data-site-header-fallback',
-)
+const chunks = await blockClientChunkContaining(degraded, BASE, 'data-site-header-fallback')
 const degradedPage = await degraded.newPage()
 await degradedPage.goto(BASE, { waitUntil: 'load' })
+chunks.assertBlocked()
 const fallback = degradedPage.locator('[data-site-header-fallback]')
 await fallback.waitFor({ state: 'visible' })
 await fallback.locator('summary').press('Enter')
@@ -294,8 +290,7 @@ const fallbackHrefs = await fallbackLinks
   .evaluateAll(links => links.map(link => link.getAttribute('href')))
 check(
   'Native directory survives missing client scripts',
-  blockedClientScripts.count() > 0 &&
-    (await fallback.evaluate(element => element.open)) &&
+  (await fallback.evaluate(element => element.open)) &&
     (await degradedPage.getByRole('button', { name: '打开全站目录' }).count()) === 0 &&
     fallbackHrefs.join(',') === PUBLIC_HREFS,
 )
@@ -304,9 +299,15 @@ const degradedFits = await degradedPage.evaluate(
 )
 check('Degraded mobile navigation has no horizontal overflow', degradedFits)
 await fallbackLinks.getByRole('link', { name: '项目', exact: true }).focus()
-await Promise.all([degradedPage.waitForURL(/\/games$/), degradedPage.keyboard.press('Enter')])
-const fallbackSurvived = await degradedPage.locator('[data-site-header-fallback]').count()
-check('Native directory keeps keyboard document navigation', fallbackSurvived === 1)
+const blocksBeforeNavigation = chunks.count()
+await Promise.all([
+  degradedPage.waitForURL(/\/games$/, { waitUntil: 'domcontentloaded' }),
+  degradedPage.keyboard.press('Enter'),
+])
+await fallback.waitFor({ state: 'visible' })
+const navigationSurvived = (await fallback.count()) === 1 && chunks.count() > blocksBeforeNavigation
+check('Native directory keeps keyboard document navigation', navigationSurvived)
+await degraded.unrouteAll({ behavior: 'wait' })
 await degraded.close()
 degradedGuard.assertSafe()
 
