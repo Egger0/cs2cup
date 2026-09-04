@@ -48,7 +48,7 @@ try {
   `)
 
   database.exec(
-    await readFile(new URL('0020_legacy_cutover_session_guards.sql', migrationsDirectory), 'utf8'),
+    await readFile(new URL('0021_legacy_cutover_session_guards.sql', migrationsDirectory), 'utf8'),
   )
   assert.equal(database.prepare('SELECT COUNT(*) AS count FROM admin_session').get().count, 0)
   assert.equal(database.prepare('SELECT COUNT(*) AS count FROM participant_session').get().count, 0)
