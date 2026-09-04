@@ -5,7 +5,7 @@ import { createPrivateKey, createPublicKey, sign, verify } from 'node:crypto'
 export interface QqBotConfig {
   appId: string
   appSecret: string
-  allowedGroupOpenId: string
+  allowedGroupOpenId: string | null
 }
 
 export interface QqGroupMessage {
@@ -71,8 +71,8 @@ function parsedTimestamp(value: string | null, now: number) {
 export function qqBotConfig(environment: NodeJS.ProcessEnv = process.env): QqBotConfig | null {
   const appId = environment.QQ_BOT_APP_ID?.trim()
   const appSecret = environment.QQ_BOT_APP_SECRET?.trim()
-  const allowedGroupOpenId = environment.QQ_BOT_ALLOWED_GROUP_OPEN_ID?.trim()
-  return appId && appSecret && allowedGroupOpenId ? { appId, appSecret, allowedGroupOpenId } : null
+  const allowedGroupOpenId = environment.QQ_BOT_ALLOWED_GROUP_OPEN_ID?.trim() || null
+  return appId && appSecret ? { appId, appSecret, allowedGroupOpenId } : null
 }
 
 export function verifyQqWebhookSignature(
