@@ -64,11 +64,22 @@ migrations or deploy from local machines.
 | `IDENTITY_PASSWORD_ACTIVE_PEPPER_VERSION`  | Optional   | Active password pepper version                    |
 | `IDENTITY_AUTH_FINGERPRINT_KEYS`           | Optional   | Versioned dedicated auth fingerprint key JSON     |
 | `IDENTITY_AUTH_FINGERPRINT_ACTIVE_VERSION` | Optional   | Active auth fingerprint key version               |
+| `QQ_BOT_APP_ID`                            | Optional   | QQ official bot App ID                            |
+| `QQ_BOT_APP_SECRET`                        | Optional   | QQ official bot App Secret                        |
+| `QQ_BOT_ALLOWED_GROUP_OPEN_ID`             | Optional   | The single allowed QQ group OpenID                |
 
 Never commit credentials or production secrets. If the dedicated identity key pairs are omitted,
 the required registration fingerprint secret is domain-separated into stable password-pepper and
 authentication-fingerprint keys. Configure both values of a dedicated pair together and retain old
 password pepper versions while credentials still reference them.
+
+## QQ group bot
+
+The optional QQ official bot webhook is `POST /api/qq/webhook`. Set all three `QQ_BOT_*` values as
+Worker Secrets, configure that URL in QQ Open Platform, and subscribe only to the group @-message
+event. The application validates QQ's signed callback, accepts only the configured group OpenID,
+and uses the site account page to issue a ten-minute, one-time binding code. Do not put QQ secrets
+or group OpenIDs in `wrangler.jsonc`.
 
 ## Quality
 

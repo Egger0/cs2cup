@@ -1,0 +1,67 @@
+.qqBinding {
+  display: grid;
+  max-width: 720px;
+  gap: 13px;
+  margin-top: clamp(20px, 3vw, 42px);
+  padding: clamp(24px, 3vw, 36px);
+  border: 1px solid #3c4a4d;
+  background: rgba(115, 172, 210, 0.07);
+}
+
+.qqBinding > p:first-child {
+  color: #73acd2;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.57rem;
+  letter-spacing: 0.14em;
+}
+
+.qqBinding h2 {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.65rem, 3vw, 2.45rem);
+  letter-spacing: -0.035em;
+}
+
+.qqBindingCopy,
+.qqBinding > span {
+  color: #aab3b2;
+  font-size: 0.72rem;
+  line-height: 1.75;
+}
+
+.qqBinding > button,
+.qqBindingCode button {
+  justify-self: start;
+  min-height: 40px;
+  border: 1px solid #73acd2;
+  background: transparent;
+  padding: 8px 13px;
+  color: #d7edf9;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+}
+
+.qqBinding > button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.qqBindingCode {
+  display: grid;
+  gap: 7px;
+  padding: 15px;
+  border: 1px solid rgba(115, 172, 210, 0.45);
+  background: rgba(11, 93, 148, 0.1);
+}
+
+.qqBindingCode strong {
+  color: #eaf7ff;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 1.35rem;
+  letter-spacing: 0.14em;
+}
+
+.qqBindingCode span {
+  color: #aab3b2;
+  font-size: 0.68rem;
+}

@@ -10,6 +10,7 @@ import { getAuthContext } from '@/lib/identity/kernel'
 import { AccountSignOut } from './AccountSignOut'
 import { MembershipPanel } from './MembershipPanel'
 import { ProfileNameForm } from './ProfileNameForm'
+import { QqBindingManager } from './QqBindingManager'
 import styles from './account.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -100,6 +101,7 @@ export default async function AccountPage({
               <Link href="/account/security">管理登录方式与设备 ↗</Link>
             </section>
           </div>
+          <QqBindingManager />
         </div>
       </main>
     </div>
