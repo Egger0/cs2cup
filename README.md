@@ -78,7 +78,8 @@ password pepper versions while credentials still reference them.
 The optional QQ official bot webhook is `POST /api/qq/webhook`. Set all three `QQ_BOT_*` values as
 Worker Secrets, configure that URL in QQ Open Platform, and subscribe only to the group @-message
 event. The application validates QQ's signed callback, accepts only the configured group OpenID,
-and uses the site account page to issue a ten-minute, one-time binding code. Do not put QQ secrets
+and uses the site account page to issue a ten-minute, one-time binding code. Platform owners can
+use **同步 QQ 指令面板** in Admin Settings to publish the group command panel. Do not put QQ secrets
 or group OpenIDs in `wrangler.jsonc`.
 
 ## Quality

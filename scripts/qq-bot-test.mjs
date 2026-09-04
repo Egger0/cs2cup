@@ -9,8 +9,14 @@ registerHooks({
   },
 })
 
-const { qqBotConfig, qqCommand, qqGroupMessage, qqWebhookVerification, verifyQqWebhookSignature } =
-  await import('../lib/qq-bot.ts')
+const {
+  qqBotConfig,
+  qqCommand,
+  qqGroupMessage,
+  qqWebhookVerification,
+  syncQqGroupCommandPanel,
+  verifyQqWebhookSignature,
+} = await import('../lib/qq-bot.ts')
 
 assert.deepEqual(qqBotConfig({ QQ_BOT_APP_ID: 'app', QQ_BOT_APP_SECRET: 'secret' }), {
   appId: 'app',
@@ -59,5 +65,44 @@ assert.equal(
   ),
   false,
 )
+
+const originalFetch = globalThis.fetch
+const requests = []
+let panels = []
+globalThis.fetch = async (url, init = {}) => {
+  requests.push({ url: String(url), init })
+  if (String(url).endsWith('/getAppAccessToken')) {
+    return new Response(JSON.stringify({ access_token: 'token', expires_in: 300 }))
+  }
+  if (String(url).includes('/panels?scope=group')) return new Response(JSON.stringify({ records: panels }))
+  return new Response(JSON.stringify({ panel_id: 'panel-1' }))
+}
+try {
+  assert.equal(
+    await syncQqGroupCommandPanel({ appId: 'app', appSecret: 'secret', allowedGroupOpenId: 'group-1' }),
+    'created',
+  )
+  assert.deepEqual(JSON.parse(requests.at(-1).init.body), {
+    scope: 'group',
+    target_type: 'specific',
+    group_openids: ['group-1'],
+    panel: {
+      items: [
+        { type: 'command', name: '签到', desc: '完成今天的社团打卡' },
+        { type: 'command', name: '签到排行', desc: '查看连续签到排名' },
+        { type: 'command', name: '最近赛事', desc: '查看当前赛事安排' },
+      ],
+      remark: 'nbt-qq-group-commands',
+    },
+  })
+  panels = [{ panel_id: 'panel-1', panel: { remark: 'nbt-qq-group-commands' } }]
+  assert.equal(
+    await syncQqGroupCommandPanel({ appId: 'app', appSecret: 'secret', allowedGroupOpenId: 'group-1' }),
+    'updated',
+  )
+  assert.match(requests.at(-1).url, /\/panels\/panel-1$/)
+} finally {
+  globalThis.fetch = originalFetch
+}
 
 console.log('QQ bot command tests passed')

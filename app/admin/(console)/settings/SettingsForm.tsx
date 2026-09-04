@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { Button, Field } from '@/components/ui'
 import { useUnsavedChangesWarning } from '@/components/admin/useUnsavedChangesWarning'
 import type { SiteSetting } from '@/lib/types'
-import { updateSiteSetting } from '../actions/settings'
+import { syncQqCommandPanel, updateSiteSetting } from '../actions/settings'
 import styles from '../admin.module.css'
 
 export function SettingsForm({ setting }: { setting: SiteSetting }) {
@@ -12,6 +12,7 @@ export function SettingsForm({ setting }: { setting: SiteSetting }) {
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
   const [dirty, setDirty] = useState(false)
+  const [qqSynced, setQqSynced] = useState(false)
 
   useUnsavedChangesWarning(dirty, '站点设置还有未保存的更改，离开将丢失这些内容。')
 
@@ -91,6 +92,31 @@ export function SettingsForm({ setting }: { setting: SiteSetting }) {
         {error ? (
           <span className={styles.error} role="alert">
             {error}
+          </span>
+        ) : null}
+      </div>
+      <div className={styles.rowActions}>
+        <Button
+          type="button"
+          disabled={pending}
+          onClick={() =>
+            startTransition(async () => {
+              setError('')
+              setQqSynced(false)
+              try {
+                await syncQqCommandPanel()
+                setQqSynced(true)
+              } catch {
+                setError('QQ 指令面板同步失败，请稍后重试。')
+              }
+            })
+          }
+        >
+          {pending ? '同步中…' : '同步 QQ 指令面板'}
+        </Button>
+        {qqSynced ? (
+          <span className={styles.ok} role="status">
+            QQ 群指令面板已同步
           </span>
         ) : null}
       </div>

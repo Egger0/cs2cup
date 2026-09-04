@@ -40,6 +40,15 @@ interface QqBotEnvironment {
 const TOKEN_ENDPOINT = 'https://bots.qq.com/app/getAppAccessToken'
 const API_BASE = 'https://api.sgroup.qq.com/v2'
 const FIVE_MINUTES_MS = 5 * 60 * 1000
+const COMMAND_PANEL_REMARK = 'nbt-qq-group-commands'
+const COMMAND_PANEL = {
+  items: [
+    { type: 'command', name: '签到', desc: '完成今天的社团打卡' },
+    { type: 'command', name: '签到排行', desc: '查看连续签到排名' },
+    { type: 'command', name: '最近赛事', desc: '查看当前赛事安排' },
+  ],
+  remark: COMMAND_PANEL_REMARK,
+}
 let cachedAccessToken: QqAccessToken | null = null
 
 function stringValue(value: unknown) {
@@ -206,4 +215,51 @@ async function postGroupReply(
 
 export function replyToQqGroup(config: QqBotConfig, message: QqGroupMessage, content: string) {
   return postGroupReply(config, message, content)
+}
+
+interface QqCommandPanelRecord {
+  panel_id?: unknown
+  panel?: { remark?: unknown }
+}
+
+async function panelRequest(
+  config: QqBotConfig,
+  path: string,
+  method: 'GET' | 'POST' | 'PUT',
+  body?: unknown,
+  retry = true,
+) {
+  const token = await accessToken(config, !retry)
+  const response = await fetch(`${API_BASE}${path}`, {
+    method,
+    headers: { authorization: `QQBot ${token}`, ...(body ? { 'content-type': 'application/json' } : {}) },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  })
+  if (response.status === 401 && retry) return panelRequest(config, path, method, body, false)
+  if (!response.ok) throw new Error(`QQ command panel request failed with ${response.status}`)
+  return response
+}
+
+export async function syncQqGroupCommandPanel(config: QqBotConfig) {
+  if (!config.allowedGroupOpenId) throw new Error('QQ allowed group is not configured')
+  const response = await panelRequest(config, '/panels?scope=group&limit=20', 'GET')
+  const payload = (await response.json().catch(() => null)) as { records?: unknown } | null
+  const records = Array.isArray(payload?.records) ? (payload.records as QqCommandPanelRecord[]) : []
+  const existing = records.find(
+    record =>
+      typeof record.panel_id === 'string' && record.panel?.remark === COMMAND_PANEL_REMARK,
+  )
+  if (existing && typeof existing.panel_id === 'string') {
+    await panelRequest(config, `/panels/${encodeURIComponent(existing.panel_id)}`, 'PUT', {
+      panel: COMMAND_PANEL,
+    })
+    return 'updated'
+  }
+  await panelRequest(config, '/panels', 'POST', {
+    scope: 'group',
+    target_type: 'specific',
+    group_openids: [config.allowedGroupOpenId],
+    panel: COMMAND_PANEL,
+  })
+  return 'created'
 }

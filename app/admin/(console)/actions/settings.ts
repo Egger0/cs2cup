@@ -2,6 +2,8 @@
 
 import { updateTag } from 'next/cache'
 import { requireAdmin } from '@/lib/auth'
+import { cloudflareEnvironment } from '@/lib/cloudflare-bindings'
+import { qqBotConfig, syncQqGroupCommandPanel } from '@/lib/qq-bot'
 import { adminSaveSiteSetting } from '@/lib/queries/content'
 
 export async function updateSiteSetting(form: FormData) {
@@ -15,4 +17,11 @@ export async function updateSiteSetting(form: FormData) {
     footer_copy: String(form.get('footerCopy') ?? '').trim() || null,
   })
   updateTag('site_setting')
+}
+
+export async function syncQqCommandPanel() {
+  await requireAdmin()
+  const config = qqBotConfig(cloudflareEnvironment())
+  if (!config?.allowedGroupOpenId) throw new Error('QQ robot is not configured')
+  await syncQqGroupCommandPanel(config)
 }
