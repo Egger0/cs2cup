@@ -63,9 +63,19 @@
   font-size: 0.78rem;
 }
 
+.nextAction {
+  margin-top: 10px;
+  color: #c7cfcd;
+  font-size: 0.74rem;
+}
+
+.nextAction strong {
+  color: #9bd3f6;
+}
+
 .timeline {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   margin-top: 30px;
   border-block: 1px solid var(--line);
 }
@@ -193,6 +203,11 @@
   max-width: 610px;
   color: #a0aaa8;
   font-size: 0.74rem;
+}
+
+.pendingActions > p + p {
+  margin-top: 8px;
+  color: #9bd3f6;
 }
 
 .pendingActions > div {

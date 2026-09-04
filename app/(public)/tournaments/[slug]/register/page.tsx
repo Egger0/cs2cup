@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { ButtonLink, Empty } from '@/components/ui'
 import { SectionHead } from '@/components/domain/Sections'
 import { getRegistrationStatus, getTournament, safely } from '@/lib/queries/public'
-import { resolveSiteOrigin } from '@/lib/site-config'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { getAuthContext } from '@/lib/identity/kernel'
 import { getMembershipState } from '@/lib/identity/membership-service'
+import { getRegistrationDraft } from '@/lib/identity/registration-workflow'
 import { RegisterForm } from './RegisterForm'
 
 export const dynamic = 'force-dynamic'
@@ -25,10 +25,17 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
   const seatsLeft = Math.max(0, status.cap - status.taken)
   const accepting = status.open && seatsLeft > 0
   const context = await getAuthContext()
-  const membership =
+  if (context.kind === 'authenticated' && context.session.recoveryRestricted) {
+    redirect('/account/security?recovery=1')
+  }
+  const database = cloudflareBindings().db
+  const [membership, draft] =
     context.kind === 'authenticated'
-      ? await getMembershipState(cloudflareBindings().db, context)
-      : null
+      ? await Promise.all([
+          getMembershipState(database, context),
+          getRegistrationDraft(database, context, slug),
+        ])
+      : [null, null]
   const eligible = membership?.ok === true && membership.membership?.status === 'approved'
 
   return (
@@ -60,20 +67,23 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
           >
             赛事报名归属于账号。创建账号后可申请成员资格；等待期间仍可登录和维护资料。
           </Empty>
-        ) : accepting && !eligible ? (
-          <Empty
-            action={
-              <ButtonLink href="/account" variant="primary">
-                查看或提交资格申请
-              </ButtonLink>
-            }
-          >
-            最终提交赛事报名需要已通过的成员资格。你的账号仍可正常使用。
-          </Empty>
         ) : accepting ? (
-          <div data-rise="2">
-            <RegisterForm slug={slug} disabled={false} siteOrigin={resolveSiteOrigin()} />
-          </div>
+          <>
+            {!eligible ? (
+              <Empty
+                action={
+                  <ButtonLink href="/account" variant="primary">
+                    查看或提交资格申请
+                  </ButtonLink>
+                }
+              >
+                你可以先填写并保存草稿；通过成员资格审核后，再完成最终提交。
+              </Empty>
+            ) : null}
+            <div data-rise="2">
+              <RegisterForm slug={slug} canSubmit={eligible} initialValues={draft?.values} />
+            </div>
+          </>
         ) : (
           <Empty
             action={

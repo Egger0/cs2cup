@@ -46,6 +46,7 @@
 
 .heading dl {
   display: flex;
+  flex-wrap: wrap;
   flex: none;
   gap: 28px;
 }
@@ -178,7 +179,7 @@
 
 .decision {
   display: grid;
-  grid-template-columns: minmax(180px, 0.38fr) 1fr auto;
+  grid-template-columns: minmax(150px, 0.32fr) minmax(150px, 0.32fr) 1fr auto;
   gap: 12px;
   align-items: end;
   margin-top: 18px;

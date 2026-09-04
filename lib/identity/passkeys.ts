@@ -21,7 +21,7 @@ import { createAuthAttemptFingerprint } from './internal/auth-fingerprint.ts'
 import { AuthAttemptRateLimitError, chargeAuthAttempts } from './internal/auth-attempts.ts'
 import { networkAuthAttemptCharge } from './internal/auth-network.ts'
 import {
-  completePasskeyAuthentication,
+  completeVerifiedPasskeyAuthentication,
   passkeyAuthenticationCredential,
   type PasskeySessionReplacement,
 } from './internal/passkey-authentication.ts'
@@ -41,8 +41,10 @@ import {
   replacementFromPasskeyRequest,
 } from './internal/passkey-legacy-session.ts'
 import { IdentityPasskeyError, validPasskeyCredentialId } from './internal/passkey-shared.ts'
+import { clientSessionLabel } from './internal/session-display.ts'
 import type { AuthenticatedAuthContext } from './internal/contracts.ts'
 import { isIdentityRedirectKey, resolveIdentityRedirect } from './redirects.ts'
+import { isParticipantReturnPath } from '../participant-return.ts'
 
 export type { AccountPasskey, AuthenticationResponseJSON, RegistrationResponseJSON }
 export {
@@ -55,17 +57,21 @@ export {
 
 const SLUG = /^[a-z0-9][a-z0-9-]{0,99}$/
 
-function signInDestination(redirectKey: unknown, tournamentSlug: unknown) {
+function signInDestination(redirectKey: unknown, tournamentSlug: unknown, returnTo: unknown) {
   const key = isIdentityRedirectKey(redirectKey) ? redirectKey : 'account'
-  const context =
-    typeof tournamentSlug === 'string' && SLUG.test(tournamentSlug) ? { tournamentSlug } : {}
-  return { key, context, target: resolveIdentityRedirect(key, context) }
+  const context: Record<string, string> = {}
+  if (typeof tournamentSlug === 'string' && SLUG.test(tournamentSlug)) {
+    context.tournamentSlug = tournamentSlug
+  }
+  if (isParticipantReturnPath(returnTo)) context.returnTo = returnTo
+  return { key, context }
 }
 
 export async function beginPasskeySignIn(input: {
   headers: Pick<Headers, 'get'>
   redirectKey?: unknown
   tournamentSlug?: unknown
+  returnTo?: unknown
   now?: number
 }) {
   const now = input.now ?? Date.now()
@@ -77,7 +83,7 @@ export async function beginPasskeySignIn(input: {
     [await networkAuthAttemptCharge(input.headers, 'passkey_authentication', fingerprintKey, 50)],
     now,
   )
-  const destination = signInDestination(input.redirectKey, input.tournamentSlug)
+  const destination = signInDestination(input.redirectKey, input.tournamentSlug, input.returnTo)
   const intent = await issuePasskeyIntent(database, {
     purpose: 'passkey_sign_in',
     redirectKey: destination.key,
@@ -98,6 +104,7 @@ export async function verifyPasskeySignIn(input: {
   ceremonySecret: string
   response: AuthenticationResponseJSON
   replacement?: PasskeySessionReplacement
+  headers?: Pick<Headers, 'get'>
   now?: number
 }) {
   const now = input.now ?? Date.now()
@@ -110,8 +117,8 @@ export async function verifyPasskeySignIn(input: {
   if (!validPasskeyCredentialId(input.response?.id)) {
     throw new IdentityPasskeyError('unknown_credential')
   }
-  const credential = await passkeyAuthenticationCredential(database, input.response.id)
-  if (input.response.response.userHandle !== credential.userHandle) {
+  const verificationCredential = await passkeyAuthenticationCredential(database, input.response.id)
+  if (input.response.response.userHandle !== verificationCredential.userHandle) {
     throw new IdentityPasskeyError('unknown_credential')
   }
   let verification: Awaited<ReturnType<typeof verifyParticipantAuthentication>>
@@ -121,29 +128,36 @@ export async function verifyPasskeySignIn(input: {
       challenge: intent.challenge,
       response: input.response,
       credential: {
-        id: credential.id,
-        publicKey: credential.publicKey,
-        counter: credential.counter,
-        transports: credential.transports as WebAuthnCredential['transports'],
+        id: verificationCredential.id,
+        publicKey: verificationCredential.publicKey,
+        counter: verificationCredential.counter,
+        transports: verificationCredential.transports as WebAuthnCredential['transports'],
       },
     })
   } catch {
     throw new IdentityPasskeyError('invalid_ceremony')
   }
   if (!verification.verified) throw new IdentityPasskeyError('invalid_ceremony')
-  const result = await completePasskeyAuthentication(database, {
+  const result = await completeVerifiedPasskeyAuthentication(database, {
     intent,
-    credential,
+    credential: verificationCredential,
     verification: {
       newCounter: verification.authenticationInfo.newCounter,
       deviceType: verification.authenticationInfo.credentialDeviceType,
       backedUp: verification.authenticationInfo.credentialBackedUp,
     },
     replacement: input.replacement,
+    clientLabel: input.headers ? clientSessionLabel(input.headers) : undefined,
     now,
   })
   const key = isIdentityRedirectKey(result.redirectKey) ? result.redirectKey : 'account'
-  return { ...result, redirectTo: resolveIdentityRedirect(key, result.redirectContext) }
+  const returnTo = result.redirectContext.returnTo
+  return {
+    ...result,
+    redirectTo: isParticipantReturnPath(returnTo)
+      ? returnTo
+      : resolveIdentityRedirect(key, result.redirectContext),
+  }
 }
 
 export async function beginPasskeyEnrollment(input: {

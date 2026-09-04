@@ -22,7 +22,7 @@ function failure(error: unknown) {
   if (error instanceof IdentityPasskeyError && error.code === 'invalid_request') {
     return passkeyError(400)
   }
-  console.error('[identity] passkey sign-in options unavailable')
+  console.error('[identity] passkey sign-in options unavailable', error)
   return passkeyError(503, '通行密钥服务暂时不可用，请稍后重试。')
 }
 
@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
       headers: request.headers,
       redirectKey: request.nextUrl.searchParams.get('redirectKey'),
       tournamentSlug: request.nextUrl.searchParams.get('tournamentSlug'),
+      returnTo: request.nextUrl.searchParams.get('returnTo'),
     })
     return setCeremonyCookie(privateJson(result.options), result.ceremonySecret)
   } catch (error) {

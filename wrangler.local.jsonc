@@ -6,6 +6,7 @@
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "send_metrics": false,
   "vars": {
+    "NEXT_PUBLIC_SITE_URL": "http://localhost:3000",
     "REGISTRATION_CLIENT_IP_SOURCE": "x-real-ip",
     "REGISTRATION_FINGERPRINT_SECRET": "local-only-identity-root-do-not-use-in-production-2026",
   },
@@ -25,6 +26,13 @@
     {
       "binding": "CS2CUP_MEDIA",
       "bucket_name": "cs2cup-local-media",
+      "remote": false,
+    },
+  ],
+  "services": [
+    {
+      "binding": "IDENTITY_PASSWORD_RANGE",
+      "service": "cs2cup-browser-check-password-range",
       "remote": false,
     },
   ],

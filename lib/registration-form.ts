@@ -10,6 +10,16 @@ export interface RegistrationFormValues {
   players: RegistrationRosterPlayer[]
 }
 
+export interface RegistrationDraftValues {
+  name: string
+  tag: string
+  captain: string
+  contact: string
+  dept: string
+  note: string
+  players: [string, string, string, string, string, string]
+}
+
 type RegistrationFormResult =
   | { ok: true; values: RegistrationFormValues }
   | { ok: false; error: string }
@@ -73,4 +83,25 @@ export function parseRegistrationForm(form: FormData): RegistrationFormResult {
   const roster = validateRegistrationRoster(values.players)
   if (!roster.ok) return { ok: false, error: roster.error }
   return { ok: true, values: { ...values, players: roster.players } }
+}
+
+export function parseRegistrationDraftForm(form: FormData) {
+  try {
+    return {
+      ok: true as const,
+      values: {
+        name: formText(form, 'name', FIELD_LIMITS.name),
+        tag: formText(form, 'tag', FIELD_LIMITS.tag).toUpperCase(),
+        captain: formText(form, 'captain', FIELD_LIMITS.captain),
+        contact: formText(form, 'contact', FIELD_LIMITS.contact),
+        dept: formText(form, 'dept', FIELD_LIMITS.dept),
+        note: formText(form, 'note', FIELD_LIMITS.note, true),
+        players: [1, 2, 3, 4, 5, 6].map(index =>
+          formText(form, `player${index}`, FIELD_LIMITS.player),
+        ) as RegistrationDraftValues['players'],
+      },
+    }
+  } catch {
+    return { ok: false as const, error: '草稿内容格式或长度无效，请检查后重试' }
+  }
 }

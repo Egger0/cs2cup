@@ -177,8 +177,7 @@ export function CheckInOperatorManager({ manager }: { manager: TournamentCheckIn
           <div>
             <h3 id="grant-title">开放一次临时值班</h3>
             <p>
-              候选来自本届已绑定的报名档案。请让当事人从“我的赛事”报出 PASS
-              编号；队名只用于定位报名，不代表已核验持有人身份。
+              候选来自本届已绑定的报名。请让当事人从“我的赛事”报出账号参考编号；队名只用于定位报名，不代表已核验持有人身份。
             </p>
           </div>
 
@@ -222,7 +221,7 @@ export function CheckInOperatorManager({ manager }: { manager: TournamentCheckIn
 
           {grantableCandidates.length === 0 ? (
             <p className={styles.emptyHint}>
-              暂无可授权报名。持有人需先通过报名回执建立赛事通行；已有权限者列在右侧。
+              暂无可授权报名。持有人需先把报名关联到账号；已有权限者列在右侧。
             </p>
           ) : null}
         </form>

@@ -78,10 +78,21 @@ export async function createAdminSession(
       db.prepare('DELETE FROM admin_session WHERE expires_at <= ?').bind(now),
       db
         .prepare(
-          'INSERT INTO admin_session (token_hash, admin_id, expires_at) VALUES (?, CASE WHEN ? IS NULL OR NOT EXISTS (SELECT 1 FROM participant_session WHERE token_hash = ? AND expires_at > ?) THEN ? ELSE NULL END, ?)',
+          `INSERT INTO admin_session (token_hash, admin_id, expires_at)
+           VALUES (?, CASE WHEN
+             NOT EXISTS (
+               SELECT 1 FROM identity_legacy_subject_map AS migrated
+               WHERE migrated.subject_type = 'admin_account'
+                 AND migrated.subject_id = CAST(? AS TEXT)
+             ) AND (
+               ? IS NULL OR NOT EXISTS (
+                 SELECT 1 FROM participant_session WHERE token_hash = ? AND expires_at > ?
+               )
+             ) THEN ? ELSE NULL END, ?)`,
         )
         .bind(
           tokenHash,
+          admin.id,
           opposingParticipantSessionHash,
           opposingParticipantSessionHash,
           now,

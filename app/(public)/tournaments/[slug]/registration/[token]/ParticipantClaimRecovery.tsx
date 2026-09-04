@@ -5,7 +5,7 @@ import styles from './claim-passkey.module.css'
 const RECOVERY_SIGNAL: Record<PasskeyClaimFeedback['code'], string> = {
   'receipt-refresh-required': 'RECEIPT / REFRESH',
   'rate-limited': 'PACE / HOLD',
-  'verification-failed': 'PASS / NOT CREATED',
+  'verification-failed': 'ACCOUNT / NOT LINKED',
   'verification-uncertain': 'RESULT / UNKNOWN',
   'interrupted-or-unavailable': 'DEVICE / INTERRUPTED',
   'temporarily-unavailable': 'SERVICE / STANDBY',

@@ -43,9 +43,9 @@ export interface ParticipantPasskeyClaimProps {
 }
 
 const TITLE: Record<ParticipantEntryOwnershipState, string> = {
-  'anonymous-unclaimed': '把这份报名收进赛事通行证',
-  'signed-in-unclaimed': '加入当前赛事通行证',
-  'owned-by-current': '已在你的赛事通行证中',
+  'anonymous-unclaimed': '把这份报名加入我的赛事',
+  'signed-in-unclaimed': '加入我的赛事',
+  'owned-by-current': '已在你的“我的赛事”中',
   'owned-by-other': '这份报名已有归属',
 }
 
@@ -256,7 +256,7 @@ export function ParticipantPasskeyClaim({
     <section className={styles.pass} aria-labelledby="passkey-claim-title">
       <header className={styles.header}>
         <div>
-          <p className={styles.kicker}>报名凭证 / PASS 01</p>
+          <p className={styles.kicker}>报名关联 / LEGACY 01</p>
           <h2 id="passkey-claim-title">{TITLE[visibleOwnership]}</h2>
         </div>
         <span className={styles.serial} aria-hidden="true">

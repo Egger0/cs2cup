@@ -18,6 +18,7 @@ import {
   validOpaqueId,
   validPasskeyCredentialId,
 } from './passkey-shared.ts'
+import { RECENT_AUTHENTICATION_MS } from './recent-authentication.ts'
 import { privateSessionContext } from './session-context.ts'
 
 interface EnrollmentAccountRow {
@@ -25,10 +26,6 @@ interface EnrollmentAccountRow {
   webauthn_user_handle: string
   display_name: string
   account_label: string
-}
-
-interface CredentialIdRow {
-  credential_id: string
 }
 
 async function enrollmentAccount(
@@ -50,9 +47,17 @@ async function enrollmentAccount(
        WHERE session.id = ? AND session.account_id = ? AND session.token_hash = ?
          AND session.revoked_at IS NULL AND session.recovery_restricted = 0
          AND session.security_version = account.security_version AND account.status = 'active'
+         AND session.authenticated_at >= ?
          AND session.idle_expires_at > ? AND session.absolute_expires_at > ? LIMIT 1`,
     )
-    .bind(context.session.id, context.account.id, privateContext.tokenHash, now, now)
+    .bind(
+      context.session.id,
+      context.account.id,
+      privateContext.tokenHash,
+      now - RECENT_AUTHENTICATION_MS,
+      now,
+      now,
+    )
     .first<EnrollmentAccountRow>()
   if (
     !row ||
@@ -81,7 +86,7 @@ export async function preparePasskeyEnrollment(
        WHERE account_id = ? AND status = 'active' ORDER BY created_at, credential_id`,
     )
     .bind(account.id)
-    .all<CredentialIdRow>()
+    .all<{ credential_id: string }>()
   if (existing.results.some(row => !validPasskeyCredentialId(row.credential_id))) {
     throw new IdentityPasskeyError('conflict')
   }

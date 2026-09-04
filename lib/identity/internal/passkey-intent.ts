@@ -13,6 +13,7 @@ import {
   validOpaqueId,
   validPasskeyHash,
 } from './passkey-shared.ts'
+import { hasRecentAuthentication } from './recent-authentication.ts'
 
 export type PasskeyIntentPurpose = 'passkey_sign_in' | 'passkey_enrollment'
 
@@ -118,6 +119,9 @@ export async function issuePasskeyIntent(
   }
   if (enrollment && context?.session.recoveryRestricted) {
     throw new IdentityPasskeyError('recovery_restricted')
+  }
+  if (enrollment && context && !hasRecentAuthentication(context, now)) {
+    throw new IdentityPasskeyError('reauth_required')
   }
   if (!enrollment && context) throw new IdentityPasskeyError('invalid_request')
 

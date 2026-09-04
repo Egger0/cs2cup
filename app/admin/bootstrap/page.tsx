@@ -13,10 +13,10 @@ import styles from '../login/login.module.css'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata = { title: { absolute: '统一管理员账号' } }
+export const metadata = { title: { absolute: '统一负责人账号' } }
 
 const ERRORS: Record<string, string> = {
-  already_completed: '管理员账号迁移已经完成，请使用统一登录入口。',
+  already_completed: '负责人账号迁移已经完成，请使用统一登录入口。',
   authority: '旧管理员会话已失效，请重新登录后继续。',
   conflict: '迁移状态已经改变，请刷新后重试。',
   invalid_input: '请检查用户名、显示名称与密码要求。',
@@ -43,7 +43,9 @@ export default async function AdminBootstrapPage({
     hasConflictingLegacySessions(),
   ])
   if (owner) redirect('/admin')
-  if (context.kind === 'authenticated') redirect('/account')
+  if (context.kind === 'authenticated') {
+    redirect(context.session.recoveryRestricted ? '/account/security?recovery=1' : '/account')
+  }
   if (participant || conflict) redirect('/login?reason=conflict&reauth=admin')
   if (!legacyAdmin) redirect('/admin/login')
   const error = typeof params.error === 'string' ? ERRORS[params.error] : null
@@ -66,7 +68,7 @@ export default async function AdminBootstrapPage({
 
       <section className={styles.card} aria-labelledby="bootstrap-form-title">
         <p className={styles.serial}>PLATFORM OWNER / MIGRATION</p>
-        <h2 id="bootstrap-form-title">创建统一管理员账号</h2>
+        <h2 id="bootstrap-form-title">创建统一负责人账号</h2>
         <form action="/api/auth/bootstrap" method="post" className={styles.form}>
           <Field
             id="owner-username"

@@ -3,7 +3,10 @@ import { type NextRequest } from 'next/server'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { assertCsrfRequest, CsrfError } from '@/lib/csrf'
 import { exactParticipantEntryAttachmentBody } from '@/lib/participant-entry-attachment-request'
-import { legacySessionStateFromRequest } from '@/lib/legacy-session-state'
+import {
+  legacySessionStateFromRequest,
+  unifiedSessionStateFromRequest,
+} from '@/lib/legacy-session-state'
 import {
   clearParticipantSessionCookie,
   participantSessionHashFromRequest,
@@ -27,22 +30,29 @@ function attachmentError(error: unknown) {
   }
   if (error instanceof ParticipantEntryAttachmentError) {
     if (error.code === 'invalid_session') {
-      return clearParticipantSessionCookie(errorResponse(401, '赛事通行已失效，请重新登录。'))
+      return clearParticipantSessionCookie(errorResponse(401, '旧登录状态已失效，请重新登录。'))
     }
     if (error.code === 'invalid_entry') {
       return errorResponse(404, '找不到可加入的赛事报名。')
     }
     if (error.code === 'entry_owned_elsewhere') {
-      return errorResponse(409, '这份报名已经归属另一份赛事通行证。')
+      return errorResponse(409, '这份报名已经关联到另一个账号。')
     }
   }
-  return errorResponse(503, '赛事通行暂不可用，请稍后重试。')
+  return errorResponse(503, '旧登录方式暂不可用，请稍后重试。')
 }
 
 export async function POST(request: NextRequest) {
   try {
     assertCsrfRequest(request)
-    if ((await legacySessionStateFromRequest(request)).adminActive) {
+    const [legacySessions, unifiedSession] = await Promise.all([
+      legacySessionStateFromRequest(request),
+      unifiedSessionStateFromRequest(request),
+    ])
+    if (unifiedSession.kind === 'authenticated') {
+      return errorResponse(409, '当前已有统一账号登录，请先退出或完成账号恢复。')
+    }
+    if (legacySessions.adminActive) {
       return errorResponse(409, '旧管理员会话仍在使用，请先安全清除后重新登录。')
     }
     const sessionTokenHash = await participantSessionHashFromRequest(request)

@@ -75,5 +75,5 @@ export function isCheckInOperatorSnapshot(
 }
 
 export function maskParticipantPrincipal(principalId: string) {
-  return `PASS · …${principalId.slice(-8)}`
+  return `LEGACY · …${principalId.slice(-8)}`
 }

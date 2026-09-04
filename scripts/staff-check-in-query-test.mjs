@@ -18,6 +18,9 @@ const bindingsModule = dataModule(`
 const participantModule = dataModule(`
   export async function getCurrentParticipant() { return globalThis.__staffQueryParticipant }
 `)
+const identityModule = dataModule(`
+  export async function getAuthContext() { return globalThis.__staffQueryUnifiedContext }
+`)
 
 registerHooks({
   resolve(specifier, context, nextResolve) {
@@ -31,6 +34,7 @@ registerHooks({
     if (specifier === '../participant-auth') {
       return { url: participantModule, shortCircuit: true }
     }
+    if (specifier === '../identity/kernel') return { url: identityModule, shortCircuit: true }
     if (specifier === '../authorization') {
       return { url: source('../lib/authorization.ts'), shortCircuit: true }
     }
@@ -87,7 +91,8 @@ try {
     VALUES
       (1, 'first', 'First Cup', '2026', 1, 'running', 8),
       (2, 'second', 'Second Cup', '2026', 2, 'registration', 8),
-      (3, 'third', 'Third Cup', '2027', 1, 'draft', 8);
+      (3, 'third', 'Third Cup', '2027', 1, 'draft', 8),
+      (4, 'fourth', 'Fourth Cup', '2027', 2, 'postponed', 8);
     INSERT INTO team
       (id, tournament_id, name, tag, captain, contact, dept, note, status, created_at)
     VALUES
@@ -101,13 +106,27 @@ try {
       (tournament_id, principal_id, role, granted_at)
     VALUES
       (1, '${principalId}', 'organizer', ${now - 2_000}),
-      (1, '${principalId}', 'check_in_operator', ${now - 2_000});
+      (1, '${principalId}', 'check_in_operator', ${now - 2_000}),
+      (4, '${principalId}', 'check_in_operator', ${now - 2_000});
     INSERT INTO tournament_role_assignment
       (tournament_id, principal_id, role, granted_at, revoked_at)
     VALUES (2, '${principalId}', 'check_in_operator', ${now - 2_000}, ${now - 1_000});
     INSERT INTO tournament_role_assignment
       (tournament_id, principal_id, role, granted_at, expires_at)
     VALUES (3, '${principalId}', 'organizer', ${now - 2_000}, ${now - 1_000});
+    INSERT INTO identity_account
+      (id, webauthn_user_handle, display_name, status, verification_state, created_at, updated_at)
+    VALUES ('${'I'.repeat(43)}', '${'i'.repeat(43)}', 'Unified Staff', 'active', 'verified',
+            ${now - 2_000}, ${now - 2_000});
+    INSERT INTO identity_role_assignment
+      (id, account_id, role, scope_type, scope_tournament_id, grant_reason, granted_at)
+    VALUES
+      ('${'J'.repeat(43)}', '${'I'.repeat(43)}', 'organizer', 'tournament', 1,
+       'Workspace test', ${now - 2_000}),
+      ('${'K'.repeat(43)}', '${'I'.repeat(43)}', 'referee', 'tournament', 1,
+       'Workspace test', ${now - 2_000}),
+      ('${'L'.repeat(43)}', '${'I'.repeat(43)}', 'check_in_operator', 'tournament', 4,
+       'Workspace test', ${now - 2_000});
   `)
 
   const d1 = new D1Database(database)
@@ -124,9 +143,17 @@ try {
     credentialId: 'credential',
     sessionExpiresAt: now + 60_000,
   }
+  globalThis.__staffQueryUnifiedContext = {
+    kind: 'authenticated',
+    account: { id: 'I'.repeat(43) },
+    session: { recoveryRestricted: false, authenticatedAt: now },
+  }
 
-  const { getTournamentCheckInDesk, listCurrentParticipantCheckInWorkspaces } =
-    await import('../lib/queries/staff-check-in.ts')
+  const {
+    getTournamentCheckInDesk,
+    listCurrentParticipantCheckInWorkspaces,
+    listCurrentUnifiedTournamentWorkspaces,
+  } = await import('../lib/queries/staff-check-in.ts')
   const desk = await getTournamentCheckInDesk(1)
   assert.deepEqual(globalThis.__staffQueryAuthCalls, [
     { tournamentId: 1, capability: 'tournament.check_in.read' },
@@ -159,10 +186,10 @@ try {
   assert.equal(d1.queries.length, deniedQueryCount, 'authorization runs before private reads')
   globalThis.__staffQueryDenied = false
 
-  const workspaces = await listCurrentParticipantCheckInWorkspaces()
+  const workspacePage = await listCurrentParticipantCheckInWorkspaces()
   assert.deepEqual(
-    workspaces.map(workspace => workspace.id),
-    [1],
+    workspacePage.workspaces.map(workspace => workspace.id),
+    [1, 4],
     'workspace discovery removes duplicates, expired grants and revoked grants',
   )
   const workspaceQuery = d1.queries.at(-1)
@@ -174,8 +201,51 @@ try {
 
   globalThis.__staffQueryParticipant = null
   const anonymousQueryCount = d1.queries.length
-  assert.deepEqual(await listCurrentParticipantCheckInWorkspaces(), [])
+  assert.equal((await listCurrentParticipantCheckInWorkspaces()).total, 0)
   assert.equal(d1.queries.length, anonymousQueryCount)
+
+  globalThis.__staffQueryParticipant = {
+    principalId,
+    credentialId: 'credential',
+    sessionExpiresAt: now + 60_000,
+  }
+  const legacySecondPage = await listCurrentParticipantCheckInWorkspaces({ limit: 1, offset: 1 })
+  assert.deepEqual(
+    legacySecondPage.workspaces.map(workspace => workspace.id),
+    [4],
+  )
+  assert.deepEqual(legacySecondPage.pagination, {
+    offset: 1,
+    limit: 1,
+    hasPrevious: true,
+    hasNext: false,
+  })
+  assert.equal(
+    (await listCurrentParticipantCheckInWorkspaces({ limit: 1, offset: 10_020 })).total,
+    2,
+  )
+
+  const unifiedPage = await listCurrentUnifiedTournamentWorkspaces()
+  assert.deepEqual(
+    unifiedPage.workspaces.map(workspace => workspace.id),
+    [1, 4],
+  )
+  assert.equal(unifiedPage.total, 2)
+  assert.deepEqual(unifiedPage.workspaces[0].roles, ['organizer', 'referee'])
+  assert.equal(unifiedPage.workspaces[0].canCheckIn, true)
+  const unifiedSecondPage = await listCurrentUnifiedTournamentWorkspaces({ limit: 1, offset: 1 })
+  assert.deepEqual(
+    unifiedSecondPage.workspaces.map(workspace => workspace.id),
+    [4],
+  )
+  assert.equal(
+    (await listCurrentUnifiedTournamentWorkspaces({ limit: 1, offset: 10_020 })).total,
+    2,
+  )
+  globalThis.__staffQueryUnifiedContext.session.authenticatedAt = now - 13 * 60 * 60 * 1000
+  const staleUnifiedQueryCount = d1.queries.length
+  assert.equal((await listCurrentUnifiedTournamentWorkspaces()).total, 0)
+  assert.equal(d1.queries.length, staleUnifiedQueryCount)
 
   console.log('staff check-in narrow query tests passed')
 } finally {
@@ -184,5 +254,6 @@ try {
   delete globalThis.__staffQueryDenied
   delete globalThis.__staffQueryActor
   delete globalThis.__staffQueryParticipant
+  delete globalThis.__staffQueryUnifiedContext
   database.close()
 }

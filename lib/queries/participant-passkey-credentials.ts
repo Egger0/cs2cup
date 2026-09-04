@@ -175,7 +175,17 @@ export async function participantCredentialById(
   }
   const row = await db
     .prepare(
-      'SELECT credential.credential_id, credential.principal_id, principal.webauthn_user_handle, credential.public_key, credential.counter, credential.transports_json, credential.revision FROM participant_passkey_credential AS credential JOIN participant_principal AS principal ON principal.id = credential.principal_id WHERE credential.credential_id = ?',
+      `SELECT credential.credential_id, credential.principal_id,
+              principal.webauthn_user_handle, credential.public_key, credential.counter,
+              credential.transports_json, credential.revision
+       FROM participant_passkey_credential AS credential
+       JOIN participant_principal AS principal ON principal.id = credential.principal_id
+       WHERE credential.credential_id = ?
+         AND NOT EXISTS (
+           SELECT 1 FROM identity_legacy_subject_map AS migrated
+           WHERE migrated.subject_type = 'participant_principal'
+             AND migrated.subject_id = credential.principal_id
+         )`,
     )
     .bind(credentialId)
     .first<CredentialRow>()
@@ -233,7 +243,15 @@ export async function finishParticipantAuthentication(
         .bind(input.now, SESSION_CLEANUP_BATCH),
       db
         .prepare(
-          'UPDATE participant_passkey_credential SET counter = ?, device_type = ?, backed_up = ?, revision = ?, write_nonce = ?, last_used_at = ? WHERE credential_id = ? AND principal_id = ? AND counter = ? AND revision = ?',
+          `UPDATE participant_passkey_credential
+           SET counter = ?, device_type = ?, backed_up = ?, revision = ?, write_nonce = ?,
+               last_used_at = ?
+           WHERE credential_id = ? AND principal_id = ? AND counter = ? AND revision = ?
+             AND NOT EXISTS (
+               SELECT 1 FROM identity_legacy_subject_map AS migrated
+               WHERE migrated.subject_type = 'participant_principal'
+                 AND migrated.subject_id = participant_passkey_credential.principal_id
+             )`,
         )
         .bind(
           input.newCounter,
@@ -249,7 +267,22 @@ export async function finishParticipantAuthentication(
         ),
       db
         .prepare(
-          'INSERT INTO participant_session (token_hash, principal_id, credential_id, created_at, expires_at) VALUES (CASE WHEN ? IS NULL OR NOT EXISTS (SELECT 1 FROM admin_session WHERE token_hash = ? AND expires_at > ?) THEN ? ELSE NULL END, (SELECT principal_id FROM participant_passkey_credential WHERE credential_id = ? AND principal_id = ? AND revision = ? AND write_nonce = ?), ?, ?, ?)',
+          `INSERT INTO participant_session
+            (token_hash, principal_id, credential_id, created_at, expires_at)
+           VALUES (
+             CASE WHEN ? IS NULL OR NOT EXISTS (
+               SELECT 1 FROM admin_session WHERE token_hash = ? AND expires_at > ?
+             ) THEN ? ELSE NULL END,
+             (SELECT credential.principal_id
+              FROM participant_passkey_credential AS credential
+              WHERE credential.credential_id = ? AND credential.principal_id = ?
+                AND credential.revision = ? AND credential.write_nonce = ?
+                AND NOT EXISTS (
+                  SELECT 1 FROM identity_legacy_subject_map AS migrated
+                  WHERE migrated.subject_type = 'participant_principal'
+                    AND migrated.subject_id = credential.principal_id
+                )),
+             ?, ?, ?)`,
         )
         .bind(
           input.opposingAdminSessionHash ?? null,

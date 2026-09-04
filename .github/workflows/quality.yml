@@ -19,7 +19,7 @@ jobs:
   cloudflare:
     name: Cloudflare checks
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Check out repository
@@ -47,3 +47,9 @@ jobs:
 
       - name: Enforce Worker size budget
         run: npm run cf:size
+
+      - name: Install browser
+        run: npx --no-install playwright install --with-deps chromium
+
+      - name: Run browser checks
+        run: npm run browser:check

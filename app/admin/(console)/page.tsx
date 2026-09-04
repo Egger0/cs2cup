@@ -1,16 +1,45 @@
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { ButtonLink } from '@/components/ui'
-import { requireAdmin } from '@/lib/auth'
+import { requirePlatformConsole } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 import { listAdminMatches, listTeamsWithContact } from '@/lib/queries/admin'
 import { getCurrentTournament, getPublicTeams } from '@/lib/queries/public'
+import { listCurrentUnifiedTournamentWorkspaces } from '@/lib/queries/staff-check-in'
+import { parsePageNumber } from '@/lib/pagination'
 import { ScheduleEditor } from './ScheduleEditor'
 import { TeamTable } from './TeamTable'
+import { TournamentWorkspaces } from './TournamentWorkspaces'
 import styles from './admin.module.css'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AdminPage() {
-  await requireAdmin()
+const WORKSPACE_PAGE_SIZE = 12
+
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ workspacesPage?: string | string[] }>
+}) {
+  const access = await requirePlatformConsole()
+  if (!access.capabilities.includes('platform.configure')) {
+    if (!access.hasTournamentWork) redirect('/admin/identity')
+    const page = parsePageNumber((await searchParams).workspacesPage, WORKSPACE_PAGE_SIZE)
+    const result = await listCurrentUnifiedTournamentWorkspaces({
+      limit: WORKSPACE_PAGE_SIZE,
+      offset: (page - 1) * WORKSPACE_PAGE_SIZE,
+    })
+    const pages = Math.max(1, Math.ceil(result.total / WORKSPACE_PAGE_SIZE))
+    if (page > pages) redirect(pages === 1 ? '/admin' : `/admin?workspacesPage=${pages}`)
+    return (
+      <TournamentWorkspaces
+        workspaces={result.workspaces}
+        canReviewIdentity={access.capabilities.includes('platform.identity.review')}
+        total={result.total}
+        page={page}
+        pages={pages}
+      />
+    )
+  }
 
   const tournament = await getCurrentTournament()
 

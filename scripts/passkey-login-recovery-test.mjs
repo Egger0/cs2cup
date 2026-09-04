@@ -7,7 +7,7 @@ import {
   passkeyLoginDeviceFailure,
   passkeyLoginHttpFailure,
   passkeyLoginShouldResumeSession,
-  replaceParticipantLoginHistory,
+  replaceLoginHistory,
 } from '../lib/passkey-login-recovery.ts'
 import { passkeyRetryAfterSeconds } from '../lib/passkey-retry-cooldown.ts'
 
@@ -44,12 +44,12 @@ const INTERRUPTED_OR_UNAVAILABLE = {
 const EXPIRED_NOTICE = {
   signal: 'SESSION / CLOSED',
   title: '访问窗口已结束',
-  description: '为了保护报名档案，本次访问已关闭。报名与通行密钥都没有变化，重新由设备确认即可。',
+  description: '为了保护账号资料，本次访问已关闭。报名与登录方式都没有变化，重新登录即可。',
 }
 const SIGNED_OUT_NOTICE = {
   signal: 'SESSION / CLOSED',
-  title: '赛事通行已安全退出',
-  description: '这台设备上的本次访问已关闭。报名与通行密钥都没有变化；需要时可再次由设备确认。',
+  title: '账号已安全退出',
+  description: '这台设备上的本次访问已关闭。报名与登录方式都没有变化；需要时可以再次登录。',
 }
 const CONFLICT_NOTICE = {
   signal: 'SESSION / CONFLICT',
@@ -62,12 +62,19 @@ assert.equal(PARTICIPANT_SIGNED_OUT_LOGIN_PATH, '/login?reason=signed-out')
 const allowedLoginReturn = `/tournaments/autumn-cup-2026/registration/${'A'.repeat(43)}`
 for (const [returnTo, expected] of [
   ['/me', '/me'],
+  ['/account', '/account'],
+  ['/account/security', '/account/security'],
+  ['/admin', '/admin'],
+  ['/tournaments', '/tournaments'],
+  ['/tournaments/autumn-cup-2026/register', '/tournaments/autumn-cup-2026/register'],
   [allowedLoginReturn, allowedLoginReturn],
   [undefined, '/me'],
   ['https://example.com/me', '/me'],
+  ['/account/other', '/me'],
+  ['/tournaments/autumn_cup/register', '/me'],
 ]) {
   const destinations = []
-  replaceParticipantLoginHistory(
+  replaceLoginHistory(
     {
       replace(destination) {
         destinations.push(destination)

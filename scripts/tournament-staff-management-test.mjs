@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { registerHooks } from 'node:module'
 
 import { createMigratedDatabase } from './sqlite-fixture.mjs'
+import { RecordingD1Database } from './recording-d1-fixture.mjs'
 
 const source = path => new URL(path, import.meta.url).href
 const dataModule = code => `data:text/javascript,${encodeURIComponent(code)}`
@@ -47,39 +48,6 @@ registerHooks({
   },
 })
 
-class D1Statement {
-  constructor(owner, sql, parameters = []) {
-    Object.assign(this, { owner, sql, parameters })
-  }
-  bind(...parameters) {
-    return new D1Statement(this.owner, this.sql, parameters)
-  }
-  execute(kind) {
-    this.owner.queries.push({ kind, sql: this.sql, parameters: this.parameters })
-    if (this.owner.failure) {
-      const error = this.owner.failure
-      this.owner.failure = null
-      throw error
-    }
-    return this.owner.database.prepare(this.sql)
-  }
-  async first() {
-    return this.execute('first').get(...this.parameters) ?? null
-  }
-  async all() {
-    return { results: this.execute('all').all(...this.parameters) }
-  }
-}
-
-class D1Database {
-  constructor(database) {
-    Object.assign(this, { database, queries: [], failure: null })
-  }
-  prepare(sql) {
-    return new D1Statement(this, sql)
-  }
-}
-
 const NOW = 2_000_000_000_000
 const HOUR = 3_600_000
 const principal = suffix => `p_${suffix.repeat(43)}`
@@ -98,7 +66,7 @@ const assignmentRow = (database, principalId, tournamentId = 1) =>
     .get(tournamentId, principalId)
 
 const database = await createMigratedDatabase()
-const d1 = new D1Database(database)
+const d1 = new RecordingD1Database(database)
 const originalNow = Date.now
 Date.now = () => NOW
 Object.assign(globalThis, {
@@ -160,6 +128,7 @@ try {
     organizer: addPrincipal('f', 1),
     fresh: addPrincipal('g', 1),
     lost: addPrincipal('h', 1),
+    migrated: addPrincipal('i', 1),
   }
   addTeam(10, 1, 'a-old', ids.active, '2026-01-01')
   addTeam(11, 1, 'a-new', ids.active, '2026-02-01')
@@ -168,6 +137,7 @@ try {
   addTeam(14, 1, 'f', ids.organizer, '2026-05-01')
   addTeam(15, 1, 'g', ids.fresh, '2026-06-01')
   addTeam(16, 1, 'h', ids.lost, '2026-07-01')
+  addTeam(17, 1, 'i', ids.migrated, '2026-07-02')
   addTeam(20, 2, 'b', ids.cross, '2026-08-01')
   database.exec(`
     INSERT INTO participant_profile VALUES ('${ids.active}','private-canary',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP);
@@ -181,7 +151,19 @@ try {
       (1,'${ids.expired}','check_in_operator',${NOW - 300},${NOW - 1},NULL),
       (1,'${ids.organizer}','organizer',${NOW - 400},NULL,NULL),
       (1,'${ids.organizer}','check_in_operator',${NOW - 450},${NOW + HOUR},NULL),
+      (1,'${ids.migrated}','check_in_operator',${NOW - 475},${NOW + HOUR},NULL),
       (2,'${ids.cross}','check_in_operator',${NOW - 500},${NOW + HOUR},NULL);
+    INSERT INTO identity_account
+      (id, webauthn_user_handle, display_name, status, verification_state, created_at, updated_at)
+    SELECT '${'I'.repeat(43)}', webauthn_user_handle, 'Migrated operator', 'active',
+           'legacy_unverified', ${NOW - 1_000}, ${NOW - 1_000}
+    FROM participant_principal WHERE id = '${ids.migrated}';
+    INSERT INTO identity_legacy_subject_map
+      (subject_type, subject_id, account_id, source_revision, source_snapshot_hash,
+       migration_version, mapped_at)
+    VALUES
+      ('participant_principal', '${ids.migrated}', '${'I'.repeat(43)}', 0,
+       '${'a'.repeat(64)}', 1, ${NOW - 500});
   `)
 
   const query = await import('../lib/queries/admin/tournament-staff.ts')
@@ -220,7 +202,7 @@ try {
   )
   assert.equal(candidates.filter(item => item.principalId === ids.active).length, 1)
   assert.equal(candidates.find(item => item.principalId === ids.active).team.id, 11)
-  for (const excluded of [ids.noPasskey, ids.cross, ids.organizer]) {
+  for (const excluded of [ids.noPasskey, ids.cross, ids.organizer, ids.migrated]) {
     assert.equal(
       candidates.some(item => item.principalId === excluded),
       false,
@@ -233,6 +215,10 @@ try {
     assignments.some(item => item.principalId === ids.cross),
     false,
   )
+  assert.equal(
+    assignments.some(item => item.principalId === ids.migrated),
+    false,
+  )
   assert.doesNotMatch(JSON.stringify(manager), /private-canary|private-key/)
   const readSql = sqlText(d1.queries.slice(readStart))
   assert.doesNotMatch(
@@ -240,9 +226,13 @@ try {
     /SELECT\s+\*|contact|note|management_token|webauthn_user_handle|credential_id|public_key|transports_json|write_nonce|participant_(?:profile|external_identity|session)/i,
   )
 
-  for (const excluded of [ids.cross, ids.noPasskey, ids.organizer]) {
+  for (const excluded of [ids.cross, ids.noPasskey, ids.organizer, ids.migrated]) {
     assert.equal((await grant(1, excluded, 8, null)).code, 'conflict')
   }
+  assert.equal(
+    (await revoke(1, ids.migrated, rowSnapshot(assignmentRow(database, ids.migrated)))).code,
+    'conflict',
+  )
   database
     .prepare('DELETE FROM participant_passkey_credential WHERE principal_id = ?')
     .run(ids.lost)

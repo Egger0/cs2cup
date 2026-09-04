@@ -19,6 +19,9 @@ const PAGES = [
   '/news',
   '/about',
   '/search',
+  '/login',
+  '/recover',
+  '/register',
   '/admin/login?error=rate',
 ]
 
@@ -34,7 +37,8 @@ let total = 0
 const byRule = new Map()
 
 for (const path of PAGES) {
-  await page.goto(BASE + path, { waitUntil: 'domcontentloaded' })
+  const response = await page.goto(BASE + path, { waitUntil: 'domcontentloaded' })
+  if (!response?.ok()) throw new Error(`${path} returned HTTP ${response?.status() ?? 'unknown'}`)
   await page.waitForTimeout(1200)
   await page.evaluate(() => {
     document.querySelectorAll('[data-rise]').forEach(el => {

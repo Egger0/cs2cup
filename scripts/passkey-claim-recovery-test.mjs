@@ -32,7 +32,7 @@ const VERIFICATION_FAILED = {
 const VERIFICATION_UNCERTAIN = {
   code: 'verification-uncertain',
   title: '创建结果需要确认',
-  description: '网络在提交后中断，赛事通行证可能已经创建。请刷新报名回执确认状态。',
+  description: '网络在提交后中断，账号关联可能已经完成。请刷新报名回执确认状态。',
   action: 'reload',
 }
 const INTERRUPTED = {

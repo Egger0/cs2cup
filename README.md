@@ -77,16 +77,23 @@ npm run check
 npm run cf:build
 npm run cf:size
 npm run cf:build:local
+npm run browser:check
 ```
 
 `npm run check` covers formatting, types, ESLint, deterministic offline tests, repository
-safety, and source-size limits. Browser checks run separately against a local server:
+safety, and source-size limits. The browser gate builds the local Worker, resets its disposable
+`.local/cloudflare` state, starts a loopback server, and runs:
 
 ```sh
 npm run a11y
 npm run keyboard
 npm run perf
+node scripts/identity-browser.mjs
 ```
+
+The identity browser flow covers membership review, saved registration drafts, account-owned
+registrations, collaboration transfer, Passkey enrollment/sign-in, recovery codes, and session
+revocation against the same local Worker and D1 state.
 
 Repository documentation, configuration, comments, identifiers, and file names use English, except
 for explicitly localized product-copy specifications. User-facing copy may use Chinese. Source files

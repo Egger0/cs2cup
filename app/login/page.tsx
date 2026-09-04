@@ -8,7 +8,11 @@ import {
   hasConflictingLegacyParticipantSession,
 } from '@/lib/participant-auth'
 import { participantLoginNotice } from '@/lib/passkey-login-recovery'
-import { isParticipantStaffReturnPath, safeParticipantReturnPath } from '@/lib/participant-return'
+import {
+  isParticipantReturnPath,
+  isParticipantStaffReturnPath,
+  safeParticipantReturnPath,
+} from '@/lib/participant-return'
 import { getAuthContext } from '@/lib/identity/kernel'
 import { isIdentityRedirectKey, resolveIdentityRedirect } from '@/lib/identity/redirects'
 
@@ -20,7 +24,7 @@ import noticeStyles from './login-notice.module.css'
 import styles from './login.module.css'
 
 export const metadata: Metadata = {
-  title: '赛事通行',
+  title: '账号登录',
   description: '使用账号密码或 Passkey 登录。',
   robots: { index: false, follow: false },
   referrer: 'no-referrer',
@@ -40,6 +44,7 @@ export default async function ParticipantLoginPage({
 }) {
   const params = await searchParams
   const returnTo = safeParticipantReturnPath(params.returnTo)
+  const unifiedReturnTo = isParticipantReturnPath(params.returnTo) ? params.returnTo : ''
   const isStaffReturn = isParticipantStaffReturnPath(returnTo)
   const redirectKey = isIdentityRedirectKey(params.redirectKey)
     ? params.redirectKey
@@ -47,13 +52,16 @@ export default async function ParticipantLoginPage({
       ? 'workspaces'
       : 'account'
   const tournamentSlug = typeof params.tournamentSlug === 'string' ? params.tournamentSlug : ''
-  const unifiedTarget = resolveIdentityRedirect(redirectKey, { tournamentSlug })
+  const unifiedTarget = unifiedReturnTo || resolveIdentityRedirect(redirectKey, { tournamentSlug })
   const [context, participant, adminSession, sessionConflict] = await Promise.all([
     getAuthContext(),
     getCurrentParticipant(),
     hasCurrentLegacyAdminSession(),
     hasConflictingLegacyParticipantSession(),
   ])
+  if (context.kind === 'authenticated' && context.session.recoveryRestricted) {
+    redirect('/account/security?recovery=1')
+  }
   if (context.kind === 'authenticated' && params.reauth !== '1') redirect(unifiedTarget)
   const adminReauthentication = params.reauth === 'admin'
   const requiresLegacyReset =
@@ -62,8 +70,10 @@ export default async function ParticipantLoginPage({
 
   const notice = participantLoginNotice(requiresLegacyReset ? 'conflict' : params.reason)
   const conflictDestination = adminReauthentication
-    ? ('/admin/login' as const)
-    : ('/login?reason=signed-out' as const)
+    ? '/admin/login'
+    : `/login?reason=signed-out${
+        unifiedReturnTo ? `&returnTo=${encodeURIComponent(unifiedReturnTo)}` : ''
+      }`
 
   return (
     <main id="main" className={styles.page}>
@@ -80,7 +90,7 @@ export default async function ParticipantLoginPage({
 
         <div className={styles.hero}>
           <p className={styles.eyebrow}>
-            <span>ENTRY PASS</span> / 赛事通行
+            <span>ACCOUNT</span> / 账号登录
           </p>
           <h1 id="participant-login-title">{isStaffReturn ? '回到社团工作台' : '回到你的账号'}</h1>
           <p className={styles.lede}>
@@ -122,6 +132,7 @@ export default async function ParticipantLoginPage({
           <PasswordLoginForm
             redirectKey={redirectKey}
             tournamentSlug={tournamentSlug}
+            returnTo={unifiedReturnTo}
             initialError={typeof params.error === 'string' ? params.error : undefined}
           />
           <div className={formStyles.alternative}>
@@ -132,6 +143,7 @@ export default async function ParticipantLoginPage({
           ) : (
             <PasskeyLogin
               returnTo={returnTo}
+              unifiedReturnTo={unifiedReturnTo}
               redirectKey={redirectKey}
               tournamentSlug={tournamentSlug}
             />

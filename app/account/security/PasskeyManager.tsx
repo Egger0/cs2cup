@@ -1,8 +1,10 @@
 'use client'
 
 import { browserSupportsWebAuthn, startRegistration } from '@simplewebauthn/browser'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { formatSiteNumericDateTime } from '@/lib/datetime'
 import styles from './security.module.css'
 
 interface PasskeySummary {
@@ -17,7 +19,7 @@ interface PasskeySummary {
 type RegistrationOptions = Parameters<typeof startRegistration>[0]['optionsJSON']
 
 function date(value: number | null) {
-  return value ? new Date(value).toLocaleString('zh-CN') : '尚未使用'
+  return value ? (formatSiteNumericDateTime(value) ?? '时间不可用') : '尚未使用'
 }
 
 async function responseMessage(response: Response, fallback: string) {
@@ -33,6 +35,7 @@ export function PasskeyManager() {
   const [error, setError] = useState('')
   const [label, setLabel] = useState('')
   const [confirming, setConfirming] = useState<string | null>(null)
+  const [reauthenticate, setReauthenticate] = useState(false)
 
   async function load() {
     const response = await fetch('/api/auth/passkeys', {
@@ -58,6 +61,7 @@ export function PasskeyManager() {
     if (working || supported !== true) return
     setWorking(true)
     setError('')
+    setReauthenticate(false)
     try {
       const optionsResponse = await fetch('/api/auth/passkeys/enroll/options', {
         method: 'POST',
@@ -66,6 +70,7 @@ export function PasskeyManager() {
         body: JSON.stringify({ label: label.trim() || undefined }),
       })
       if (!optionsResponse.ok) {
+        if (optionsResponse.status === 428) setReauthenticate(true)
         throw new Error(await responseMessage(optionsResponse, '暂时无法开始设备验证。'))
       }
       const registration = await startRegistration({
@@ -103,6 +108,7 @@ export function PasskeyManager() {
     }
     setWorking(true)
     setError('')
+    setReauthenticate(false)
     try {
       const response = await fetch('/api/auth/passkeys', {
         method: 'DELETE',
@@ -110,7 +116,10 @@ export function PasskeyManager() {
         headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify({ credentialId }),
       })
-      if (!response.ok) throw new Error(await responseMessage(response, '暂时无法移除 Passkey。'))
+      if (!response.ok) {
+        if (response.status === 428) setReauthenticate(true)
+        throw new Error(await responseMessage(response, '暂时无法移除 Passkey。'))
+      }
       router.replace('/login?redirectKey=account_security')
       router.refresh()
     } catch (caught) {
@@ -190,6 +199,11 @@ export function PasskeyManager() {
         <p className={styles.error} role="alert">
           {error}
         </p>
+      ) : null}
+      {reauthenticate ? (
+        <Link className={styles.inlineLink} href="/login?redirectKey=account_security&reauth=1">
+          重新登录后继续
+        </Link>
       ) : null}
     </section>
   )

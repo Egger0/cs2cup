@@ -14,6 +14,7 @@ import styles from './SiteHeader.module.css'
 interface SiteHeaderProps {
   setting: SiteSetting
   links: SiteNavLink[]
+  accountLink: SiteNavLink & { code: string }
   status?: { label: string; open: boolean }
 }
 
@@ -27,9 +28,16 @@ const NAV_ENGLISH: Record<string, string> = {
   '/guestbook': 'GUESTBOOK',
   '/search': 'SEARCH',
   '/me': 'MY EVENTS',
+  '/account#membership': 'QUALIFICATION',
+  '/account/security': 'ACCOUNT & SECURITY',
+  '/admin': 'WORKBENCH',
+  '/login': 'LOGIN',
+  '/register': 'CREATE ACCOUNT',
 }
 
-export function SiteHeader({ setting, links, status }: SiteHeaderProps) {
+const DOCUMENT_LINKS = new Set(['/me', '/account#membership', '/account/security', '/admin'])
+
+export function SiteHeader({ setting, links, accountLink, status }: SiteHeaderProps) {
   const pathname = usePathname()
   const isHome = pathname === '/'
   const [open, setOpen] = useState(false)
@@ -43,8 +51,14 @@ export function SiteHeader({ setting, links, status }: SiteHeaderProps) {
   const brandName = setting.clubName === '宁波理工电竞社' ? '宁理电竞社' : setting.clubName
   const usesDefaultMark = !setting.logoUrl || setting.logoUrl === '/brand/club-logo.jpg'
   const logoSrc = usesDefaultMark ? '/brand/club-mark.svg' : setting.logoUrl!
+  const [accountCodeLead, accountCodeTail] = accountLink.code.split(' / ', 2)
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
+  const isActive = (href: string) => {
+    const target = href.split('#', 1)[0]
+    return href.includes('#')
+      ? pathname === target
+      : pathname === target || pathname.startsWith(`${target}/`)
+  }
   const activeMenuIndex = links.findIndex(link => isActive(link.href))
   const focusMenuIndex = activeMenuIndex >= 0 ? activeMenuIndex : 0
 
@@ -200,15 +214,16 @@ export function SiteHeader({ setting, links, status }: SiteHeaderProps) {
             </Badge>
           ) : null}
           <a
-            href="/me"
+            href={accountLink.href}
             className={open ? `${passStyles.pass} ${passStyles.hidden}` : passStyles.pass}
             aria-hidden={open ? 'true' : undefined}
             tabIndex={open ? -1 : undefined}
           >
             <small className={passStyles.code} aria-hidden="true">
-              <span>MY / </span>EVENTS
+              <span>{accountCodeLead} / </span>
+              {accountCodeTail}
             </small>
-            <span className={passStyles.label}>我的赛事</span>
+            <span className={passStyles.label}>{accountLink.label}</span>
           </a>
           {clientReady ? (
             <button
@@ -261,8 +276,7 @@ export function SiteHeader({ setting, links, status }: SiteHeaderProps) {
               )
               return (
                 <li key={link.href}>
-                  {link.href === '/me' ? (
-                    /* A document navigation keeps the private archive outside the router cache. */
+                  {DOCUMENT_LINKS.has(link.href) ? (
                     <a
                       ref={index === focusMenuIndex ? menuFocusRef : undefined}
                       href={link.href}

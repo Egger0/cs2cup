@@ -36,6 +36,9 @@ function failure(error: unknown) {
     if (error.code === 'recovery_restricted') {
       return passkeyError(403, '请先完成账号恢复，再添加通行密钥。')
     }
+    if (error.code === 'reauth_required') {
+      return passkeyError(428, '登录确认已超过 15 分钟，请重新登录后添加 Passkey。')
+    }
     return passkeyError(400)
   }
   console.error('[identity] passkey enrollment options unavailable')

@@ -33,7 +33,9 @@ export default async function LoginPage({
     ])
   if (participant || sessionConflict) redirect('/login?reason=conflict&reauth=admin')
   if (owner) redirect('/admin')
-  if (context.kind === 'authenticated') redirect('/account')
+  if (context.kind === 'authenticated') {
+    redirect(context.session.recoveryRestricted ? '/account/security?recovery=1' : '/account')
+  }
   if (legacyAdmin) redirect('/admin/bootstrap')
   if (ownerProvisioned) redirect('/login?redirectKey=workspaces')
 
@@ -62,7 +64,7 @@ export default async function LoginPage({
           <Field
             id="admin-username"
             name="username"
-            label="管理员账号"
+            label="旧后台账号"
             autoComplete="username"
             maxLength={MAX_ADMIN_USERNAME_LENGTH}
             required

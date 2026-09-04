@@ -124,10 +124,31 @@ try {
     'Sec-Fetch-Site': 'same-origin',
   }
   const auth = await import('../lib/auth.ts?opposite-session')
+  const { legacySessionStateFromRequest } = await import('../lib/legacy-session-state.ts')
 
   database
     .prepare('INSERT INTO admin_session (token_hash, admin_id, expires_at) VALUES (?, 1, ?)')
     .run(hash(ADMIN_TOKEN), now + 60_000)
+  database.exec(`
+    SAVEPOINT mapped_admin_cookie;
+    INSERT INTO identity_account
+      (id, webauthn_user_handle, display_name, status, verification_state, created_at, updated_at)
+    VALUES ('${'M'.repeat(43)}', '${'M'.repeat(43)}', 'Migrated owner',
+            'active', 'verified', 1, 1);
+    INSERT INTO identity_legacy_subject_map
+      (subject_type, subject_id, account_id, source_revision, source_snapshot_hash,
+       migration_version, mapped_at)
+    VALUES ('admin_account', '1', '${'M'.repeat(43)}', 0, '${'a'.repeat(64)}', 1, 1);
+  `)
+  const mappedAdminState = await legacySessionStateFromRequest(
+    new NextRequest('http://localhost:3000/login', {
+      headers: { Cookie: `${ADMIN_COOKIE}=${ADMIN_TOKEN}` },
+    }),
+    now,
+  )
+  assert.equal(mappedAdminState.adminActive, false)
+  assert.equal(mappedAdminState.adminTokenHash, hash(ADMIN_TOKEN))
+  database.exec('ROLLBACK TO mapped_admin_cookie; RELEASE mapped_admin_cookie')
   const challengeCount = count(database, 'participant_webauthn_challenge')
   const { POST: beginClaim } =
     await import('../app/api/participant/passkeys/claim/options/route.ts')
@@ -153,6 +174,27 @@ try {
        VALUES (?, ?, ?, ?, ?)`,
     )
     .run(hash(PARTICIPANT_TOKEN), PRINCIPAL, CREDENTIAL, now - 1_000, now + 60_000)
+  database.exec(`
+    SAVEPOINT mapped_participant_cookie;
+    INSERT INTO identity_account
+      (id, webauthn_user_handle, display_name, status, verification_state, created_at, updated_at)
+    VALUES ('${'N'.repeat(43)}', '${'H'.repeat(43)}', 'Migrated participant',
+            'active', 'legacy_unverified', 1, 1);
+    INSERT INTO identity_legacy_subject_map
+      (subject_type, subject_id, account_id, source_revision, source_snapshot_hash,
+       migration_version, mapped_at)
+    VALUES ('participant_principal', '${PRINCIPAL}', '${'N'.repeat(43)}', 0,
+            '${'b'.repeat(64)}', 1, 1);
+  `)
+  const mappedParticipantState = await legacySessionStateFromRequest(
+    new NextRequest('http://localhost:3000/login', {
+      headers: { Cookie: `${PARTICIPANT_COOKIE}=${PARTICIPANT_TOKEN}` },
+    }),
+    now,
+  )
+  assert.equal(mappedParticipantState.participantActive, false)
+  assert.equal(mappedParticipantState.participantTokenHash, hash(PARTICIPANT_TOKEN))
+  database.exec('ROLLBACK TO mapped_participant_cookie; RELEASE mapped_participant_cookie')
   const { POST: createAdminLogin } = await import('../app/admin/session/route.ts')
   const blockedAdmin = await createAdminLogin(
     new NextRequest('http://localhost:3000/admin/session', {
@@ -180,6 +222,84 @@ try {
   )
   assert.equal(count(database, 'admin_session'), 0)
   assert.equal(count(database, 'admin_session WHERE token_hash IS NULL'), 0)
+
+  database.prepare('DELETE FROM participant_session').run()
+  const { registerAccount } = await import('../lib/identity/account-registration.ts')
+  const pepper = { version: 1, key: Uint8Array.from({ length: 32 }, (_, index) => index + 1) }
+  const unified = await registerAccount(
+    globalThis.__oppositeSessionBindings.db,
+    {
+      username: 'unified.boundary',
+      displayName: '统一边界账号',
+      password: 'violet harbor lantern meadow 2026',
+      passwordConfirmation: 'violet harbor lantern meadow 2026',
+    },
+    { active: pepper, byVersion: new Map([[1, pepper]]) },
+    { now: now + 1, fetcher: async () => new Response('') },
+  )
+  assert.equal(unified.ok, true)
+  if (!unified.ok) throw new Error('Unable to create unified containment session')
+  const unifiedHeaders = {
+    ...sameOriginHeaders,
+    'Content-Type': 'application/json',
+    Cookie: `__Host-cs2cup_session=${unified.token}`,
+  }
+  const legacyRoutes = [
+    {
+      post: beginClaim,
+      url: '/api/participant/passkeys/claim/options',
+      body: { slug: 'must-not-be-read', token: 'M'.repeat(43) },
+    },
+    {
+      post: (await import('../app/api/participant/passkeys/claim/verify/route.ts')).POST,
+      url: '/api/participant/passkeys/claim/verify',
+      body: {},
+    },
+    {
+      post: (await import('../app/api/participant/passkeys/authenticate/options/route.ts')).POST,
+      url: '/api/participant/passkeys/authenticate/options',
+      body: {},
+    },
+    {
+      post: (await import('../app/api/participant/passkeys/authenticate/verify/route.ts')).POST,
+      url: '/api/participant/passkeys/authenticate/verify',
+      body: {},
+    },
+    {
+      post: (await import('../app/api/participant/entries/attach/route.ts')).POST,
+      url: '/api/participant/entries/attach',
+      body: { slug: 'must-not-be-read', managementToken: 'M'.repeat(43) },
+    },
+  ]
+  const beforeUnifiedChallenges = count(database, 'participant_webauthn_challenge')
+  for (const route of legacyRoutes) {
+    const blocked = await route.post(
+      new NextRequest(`http://localhost:3000${route.url}`, {
+        method: 'POST',
+        headers: unifiedHeaders,
+        body: JSON.stringify(route.body),
+      }),
+    )
+    assert.equal(blocked.status, 409, `${route.url} must reject a unified session`)
+    assert.match(await blocked.text(), /统一账号登录/)
+  }
+  assert.equal(count(database, 'participant_webauthn_challenge'), beforeUnifiedChallenges)
+  assert.equal(count(database, 'participant_session'), 0)
+
+  const blockedLegacyAdmin = await createAdminLogin(
+    new NextRequest('http://localhost:3000/admin/session', {
+      method: 'POST',
+      headers: {
+        ...sameOriginHeaders,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Cookie: `__Host-cs2cup_session=${unified.token}`,
+      },
+      body: new URLSearchParams({ username: 'owner', password: 'must-not-be-read' }),
+    }),
+  )
+  assert.equal(blockedLegacyAdmin.status, 303)
+  assert.match(blockedLegacyAdmin.headers.get('location') ?? '', /\/account$/)
+  assert.equal(count(database, 'admin_session'), 0)
 
   console.log('legacy opposite-session and browser-slot tests passed')
 } finally {

@@ -42,6 +42,7 @@ export type AccountRegistrationResult =
 
 export interface RegisterAccountOptions extends PwnedPasswordOptions {
   readonly now?: number
+  readonly clientLabel?: string
 }
 
 async function usernameAvailable(database: IdentityDatabase, username: string) {
@@ -106,6 +107,7 @@ export async function registerAccount(
       passwordCredentialId,
       verificationNonce,
     },
+    displayMetadata: options.clientLabel ? { clientLabel: options.clientLabel } : undefined,
     now,
   })
   const requestProof = createOpaqueToken()

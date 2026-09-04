@@ -4,11 +4,15 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
-import { accountOverview } from '@/lib/identity/account-overview'
+import { accountHasWorkAccess, accountSecurityState } from '@/lib/identity/account-security-state'
 import { getAuthContext } from '@/lib/identity/kernel'
 import { AccountSignOut } from '../AccountSignOut'
 import accountStyles from '../account.module.css'
+import { InitialAccountSetup } from './InitialAccountSetup'
 import { PasskeyManager } from './PasskeyManager'
+import { PasswordManager } from './PasswordManager'
+import { RecoveryCodeManager } from './RecoveryCodeManager'
+import { SessionManager } from './SessionManager'
 import styles from './security.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -22,8 +26,13 @@ export const metadata: Metadata = {
 export default async function AccountSecurityPage() {
   const context = await getAuthContext()
   if (context.kind === 'anonymous') redirect('/login?redirectKey=account_security')
-  const overview = await accountOverview(cloudflareBindings().db, context)
-  if (!overview) redirect('/login?error=expired&redirectKey=account_security')
+  const database = cloudflareBindings().db
+  const account = await accountSecurityState(database, context)
+  if (!account) redirect('/login?error=expired&redirectKey=account_security')
+  const hasWorkAccess = context.session.recoveryRestricted
+    ? false
+    : await accountHasWorkAccess(database, account.accountId)
+  const needsSetup = account.username === null
 
   return (
     <main id="main" className={`${accountStyles.page} ${styles.page}`}>
@@ -33,8 +42,10 @@ export default async function AccountSecurityPage() {
           <span>宁波理工电竞社</span>
         </Link>
         <nav aria-label="账号导航">
-          <Link href="/account">资格与账号</Link>
-          {overview.hasWorkAccess ? <Link href="/admin">工作台</Link> : null}
+          {!context.session.recoveryRestricted ? <Link href="/account">资格与账号</Link> : null}
+          {!context.session.recoveryRestricted && hasWorkAccess ? (
+            <Link href="/admin">工作台</Link>
+          ) : null}
           <AccountSignOut />
         </nav>
       </header>
@@ -42,39 +53,32 @@ export default async function AccountSecurityPage() {
       <div className={styles.shell}>
         <header className={styles.intro}>
           <p>ACCOUNT SECURITY / 账号安全</p>
-          <h1>登录方式保持简单，也留有退路。</h1>
-          <span>@{overview.account.username ?? 'legacy-account'}</span>
+          <h1>
+            {context.session.recoveryRestricted
+              ? '最后一步：设置新密码。'
+              : needsSetup
+                ? '完成设置，之后随时回来。'
+                : '登录方式保持简单，也留有退路。'}
+          </h1>
+          <span>
+            {account.username ? `@${account.username}` : 'PASSKEY ACCOUNT / 待设置用户名'}
+          </span>
         </header>
 
-        <section className={styles.section} aria-labelledby="password-title">
-          <header>
-            <div>
-              <p>PASSWORD / 默认方式</p>
-              <h2 id="password-title">账号密码</h2>
-            </div>
-            <span>已启用</span>
-          </header>
-          <p className={styles.explanation}>
-            密码是默认登录凭证。本站接受易记的长密码，不要求周期性更换；请勿与其他网站共用。
-          </p>
-        </section>
-
-        <PasskeyManager />
-
-        <section className={styles.section} aria-labelledby="sessions-title">
-          <header>
-            <div>
-              <p>SESSIONS / 已登录设备</p>
-              <h2 id="sessions-title">当前会话</h2>
-            </div>
-            <span>{overview.security.activeSessions} 个有效状态</span>
-          </header>
-          <p className={styles.explanation}>
-            当前使用{context.session.authMethod === 'password' ? '账号密码' : ' Passkey'}登录。
-            退出会立即使这台设备上的统一会话失效。
-          </p>
-          <AccountSignOut />
-        </section>
+        {needsSetup ? (
+          <InitialAccountSetup />
+        ) : (
+          <>
+            <PasswordManager recovery={context.session.recoveryRestricted} />
+            {!context.session.recoveryRestricted ? (
+              <>
+                <PasskeyManager />
+                <RecoveryCodeManager />
+                <SessionManager />
+              </>
+            ) : null}
+          </>
+        )}
       </div>
     </main>
   )

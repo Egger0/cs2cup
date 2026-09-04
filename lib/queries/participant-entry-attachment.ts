@@ -76,6 +76,11 @@ export async function attachParticipantEntry(
       JOIN participant_session AS session
         ON session.token_hash = ? AND session.expires_at > ?
       WHERE tournament.slug = ? AND team.management_token_hash = ?
+        AND NOT EXISTS (
+          SELECT 1 FROM identity_legacy_subject_map AS migrated
+          WHERE migrated.subject_type = 'participant_principal'
+            AND migrated.subject_id = session.principal_id
+        )
       ON CONFLICT(team_id) DO UPDATE SET
         principal_id = tournament_entry_owner.principal_id
       WHERE tournament_entry_owner.principal_id = excluded.principal_id
@@ -87,7 +92,15 @@ export async function attachParticipantEntry(
   if (attached) throw new ParticipantEntryAttachmentError('conflict')
 
   const session = await db
-    .prepare('SELECT principal_id FROM participant_session WHERE token_hash = ? AND expires_at > ?')
+    .prepare(
+      `SELECT session.principal_id FROM participant_session AS session
+       WHERE session.token_hash = ? AND session.expires_at > ?
+         AND NOT EXISTS (
+           SELECT 1 FROM identity_legacy_subject_map AS migrated
+           WHERE migrated.subject_type = 'participant_principal'
+             AND migrated.subject_id = session.principal_id
+         )`,
+    )
     .bind(input.sessionTokenHash, input.now)
     .first<{ principal_id: string }>()
   if (!session || !PRINCIPAL_PATTERN.test(session.principal_id)) {

@@ -1,5 +1,9 @@
 # Participant identity foundation
 
+> Legacy rollout record. The unified account contract in `identity-architecture.md` supersedes
+> this principal, Passkey, ownership, and session model. These details remain only for migration
+> compatibility.
+
 Tournament entries are event records, not user accounts. `team` and `player` remain historical
 snapshots, while a `participant_principal` is the stable private subject used by future sign-in,
 profile, and authorization features.
@@ -13,7 +17,7 @@ profile, and authorization features.
 - Resolving the same namespace is idempotent. A bare external subject is never an application key.
 - A tournament entry has at most one owner. Repeating a claim for that principal succeeds;
   another principal receives a conflict. Ownership transfer requires a separate verified command
-  and is intentionally not implemented by the claim operation.
+  and must never occur as a side effect of the claim operation.
 - Existing management links remain compatible during rollout. A claim verifies the existing
   hash-only token and never copies its plaintext value into an identity table.
 - Identity, profile, ownership, user-handle, and future credential data are private. Public views,
@@ -26,11 +30,11 @@ does not create an account or claim an entry. Only the explicit Passkey enrollme
 ceremony. Successful verification creates the principal, claims the entry, stores the credential,
 and opens a participant session in one atomic D1 batch.
 
-A namespaced external identity resolves to the same principal after a lost session, which provides
+A namespaced external identity resolves to the same principal after a lost session, which provided
 the foundation for verified recovery without converting event contact fields into credentials.
-Recovery, additional credential enrollment, credential deletion, and ownership transfer still
-require explicit audit and lifecycle work before they are exposed to participants. Until recovery
-exists, the management link remains the editing capability and must not be cleared after a claim.
+The unified account surface now owns recovery, credential lifecycle, and ownership transfer. This
+legacy compatibility surface retains management links only as migration grants and never treats
+them as account credentials.
 
 ## Passkey boundary
 

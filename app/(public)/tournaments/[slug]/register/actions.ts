@@ -3,20 +3,83 @@
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { getAuthContext } from '@/lib/identity/kernel'
 import { getMembershipState } from '@/lib/identity/membership-service'
+import {
+  RegistrationWorkflowError,
+  saveRegistrationDraft,
+} from '@/lib/identity/registration-workflow'
 import { createApprovedTournamentRegistration } from '@/lib/identity/tournament-registration'
 import { clientFingerprint } from '@/lib/ratelimit'
 import { createRegistrationAccess } from '@/lib/registration-access'
-import { parseRegistrationForm } from '@/lib/registration-form'
+import { parseRegistrationDraftForm, parseRegistrationForm } from '@/lib/registration-form'
 import { registrationAvailability } from '@/lib/registration'
 
 export interface RegisterResult {
   ok: boolean
   error?: string
   seatsLeft?: number
-  managementPath?: string
+  managePath?: string
   code?: 'AUTH_REQUIRED' | 'MEMBERSHIP_REQUIRED' | 'RATE_LIMITED' | 'SUBMISSION_FAILED'
   redirectTo?: string
   retryAfterSeconds?: number
+}
+
+export interface RegistrationDraftResult {
+  ok: boolean
+  error?: string
+  updatedAt?: number
+  code?: 'AUTH_REQUIRED' | 'DRAFT_LOCKED' | 'SAVE_FAILED'
+  redirectTo?: string
+}
+
+export async function saveTeamDraft(
+  slug: string,
+  form: FormData,
+): Promise<RegistrationDraftResult> {
+  if (!/^[a-z0-9][a-z0-9-]{0,99}$/.test(slug)) {
+    return { ok: false, code: 'DRAFT_LOCKED', error: '当前赛事不存在或无法保存草稿' }
+  }
+  const parsed = parseRegistrationDraftForm(form)
+  if (!parsed.ok) return { ok: false, error: parsed.error }
+  try {
+    const { db } = cloudflareBindings()
+    const context = await getAuthContext({ database: db })
+    if (context.kind === 'anonymous') {
+      return {
+        ok: false,
+        code: 'AUTH_REQUIRED',
+        error: '登录已失效，请重新登录后保存。',
+        redirectTo: `/login?redirectKey=registration&tournamentSlug=${encodeURIComponent(slug)}`,
+      }
+    }
+    const tournament = await db
+      .prepare('SELECT id FROM tournament WHERE slug = ? LIMIT 1')
+      .bind(slug)
+      .first<{ id: number }>()
+    if (!tournament) {
+      return { ok: false, code: 'DRAFT_LOCKED', error: '当前赛事不存在或无法保存草稿' }
+    }
+    const saved = await saveRegistrationDraft(db, context, {
+      tournamentId: tournament.id,
+      values: parsed.values,
+    })
+    return { ok: true, updatedAt: saved.updatedAt }
+  } catch (error) {
+    if (error instanceof RegistrationWorkflowError) {
+      if (error.code === 'reauth_required') {
+        return {
+          ok: false,
+          code: 'AUTH_REQUIRED',
+          error: '请先完成账号恢复或重新登录后保存。',
+          redirectTo: '/account/security?recovery=1',
+        }
+      }
+      if (error.code === 'locked') {
+        return { ok: false, code: 'DRAFT_LOCKED', error: '报名已经截止，草稿未再修改。' }
+      }
+    }
+    console.error('[registration] draft save unavailable', error)
+    return { ok: false, code: 'SAVE_FAILED', error: '草稿暂时无法保存，请稍后重试。' }
+  }
 }
 
 export async function registerTeam(slug: string, form: FormData): Promise<RegisterResult> {
@@ -110,7 +173,7 @@ export async function registerTeam(slug: string, form: FormData): Promise<Regist
     return {
       ok: true,
       seatsLeft: Math.max(0, tournament.teamCap - (taken?.count ?? tournament.teamCap)),
-      managementPath: `/tournaments/${encodeURIComponent(slug)}/registration/${access.token}`,
+      managePath: `/me/registrations/${created.teamId}`,
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : ''

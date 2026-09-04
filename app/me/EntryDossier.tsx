@@ -13,7 +13,15 @@ function registrationInstant(value: string) {
   return d1UtcTimestampToIso(value) ?? (isIsoInstant(value) ? value : null)
 }
 
-export function EntryDossier({ entry }: { entry: ParticipantTournamentEntry }) {
+export function EntryDossier({
+  entry,
+  managementHref,
+  relationship,
+}: {
+  entry: ParticipantTournamentEntry
+  managementHref?: string
+  relationship?: 'owner' | 'manager'
+}) {
   const registeredAt = registrationInstant(entry.team.registeredAt)
   const registeredLabel = registeredAt ? formatSiteDateTime(registeredAt) : null
   const checkIn = participantCheckInReceipt(entry.team.status, entry.team.checkedInAt)
@@ -108,10 +116,21 @@ export function EntryDossier({ entry }: { entry: ParticipantTournamentEntry }) {
       </section>
 
       <footer className={styles.fileFooter}>
-        <a href={`/tournaments/${encodeURIComponent(entry.tournament.slug)}`}>
-          查看公开赛事页 <span aria-hidden="true">↗</span>
-        </a>
-        <span>资料修改 / 使用报名回执中的原管理链接</span>
+        <span className={styles.footerLinks}>
+          {managementHref ? (
+            <a href={managementHref}>
+              管理报名 <span aria-hidden="true">↗</span>
+            </a>
+          ) : null}
+          <a href={`/tournaments/${encodeURIComponent(entry.tournament.slug)}`}>
+            查看赛事 <span aria-hidden="true">↗</span>
+          </a>
+        </span>
+        <span>
+          {relationship
+            ? `账号权限 / ${relationship === 'owner' ? '所有者' : '协作者'}`
+            : '旧报名资料 / 可通过原回执迁移到账号'}
+        </span>
       </footer>
     </article>
   )

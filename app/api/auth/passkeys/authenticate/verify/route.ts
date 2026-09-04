@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
       ceremonySecret,
       response,
       replacement,
+      headers: request.headers,
       now,
     })
     const success = privateJson({ ok: true, redirectTo: result.redirectTo })

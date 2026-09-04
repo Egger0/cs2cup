@@ -78,7 +78,14 @@ export const getCurrentLegacyParticipantSession = cache(
     if (!token || !isOpaqueToken(token)) return null
     const session = await cloudflareBindings()
       .db.prepare(
-        'SELECT principal_id, credential_id, expires_at FROM participant_session WHERE token_hash = ? AND expires_at > ?',
+        `SELECT session.principal_id, session.credential_id, session.expires_at
+         FROM participant_session AS session
+         WHERE session.token_hash = ? AND session.expires_at > ?
+           AND NOT EXISTS (
+             SELECT 1 FROM identity_legacy_subject_map AS migrated
+             WHERE migrated.subject_type = 'participant_principal'
+               AND migrated.subject_id = session.principal_id
+           )`,
       )
       .bind(await hashOpaqueToken(token), Date.now())
       .first<ParticipantSessionRow>()

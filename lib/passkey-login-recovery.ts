@@ -14,13 +14,13 @@ export const PARTICIPANT_SIGNED_OUT_LOGIN_PATH = '/login?reason=signed-out'
 const EXPIRED_NOTICE: ParticipantLoginNotice = {
   signal: 'SESSION / CLOSED',
   title: '访问窗口已结束',
-  description: '为了保护报名档案，本次访问已关闭。报名与通行密钥都没有变化，重新由设备确认即可。',
+  description: '为了保护账号资料，本次访问已关闭。报名与登录方式都没有变化，重新登录即可。',
 }
 
 const SIGNED_OUT_NOTICE: ParticipantLoginNotice = {
   signal: 'SESSION / CLOSED',
-  title: '赛事通行已安全退出',
-  description: '这台设备上的本次访问已关闭。报名与通行密钥都没有变化；需要时可再次由设备确认。',
+  title: '账号已安全退出',
+  description: '这台设备上的本次访问已关闭。报名与登录方式都没有变化；需要时可以再次登录。',
 }
 
 const CONFLICT_NOTICE: ParticipantLoginNotice = {
@@ -43,11 +43,17 @@ export interface PasskeyLoginFeedback {
 
 type PasskeyLoginStage = 'options' | 'verification'
 
-export function replaceParticipantLoginHistory(
-  location: Pick<Location, 'replace'>,
-  returnTo: unknown,
-) {
-  location.replace(safeParticipantReturnPath(returnTo))
+const IDENTITY_LOGIN_PATH =
+  /^(?:\/account(?:\/security)?|\/admin|\/tournaments(?:\/[a-z0-9][a-z0-9-]{0,99}\/register)?)$/
+
+function safeLoginDestination(value: unknown) {
+  return typeof value === 'string' && IDENTITY_LOGIN_PATH.test(value)
+    ? value
+    : safeParticipantReturnPath(value)
+}
+
+export function replaceLoginHistory(location: Pick<Location, 'replace'>, returnTo: unknown) {
+  location.replace(safeLoginDestination(returnTo))
 }
 
 export function participantLoginNotice(reason: unknown): ParticipantLoginNotice | null {

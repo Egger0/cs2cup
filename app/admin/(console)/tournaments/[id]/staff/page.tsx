@@ -44,6 +44,9 @@ export default async function TournamentStaffPage({ params }: { params: Promise<
           </strong>
         </div>
         <div className={styles.contextActions}>
+          <ButtonLink href="/admin/identity#role-access-title" size="mini">
+            管理统一账号权限
+          </ButtonLink>
           <ButtonLink href={`/admin/tournaments/${tournamentId}/check-in`} size="mini">
             查看签到台
           </ButtonLink>

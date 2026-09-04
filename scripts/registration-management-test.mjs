@@ -114,6 +114,16 @@ const schema = `
     sort_order INTEGER NOT NULL,
     UNIQUE(team_id, nickname)
   );
+  CREATE TABLE identity_registration_membership (
+    id TEXT PRIMARY KEY,
+    team_id INTEGER NOT NULL REFERENCES team(id) ON DELETE CASCADE,
+    account_id TEXT NOT NULL,
+    relationship TEXT NOT NULL,
+    granted_at INTEGER NOT NULL DEFAULT 0,
+    expires_at INTEGER,
+    revoked_at INTEGER,
+    revision INTEGER NOT NULL DEFAULT 0
+  );
   CREATE UNIQUE INDEX team_tournament_name_nocase_idx
   ON team(tournament_id, name COLLATE NOCASE);
   CREATE UNIQUE INDEX team_tournament_tag_nocase_idx

@@ -78,6 +78,50 @@ try {
     }),
   )
 
+  const oldSession = await fixture.session(
+    accountIds.weakStaff,
+    { method: 'password', passwordCredentialId: passwordCredentialIds.weakStaff },
+    now - 15 * 60 * 1000 - 1,
+  )
+  await assert.rejects(
+    () =>
+      issuePasskeyIntent(db, {
+        purpose: 'passkey_enrollment',
+        authenticatedContext: oldSession.context,
+        redirectKey: 'account_security',
+        context: {},
+        now,
+      }),
+    error => error instanceof IdentityPasskeyError && error.code === 'reauth_required',
+  )
+  const staleEnrollmentIntent = 'r'.repeat(43)
+  execute(
+    `INSERT INTO identity_auth_intent
+      (id, secret_hash, purpose, expected_account_id, passkey_challenge_hash, redirect_key,
+       flow_id, idempotency_key, created_at, expires_at)
+     VALUES (?, ?, 'passkey_enrollment', ?, ?, 'account_security', ?, ?, ?, ?)`,
+    [
+      staleEnrollmentIntent,
+      '4'.repeat(64),
+      accountIds.weakStaff,
+      '5'.repeat(64),
+      's'.repeat(43),
+      '6'.repeat(64),
+      now,
+      now + 100,
+    ],
+  )
+  assert.throws(
+    () =>
+      execute(
+        `INSERT INTO identity_passkey_enrollment_authorization
+          (auth_intent_id, account_id, initiating_session_id, authorized_at)
+         VALUES (?, ?, ?, ?)`,
+        [staleEnrollmentIntent, accountIds.weakStaff, oldSession.context.session.id, now],
+      ),
+    /recent authentication/,
+  )
+
   const session = await fixture.session(
     accountIds.weakStaff,
     { method: 'password', passwordCredentialId: passwordCredentialIds.weakStaff },

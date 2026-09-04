@@ -173,6 +173,25 @@ try {
     error => error.kind === 'redirect' && error.path === '/admin/bootstrap',
   )
 
+  database.exec(`
+    SAVEPOINT mapped_admin_session;
+    INSERT INTO identity_account
+      (id, webauthn_user_handle, display_name, status, verification_state, created_at, updated_at)
+    VALUES ('${'M'.repeat(43)}', '${'H'.repeat(43)}', 'Migrated owner',
+            'active', 'verified', 1, 1);
+    INSERT INTO identity_legacy_subject_map
+      (subject_type, subject_id, account_id, source_revision, source_snapshot_hash,
+       migration_version, mapped_at)
+    VALUES ('admin_account', '1', '${'M'.repeat(43)}', 0, '${'a'.repeat(64)}', 1, 1);
+  `)
+  const mapped = await authModule('mapped')
+  assert.equal(await mapped.getCurrentPlatformOwner(), null)
+  await assert.rejects(
+    () => mapped.requireAdmin(),
+    error => error.kind === 'redirect' && error.path === '/admin/login',
+  )
+  database.exec('ROLLBACK TO mapped_admin_session; RELEASE mapped_admin_session')
+
   database.exec('UPDATE platform_role_assignment SET revoked_at = granted_at WHERE admin_id = 1')
   const revoked = await authModule('revoked')
   assert.equal(await revoked.getCurrentPlatformOwner(), null)

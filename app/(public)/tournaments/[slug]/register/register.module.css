@@ -64,6 +64,20 @@
   font-weight: 700;
 }
 
+.draftSaved {
+  padding: 11px 14px;
+  border-left: 3px solid var(--ct);
+  background: var(--ct-dim);
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+.formActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .receipt {
   display: grid;
   gap: 16px;
@@ -91,11 +105,6 @@
 .receipt p,
 .receipt small {
   color: var(--muted);
-}
-
-.receipt .receiptWarning {
-  color: var(--ink);
-  font-weight: 620;
 }
 
 .passHandoff {

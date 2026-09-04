@@ -51,7 +51,10 @@ for (const binding of localConfig.r2_buckets ?? []) {
 }
 
 const localDatabase = await read('scripts/local-database.mjs')
+const browserCheck = await read('scripts/browser-check.mjs')
+const passwordRangeConfig = await read('wrangler.browser-password-range.jsonc')
 const workersDeploy = await read('scripts/workers-deploy.mjs')
+const productionConfig = await read('wrangler.jsonc')
 const localEnvironment = await read('wrangler.local.env')
 const developmentEnvironment = await read('.env.development')
 assert.match(localDatabase, /configPath: CONFIG_PATH/)
@@ -71,6 +74,27 @@ assert.match(nextConfig, /remoteBindings: false/)
 assert.match(nextConfig, /persist: \{ path: ['"]\.\/\.local\/cloudflare\/v3['"] \}/)
 assert.doesNotMatch(localEnvironment, /^[A-Z_][A-Z0-9_]*=/m)
 assert.equal(developmentEnvironment.trim(), 'NEXT_PUBLIC_SITE_URL=http://localhost:3000')
+assert.doesNotMatch(productionConfig, /IDENTITY_PASSWORD_(?:RANGE|SCREENING_LOCAL_SERVICE)/)
+assert.doesNotMatch(localConfigSource, /IDENTITY_PASSWORD_SCREENING_LOCAL_SERVICE/)
+assert.deepEqual(localConfig.services, [
+  {
+    binding: 'IDENTITY_PASSWORD_RANGE',
+    service: 'cs2cup-browser-check-password-range',
+    remote: false,
+  },
+])
+assert.match(browserCheck, /--var[\s\S]*IDENTITY_PASSWORD_SCREENING_LOCAL_SERVICE:browser-check/)
+assert.match(browserCheck, /wrangler\.browser-password-range\.jsonc/)
+assert.match(browserCheck, /'--persist-to',\s*'\.local\/cloudflare'/)
+assert.match(browserCheck, /'--env-file',\s*'wrangler\.local\.env'/)
+const parsedPasswordRangeConfig = ts.parseConfigFileTextToJson(
+  'wrangler.browser-password-range.jsonc',
+  passwordRangeConfig,
+)
+if (parsedPasswordRangeConfig.error) throw new Error('password range Worker config is invalid')
+assert.equal(parsedPasswordRangeConfig.config.workers_dev, false)
+assert.equal(parsedPasswordRangeConfig.config.preview_urls, false)
+assert.match(parsedPasswordRangeConfig.config.name, /browser-check/)
 
 const qualityWorkflow = await read('.github/workflows/quality.yml')
 assert.doesNotMatch(qualityWorkflow, /secrets\./)

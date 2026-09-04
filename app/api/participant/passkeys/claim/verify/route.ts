@@ -4,7 +4,10 @@ import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { assertCsrfRequest } from '@/lib/csrf'
 import { bytesToBase64Url } from '@/lib/opaque-token'
 import { clearAdminSessionCookie } from '@/lib/auth'
-import { legacySessionStateFromRequest } from '@/lib/legacy-session-state'
+import {
+  legacySessionStateFromRequest,
+  unifiedSessionStateFromRequest,
+} from '@/lib/legacy-session-state'
 import {
   createParticipantSessionDraft,
   getCurrentParticipant,
@@ -33,16 +36,22 @@ function claimVerificationError(error: unknown) {
 export async function POST(request: NextRequest) {
   try {
     assertCsrfRequest(request)
-    const legacySessions = await legacySessionStateFromRequest(request)
+    const [legacySessions, unifiedSession] = await Promise.all([
+      legacySessionStateFromRequest(request),
+      unifiedSessionStateFromRequest(request),
+    ])
+    if (unifiedSession.kind === 'authenticated') {
+      return clearCeremonyCookie(
+        passkeyError(409, '当前已有统一账号登录，请先退出或完成账号恢复。'),
+      )
+    }
     if (legacySessions.adminActive) {
       return clearCeremonyCookie(
         passkeyError(409, '旧管理员会话仍在使用，请先安全清除后重新登录。'),
       )
     }
     if (await getCurrentParticipant()) {
-      return clearCeremonyCookie(
-        passkeyError(409, '当前赛事通行已打开，请刷新页面后加入当前通行证。'),
-      )
+      return clearCeremonyCookie(passkeyError(409, '当前已有旧登录状态，请刷新页面后继续关联。'))
     }
     const ceremonyToken = ceremonyTokenFromRequest(request)
     if (!ceremonyToken) throw new ParticipantPasskeyError('invalid_challenge')

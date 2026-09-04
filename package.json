@@ -72,6 +72,7 @@
     "a11y": "node scripts/a11y.mjs",
     "keyboard": "node scripts/keyboard.mjs",
     "perf": "node scripts/perf.mjs",
+    "browser:check": "node scripts/browser-check.mjs",
     "check": "npm run format:check && npm run typecheck && npm run lint && npm test"
   },
   "dependencies": {

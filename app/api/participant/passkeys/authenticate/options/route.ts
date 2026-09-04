@@ -4,7 +4,10 @@ import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { assertCsrfRequest, CsrfError } from '@/lib/csrf'
 import { createOpaqueToken } from '@/lib/opaque-token'
 import { getCurrentParticipant } from '@/lib/participant-auth'
-import { legacySessionStateFromRequest } from '@/lib/legacy-session-state'
+import {
+  legacySessionStateFromRequest,
+  unifiedSessionStateFromRequest,
+} from '@/lib/legacy-session-state'
 import {
   ceremonyTokenFromRequest,
   clearCeremonyCookie,
@@ -34,13 +37,22 @@ export async function POST(request: NextRequest) {
   const now = Date.now()
   try {
     assertCsrfRequest(request)
-    if ((await legacySessionStateFromRequest(request, now)).adminActive) {
+    const [legacySessions, unifiedSession] = await Promise.all([
+      legacySessionStateFromRequest(request, now),
+      unifiedSessionStateFromRequest(request, now),
+    ])
+    if (unifiedSession.kind === 'authenticated') {
+      return clearCeremonyCookie(
+        passkeyError(409, '当前已有统一账号登录，请先退出或完成账号恢复。'),
+      )
+    }
+    if (legacySessions.adminActive) {
       return clearCeremonyCookie(
         passkeyError(409, '旧管理员会话仍在使用，请先安全清除后重新登录。'),
       )
     }
     if (await getCurrentParticipant()) {
-      return clearCeremonyCookie(passkeyError(409, '当前赛事通行已打开，请返回继续。'))
+      return clearCeremonyCookie(passkeyError(409, '当前已有旧登录状态，请返回继续。'))
     }
     const ceremonyToken = createOpaqueToken()
     const challenge = createOpaqueToken()

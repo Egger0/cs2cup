@@ -10,12 +10,22 @@ import {
   getAuthContext,
   type AuthenticatedAuthContext,
 } from './identity/kernel'
+import { IDENTITY_SESSION_COOKIE_NAME } from './identity/internal/cookie.ts'
+import {
+  resolveUnifiedConsolePermissions,
+  type AdminIdentity,
+  type PlatformConsoleAccess,
+  type PlatformConsoleIdentity,
+  type UnifiedPlatformOwnerIdentity,
+} from './identity/console-access'
 import {
   getCurrentLegacyParticipantSession,
   LEGACY_ADMIN_SESSION_COOKIE,
   participantSessionCookie,
 } from './participant-auth'
+import { getCurrentLegacyAdminSessionIdentity as getCurrentAdminSessionIdentity } from './legacy-admin-session'
 import { hashOpaqueToken, isOpaqueToken } from './opaque-token.ts'
+import { TournamentStaffAccessError, type TournamentStaffAccess } from './tournament-staff-access'
 import type { StaffActor, TournamentStaffCapability } from './authorization'
 import type { NextResponse } from 'next/server'
 
@@ -24,69 +34,28 @@ export {
   credentialsAccepted,
   LegacySessionConflictError,
 } from './legacy-admin-session-issuer'
-
-export interface AdminIdentity {
-  adminId: number
-  uid: string
-}
-
-export interface UnifiedPlatformOwnerIdentity {
-  accountId: string
-  uid: string
-}
-
-export type PlatformConsoleIdentity =
-  | ({ kind: 'unified' } & UnifiedPlatformOwnerIdentity)
-  | ({ kind: 'legacy' } & AdminIdentity)
-
-export type TournamentStaffIdentity =
-  | ({ kind: 'admin'; sessionExpiresAt: number } & AdminIdentity)
-  | { kind: 'participant'; principalId: string; sessionExpiresAt: number }
-
-export type TournamentStaffAccess =
-  | { ok: true; actor: TournamentStaffIdentity }
-  | {
-      ok: false
-      reason: 'anonymous' | 'expired' | 'forbidden' | 'conflict'
-      hadAdminCookie: boolean
-      hadParticipantCookie: boolean
-    }
-
-export class TournamentStaffAccessError extends Error {
-  readonly access: Extract<TournamentStaffAccess, { ok: false }>
-
-  constructor(access: Extract<TournamentStaffAccess, { ok: false }>) {
-    super('Tournament staff authorization failed')
-    this.name = 'TournamentStaffAccessError'
-    this.access = access
-  }
-}
-
-export function staffSessionRemainingMs(expiresAt: number) {
-  return Number.isSafeInteger(expiresAt) ? expiresAt - Date.now() : 0
-}
-
-interface AdminSession {
-  admin_id: number
-  username: string
-  expires_at: number
-}
-
-interface AdminSessionIdentity extends AdminIdentity {
-  sessionExpiresAt: number
-}
-
-const COOKIE_NAME = LEGACY_ADMIN_SESSION_COOKIE
-const SESSION_MAX_AGE = LEGACY_ADMIN_SESSION_MAX_AGE
+export type {
+  AdminIdentity,
+  PlatformConsoleAccess,
+  PlatformConsoleCapability,
+  PlatformConsoleIdentity,
+  UnifiedPlatformOwnerIdentity,
+} from './identity/console-access'
+export {
+  staffSessionRemainingMs,
+  TournamentStaffAccessError,
+  type TournamentStaffAccess,
+  type TournamentStaffIdentity,
+} from './tournament-staff-access'
 
 export const adminSessionCookie = {
-  name: COOKIE_NAME,
-  maxAge: SESSION_MAX_AGE,
+  name: LEGACY_ADMIN_SESSION_COOKIE,
+  maxAge: LEGACY_ADMIN_SESSION_MAX_AGE,
   options: { httpOnly: true, path: '/', sameSite: 'lax' as const, secure: true },
 }
 
 export function clearAdminSessionCookie(response: NextResponse) {
-  response.cookies.set(COOKIE_NAME, '', {
+  response.cookies.set(LEGACY_ADMIN_SESSION_COOKIE, '', {
     ...adminSessionCookie.options,
     maxAge: 0,
   })
@@ -95,7 +64,7 @@ export function clearAdminSessionCookie(response: NextResponse) {
 
 export async function endLegacySessions() {
   const cookieStore = await cookies()
-  const adminToken = cookieStore.get(COOKIE_NAME)?.value
+  const adminToken = cookieStore.get(LEGACY_ADMIN_SESSION_COOKIE)?.value
   const participantToken = cookieStore.get(participantSessionCookie.name)?.value
   const db = cloudflareBindings().db
   const deletions = []
@@ -114,30 +83,12 @@ export async function endLegacySessions() {
     )
   }
   if (deletions.length > 0) await db.batch(deletions)
-  cookieStore.set(COOKIE_NAME, '', { ...adminSessionCookie.options, maxAge: 0 })
+  cookieStore.set(LEGACY_ADMIN_SESSION_COOKIE, '', { ...adminSessionCookie.options, maxAge: 0 })
   cookieStore.set(participantSessionCookie.name, '', {
     ...participantSessionCookie.options,
     maxAge: 0,
   })
 }
-
-const getCurrentAdminSessionIdentity = cache(async (): Promise<AdminSessionIdentity | null> => {
-  const token = (await cookies()).get(COOKIE_NAME)?.value
-  if (!token) return null
-  const session = await cloudflareBindings()
-    .db.prepare(
-      'SELECT a.id AS admin_id, a.username, s.expires_at FROM admin_session s JOIN admin_account a ON a.id = s.admin_id WHERE s.token_hash = ? AND s.expires_at > ?',
-    )
-    .bind(await hashOpaqueToken(token), Date.now())
-    .first<AdminSession>()
-  return session
-    ? {
-        adminId: session.admin_id,
-        uid: session.username,
-        sessionExpiresAt: session.expires_at,
-      }
-    : null
-})
 
 const currentAdminCanManagePlatform = cache((adminId: number) =>
   hasStaffCapability(cloudflareBindings().db, { kind: 'admin', adminId }, 'platform.manage', {
@@ -147,6 +98,24 @@ const currentAdminCanManagePlatform = cache((adminId: number) =>
 
 async function unifiedPlatformDecision(context: AuthenticatedAuthContext) {
   return authorizeIdentity(context, 'platform.configure', { kind: 'platform' })
+}
+
+async function unifiedConsoleAccess(
+  context: AuthenticatedAuthContext,
+): Promise<PlatformConsoleAccess | null> {
+  const result = await resolveUnifiedConsolePermissions(cloudflareBindings().db, context)
+  if (!result.ok) {
+    if (result.reason === 'reauthentication_required') {
+      redirect('/login?redirectKey=workspaces&reauth=1')
+    }
+    return null
+  }
+  return {
+    kind: 'unified',
+    accountId: context.account.id,
+    uid: context.account.displayName,
+    ...result.permissions,
+  }
 }
 
 export const getCurrentUnifiedPlatformOwner = cache(
@@ -189,6 +158,17 @@ export async function hasCurrentLegacyAdminSession() {
   return Boolean(await getCurrentAdminSessionIdentity())
 }
 
+async function requireLegacyPlatformTransition(): Promise<never> {
+  const [admin, participant] = await Promise.all([
+    getCurrentAdminSessionIdentity(),
+    getCurrentLegacyParticipantSession(),
+  ])
+  if (!admin) redirect('/admin/login')
+  if (participant) redirect('/login?reason=conflict&reauth=admin')
+  if (!(await currentAdminCanManagePlatform(admin.adminId))) notFound()
+  redirect('/admin/bootstrap')
+}
+
 export async function getCurrentTournamentStaffAccess(
   tournamentId: number,
   capability: TournamentStaffCapability,
@@ -196,18 +176,53 @@ export async function getCurrentTournamentStaffAccess(
   const cookieStore = await cookies()
   const hadAdminCookie = Boolean(cookieStore.get(adminSessionCookie.name)?.value)
   const hadParticipantCookie = Boolean(cookieStore.get(participantSessionCookie.name)?.value)
-  const [participant, admin] = await Promise.all([
+  const unifiedToken = cookieStore.get(IDENTITY_SESSION_COOKIE_NAME)?.value ?? null
+  const hadUnifiedCookie = Boolean(unifiedToken)
+  const db = cloudflareBindings().db
+  const [participant, admin, unified] = await Promise.all([
     getCurrentLegacyParticipantSession(),
     getCurrentAdminSessionIdentity(),
+    getAuthContext({ database: db, token: unifiedToken }),
   ])
-  const db = cloudflareBindings().db
   const resource = { kind: 'tournament' as const, tournamentId }
   const now = Date.now()
 
-  if (participant && admin) {
+  if ((participant && admin) || (unified.kind === 'authenticated' && (participant || admin))) {
     return {
       ok: false,
       reason: 'conflict',
+      hadAdminCookie,
+      hadParticipantCookie,
+    }
+  }
+
+  if (unified.kind === 'authenticated') {
+    const decision = await authorizeIdentity(
+      unified,
+      capability,
+      { kind: 'tournament', tournamentId },
+      { database: db, now },
+    )
+    if (decision.ok) {
+      return {
+        ok: true,
+        actor: {
+          kind: 'unified',
+          accountId: unified.account.id,
+          uid: unified.account.displayName,
+          sessionExpiresAt: Math.min(
+            unified.session.idleExpiresAt,
+            unified.session.absoluteExpiresAt,
+          ),
+        },
+      }
+    }
+    return {
+      ok: false,
+      reason:
+        decision.reason === 'session_invalid' || decision.reason === 'assurance_required'
+          ? 'expired'
+          : 'forbidden',
       hadAdminCookie,
       hadParticipantCookie,
     }
@@ -241,7 +256,7 @@ export async function getCurrentTournamentStaffAccess(
     reason:
       participant || admin
         ? 'forbidden'
-        : hadAdminCookie || hadParticipantCookie
+        : hadAdminCookie || hadParticipantCookie || hadUnifiedCookie
           ? 'expired'
           : 'anonymous',
     hadAdminCookie,
@@ -270,12 +285,15 @@ export async function requireAdmin(): Promise<PlatformConsoleIdentity> {
     }
     notFound()
   }
-  const [admin, participant] = await Promise.all([
-    getCurrentAdminSessionIdentity(),
-    getCurrentLegacyParticipantSession(),
-  ])
-  if (!admin) redirect('/admin/login')
-  if (participant) redirect('/login?reason=conflict&reauth=admin')
-  if (!(await currentAdminCanManagePlatform(admin.adminId))) notFound()
-  redirect('/admin/bootstrap')
+  return requireLegacyPlatformTransition()
+}
+
+export async function requirePlatformConsole(): Promise<PlatformConsoleAccess> {
+  const context = await getAuthContext()
+  if (context.kind === 'authenticated') {
+    const access = await unifiedConsoleAccess(context)
+    if (access) return access
+    notFound()
+  }
+  return requireLegacyPlatformTransition()
 }

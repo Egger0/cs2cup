@@ -272,11 +272,11 @@ export function PrivateSessionBoundary({
         >
           <p className={styles.code}>SESSION / {failed ? 'RETRY' : 'CLOSING'}</p>
           <span className={styles.indicator} aria-hidden="true" />
-          <h1>{failed ? '私人卷宗已隐藏' : '正在关闭本次访问'}</h1>
+          <h1>{failed ? '我的赛事已隐藏' : '正在关闭本次访问'}</h1>
           <p>
             {failed
               ? '退出请求暂未完成，私人内容不会重新显示。可以重试，或先返回公开首页。'
-              : '正在清除这台设备上的赛事通行访问。'}
+              : '正在清除这台设备上的旧登录会话。'}
           </p>
           {failed ? (
             <div className={styles.actions}>
@@ -323,7 +323,7 @@ export function PrivateSessionActionForm({
   )
 }
 
-export function ParticipantSignOut({ label = '退出赛事通行' }: { label?: string }) {
+export function ParticipantSignOut({ label = '退出旧登录方式' }: { label?: string }) {
   const boundary = useContext(SessionBoundaryContext)
   if (!boundary) throw new Error('ParticipantSignOut requires ParticipantSessionBoundary')
 

@@ -1,0 +1,91 @@
+import { NextResponse, type NextRequest } from 'next/server'
+
+import { cloudflareBindings } from '@/lib/cloudflare-bindings'
+import { assertCsrfRequest, CsrfError } from '@/lib/csrf'
+import { withPrivateNoStore } from '@/lib/http-cache'
+import {
+  AccountSessionError,
+  listAccountSessions,
+  revokeAccountSession,
+  revokeOtherAccountSessions,
+} from '@/lib/identity/internal/account-sessions'
+import { IdentityRequestError, readIdentityJson } from '@/lib/identity/internal/http'
+import { getAuthContext, IDENTITY_SESSION_COOKIE_NAME } from '@/lib/identity/kernel'
+
+interface SessionBody extends Record<string, unknown> {
+  sessionId?: unknown
+  allOthers?: unknown
+}
+
+function response(status: number, error: string, reauthenticate = false) {
+  return withPrivateNoStore(
+    NextResponse.json(
+      {
+        ok: false,
+        error,
+        reauthenticate,
+        redirectTo: reauthenticate ? '/login?redirectKey=account_security&reauth=1' : undefined,
+      },
+      { status },
+    ),
+  )
+}
+
+async function contextFrom(request: NextRequest) {
+  const context = await getAuthContext({
+    token: request.cookies.get(IDENTITY_SESSION_COOKIE_NAME)?.value ?? null,
+  })
+  if (context.kind === 'anonymous') throw new AccountSessionError('not_authenticated')
+  return context
+}
+
+function failure(error: unknown) {
+  if (error instanceof CsrfError || error instanceof IdentityRequestError) {
+    return response(403, '请求来源无法确认，请刷新页面后重试。')
+  }
+  if (error instanceof AccountSessionError) {
+    if (error.code === 'not_authenticated') return response(401, '登录已失效，请重新登录。', true)
+    if (error.code === 'reauth_required') {
+      return response(428, '登录确认已超过 15 分钟，请重新登录后管理设备。', true)
+    }
+    if (error.code === 'recovery_restricted') {
+      return response(403, '请先重设密码，再管理其他设备。')
+    }
+    return response(404, '这个会话已不存在，请刷新列表。')
+  }
+  console.error('[identity] session management unavailable', error)
+  return response(503, '暂时无法管理已登录设备。')
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const sessions = await listAccountSessions(cloudflareBindings().db, await contextFrom(request))
+    return withPrivateNoStore(NextResponse.json({ sessions }))
+  } catch (error) {
+    return failure(error)
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    assertCsrfRequest(request)
+    const [context, body] = await Promise.all([
+      contextFrom(request),
+      readIdentityJson<SessionBody>(request),
+    ])
+    if (
+      Object.keys(body).some(key => !['sessionId', 'allOthers'].includes(key)) ||
+      (typeof body.sessionId === 'string') === (body.allOthers === true)
+    ) {
+      throw new IdentityRequestError()
+    }
+    if (body.allOthers === true) {
+      const revoked = await revokeOtherAccountSessions(cloudflareBindings().db, context)
+      return withPrivateNoStore(NextResponse.json({ ok: true, revoked }))
+    }
+    await revokeAccountSession(cloudflareBindings().db, context, body.sessionId as string)
+    return withPrivateNoStore(NextResponse.json({ ok: true, revoked: 1 }))
+  } catch (error) {
+    return failure(error)
+  }
+}

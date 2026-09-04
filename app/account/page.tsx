@@ -4,10 +4,12 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
+import { currentTimeMillis } from '@/lib/current-time'
 import { accountOverview } from '@/lib/identity/account-overview'
 import { getAuthContext } from '@/lib/identity/kernel'
 import { AccountSignOut } from './AccountSignOut'
 import { MembershipPanel } from './MembershipPanel'
+import { ProfileNameForm } from './ProfileNameForm'
 import styles from './account.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -25,12 +27,9 @@ export default async function AccountPage({
 }) {
   const [params, context] = await Promise.all([searchParams, getAuthContext()])
   if (context.kind === 'anonymous') redirect('/login?redirectKey=account')
+  if (context.session.recoveryRestricted) redirect('/account/security?recovery=1')
   const database = cloudflareBindings().db
-  const clock = await database
-    .prepare("SELECT unixepoch('now') * 1000 AS now")
-    .bind()
-    .first<{ now: number }>()
-  const now = clock?.now ?? context.session.lastSeenAt
+  const now = currentTimeMillis()
   const overview = await accountOverview(database, context, now)
   if (!overview) redirect('/login?error=expired')
 
@@ -42,6 +41,8 @@ export default async function AccountPage({
           <span>宁波理工电竞社</span>
         </Link>
         <nav aria-label="账号导航">
+          <Link href="/me">我的赛事</Link>
+          <Link href="/account#membership">资格状态</Link>
           {overview.hasWorkAccess ? <Link href="/admin">工作台</Link> : null}
           <Link href="/account/security">账号与安全</Link>
           <AccountSignOut />
@@ -60,7 +61,10 @@ export default async function AccountPage({
           <div>
             <p>ACCOUNT / 账号</p>
             <h1>{overview.account.displayName}</h1>
-            <span>@{overview.account.username ?? 'legacy-account'}</span>
+            <span>
+              {overview.account.username ? `@${overview.account.username}` : 'Passkey 迁移账号'}
+            </span>
+            <ProfileNameForm displayName={overview.account.displayName} />
           </div>
           <aside>
             <small>当前会话</small>
@@ -70,7 +74,11 @@ export default async function AccountPage({
         </section>
 
         <div className={styles.grid}>
-          <MembershipPanel membership={overview.membership} now={now} />
+          <MembershipPanel
+            membership={overview.membership}
+            now={now}
+            lastReminderAt={overview.membership.application?.lastReminderAt ?? null}
+          />
           <section className={styles.security} aria-labelledby="security-title">
             <p>SECURITY / 登录方式</p>
             <h2 id="security-title">账号与安全</h2>
