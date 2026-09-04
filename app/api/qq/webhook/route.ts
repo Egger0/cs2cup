@@ -105,14 +105,26 @@ export async function POST(request: Request) {
   }
   const message = qqGroupMessage(payload)
   if (!message) return new NextResponse(null, { status: 204 })
+  const command = qqCommand(message.content)
+  if (!command) return new NextResponse(null, { status: 204 })
   if (!config.allowedGroupOpenId) {
     console.info('[qq-bot] allowed group OpenID needed', { groupOpenId: message.groupOpenId })
+    if (command.kind === 'check_in') {
+      try {
+        await replyToQqGroup(
+          config,
+          message,
+          `机器人正在完成官方群绑定。请将这串群标识发给平台负责人：${message.groupOpenId}`,
+        )
+      } catch (error) {
+        console.error('[qq-bot] group binding reply unavailable', error)
+        return new NextResponse('QQ bot unavailable', { status: 503 })
+      }
+    }
     return new NextResponse(null, { status: 204 })
   }
   if (message.groupOpenId !== config.allowedGroupOpenId)
     return new NextResponse(null, { status: 204 })
-  const command = qqCommand(message.content)
-  if (!command) return new NextResponse(null, { status: 204 })
   try {
     const content = await commandReply(command, message.groupOpenId, message.memberOpenId)
     await replyToQqGroup(config, message, content)
