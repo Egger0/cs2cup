@@ -103,15 +103,14 @@ export function RegisterForm({ initialError }: { initialError?: string }) {
           name="password"
           type="password"
           autoComplete="new-password"
+          minLength={6}
           maxLength={1024}
           aria-invalid={errorField === 'password'}
           aria-describedby="password-guidance"
           onChange={event => setPasswordLength(Array.from(event.currentTarget.value).length)}
           required
         />
-        <small id="password-guidance">
-          至少 15 个字符，可使用易记的长句；当前 {passwordLength} 个字符
-        </small>
+        <small id="password-guidance">至少 6 个字符；当前 {passwordLength} 个字符</small>
       </label>
       <label className={formStyles.field}>
         <span>确认密码</span>
@@ -119,6 +118,7 @@ export function RegisterForm({ initialError }: { initialError?: string }) {
           name="passwordConfirmation"
           type="password"
           autoComplete="new-password"
+          minLength={6}
           maxLength={1024}
           aria-invalid={errorField === 'passwordConfirmation'}
           required

@@ -21,8 +21,8 @@ const previousPepper = {
   key: Uint8Array.from({ length: 32 }, (_, index) => 32 - index),
 }
 
-assert.equal(PASSWORD_POLICY.minCodePoints, 15)
-assert.deepEqual(evaluatePasswordPolicy('short password'), { ok: false, reason: 'too_short' })
+assert.equal(PASSWORD_POLICY.minCodePoints, 6)
+assert.deepEqual(evaluatePasswordPolicy('short'), { ok: false, reason: 'too_short' })
 assert.deepEqual(evaluatePasswordPolicy('a'.repeat(129)), { ok: false, reason: 'too_long' })
 assert.deepEqual(evaluatePasswordPolicy(`valid-password-${String.fromCharCode(0xd800)}`), {
   ok: false,

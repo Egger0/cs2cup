@@ -54,7 +54,7 @@ function policyMessage(field: string, reason: string) {
   }
   if (field === 'displayName') return '请填写 1–80 个字符的显示名称。'
   if (field === 'passwordConfirmation') return '两次输入的密码不一致。'
-  if (reason === 'too_short') return '密码至少需要 15 个字符。'
+  if (reason === 'too_short') return '密码至少需要 6 个字符。'
   if (reason === 'contains_account_context') return '密码不应包含用户名或显示名称。'
   return '密码不符合要求，请换一个易记的长密码。'
 }

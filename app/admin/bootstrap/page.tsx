@@ -91,9 +91,10 @@ export default async function AdminBootstrapPage({
             id="owner-password"
             name="password"
             label="新密码"
-            hint="至少 15 个字符，建议使用易记长句"
+            hint="至少 6 个字符"
             type="password"
             autoComplete="new-password"
+            minLength={6}
             maxLength={1024}
             required
           />
@@ -103,6 +104,7 @@ export default async function AdminBootstrapPage({
             label="确认新密码"
             type="password"
             autoComplete="new-password"
+            minLength={6}
             maxLength={1024}
             required
           />

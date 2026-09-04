@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
       if (result.reason === 'conflict') {
         return response(409, '安全状态已经变化，请刷新后重试。', result.reason)
       }
-      return response(400, '请确认新密码至少 15 个字符，并与确认密码一致。', result.reason)
+      return response(400, '请确认新密码至少 6 个字符，并与确认密码一致。', result.reason)
     }
     return setIdentitySessionCookie(
       withPrivateNoStore(NextResponse.json({ ok: true })),

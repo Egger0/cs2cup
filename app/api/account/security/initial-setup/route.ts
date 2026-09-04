@@ -70,7 +70,7 @@ function failure(
       ? '用户名需为 3–32 位小写字母、数字、点、短横线或下划线。'
       : result.field === 'passwordConfirmation'
         ? '两次输入的密码不一致。'
-        : '密码至少需要 15 个字符。'
+        : '密码至少需要 6 个字符。'
   return response(400, message, result.reason, result.field)
 }
 

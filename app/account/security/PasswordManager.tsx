@@ -66,7 +66,7 @@ export function PasswordManager({ recovery }: { recovery: boolean }) {
       <p className={styles.explanation}>
         {recovery
           ? '恢复会话只能完成这一步。设置新密码后，所有旧会话会退出，并在当前设备重新登录。'
-          : '使用至少 15 个字符的易记长句。修改后会保留当前设备，并退出其他设备。'}
+          : '密码至少需要 6 个字符。修改后会保留当前设备，并退出其他设备。'}
       </p>
       <form className={styles.securityForm} onSubmit={submit}>
         {!recovery ? (
@@ -87,11 +87,12 @@ export function PasswordManager({ recovery }: { recovery: boolean }) {
             name="password"
             type="password"
             autoComplete="new-password"
+            minLength={6}
             maxLength={1024}
             onChange={event => setLength(Array.from(event.currentTarget.value).length)}
             required
           />
-          <small>至少 15 个字符 · 当前 {length} 个字符</small>
+          <small>至少 6 个字符 · 当前 {length} 个字符</small>
         </label>
         <label>
           <span>确认新密码</span>
@@ -99,6 +100,7 @@ export function PasswordManager({ recovery }: { recovery: boolean }) {
             name="passwordConfirmation"
             type="password"
             autoComplete="new-password"
+            minLength={6}
             maxLength={1024}
             required
           />
