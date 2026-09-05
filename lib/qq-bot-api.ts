@@ -58,9 +58,15 @@ export async function qqBotApiRequest(
   return response
 }
 
-export function sendQqGroupMessage(config: QqBotApiConfig, groupOpenId: string, content: string) {
+export function sendQqGroupMessage(
+  config: QqBotApiConfig,
+  groupOpenId: string,
+  content: string,
+  messageId?: string,
+) {
   return qqBotApiRequest(config, `/groups/${encodeURIComponent(groupOpenId)}/messages`, 'POST', {
     content,
     msg_type: 0,
+    ...(messageId ? { msg_id: messageId, msg_seq: 1 } : {}),
   })
 }

@@ -84,6 +84,20 @@ assert.equal(
   })?.eventId,
   'GROUP_MEMBER_ADD:group-1:member-2:1784276757',
 )
+assert.deepEqual(
+  qqGroupMemberAdd({
+    id: 'outer-event-id',
+    event_type: 'GROUP_MEMBER_ADD',
+    timestamp: 1_784_276_757,
+    group_openid: 'group-1',
+    user_openid: 'member-2',
+  }),
+  {
+    eventId: 'outer-event-id',
+    groupOpenId: 'group-1',
+    memberOpenId: 'member-2',
+  },
+)
 assert.equal(qqGroupMemberAdd({ t: 'GROUP_MEMBER_REMOVE', d: {} }), null)
 assert.equal(
   verifyQqWebhookSignature(

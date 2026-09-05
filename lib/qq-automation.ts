@@ -57,7 +57,7 @@ export async function sendQqWelcome(
   const key = deliveryKey('welcome', groupOpenId, eventId)
   if (!(await claimDelivery(database, key, 'welcome', groupOpenId))) return false
   try {
-    await sendQqGroupMessage(config, groupOpenId, QQ_WELCOME_MESSAGE)
+    await sendQqGroupMessage(config, groupOpenId, QQ_WELCOME_MESSAGE, eventId)
     return true
   } catch (error) {
     await releaseDelivery(database, key)

@@ -66,7 +66,16 @@ function recordValue(value: unknown): UnknownRecord | null {
 }
 
 function eventData(payload: UnknownRecord) {
-  return recordValue(payload.d) ?? recordValue(payload.data) ?? recordValue(payload.msg)
+  return recordValue(payload.d) ?? recordValue(payload.data) ?? recordValue(payload.msg) ?? payload
+}
+
+function eventType(payload: UnknownRecord) {
+  return (
+    stringValue(payload.t) ??
+    stringValue(payload.type) ??
+    stringValue(payload.eventType) ??
+    stringValue(payload.event_type)
+  )
 }
 
 function privateKey(secret: string) {
@@ -142,7 +151,7 @@ export function qqWebhookVerification(payload: unknown, secret: string) {
 export function qqGroupMessage(payload: unknown): QqGroupMessage | null {
   const source = recordValue(payload)
   if (!source) return null
-  const type = stringValue(source.t) ?? stringValue(source.type) ?? stringValue(source.eventType)
+  const type = eventType(source)
   if (type !== 'GROUP_AT_MESSAGE_CREATE') return null
   const data = eventData(source)
   const author = data ? recordValue(data.author) : null
@@ -159,11 +168,13 @@ export function qqGroupMessage(payload: unknown): QqGroupMessage | null {
 export function qqGroupMemberAdd(payload: unknown): QqGroupMemberAdd | null {
   const source = recordValue(payload)
   if (!source) return null
-  const type = stringValue(source.t) ?? stringValue(source.type) ?? stringValue(source.eventType)
+  const type = eventType(source)
   if (type !== 'GROUP_MEMBER_ADD') return null
   const data = eventData(source)
   const groupOpenId = data ? stringValue(data.group_openid) : null
-  const memberOpenId = data ? stringValue(data.member_openid) : null
+  const memberOpenId = data
+    ? (stringValue(data.member_openid) ?? stringValue(data.user_openid))
+    : null
   const timestamp = data ? timestampValue(data.timestamp) : null
   const eventId =
     stringValue(source.id) ??

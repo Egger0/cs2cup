@@ -54,6 +54,8 @@ try {
     {
       content: '欢迎加入宁理电竞社！请前往群公告或机器人菜单打开官网注册成员。',
       msg_type: 0,
+      msg_id: 'member-event-1',
+      msg_seq: 1,
     },
     { content: '早安，宁理电竞社！今天记得签到哦', msg_type: 0 },
     { content: '早安，宁理电竞社！今天记得签到哦', msg_type: 0 },
