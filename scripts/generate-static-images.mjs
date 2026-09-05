@@ -59,4 +59,16 @@ const [og, qr] = await Promise.all([
 if (og.width !== 1200 || og.height !== 630 || qr.width !== 256 || qr.height !== 256) {
   throw new Error('Generated static image dimensions are invalid')
 }
-console.log('Generated static Open Graph and Douyin images')
+for (const [filename, size] of [
+  ['app-icon-192.png', 192],
+  ['app-icon-512.png', 512],
+  ['apple-touch-icon.png', 180],
+]) {
+  const markSize = Math.round(size * 0.72)
+  const icon = await sharp(mark).resize(markSize, markSize).png().toBuffer()
+  await sharp({ create: { width: size, height: size, channels: 4, background: '#f1efe8' } })
+    .composite([{ input: icon, gravity: 'center' }])
+    .png({ compressionLevel: 9 })
+    .toFile(fileURLToPath(new URL(`../public/brand/${filename}`, import.meta.url)))
+}
+console.log('Generated static Open Graph, Douyin, and home-screen icons')

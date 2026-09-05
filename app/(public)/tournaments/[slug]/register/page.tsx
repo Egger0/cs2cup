@@ -8,6 +8,7 @@ import { getAuthContext } from '@/lib/identity/kernel'
 import { getMembershipState } from '@/lib/identity/membership-service'
 import { getRegistrationDraft } from '@/lib/identity/registration-workflow'
 import { RegisterForm } from './RegisterForm'
+import { registrationAccountHref, registrationAuthHref } from '@/lib/registration-navigation'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: '报名' }
@@ -61,7 +62,7 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
                 >
                   登录后报名
                 </ButtonLink>
-                <ButtonLink href="/register">创建账号</ButtonLink>
+                <ButtonLink href={registrationAuthHref('register', slug)}>创建账号</ButtonLink>
               </>
             }
           >
@@ -72,7 +73,10 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
             {!eligible ? (
               <Empty
                 action={
-                  <ButtonLink href="/account" variant="primary">
+                  <ButtonLink
+                    href={`${registrationAccountHref(slug)}#membership`}
+                    variant="primary"
+                  >
                     查看或提交资格申请
                   </ButtonLink>
                 }

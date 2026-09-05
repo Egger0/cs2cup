@@ -1,3 +1,4 @@
+import { captureResponsiveScreens } from './frontend-screenshots.mjs'
 import assert from 'node:assert/strict'
 
 import AxeBuilder from '@axe-core/playwright'
@@ -26,7 +27,7 @@ async function assertAccessible(page, label) {
 async function passwordLogin(page, user, redirectKey = 'account') {
   await page.goto(`${BASE}/login?redirectKey=${redirectKey}`, { waitUntil: 'networkidle' })
   await page.getByLabel('用户名').fill(user.username)
-  await page.getByLabel('密码').fill(user.password)
+  await page.getByLabel('密码', { exact: true }).fill(user.password)
   await Promise.all([
     page.waitForURL(url => url.pathname !== '/login'),
     page.getByRole('button', { name: '使用账号密码登录' }).click(),
@@ -107,10 +108,8 @@ try {
 
   await applicant.page.goto(`${BASE}/tournaments/2026-nlc/register`)
   await fillRegistration(applicant.page)
-  assert.equal(
-    await applicant.page.getByRole('button', { name: '通过资格审核后提交' }).isDisabled(),
-    true,
-  )
+  await captureResponsiveScreens(applicant.page, 'entry-form')
+  assert.ok(await applicant.page.getByRole('button', { name: '通过资格审核后提交' }).isDisabled())
   await applicant.page.getByRole('button', { name: '保存草稿' }).click()
   await applicant.page.getByText('草稿已保存，可从“我的赛事”继续填写。').waitFor()
   await applicant.page.reload()
@@ -190,7 +189,7 @@ try {
   await reviewer.page.goto(`${BASE}/me`)
   await reviewer.page.getByRole('heading', { name: '报名协作邀请', exact: true }).waitFor()
   await reviewer.page.getByRole('button', { name: '接受邀请' }).click()
-  await reviewer.page.getByText(TEAM.name).first().waitFor()
+  await reviewer.page.locator('#registration-invitations').waitFor({ state: 'hidden' })
 
   await applicant.page.reload()
   await applicant.page.getByText(BROWSER_USERS.reviewer.displayName).waitFor()
@@ -202,7 +201,7 @@ try {
   await owner.page.goto(`${BASE}/me`)
   owner.page.once('dialog', dialog => dialog.accept())
   await owner.page.getByRole('button', { name: '接受邀请' }).click()
-  await owner.page.getByText(TEAM.name).first().waitFor()
+  await owner.page.locator('#registration-invitations').waitFor({ state: 'hidden' })
   await applicant.page.reload()
   await applicant.page.getByRole('heading', { name: '你是协作者', exact: true }).waitFor()
   console.log('PASS  account-owned registration, collaboration and ownership transfer')

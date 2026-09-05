@@ -8,18 +8,19 @@
   --line-strong: #aaa69b;
   --ink: #171817;
   --muted: #5f605a;
-  --muted-2: #6d6d66;
+  --muted-2: #62645d;
   --ct: #0b4d87;
   --ct-dim: rgba(11, 77, 135, 0.1);
   --t: #0b4d87;
   --t-dim: rgba(11, 77, 135, 0.1);
-  --c4: #f04452;
+  --c4: #b52b3b;
   --honour: #8d661f;
   --accent: var(--ct);
   --accent-dim: var(--ct-dim);
   --button-ink: #f1efe8;
   --danger-dim: rgba(240, 68, 82, 0.12);
   --toast-ink: var(--ink);
+  --section-space: clamp(32px, 4vw, 56px);
   position: relative;
   z-index: 1;
   min-height: 100dvh;
@@ -30,6 +31,10 @@
 
 .theme > main {
   min-height: calc(100svh - 76px);
+}
+
+.theme :global([data-rise]) {
+  animation: none;
 }
 
 @media (max-width: 900px) {

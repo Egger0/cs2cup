@@ -11,6 +11,9 @@ Thumbs.db
 .open-next/
 /app/opengraph-image.png
 /public/brand/douyin-qr-display.png
+/public/brand/app-icon-192.png
+/public/brand/app-icon-512.png
+/public/brand/apple-touch-icon.png
 .local/
 .wrangler/
 node_modules/

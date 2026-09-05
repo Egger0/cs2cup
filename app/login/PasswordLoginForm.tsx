@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { useState, type FormEvent } from 'react'
+import { PasswordInput } from '@/components/ui/PasswordInput'
+import { registrationAuthHref } from '@/lib/registration-navigation'
 import formStyles from './credential-form.module.css'
 import styles from './login.module.css'
 
@@ -90,13 +92,7 @@ export function PasswordLoginForm({
       </label>
       <label className={formStyles.field}>
         <span>密码</span>
-        <input
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          maxLength={1024}
-          required
-        />
+        <PasswordInput name="password" autoComplete="current-password" maxLength={1024} required />
       </label>
       {error ? (
         <p className={formStyles.formError} role="alert">
@@ -110,7 +106,10 @@ export function PasswordLoginForm({
         <span>{working ? '正在登录…' : '使用账号密码登录'}</span>
         <span aria-hidden="true">↗</span>
       </button>
-      <Link className={formStyles.recoveryLink} href="/recover">
+      <Link
+        className={formStyles.recoveryLink}
+        href={registrationAuthHref('recover', tournamentSlug)}
+      >
         忘记密码？使用恢复码
       </Link>
     </form>

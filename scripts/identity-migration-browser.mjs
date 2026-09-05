@@ -12,7 +12,7 @@ const BASE = resolveE2EBaseUrl()
 async function passwordLogin(page, user, redirectKey = 'account') {
   await page.goto(`${BASE}/login?redirectKey=${redirectKey}`, { waitUntil: 'domcontentloaded' })
   await page.getByLabel('用户名').fill(user.username)
-  await page.getByLabel('密码').fill(user.password)
+  await page.getByLabel('密码', { exact: true }).fill(user.password)
   await Promise.all([
     page.waitForURL(url => url.pathname !== '/login'),
     page.getByRole('button', { name: '使用账号密码登录' }).click(),

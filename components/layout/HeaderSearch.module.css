@@ -1,0 +1,19 @@
+.search {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--header-ink);
+  border: 1px solid var(--header-line);
+}
+.search:hover {
+  color: var(--header-accent);
+  border-color: var(--header-accent);
+}
+@media (max-width: 390px) {
+  .search {
+    display: none;
+  }
+}

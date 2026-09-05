@@ -65,6 +65,21 @@ for (const path of PAGES) {
     byRule.set(violation.id, entry)
   }
   console.log(`${count === 0 ? 'PASS' : 'FAIL'}  ${path.padEnd(36)} ${count} issues`)
+  if (count) {
+    console.error(
+      JSON.stringify(
+        violations.map(violation => ({
+          rule: violation.id,
+          nodes: violation.nodes.map(node => ({
+            target: node.target,
+            reason: node.failureSummary,
+          })),
+        })),
+        null,
+        2,
+      ),
+    )
+  }
 }
 
 console.log('\n=== Summary ===')

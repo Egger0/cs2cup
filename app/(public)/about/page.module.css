@@ -8,6 +8,9 @@
 .clubTitle {
   display: inline;
 }
+.joinLink {
+  margin-top: 24px;
+}
 
 @media (max-width: 860px) {
   .intro {
@@ -45,8 +48,8 @@
 
 .factKey {
   font-family: var(--font-mono), monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted-2);
 }
@@ -77,8 +80,8 @@
 
 .roleName {
   font-family: var(--font-mono), monospace;
-  font-size: 0.66rem;
-  letter-spacing: 0.18em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--accent);
 }
@@ -143,21 +146,25 @@
 }
 
 .contact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
   font-family: var(--font-mono), monospace;
-  font-size: 0.82rem;
+  font-size: 0.9375rem;
   color: var(--bg);
 }
 
 .contact span {
-  color: rgba(241, 239, 232, 0.52);
-  letter-spacing: 0.12em;
+  color: #b9c1bf;
+  letter-spacing: 0.04em;
   margin-right: 10px;
 }
 
 @media (max-width: 720px) {
   .clubTitle {
     display: block;
-    width: 4.05em;
+    width: auto;
     text-wrap: wrap;
   }
 

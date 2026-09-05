@@ -1,132 +1,78 @@
 .signal {
-  position: absolute;
-  z-index: 5;
-  right: clamp(42px, 6vw, 96px);
-  bottom: clamp(47px, 6.4vh, 72px);
-  display: grid;
-  width: clamp(230px, 29vw, 390px);
-  min-height: 58px;
-  align-content: center;
-  gap: 7px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(241, 239, 232, 0.46);
-  animation: signalEnter 560ms 880ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  position: relative;
+  padding: 28px;
+  border: 1px solid #7794aa;
+  border-top: 3px solid #9bcaeb;
+  background: #1d2b35;
 }
-
-.signal::before,
-.signal::after {
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  height: 1px;
-  background: var(--signal);
-  content: '';
+.signalMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  color: #acd3ef;
+  font-size: 0.8125rem;
 }
-
-.signal::before {
-  width: 38px;
-  transform: translateX(-38px);
-  animation: signalScan 480ms 1320ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.signal::after {
-  right: 0;
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.signalMeta,
 .signalTitle {
   display: flex;
-  align-items: center;
+  align-items: start;
   justify-content: space-between;
-  gap: 18px;
+  gap: 12px;
+  margin-top: 18px;
+  font-size: clamp(1.35rem, 2vw, 1.875rem);
+  font-weight: 650;
+  line-height: 1.45;
 }
-
-.signalMeta {
-  color: rgba(241, 239, 232, 0.52);
-  font-family: var(--font-mono), monospace;
-  font-size: 0.53rem;
-  letter-spacing: 0.13em;
+.signalTitle svg {
+  flex: none;
+  margin-top: 8px;
+  color: #acd3ef;
 }
-
-.signalMeta span:first-child {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.signal > p {
+  margin-top: 10px;
+  color: #c0cbd2;
+  font-size: 0.875rem;
 }
-
-.signalMeta span:last-child {
-  color: var(--signal);
-  white-space: nowrap;
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: 24px;
 }
-
-.signalTitle strong {
-  overflow: hidden;
-  color: var(--paper);
-  font-size: 0.82rem;
-  font-weight: 620;
-  letter-spacing: 0.07em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  min-height: 46px;
+  color: #c0dff5;
+  font-size: 0.9375rem;
 }
-
-.signalTitle > span {
-  color: var(--signal);
-  font-size: 1rem;
-  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+.actions a:first-child {
+  padding: 10px 20px;
+  color: #142735;
+  background: #e3f1fc;
+  font-weight: 650;
 }
-
-.signal:hover::after,
-.signal:focus-visible::after {
-  transform: scaleX(1);
+.actions a:first-child:hover {
+  background: white;
 }
-
-.signal:hover .signalTitle > span,
-.signal:focus-visible .signalTitle > span {
-  transform: translateX(4px);
+.signal .note {
+  margin-top: 16px;
+  font-size: 0.8125rem;
 }
-
-@keyframes signalEnter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
+.signal :focus-visible {
+  outline-color: #c0dff5;
 }
-
-@keyframes signalScan {
-  to {
-    transform: translateX(0);
-  }
-}
-
-@media (max-width: 680px) {
+@media (max-width: 640px) {
   .signal {
-    right: 34px;
-    bottom: 35px;
-    left: 34px;
-    width: auto;
+    padding: 20px;
   }
-
-  .signalTitle strong {
-    font-size: 0.76rem;
+  .signalTitle {
+    margin-top: 12px;
   }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .signal,
-  .signal::before {
-    animation: none;
-  }
-
-  .signal::before {
-    transform: none;
-  }
-
-  .signal::after,
-  .signalTitle > span {
-    transition: none;
+  .actions {
+    margin-top: 18px;
   }
 }

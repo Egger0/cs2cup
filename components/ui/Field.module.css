@@ -10,8 +10,8 @@
   gap: 6px;
   color: var(--muted);
   font-family: var(--font-mono), monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
 }
 
 .required {
@@ -24,6 +24,7 @@
 }
 
 .control {
+  font-size: 1rem;
   width: 100%;
   min-height: 48px;
   padding: 11px 13px;

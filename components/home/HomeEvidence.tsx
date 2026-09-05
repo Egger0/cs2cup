@@ -9,7 +9,7 @@ const STAGES = [
   { number: '01', label: '冠军', round: 'FINAL' },
 ]
 
-export function HomeEvidence() {
+export function HomeEvidence({ slug }: { slug?: string }) {
   return (
     <section
       id="route"
@@ -50,8 +50,8 @@ export function HomeEvidence() {
 
         <div className={styles.routeFooter} data-home-reveal="item">
           <p>每一条线，都要有人把它组织好。</p>
-          <Link href="/tournaments">
-            <span>查看完整对阵</span>
+          <Link href={slug ? `/tournaments/${slug}/bracket` : '/tournaments'}>
+            <span>{slug ? '查看完整对阵' : '浏览赛事大厅'}</span>
             <span aria-hidden="true">→</span>
           </Link>
         </div>

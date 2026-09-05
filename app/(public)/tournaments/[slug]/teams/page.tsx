@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { SectionHead } from '@/components/domain/Sections'
-import { TeamGrid } from '@/components/domain/TeamGrid'
+import { TeamExplorer } from '@/components/discovery/TeamExplorer'
 import { getPublicTeams, getTournament } from '@/lib/queries/public'
 
 export const revalidate = 300
@@ -21,11 +21,11 @@ export default async function TeamsPage({ params }: { params: Promise<{ slug: st
           <SectionHead
             eyebrow={`${teams.length} / ${tournament.teamCap} 支`}
             title="参赛战队"
-            lede="按报名先后排种子。种子号决定首轮对阵，高种子对低种子。"
+            lede="找到你的队友，也认识下一位对手。点击战队可查看阵容、战绩和比赛日程。"
           />
         </div>
         <div data-rise="2">
-          <TeamGrid teams={teams} slug={slug} />
+          <TeamExplorer teams={teams} slug={slug} />
         </div>
       </div>
     </section>

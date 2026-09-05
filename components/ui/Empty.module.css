@@ -1,5 +1,5 @@
 .empty {
-  padding: clamp(52px, 8vw, 92px) 0;
+  padding: 28px 20px;
   border-top: 1px solid var(--ink);
   border-bottom: 1px solid var(--line-strong);
   display: grid;
@@ -10,7 +10,7 @@
 
 .line {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
   line-height: 1.8;
   max-width: 44ch;
 }

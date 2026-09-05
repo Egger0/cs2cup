@@ -9,7 +9,8 @@
   border-radius: 0;
   background: transparent;
   font-weight: 580;
-  letter-spacing: 0.08em;
+  font-size: 0.9375rem;
+  letter-spacing: 0.02em;
   cursor: pointer;
   transition:
     background 0.2s ease,
@@ -67,7 +68,7 @@
 }
 
 .mini {
-  min-height: 34px;
-  padding: 5px 11px;
-  font-size: 0.82rem;
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
 }

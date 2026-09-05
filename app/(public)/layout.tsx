@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { SiteFooter } from '@/components/layout/SiteFooter'
-import { SiteHeader } from '@/components/layout/SiteHeader'
+import { SiteHeaderEntry } from '@/components/layout/SiteHeaderEntry'
+import { SiteIdentity } from '@/components/layout/SiteIdentity'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { getAuthContext } from '@/lib/identity/kernel'
 import { getSiteSetting, safely } from '@/lib/queries/public'
@@ -82,7 +83,8 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <div className={styles.theme}>
-      <SiteHeader
+      <SiteIdentity />
+      <SiteHeaderEntry
         setting={setting}
         links={[...PUBLIC_LINKS, ...accountLinks]}
         accountLink={accountLink}

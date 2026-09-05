@@ -15,6 +15,9 @@ import {
 } from '@/lib/queries/public'
 import { buildScheduleEntries } from '@/lib/schedule'
 import styles from './match.module.css'
+import { PublicActions } from '@/components/share/PublicActions'
+import { publicMetadata } from '@/lib/public-metadata'
+import { resolveSiteOrigin } from '@/lib/site-config'
 
 export const revalidate = 300
 
@@ -44,9 +47,11 @@ export async function generateMetadata({
   if (isByeMatch(match)) {
     return { title: `${resolved.a?.name ?? resolved.b?.name ?? '参赛战队'} · 轮空` }
   }
-  return {
-    title: `${resolved.a?.name ?? '待定'} vs ${resolved.b?.name ?? '待定'}`,
-  }
+  return publicMetadata(
+    `${resolved.a?.name ?? '待定'} vs ${resolved.b?.name ?? '待定'}`,
+    `${tournament.title} · ${match.roundLabel} · BO${match.bestOf}。查看比赛安排、比分与逐图战报。`,
+    `/tournaments/${encodeURIComponent(slug)}/matches/${match.id}`,
+  )
 }
 
 export default async function MatchPage({
@@ -105,6 +110,18 @@ export default async function MatchPage({
         />
 
         <Versus match={match} a={resolved.a} b={resolved.b} status={scheduleEntry?.status} />
+
+        <PublicActions
+          label="分享这场比赛"
+          share={{
+            title: bye
+              ? `${byeTeam?.name ?? '参赛战队'} · 轮空晋级`
+              : `${resolved.a?.name ?? '待定'} vs ${resolved.b?.name ?? '待定'}`,
+            text: `${tournament.title} · ${match.roundLabel} · BO${match.bestOf}${match.scheduledAt ? ` · ${formatSiteDateTime(match.scheduledAt)}（北京时间）` : ''}`,
+            url: `${resolveSiteOrigin()}/tournaments/${encodeURIComponent(slug)}/matches/${match.id}`,
+            label: 'MATCH DAY / 比赛日',
+          }}
+        />
 
         {bye ? null : (
           <div className={styles.veto}>

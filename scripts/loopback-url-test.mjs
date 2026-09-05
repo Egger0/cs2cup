@@ -58,6 +58,23 @@ await requestHandler({
 })
 assert.equal(continued, true)
 
+for (const url of [
+  'blob:http://127.0.0.1:3000/local-card',
+  'blob:http://localhost:3000/local-card',
+  'blob:https://[::1]:8443/local-card',
+]) {
+  let allowed = false
+  await requestHandler({
+    request: () => ({ url: () => url }),
+    continue: async () => {
+      allowed = true
+    },
+    abort: async () => assert.fail(`Local object URL was blocked: ${url}`),
+  })
+  assert.equal(allowed, true)
+}
+guard.assertSafe()
+
 let abortedWith
 await requestHandler({
   request: () => ({ url: () => 'https://example.com/tracker.js' }),
@@ -91,5 +108,24 @@ assert.throws(
   () => guard.assertSafe(),
   /https:\/\/example\.com\/tracker\.js, wss:\/\/example\.com\/live/,
 )
+
+for (const url of [
+  'blob:https://example.com/card',
+  'blob:http://localhost.example.com/card',
+  'blob:http://user@localhost/card',
+  'blob:ftp://localhost/card',
+  'blob:blob:http://localhost/card',
+  'blob:null/card',
+]) {
+  let blocked = false
+  await requestHandler({
+    request: () => ({ url: () => url }),
+    continue: async () => assert.fail(`Unsafe object URL was allowed: ${url}`),
+    abort: async () => {
+      blocked = true
+    },
+  })
+  assert.equal(blocked, true)
+}
 
 console.log('loopback URL tests passed')

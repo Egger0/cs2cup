@@ -15,6 +15,8 @@ import {
 } from '@/lib/participant-return'
 import { getAuthContext } from '@/lib/identity/kernel'
 import { isIdentityRedirectKey, resolveIdentityRedirect } from '@/lib/identity/redirects'
+import { registrationAuthHref, registrationSlug } from '@/lib/registration-navigation'
+import { RegistrationJourney } from '@/components/domain/RegistrationJourney'
 
 import PasskeyLogin from './PasskeyLogin'
 import LegacySessionConflictRecovery from './LegacySessionConflictRecovery'
@@ -52,6 +54,7 @@ export default async function ParticipantLoginPage({
       ? 'workspaces'
       : 'account'
   const tournamentSlug = typeof params.tournamentSlug === 'string' ? params.tournamentSlug : ''
+  const entrySlug = redirectKey === 'registration' ? registrationSlug(tournamentSlug) : null
   const unifiedTarget = unifiedReturnTo || resolveIdentityRedirect(redirectKey, { tournamentSlug })
   const [context, participant, adminSession, sessionConflict] = await Promise.all([
     getAuthContext(),
@@ -101,8 +104,8 @@ export default async function ParticipantLoginPage({
         </div>
 
         <p className={styles.assurances}>
-          <span>01 / DEVICE LOCAL</span>
-          由设备完成验证 · 本站不接收面容或指纹信息
+          <span>ACCOUNT / NINGLI</span>
+          一个账号，管理资格、报名与赛事协作
         </p>
       </section>
 
@@ -111,7 +114,17 @@ export default async function ParticipantLoginPage({
           <p className={styles.serial}>ACCOUNT ACCESS / NLC—01</p>
           <h2 id="passkey-action-title">登录</h2>
           <p>账号密码是默认方式；绑定过 Passkey 的账号也可使用设备快速确认。</p>
+          {!isStaffReturn ? (
+            <Link
+              href={registrationAuthHref('register', entrySlug)}
+              className={formStyles.createLink}
+            >
+              还没有账号？创建账号 →
+            </Link>
+          ) : null}
         </header>
+
+        {entrySlug ? <RegistrationJourney slug={entrySlug} /> : null}
 
         {notice ? (
           <aside
@@ -151,19 +164,11 @@ export default async function ParticipantLoginPage({
         </div>
 
         <footer className={styles.passFooter}>
-          <p>
-            {isStaffReturn ? '还没有工作权限？' : '还没有账号？'}
-            <br />
-            {isStaffReturn
-              ? '请联系本届赛事负责人确认授权。'
-              : '创建后可以立即登录并申请成员资格。'}
-          </p>
-          {!isStaffReturn ? (
-            <Link href="/register" className={formStyles.createLink}>
-              创建账号 <span aria-hidden="true">↗</span>
-            </Link>
-          ) : null}
-          <Link href="/tournaments" className={styles.backLink}>
+          {isStaffReturn ? <p>还没有工作权限？请联系本届赛事负责人确认授权。</p> : null}
+          <Link
+            href={entrySlug ? `/tournaments/${entrySlug}` : '/tournaments'}
+            className={styles.backLink}
+          >
             <span aria-hidden="true">←</span> 返回公开赛事
           </Link>
         </footer>

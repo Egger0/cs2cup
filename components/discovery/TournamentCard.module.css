@@ -1,0 +1,135 @@
+.card {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+.card:hover {
+  border-color: var(--ct);
+  box-shadow: 0 8px 25px #17181709;
+}
+.topline {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ct);
+}
+.status i {
+  width: 5px;
+  height: 5px;
+  background: currentColor;
+}
+.status[data-status='running'] {
+  color: #a62532;
+}
+.status[data-status='finished'] {
+  color: var(--muted);
+}
+.status[data-status='postponed'] {
+  color: #7f5b1e;
+}
+.mainLink {
+  display: block;
+  padding: 22px 24px 18px;
+}
+.edition {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted-2);
+  font:
+    0.75rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.1em;
+}
+.edition strong {
+  color: var(--ct);
+  font:
+    500 2.7rem/1 var(--font-display),
+    sans-serif;
+}
+.mainLink h3 {
+  margin-top: 22px;
+  font-size: clamp(1.3rem, 2.1vw, 1.7rem);
+  letter-spacing: -0.04em;
+}
+.mainLink p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  min-height: 3.3em;
+  overflow: hidden;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+.enter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  color: var(--ct);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.mainLink:hover .enter svg {
+  transform: translate(2px, -2px);
+}
+.enter svg {
+  transition: transform 180ms ease;
+}
+.details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding: 16px 24px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+}
+.details span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  border-top: 1px solid var(--line);
+}
+.footer > a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.footer > a:hover {
+  color: var(--ct);
+}
+@media (max-width: 520px) {
+  .topline,
+  .mainLink,
+  .details,
+  .footer {
+    padding-inline: 18px;
+  }
+}
