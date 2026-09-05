@@ -79,6 +79,7 @@ export function RegisterForm({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (working) return
+    setUncertain(false)
     const form = event.currentTarget
     const data = new FormData(form)
     if (data.get('password') !== data.get('passwordConfirmation')) {
@@ -89,7 +90,6 @@ export function RegisterForm({
     setWorking(true)
     setError('')
     setErrorField('')
-    setUncertain(false)
     try {
       const response = await fetch(endpoint, {
         method: 'POST',

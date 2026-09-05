@@ -70,6 +70,10 @@ try {
     /tournamentSlug=2026-nlc/,
   )
   assert.ok(Math.abs(before.y - (await submit.boundingBox()).y) <= 1)
+  await confirmation.fill('A mismatched local test phrase')
+  await submit.click()
+  await page.getByRole('alert').getByText('两次输入的密码不一致。').waitFor()
+  assert.equal(await page.getByRole('link', { name: '尝试登录 →' }).count(), 0)
   await page.unroute('**/api/auth/register*')
   await page.screenshot({ path: 'output/playwright/auth-network-recovery.png', fullPage: true })
 
