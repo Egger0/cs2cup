@@ -4,6 +4,7 @@ import { display, mono } from '@/lib/fonts'
 import { resolveSiteOrigin } from '@/lib/site-config'
 import styles from './noscript.module.css'
 import './globals.css'
+import './layout-tokens.css'
 
 const SITE = resolveSiteOrigin()
 

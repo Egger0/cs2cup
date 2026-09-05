@@ -5,41 +5,34 @@ import { useEffect } from 'react'
 export function HomeReveal() {
   useEffect(() => {
     const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-home-reveal]'))
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      elements.forEach(element => {
-        element.dataset.visible = 'true'
-      })
+    const reveal = (element: HTMLElement) => {
+      element.dataset.visible = 'true'
+    }
+    if (
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      !('IntersectionObserver' in window)
+    ) {
+      elements.forEach(reveal)
       return
     }
-
-    document.documentElement.dataset.homeMotion = 'ready'
-    const pending = new Set(elements)
-    let frame = 0
-    const revealPassedElements = () => {
-      frame = 0
-      pending.forEach(element => {
-        if (element.getBoundingClientRect().top < window.innerHeight * 0.94) {
-          element.dataset.visible = 'true'
-          pending.delete(element)
+    const observer = new IntersectionObserver(
+      entries => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            reveal(entry.target as HTMLElement)
+            observer.unobserve(entry.target)
+          }
         }
-      })
-      if (pending.size === 0) {
-        window.removeEventListener('scroll', scheduleReveal)
-        window.removeEventListener('resize', scheduleReveal)
-      }
+      },
+      { rootMargin: '0px 0px -6% 0px' },
+    )
+    for (const element of elements) {
+      if (element.getBoundingClientRect().top < window.innerHeight * 0.94) reveal(element)
+      else observer.observe(element)
     }
-    const scheduleReveal = () => {
-      if (frame) return
-      frame = window.requestAnimationFrame(revealPassedElements)
-    }
-
-    frame = window.requestAnimationFrame(revealPassedElements)
-    window.addEventListener('scroll', scheduleReveal, { passive: true })
-    window.addEventListener('resize', scheduleReveal)
+    document.documentElement.dataset.homeMotion = 'ready'
     return () => {
-      window.cancelAnimationFrame(frame)
-      window.removeEventListener('scroll', scheduleReveal)
-      window.removeEventListener('resize', scheduleReveal)
+      observer.disconnect()
       delete document.documentElement.dataset.homeMotion
     }
   }, [])

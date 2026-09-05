@@ -10,12 +10,12 @@
 }
 
 .routeCanvas {
-  --route-gutter: clamp(28px, 6vw, 88px);
+  --route-gutter: var(--pad);
   position: relative;
   display: grid;
   min-height: calc(100svh - 76px);
   align-content: space-between;
-  width: min(100%, 1440px);
+  width: min(100%, var(--wrap));
   margin-inline: auto;
   padding: clamp(76px, 10vh, 112px) var(--route-gutter) clamp(64px, 8vh, 90px);
 }
@@ -25,6 +25,7 @@
   inset: 0 var(--route-gutter);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  column-gap: var(--grid-gap);
   pointer-events: none;
 }
 
@@ -79,6 +80,7 @@
   z-index: 1;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  column-gap: var(--grid-gap);
   margin-block: clamp(62px, 8.5vh, 94px);
   list-style: none;
 }
@@ -190,9 +192,8 @@
   }
 
   .routeCanvas {
-    --route-gutter: 20px;
     min-height: auto;
-    padding: 86px 20px 96px;
+    padding: 80px var(--pad) 96px;
   }
 
   .gridLines {

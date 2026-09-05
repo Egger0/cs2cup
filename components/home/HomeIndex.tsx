@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import motionStyles from './HomeMotion.module.css'
 import styles from './HomeIndex.module.css'
+import roleStyles from './HomeRoles.module.css'
 
 const ROLES = [
-  { glyph: '打', label: '选手' },
-  { glyph: '说', label: '解说' },
-  { glyph: '播', label: '导播' },
-  { glyph: '做', label: '设计' },
+  { glyph: '打', label: '选手', detail: '和队友一起，把热爱打成高光。' },
+  { glyph: '说', label: '解说', detail: '让每一次精彩，都被听见。' },
+  { glyph: '播', label: '导播', detail: '把赛场的每一刻，带到台前。' },
+  { glyph: '做', label: '设计', detail: '让我们的主场，有自己的样子。' },
 ]
 
 const LINKS = [
@@ -23,17 +24,23 @@ export function HomeIndex() {
       aria-labelledby="home-index-title"
       data-header-tone="dark"
     >
-      <div className={styles.inner}>
+      <div className={styles.inner} data-layout-container>
         <header className={styles.heading} data-home-reveal="item">
           <p>社团分工 / 04 ROLES</p>
           <h2 id="home-index-title">不只选手。</h2>
         </header>
 
-        <ul className={styles.roles} aria-label="社团角色" data-home-reveal="group">
+        <ul className={roleStyles.roles} aria-label="社团角色" data-home-reveal="group">
           {ROLES.map(role => (
             <li key={role.glyph}>
-              <strong aria-hidden="true">{role.glyph}</strong>
-              <span>{role.label}</span>
+              <Link href="/about#join" aria-label={`了解社团招新：${role.label}`}>
+                <strong aria-hidden="true">{role.glyph}</strong>
+                <span className={roleStyles.label}>
+                  {role.label}
+                  <span aria-hidden="true">↗</span>
+                </span>
+                <p>{role.detail}</p>
+              </Link>
             </li>
           ))}
         </ul>

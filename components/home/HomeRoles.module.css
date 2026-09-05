@@ -1,0 +1,119 @@
+.roles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  margin-block: var(--space-8);
+  border-block: 1px solid rgb(241 239 232 / 28%);
+  list-style: none;
+}
+.roles li {
+  position: relative;
+  min-width: 0;
+}
+.roles li:not(:last-child)::after {
+  position: absolute;
+  inset: 0 calc(var(--grid-gap) / -2) 0 auto;
+  width: 1px;
+  background: rgb(241 239 232 / 18%);
+  content: '';
+}
+.roles a {
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  height: 100%;
+  min-height: clamp(280px, 26vw, 380px);
+  padding-block: var(--space-3);
+  overflow: hidden;
+  transition: background-color 240ms ease;
+}
+.roles a::before {
+  position: absolute;
+  inset: auto 0 0;
+  height: 3px;
+  background: var(--signal);
+  content: '';
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 300ms var(--ease-out);
+}
+.roles strong {
+  align-self: center;
+  justify-self: center;
+  margin-block: var(--space-3);
+  color: var(--paper);
+  font-family: 'NLC Role Sans', 'PingFang SC', sans-serif;
+  font-size: clamp(7rem, 13vw, 13rem);
+  font-weight: 300;
+  line-height: 1;
+  transition:
+    transform 350ms var(--ease-out),
+    color 240ms ease;
+}
+.roles li:nth-child(3) strong {
+  color: #6da5d3;
+}
+.label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #cfdbdd;
+  font-size: 0.8125rem;
+}
+.label span {
+  color: var(--signal);
+}
+.roles p {
+  margin-top: var(--space-1);
+  color: #a8b5b8;
+  font-size: 0.75rem;
+  line-height: 1.7;
+}
+.roles a:is(:hover, :focus-visible) {
+  background: #202c32;
+}
+.roles a:is(:hover, :focus-visible)::before {
+  transform: scaleX(1);
+}
+.roles a:is(:hover, :focus-visible) strong {
+  color: #a8d7f8;
+  transform: translateY(-6px);
+}
+.roles a:focus-visible {
+  outline-offset: -4px;
+}
+@media (max-width: 760px) {
+  .roles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-block: var(--space-6);
+  }
+  .roles li {
+    border-bottom: 1px solid rgb(241 239 232 / 18%);
+  }
+  .roles li:nth-child(2n) {
+    border-right: 0;
+  }
+  .roles li:nth-child(2n)::after {
+    display: none;
+  }
+  .roles li:nth-child(n + 3) {
+    border-bottom: 0;
+  }
+  .roles a {
+    min-height: 240px;
+    padding-block: var(--space-2);
+  }
+  .roles strong {
+    font-size: clamp(5.5rem, 28vw, 9rem);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .roles a,
+  .roles a::before,
+  .roles strong {
+    transition: none;
+  }
+  .roles a:is(:hover, :focus-visible) strong {
+    transform: none;
+  }
+}

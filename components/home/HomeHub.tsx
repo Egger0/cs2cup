@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Icon } from '@/components/ui/Icon'
 import type { Post, Tournament } from '@/lib/types'
 import styles from './HomeHub.module.css'
+import motionStyles from './HomeMotion.module.css'
 
 export function HomeHub({ tournament, posts }: { tournament: Tournament | null; posts: Post[] }) {
   const steps = [
@@ -30,12 +31,12 @@ export function HomeHub({ tournament, posts }: { tournament: Tournament | null; 
   return (
     <section
       id="clubhouse"
-      className={styles.hub}
+      className={`${styles.hub} ${motionStyles.hubMotion}`}
       data-header-tone="light"
       aria-labelledby="clubhouse-title"
     >
       <div className="wrap">
-        <header className={styles.heading}>
+        <header className={styles.heading} data-home-reveal="item">
           <div>
             <span>THE CLUBHOUSE / 宁理电竞</span>
             <h2 id="clubhouse-title">热爱，有了集合地。</h2>
@@ -44,7 +45,7 @@ export function HomeHub({ tournament, posts }: { tournament: Tournament | null; 
             进入赛事大厅 <Icon name="arrow" />
           </Link>
         </header>
-        <nav className={styles.pathways} aria-label="参赛与社团指南">
+        <nav className={styles.pathways} aria-label="参赛与社团指南" data-home-reveal="group">
           {steps.map(step => (
             <Link key={step.number} href={step.href}>
               <span className={styles.number}>{step.number}</span>

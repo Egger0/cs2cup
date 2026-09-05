@@ -1,78 +1,118 @@
 .signal {
   position: relative;
-  padding: 28px;
-  border: 1px solid #7794aa;
-  border-top: 3px solid #9bcaeb;
-  background: #1d2b35;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 26px;
+  padding-top: 22px;
+  border-top: 1px solid #697f84;
+}
+.signal::before {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 48px;
+  height: 2px;
+  background: var(--signal);
+  content: '';
+  transition: width 350ms ease;
+}
+.signal:has(a:is(:hover, :focus-visible))::before {
+  width: 100%;
+}
+.details {
+  min-width: 0;
 }
 .signalMeta {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 12px;
-  color: #acd3ef;
-  font-size: 0.8125rem;
+  align-items: center;
+  gap: 6px 16px;
+  color: #b3c5cc;
+  font-size: 0.6875rem;
+}
+.status {
+  padding: 2px 7px;
+  color: #c6e7fa;
+  background: #263c47;
+  font-size: 0.625rem;
 }
 .signalTitle {
   display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 18px;
-  font-size: clamp(1.35rem, 2vw, 1.875rem);
-  font-weight: 650;
-  line-height: 1.45;
+  align-items: center;
+  gap: 16px;
+  min-height: 44px;
+  margin-top: 4px;
+  font-size: clamp(1rem, 1.7vw, 1.5rem);
+  font-weight: 620;
+  line-height: 1.4;
 }
 .signalTitle svg {
   flex: none;
-  margin-top: 8px;
-  color: #acd3ef;
+  color: var(--signal);
 }
-.signal > p {
-  margin-top: 10px;
-  color: #c0cbd2;
-  font-size: 0.875rem;
-}
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px 20px;
-  margin-top: 24px;
-}
-.actions a {
+.primary {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 20px;
-  min-height: 46px;
-  color: #c0dff5;
-  font-size: 0.9375rem;
-}
-.actions a:first-child {
-  padding: 10px 20px;
-  color: #142735;
-  background: #e3f1fc;
+  justify-content: space-between;
+  gap: 28px;
+  min-height: 54px;
+  padding: 12px 22px;
+  color: #122a38;
+  background: #c4e5f8;
+  font-size: 0.875rem;
   font-weight: 650;
+  transition:
+    background-color 180ms ease,
+    box-shadow 180ms ease;
 }
-.actions a:first-child:hover {
-  background: white;
+.primary svg {
+  flex: none;
+  transition: transform 220ms ease;
 }
-.signal .note {
-  margin-top: 16px;
-  font-size: 0.8125rem;
+.primary:is(:hover, :focus-visible) {
+  background: #e5f5ff;
+  box-shadow: 0 0 24px rgb(155 202 235 / 12%);
+}
+.primary:is(:hover, :focus-visible) svg {
+  transform: translateX(4px);
 }
 .signal :focus-visible {
   outline-color: #c0dff5;
 }
-@media (max-width: 640px) {
+@media (max-width: 900px) {
   .signal {
-    padding: 20px;
+    gap: 16px;
+  }
+  .primary {
+    gap: 16px;
+    padding-inline: 16px;
+  }
+}
+@media (max-width: 700px) {
+  .signal {
+    gap: 8px;
+    padding-top: 18px;
   }
   .signalTitle {
-    margin-top: 12px;
+    font-size: 1rem;
   }
-  .actions {
-    margin-top: 18px;
+  .signalTitle svg {
+    display: none;
+  }
+  .primary {
+    gap: 12px;
+    min-height: 52px;
+    font-size: 0.8125rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .signal::before,
+  .primary,
+  .primary svg {
+    transition: none;
+  }
+  .primary:is(:hover, :focus-visible) svg {
+    transform: none;
   }
 }

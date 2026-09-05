@@ -20,7 +20,7 @@
   --button-ink: #f1efe8;
   --danger-dim: rgba(240, 68, 82, 0.12);
   --toast-ink: var(--ink);
-  --section-space: clamp(32px, 4vw, 56px);
+  --section-space: var(--space-8);
   position: relative;
   z-index: 1;
   min-height: 100dvh;
@@ -38,7 +38,15 @@
 }
 
 @media (max-width: 900px) {
+  .theme {
+    --section-space: var(--space-6);
+  }
   .theme > main {
     min-height: calc(100svh - 68px);
+  }
+}
+@media (max-width: 640px) {
+  .theme {
+    --section-space: var(--space-4);
   }
 }

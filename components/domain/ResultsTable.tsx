@@ -45,7 +45,7 @@ export function ResultsTable({ matches, teams, maps, slug, limit }: ResultsTable
           <tr>
             <th>轮次</th>
             <th>对阵</th>
-            <th style={{ textAlign: 'center' }}>比分</th>
+            <th>比分</th>
             <th>图</th>
             <th />
           </tr>

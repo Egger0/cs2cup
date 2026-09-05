@@ -10,7 +10,7 @@ import styles from './SiteFooter.module.css'
 export function SiteFooter({ setting }: { setting: SiteSetting }) {
   return (
     <footer className={styles.footer}>
-      <div className={styles.inner}>
+      <div className={styles.inner} data-layout-container>
         <div className={styles.invitation}>
           <div>
             <span>NINGLI ESPORTS CLUB / SINCE 2022</span>

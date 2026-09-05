@@ -13,7 +13,7 @@
 
 .table thead th {
   text-align: left;
-  padding: 11px 14px;
+  padding: 12px 16px;
   background: var(--bg-2);
   border-bottom: 1px solid var(--line-strong);
   font-family: var(--font-mono), monospace;
@@ -39,7 +39,7 @@
 }
 
 .table td {
-  padding: 12px 14px;
+  padding: 12px 16px;
   vertical-align: middle;
 }
 
@@ -76,6 +76,10 @@
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   white-space: nowrap;
+  text-align: center;
+}
+
+.table thead th:nth-child(3) {
   text-align: center;
 }
 

@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import styles from './HomeBracket.module.css'
+import emblemStyles from './HomeEmblem.module.css'
 
 export function HomeBracket() {
   return (
@@ -33,6 +34,11 @@ export function HomeBracket() {
           <path pathLength="1" d="M900 380H738" />
         </g>
 
+        <g className={styles.signals}>
+          <path pathLength="1" d="M36 84H210V196H370V380H702" />
+          <path pathLength="1" d="M1404 676H1230V564H1070V380H738" />
+        </g>
+
         <path className={styles.finalAxis} pathLength="1" d="M720 30V730" data-home-final-axis />
         <rect
           className={styles.finalNode}
@@ -44,8 +50,15 @@ export function HomeBracket() {
         />
       </svg>
 
-      <div className={styles.clubMark} data-home-club-mark>
-        <Image src="/brand/club-mark.svg" alt="" width={600} height={600} priority />
+      <div className={emblemStyles.emblem} data-home-club-mark>
+        <div className={emblemStyles.frame}>
+          <span className={emblemStyles.orbit} data-home-orbit />
+          <span className={emblemStyles.crosshair} />
+          <Image src="/brand/club-mark.svg" alt="" width={600} height={600} priority />
+        </div>
+        <p className={emblemStyles.caption}>
+          宁理电竞社 <span>OUR HOME. OUR GAME.</span>
+        </p>
       </div>
     </div>
   )

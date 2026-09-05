@@ -1,0 +1,122 @@
+.emblem {
+  position: absolute;
+  top: 19%;
+  right: var(--pad);
+  width: calc((min(100vw, var(--wrap)) - 2 * var(--pad) - 2 * var(--grid-gap)) / 3);
+  transform: perspective(900px) translate3d(var(--aim-x, 0px), var(--aim-y, 0px), 0)
+    rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.frame {
+  position: relative;
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgb(155 202 235 / 22%);
+  background: radial-gradient(circle, rgb(40 107 150 / 14%), transparent 70%);
+}
+.frame::before,
+.frame::after {
+  position: absolute;
+  inset: -1px;
+  width: 24px;
+  height: 24px;
+  border: solid var(--signal);
+  content: '';
+}
+.frame::before {
+  border-width: 1px 0 0 1px;
+}
+.frame::after {
+  inset: auto -1px -1px auto;
+  border-width: 0 1px 1px 0;
+}
+.frame img {
+  width: 72%;
+  height: auto;
+  filter: brightness(1.9) saturate(0.8);
+}
+.orbit {
+  position: absolute;
+  inset: 5%;
+  border: 1px solid rgb(155 202 235 / 15%);
+  border-top-color: rgb(155 202 235 / 70%);
+  border-bottom-color: rgb(155 202 235 / 45%);
+  border-radius: 50%;
+  animation: orbit 32s linear infinite;
+  animation-play-state: paused;
+}
+.orbit::after {
+  position: absolute;
+  top: 13%;
+  right: 13%;
+  width: 5px;
+  height: 5px;
+  background: var(--signal);
+  content: '';
+}
+.crosshair {
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background: rgb(155 202 235 / 12%);
+}
+.caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  color: #9fb5be;
+  font-size: 0.6875rem;
+}
+.caption span {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+}
+:global([data-home-cover][data-motion-state='active']) .orbit {
+  animation-play-state: running;
+}
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 900px) {
+  .emblem {
+    top: 23%;
+    width: 30vw;
+  }
+}
+@media (max-width: 700px) {
+  .emblem {
+    top: 18%;
+    width: 30vw;
+  }
+  .caption {
+    display: none;
+  }
+  .frame {
+    border-color: rgb(155 202 235 / 12%);
+  }
+  .frame::before,
+  .frame::after {
+    width: 12px;
+    height: 12px;
+  }
+}
+@media (max-width: 700px) and (max-height: 660px) {
+  .emblem {
+    top: 15%;
+    width: 27vw;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .emblem {
+    transform: none;
+    transition: none;
+  }
+  .orbit {
+    animation: none;
+  }
+}

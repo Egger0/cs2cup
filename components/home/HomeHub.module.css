@@ -1,5 +1,5 @@
 .hub {
-  padding-block: clamp(32px, 4vw, 56px);
+  padding-block: var(--space-8);
   background: var(--bg);
   scroll-margin-top: 76px;
 }
@@ -35,25 +35,44 @@
 .pathways {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  border: 1px solid var(--line-strong);
+  column-gap: var(--grid-gap);
+  border-block: 1px solid var(--line-strong);
   margin-top: 24px;
 }
 .pathways a {
   position: relative;
-  padding: clamp(22px, 3vw, 32px);
-  border-right: 1px solid var(--line-strong);
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  padding: var(--space-4) 0;
   transition: background 160ms ease;
 }
-.pathways a:last-child {
-  border-right: 0;
+.pathways a:not(:last-child)::before {
+  position: absolute;
+  inset: 0 calc(var(--grid-gap) / -2) 0 auto;
+  width: 1px;
+  background: var(--line);
+  content: '';
 }
-.pathways a:hover {
+.pathways a:is(:hover, :focus-visible) {
   background: var(--surface);
+}
+.pathways a::after {
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 3px;
+  background: var(--ct);
+  content: '';
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 260ms var(--ease-out);
+}
+.pathways a:is(:hover, :focus-visible)::after {
+  transform: scaleX(1);
 }
 .number {
   position: absolute;
-  right: 28px;
-  top: 24px;
+  right: 0;
+  top: var(--space-4);
   color: var(--muted-2);
   font:
     500 2.5rem/1 var(--font-display),
@@ -62,6 +81,7 @@
 .role {
   color: var(--ct);
   font-size: 0.7rem;
+  padding-right: 44px;
 }
 .pathways h3 {
   display: flex;
@@ -73,6 +93,10 @@
 }
 .pathways h3 svg {
   color: var(--ct);
+  transition: transform 260ms var(--ease-out);
+}
+.pathways a:is(:hover, :focus-visible) h3 svg {
+  transform: translate(3px, -3px);
 }
 .pathways p {
   margin-top: 12px;
@@ -130,8 +154,14 @@
     flex-direction: column;
     gap: 10px;
   }
+  .hub {
+    padding-block: var(--space-6);
+  }
   .pathways {
     grid-template-columns: 1fr;
+  }
+  .pathways a::before {
+    display: none;
   }
   .pathways a {
     border-right: 0;
@@ -152,5 +182,14 @@
   }
   .allNews {
     margin-left: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pathways a::after,
+  .pathways h3 svg {
+    transition: none;
+  }
+  .pathways a:is(:hover, :focus-visible) h3 svg {
+    transform: none;
   }
 }
