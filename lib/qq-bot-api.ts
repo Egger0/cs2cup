@@ -62,11 +62,11 @@ export function sendQqGroupMessage(
   config: QqBotApiConfig,
   groupOpenId: string,
   content: string,
-  messageId?: string,
+  eventId?: string,
 ) {
   return qqBotApiRequest(config, `/groups/${encodeURIComponent(groupOpenId)}/messages`, 'POST', {
     content,
     msg_type: 0,
-    ...(messageId ? { msg_id: messageId, msg_seq: 1 } : {}),
+    ...(eventId ? { event_id: eventId } : {}),
   })
 }
