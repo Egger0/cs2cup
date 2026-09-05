@@ -1,6 +1,9 @@
 .tabsWrap {
-  position: relative;
-  margin-top: clamp(42px, 6vw, 70px);
+  position: sticky;
+  top: 76px;
+  z-index: 20;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .scrollHint {
@@ -9,9 +12,12 @@
 
 .tabs {
   display: flex;
-  gap: clamp(24px, 3.4vw, 48px);
+  gap: 28px;
+  max-width: var(--wrap);
+  margin-inline: auto;
+  padding-inline: var(--pad);
   overflow-x: auto;
-  border-top: 1px solid var(--line-strong);
+  scroll-padding-inline: var(--pad);
   scrollbar-width: none;
 }
 
@@ -22,13 +28,13 @@
 .tab {
   position: relative;
   display: inline-flex;
-  min-height: 62px;
+  min-height: 54px;
   align-items: center;
   gap: 8px;
   padding: 10px 0;
   color: var(--muted);
-  font-size: 0.82rem;
-  letter-spacing: 0.06em;
+  font-size: 0.9375rem;
+  letter-spacing: 0.01em;
   white-space: nowrap;
   transition: color 180ms ease;
 }
@@ -36,7 +42,7 @@
 .tab::after {
   position: absolute;
   right: 0;
-  bottom: -1px;
+  bottom: 0;
   left: 0;
   height: 2px;
   background: var(--ct);
@@ -60,7 +66,7 @@
 .count {
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.54rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
 }
 
@@ -69,18 +75,27 @@
   color: var(--ct);
 }
 
+.index {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .tabsWrap {
+    top: 68px;
+  }
+}
+
 @media (max-width: 640px) {
   .scrollHint {
-    position: absolute;
-    right: 0;
-    bottom: calc(100% + 8px);
-    display: inline-flex;
+    display: flex;
+    justify-content: flex-end;
+    padding: 6px var(--pad) 0;
     align-items: center;
     gap: 8px;
     color: var(--muted-2);
     font-family: var(--font-mono), monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
     line-height: 1.4;
     pointer-events: none;
     white-space: nowrap;
@@ -92,14 +107,11 @@
 
   .tabs {
     gap: 28px;
-    margin-inline: calc(var(--pad) * -1);
-    padding-inline: var(--pad);
-    scroll-padding-inline: var(--pad);
   }
 
   .tab {
-    min-height: 58px;
-    font-size: 0.78rem;
+    min-height: 48px;
+    font-size: 0.875rem;
   }
 }
 

@@ -56,7 +56,7 @@ const runtimeErrors = captureBrowserRuntimeErrors(page, {
 })
 
 try {
-  await page.goto(`${BASE}/register`)
+  await page.goto(`${BASE}/register?tournamentSlug=2026-nlc`)
   await assertAccessible(page, 'account signup')
   await fillSignup(page)
   const createdResponse = registrationResponse(page)
@@ -64,11 +64,19 @@ try {
   const created = await createdResponse
   assert.equal(created.status(), 200)
   await page.waitForURL(
-    url => url.pathname === '/account' && url.searchParams.get('welcome') === '1',
+    url =>
+      url.pathname === '/account' &&
+      url.searchParams.get('welcome') === '1' &&
+      url.searchParams.get('tournamentSlug') === '2026-nlc',
+  )
+  assert.equal(
+    await page.getByRole('link', { name: '继续填写报名 →' }).getAttribute('href'),
+    '/tournaments/2026-nlc/register',
   )
   await page.getByRole('status').getByText('账号已创建').waitFor()
   await page.getByRole('heading', { name: USER.displayName }).waitFor()
   await page.getByText('账号密码', { exact: true }).waitFor()
+  await page.screenshot({ path: 'output/playwright/frontend-account-1280.png', fullPage: true })
 
   const skipLink = page.getByRole('link', { name: '跳到主内容' })
   await skipLink.focus()
@@ -87,6 +95,7 @@ try {
     page.getByRole('navigation', { name: '账号导航' }).locator('a, button'),
     'mobile account navigation',
   )
+  await page.screenshot({ path: 'output/playwright/frontend-account-390.png', fullPage: true })
   await page.setViewportSize({ width: 1280, height: 900 })
 
   const delayedSecurityRoutes = [
@@ -114,6 +123,11 @@ try {
     () => document.querySelectorAll('section[aria-busy="true"]').length === 0,
   )
   for (const pattern of delayedSecurityRoutes) await page.unroute(pattern)
+  await page.screenshot({ path: 'output/playwright/frontend-security-1280.png', fullPage: true })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await assertNoHorizontalOverflow(page, 'mobile security')
+  await page.screenshot({ path: 'output/playwright/frontend-security-390.png', fullPage: true })
+  await page.setViewportSize({ width: 1280, height: 900 })
 
   const signOutPattern = '**/api/auth/session'
   await page.route(signOutPattern, async route => {
@@ -148,7 +162,7 @@ try {
 
   await page.goto(`${BASE}/login`)
   await page.getByLabel('用户名').fill(USER.username)
-  await page.getByLabel('密码').fill(USER.password)
+  await page.getByLabel('密码', { exact: true }).fill(USER.password)
   await Promise.all([
     page.waitForURL(url => url.pathname === '/account'),
     page.getByRole('button', { name: '使用账号密码登录' }).click(),

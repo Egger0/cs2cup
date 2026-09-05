@@ -1,8 +1,8 @@
 .status {
   min-height: 42px;
   margin-top: 13px;
-  color: #6d7271;
-  font-size: 0.7rem;
+  color: #59615f;
+  font-size: 0.875rem;
   line-height: 1.5;
 }
 
@@ -44,7 +44,7 @@
 .recoverySignal {
   color: var(--pass-blue);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.54rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.13em;
 }
@@ -72,7 +72,7 @@
   border-bottom: 1px solid rgba(11, 93, 148, 0.42);
   color: var(--pass-blue);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.62rem;
+  font-size: 0.875rem;
   letter-spacing: 0.08em;
 }
 

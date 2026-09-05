@@ -1,0 +1,22 @@
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-block: 24px;
+  padding-block: 16px;
+  border-block: 1px solid var(--line);
+}
+.actions > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--ct);
+  font-size: 0.8rem;
+}
+.actions > span {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.72rem;
+}

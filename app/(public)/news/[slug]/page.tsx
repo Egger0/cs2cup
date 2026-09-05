@@ -3,6 +3,9 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PageMasthead } from '@/components/domain/Sections'
 import { getPost, safely } from '@/lib/queries/public'
+import { ShareButton } from '@/components/share/ShareButton'
+import { resolveSiteOrigin } from '@/lib/site-config'
+import { CLUB_BRAND } from '@/lib/brand'
 import styles from './post.module.css'
 
 export const revalidate = 300
@@ -18,7 +21,25 @@ export async function generateMetadata({
   return {
     title: post.title,
     description: post.summary,
-    openGraph: { title: post.title, description: post.summary, type: 'article' },
+    alternates: { canonical: `/news/${encodeURIComponent(slug)}` },
+    openGraph: {
+      title: post.title,
+      description: post.summary,
+      type: 'article',
+      url: `/news/${encodeURIComponent(slug)}`,
+      siteName: CLUB_BRAND.name,
+      locale: 'zh_CN',
+      publishedTime: post.publishedAt,
+      images: [
+        { url: '/opengraph-image.png', width: 1200, height: 630, alt: CLUB_BRAND.shortName },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.summary,
+      images: ['/opengraph-image.png'],
+    },
   }
 }
 
@@ -48,6 +69,19 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             <span>{post.pinned ? 'PINNED' : 'PUBLIC'}</span>
           </div>
           <div className={styles.articleColumn}>
+            <div className={styles.shareBar}>
+              <span>{CLUB_BRAND.shortName} · 社团动态</span>
+              <ShareButton
+                share={{
+                  title: post.title,
+                  text: post.summary,
+                  url: `${resolveSiteOrigin()}/news/${encodeURIComponent(slug)}`,
+                  label: '社团动态 / JOURNAL',
+                }}
+              >
+                分享这篇动态
+              </ShareButton>
+            </div>
             <div className={styles.body}>
               {post.body
                 .split('\n')

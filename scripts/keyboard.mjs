@@ -1,9 +1,7 @@
 import { chromium } from 'playwright'
-import { blockClientChunkContaining } from './client-chunk-blocker.mjs'
 import { installLoopbackRequestGuard, resolveE2EBaseUrl } from './loopback-url.mjs'
 
 const BASE = resolveE2EBaseUrl()
-const PUBLIC_HREFS = '/tournaments,/news,/archive,/games,/about,/guestbook,/search,/login,/register'
 const results = []
 const check = (name, pass, detail = '') => {
   results.push(pass)
@@ -49,7 +47,9 @@ const focusable = await page.evaluate(() => {
   ]
   return nodes.filter(n => {
     const style = getComputedStyle(n)
-    return n.getBoundingClientRect().height > 0 && style.visibility !== 'hidden'
+    return (
+      n.checkVisibility() && n.getBoundingClientRect().height > 0 && style.visibility !== 'hidden'
+    )
   }).length
 })
 check('Focusable controls are available', focusable > 5, `${focusable} controls`)
@@ -57,7 +57,9 @@ check('Focusable controls are available', focusable > 5, `${focusable} controls`
 const invisibleFocus = await page.evaluate(() => {
   const nodes = [...document.querySelectorAll('a[href],button')].filter(n => {
     const style = getComputedStyle(n)
-    return n.getBoundingClientRect().height > 0 && style.visibility !== 'hidden'
+    return (
+      n.checkVisibility() && n.getBoundingClientRect().height > 0 && style.visibility !== 'hidden'
+    )
   })
   let bad = 0
   for (const node of nodes.slice(0, 40)) {
@@ -86,6 +88,14 @@ check(
   landmarks.main === 1 && landmarks.nav >= 1 && landmarks.footer === 1,
   JSON.stringify(landmarks),
 )
+const instructions = page.getByText('报名流程与资格说明', { exact: true })
+await instructions.press('Enter')
+await page.keyboard.press('Tab')
+check(
+  'Expanded entry instructions expose their first link to the keyboard',
+  await hasFocus(page.getByRole('link', { name: '创建账号', exact: true })),
+)
+await instructions.press('Enter')
 
 await page.goto(`${BASE}/tournaments/2026-nlc/schedule?state=completed&team=FLC`, {
   waitUntil: 'domcontentloaded',
@@ -271,45 +281,6 @@ await Promise.all([
 await mobile.getByRole('heading', { name: '回到你的账号' }).waitFor()
 check('Anonymous account entry reaches the login page', mobile.url() === `${BASE}/login`)
 await mobile.close()
-
-const degraded = await browser.newContext({
-  viewport: { width: 390, height: 760 },
-  serviceWorkers: 'block',
-})
-const degradedGuard = await installLoopbackRequestGuard(degraded)
-const chunks = await blockClientChunkContaining(degraded, BASE, 'data-site-header-fallback')
-const degradedPage = await degraded.newPage()
-await degradedPage.goto(BASE, { waitUntil: 'load' })
-chunks.assertBlocked()
-const fallback = degradedPage.locator('[data-site-header-fallback]')
-await fallback.waitFor({ state: 'visible' })
-await fallback.locator('summary').press('Enter')
-const fallbackLinks = degradedPage.getByRole('navigation', { name: '基础站点目录链接' })
-const fallbackHrefs = await fallbackLinks
-  .locator('a')
-  .evaluateAll(links => links.map(link => link.getAttribute('href')))
-check(
-  'Native directory survives missing client scripts',
-  (await fallback.evaluate(element => element.open)) &&
-    (await degradedPage.getByRole('button', { name: '打开全站目录' }).count()) === 0 &&
-    fallbackHrefs.join(',') === PUBLIC_HREFS,
-)
-const degradedFits = await degradedPage.evaluate(
-  () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-)
-check('Degraded mobile navigation has no horizontal overflow', degradedFits)
-await fallbackLinks.getByRole('link', { name: '项目', exact: true }).focus()
-const blocksBeforeNavigation = chunks.count()
-await Promise.all([
-  degradedPage.waitForURL(/\/games$/, { waitUntil: 'domcontentloaded' }),
-  degradedPage.keyboard.press('Enter'),
-])
-await fallback.waitFor({ state: 'visible' })
-const navigationSurvived = (await fallback.count()) === 1 && chunks.count() > blocksBeforeNavigation
-check('Native directory keeps keyboard document navigation', navigationSurvived)
-await degraded.unrouteAll({ behavior: 'wait' })
-await degraded.close()
-degradedGuard.assertSafe()
 
 await browser.close()
 outboundGuard.assertSafe()

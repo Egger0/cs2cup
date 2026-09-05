@@ -1,4 +1,7 @@
 .footer {
+  --ink: #f1efe8;
+  --line-strong: #72746e;
+  --ct-dim: #ffffff0d;
   padding: 58px clamp(20px, 6vw, 88px) 34px;
   color: rgba(241, 239, 232, 0.58);
   font-size: 0.82rem;
@@ -19,6 +22,9 @@
 }
 
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 9px;
   color: #f1efe8;
   font-weight: 650;
@@ -28,6 +34,15 @@
 .contact b {
   color: #f1efe8;
   font-weight: 500;
+}
+.contact p {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.contact p + p {
+  margin-top: 12px;
 }
 
 .douyin {
@@ -61,13 +76,67 @@
 }
 
 .legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
   margin-top: 48px;
   padding-top: 20px;
   border-top: 1px solid rgba(241, 239, 232, 0.12);
   color: rgba(241, 239, 232, 0.5);
   font-family: var(--font-mono), monospace;
-  font-size: 0.64rem;
+  font-size: 0.75rem;
   letter-spacing: 0.06em;
+}
+
+.invitation {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding-bottom: 36px;
+  margin-bottom: 36px;
+  border-bottom: 1px solid #f1efe82e;
+}
+
+.invitation > div > span {
+  color: #b2b5ac;
+  font:
+    0.6rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.12em;
+}
+.invitation > div > p {
+  margin-top: 12px;
+  font-size: clamp(1.4rem, 3vw, 2.1rem);
+  color: #f1efe8;
+  letter-spacing: -0.04em;
+  font-weight: 600;
+}
+.brand img {
+  filter: brightness(2.05) saturate(0.72);
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 20px;
+  margin-top: 20px;
+}
+.links a,
+.legal a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #c5c7c0;
+  font-size: 0.75rem;
+}
+.links a:hover,
+.legal a:hover {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 5px;
 }
 
 @media (max-width: 640px) {
@@ -104,5 +173,19 @@
   .douyin figcaption span {
     font-size: 0.65rem;
     white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-areas: 'identity' 'contact' 'douyin';
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .douyin {
+    justify-self: start;
+    grid-template-columns: 92px auto;
+    gap: 16px;
+    text-align: left;
   }
 }

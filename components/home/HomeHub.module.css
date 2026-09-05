@@ -1,0 +1,156 @@
+.hub {
+  padding-block: clamp(32px, 4vw, 56px);
+  background: var(--bg);
+  scroll-margin-top: 76px;
+}
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+.heading > div > span {
+  color: var(--ct);
+  font:
+    0.65rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.1em;
+}
+.heading h2 {
+  margin-top: 14px;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 680;
+  letter-spacing: -0.02em;
+}
+.heading > a {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 18px;
+  min-height: 44px;
+  color: var(--ct);
+  font-size: 0.82rem;
+}
+.pathways {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--line-strong);
+  margin-top: 24px;
+}
+.pathways a {
+  position: relative;
+  padding: clamp(22px, 3vw, 32px);
+  border-right: 1px solid var(--line-strong);
+  transition: background 160ms ease;
+}
+.pathways a:last-child {
+  border-right: 0;
+}
+.pathways a:hover {
+  background: var(--surface);
+}
+.number {
+  position: absolute;
+  right: 28px;
+  top: 24px;
+  color: var(--muted-2);
+  font:
+    500 2.5rem/1 var(--font-display),
+    sans-serif;
+}
+.role {
+  color: var(--ct);
+  font-size: 0.7rem;
+}
+.pathways h3 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  font-size: 1.15rem;
+  letter-spacing: -0.03em;
+}
+.pathways h3 svg {
+  color: var(--ct);
+}
+.pathways p {
+  margin-top: 12px;
+  max-width: 29ch;
+  color: var(--muted);
+  font-size: 0.83rem;
+}
+.journal {
+  display: flex;
+  align-items: center;
+  gap: 16px 28px;
+  flex-wrap: wrap;
+  padding-block: 26px 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.journalLabel {
+  color: var(--ct);
+  font:
+    0.6rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.08em;
+}
+.journal a {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 44px;
+}
+.journal a:hover {
+  color: var(--ct);
+}
+.allNews {
+  margin-left: auto;
+}
+.waiting {
+  padding: 40px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+.waiting p {
+  font-size: 1.5rem;
+}
+.waiting a {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 44px;
+  margin-top: 20px;
+  color: var(--ct);
+}
+@media (max-width: 640px) {
+  .heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .pathways {
+    grid-template-columns: 1fr;
+  }
+  .pathways a {
+    border-right: 0;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .pathways a:last-child {
+    border-bottom: 0;
+  }
+  .pathways p {
+    max-width: none;
+  }
+  .journal {
+    display: grid;
+    gap: 8px;
+  }
+  .journal a {
+    justify-content: space-between;
+  }
+  .allNews {
+    margin-left: 0;
+  }
+}

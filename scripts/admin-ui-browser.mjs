@@ -23,7 +23,7 @@ const routes = [
 async function login(page) {
   await page.goto(`${BASE}/login?redirectKey=workspaces`)
   await page.getByLabel('用户名').fill(BROWSER_USERS.owner.username)
-  await page.getByLabel('密码').fill(BROWSER_USERS.owner.password)
+  await page.getByLabel('密码', { exact: true }).fill(BROWSER_USERS.owner.password)
   await Promise.all([
     page.waitForURL(url => url.pathname !== '/login'),
     page.getByRole('button', { name: '使用账号密码登录' }).click(),
@@ -51,12 +51,20 @@ try {
     assert.equal(await activeLink.getAttribute('aria-current'), 'page')
     assert.match((await activeLink.textContent()) ?? '', new RegExp(`^\\s*${index}`))
     await assertNoHorizontalOverflow(page, path)
+    await page.screenshot({
+      path: `output/playwright/frontend${path.replaceAll('/', '-')}-1280.png`,
+      fullPage: true,
+    })
   }
 
   await page.setViewportSize({ width: 390, height: 844 })
   for (const path of ['/admin', '/admin/identity']) {
     await page.goto(BASE + path)
     await assertNoHorizontalOverflow(page, `${path} at 390px`)
+    await page.screenshot({
+      path: `output/playwright/frontend${path.replaceAll('/', '-')}-390.png`,
+      fullPage: true,
+    })
   }
   await assertMinimumTapHeight(
     page.getByRole('navigation', { name: '后台导航' }).locator('a'),

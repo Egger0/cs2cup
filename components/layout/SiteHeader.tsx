@@ -10,8 +10,9 @@ import menuStyles from './SiteMenu.module.css'
 import passStyles from './SitePassLink.module.css'
 import { SiteHeaderFallback, type SiteNavLink } from './SiteHeaderFallback'
 import styles from './SiteHeader.module.css'
+import { HeaderSearch } from './HeaderSearch'
 
-interface SiteHeaderProps {
+export interface SiteHeaderProps {
   setting: SiteSetting
   links: SiteNavLink[]
   accountLink: SiteNavLink & { code: string }
@@ -208,6 +209,7 @@ export function SiteHeader({ setting, links, accountLink, status }: SiteHeaderPr
         </nav>
 
         <div className={styles.actions}>
+          <HeaderSearch hidden={open} />
           {status ? (
             <Badge tone={status.open ? 'ct' : 'neutral'} dot>
               {status.label}
@@ -252,6 +254,7 @@ export function SiteHeader({ setting, links, accountLink, status }: SiteHeaderPr
         id="site-menu"
         className={open ? `${menuStyles.menu} ${menuStyles.menuOpen}` : menuStyles.menu}
         aria-hidden={!open}
+        inert={!open}
       >
         <nav ref={menuRef} className={menuStyles.menuInner} aria-label="全部页面">
           <div className={menuStyles.menuMeta}>

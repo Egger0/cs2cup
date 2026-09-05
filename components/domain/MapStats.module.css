@@ -23,8 +23,8 @@
 .head {
   background: var(--bg-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.16em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted-2);
 }

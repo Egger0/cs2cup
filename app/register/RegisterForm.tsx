@@ -1,17 +1,23 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 import formStyles from '../login/credential-form.module.css'
 import loginStyles from '../login/login.module.css'
 import styles from './register.module.css'
+
+const SETUP_FAILURE = '创建账号服务暂时不可用，本次没有保存，请稍后重试。'
 
 const FAILURE_COPY: Record<string, string> = {
   rate: '创建尝试过于频繁，请稍后再试。',
   request: '请求来源无法确认，请刷新页面后重试。',
   screening_unavailable: '暂时无法安全检查新密码。你的账号尚未创建，请稍后重试。',
-  setup: '创建账号服务暂时不可用，本次没有保存，请稍后重试。',
+  setup: SETUP_FAILURE,
   signed_in: '当前浏览器已有登录账号，请先退出后再创建新账号。',
   username_unavailable: '这个用户名不可用，请换一个再试。',
+  invalid_format: '用户名需为 3–32 位小写字母、数字、点、短横线或下划线。',
+  reserved: '这个用户名不可用，请换一个再试。',
+  password_compromised: '这个密码曾出现在公开泄露记录中，请换一个只在这里使用的密码。',
 }
 
 function encodedForm(form: HTMLFormElement) {
@@ -22,9 +28,22 @@ function encodedForm(form: HTMLFormElement) {
   return encoded
 }
 
-export function RegisterForm({ initialError }: { initialError?: string }) {
+export function RegisterForm({
+  initialError,
+  tournamentSlug,
+}: {
+  initialError?: string
+  tournamentSlug?: string | null
+}) {
+  const endpoint = tournamentSlug
+    ? `/api/auth/register?tournamentSlug=${encodeURIComponent(tournamentSlug)}`
+    : '/api/auth/register'
   const [working, setWorking] = useState(false)
-  const [error, setError] = useState(initialError ? FAILURE_COPY[initialError] : '')
+  const [error, setError] = useState(
+    initialError
+      ? (FAILURE_COPY[initialError] ?? '请检查用户名、显示名称和密码后重试。本次未创建账号。')
+      : '',
+  )
   const [errorField, setErrorField] = useState('')
   const [passwordLength, setPasswordLength] = useState(0)
 
@@ -32,11 +51,19 @@ export function RegisterForm({ initialError }: { initialError?: string }) {
     event.preventDefault()
     if (working) return
     const form = event.currentTarget
+    const confirmation = form.elements.namedItem('passwordConfirmation')
+    const data = new FormData(form)
+    if (data.get('password') !== data.get('passwordConfirmation')) {
+      setError('两次输入的密码不一致。')
+      setErrorField('passwordConfirmation')
+      if (confirmation instanceof HTMLElement) confirmation.focus()
+      return
+    }
     setWorking(true)
     setError('')
     setErrorField('')
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(endpoint, {
         method: 'POST',
         body: encodedForm(form),
         credentials: 'same-origin',
@@ -51,7 +78,7 @@ export function RegisterForm({ initialError }: { initialError?: string }) {
         redirectTo?: string
       } | null
       if (!response.ok || !payload?.redirectTo) {
-        setError(payload?.error ?? FAILURE_COPY.setup)
+        setError(payload?.error ?? SETUP_FAILURE)
         setErrorField(payload?.field ?? '')
         const field = payload?.field ? form.elements.namedItem(payload.field) : null
         if (field instanceof HTMLElement) field.focus()
@@ -59,7 +86,7 @@ export function RegisterForm({ initialError }: { initialError?: string }) {
       }
       window.location.assign(payload.redirectTo)
     } catch {
-      setError(FAILURE_COPY.setup)
+      setError(SETUP_FAILURE)
     } finally {
       setWorking(false)
     }
@@ -68,7 +95,7 @@ export function RegisterForm({ initialError }: { initialError?: string }) {
   return (
     <form
       className={`${formStyles.passwordForm} ${styles.form}`}
-      action="/api/auth/register"
+      action={endpoint}
       method="post"
       onSubmit={submit}
     >
@@ -77,31 +104,35 @@ export function RegisterForm({ initialError }: { initialError?: string }) {
           <span>用户名</span>
           <input
             name="username"
+            aria-label="用户名"
+            aria-describedby="username-guidance"
             autoComplete="username"
             maxLength={32}
             spellCheck={false}
             aria-invalid={errorField === 'username'}
             required
           />
-          <small>3–32 位小写字母、数字、点、短横线或下划线</small>
+          <small id="username-guidance">3–32 位小写字母、数字、点、短横线或下划线</small>
         </label>
         <label className={formStyles.field}>
           <span>显示名称</span>
           <input
             name="displayName"
+            aria-label="显示名称"
+            aria-describedby="display-name-guidance"
             autoComplete="nickname"
             maxLength={80}
             aria-invalid={errorField === 'displayName'}
             required
           />
-          <small>用于账号与审核界面，可以稍后修改</small>
+          <small id="display-name-guidance">用于账号与审核界面，可以稍后修改</small>
         </label>
       </div>
       <label className={formStyles.field}>
         <span>密码</span>
-        <input
+        <PasswordInput
           name="password"
-          type="password"
+          aria-label="密码"
           autoComplete="new-password"
           minLength={6}
           maxLength={1024}
@@ -114,18 +145,18 @@ export function RegisterForm({ initialError }: { initialError?: string }) {
       </label>
       <label className={formStyles.field}>
         <span>确认密码</span>
-        <input
+        <PasswordInput
           name="passwordConfirmation"
-          type="password"
           autoComplete="new-password"
           minLength={6}
           maxLength={1024}
           aria-invalid={errorField === 'passwordConfirmation'}
+          aria-describedby={errorField === 'passwordConfirmation' ? 'signup-error' : undefined}
           required
         />
       </label>
       {error ? (
-        <p className={formStyles.formError} role="alert">
+        <p id="signup-error" className={formStyles.formError} role="alert">
           {error}
         </p>
       ) : null}

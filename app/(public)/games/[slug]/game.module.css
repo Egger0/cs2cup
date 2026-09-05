@@ -1,7 +1,7 @@
 .head {
   position: relative;
   overflow: hidden;
-  padding-block: clamp(64px, 9vw, 112px) clamp(42px, 6vw, 70px);
+  padding-block: clamp(32px, 4vw, 56px);
   border-bottom: 1px solid var(--ink);
   background: var(--bg);
 }
@@ -20,7 +20,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 0.46fr);
   align-items: end;
-  gap: clamp(42px, 8vw, 120px);
+  gap: 32px;
 }
 
 .titleBlock {
@@ -29,8 +29,8 @@
 
 .en {
   font-family: var(--font-mono), monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.28em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ct);
 }
@@ -38,10 +38,10 @@
 .name {
   font-family: var(--font-heavy), var(--font-body);
   font-weight: 900;
-  font-size: clamp(4.2rem, 10vw, 9.4rem);
-  line-height: 0.86;
-  letter-spacing: -0.075em;
-  margin-top: 22px;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  margin-top: 14px;
   color: var(--ink);
 }
 
@@ -62,15 +62,15 @@
 .stat {
   position: relative;
   display: flex;
-  min-height: 128px;
+  min-height: 104px;
   flex-direction: column;
   justify-content: space-between;
   padding: 18px 20px;
   border-right: 1px solid var(--line);
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.14em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
 }
 
 .stat:last-child {
@@ -91,19 +91,19 @@
 .stat b {
   font-family: var(--font-display), sans-serif;
   font-weight: 570;
-  font-size: clamp(3.3rem, 5vw, 5.6rem);
-  letter-spacing: -0.07em;
-  line-height: 0.72;
+  font-size: 2.5rem;
+  letter-spacing: -0.02em;
+  line-height: 1;
   color: var(--ink);
 }
 
 .overviewSection {
-  padding-block: clamp(58px, 8vw, 94px);
+  padding-block: 32px;
 }
 
 .about {
   display: grid;
-  gap: clamp(34px, 6vw, 84px);
+  gap: 24px;
   grid-template-columns: minmax(0, 1.35fr) minmax(240px, 0.65fr);
   align-items: start;
   padding-block: 22px;
@@ -120,8 +120,8 @@
 .overviewLabel {
   color: var(--accent);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.16em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
 }
 
 .description {
@@ -129,7 +129,7 @@
   line-height: 1.9;
   color: var(--ink);
   max-width: 54ch;
-  margin-top: 28px;
+  margin-top: 14px;
 }
 
 .format {
@@ -146,13 +146,13 @@
 @media (max-width: 860px) {
   .heroGrid {
     grid-template-columns: 1fr;
-    gap: 48px;
+    gap: 24px;
   }
 }
 
 @media (max-width: 560px) {
   .name {
-    font-size: clamp(4rem, 20vw, 5.6rem);
+    font-size: 2.25rem;
   }
 
   .stats {
@@ -160,12 +160,12 @@
   }
 
   .stat {
-    min-height: 112px;
+    min-height: 96px;
     padding-inline: 12px;
   }
 
   .stat b {
-    font-size: 3.4rem;
+    font-size: 2.25rem;
   }
 
   .format {

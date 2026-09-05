@@ -15,6 +15,9 @@ import {
   safely,
 } from '@/lib/queries/public'
 import styles from '@/components/domain/TeamProfile.module.css'
+import { PublicActions } from '@/components/share/PublicActions'
+import { publicMetadata } from '@/lib/public-metadata'
+import { resolveSiteOrigin } from '@/lib/site-config'
 
 export const revalidate = 300
 
@@ -30,7 +33,13 @@ export async function generateMetadata({
   const teams = await safely(() => getPublicTeams(tournament.id), [])
   const decoded = decodeURIComponent(tag).toLocaleLowerCase()
   const team = teams.find(entry => entry.tag.toLocaleLowerCase() === decoded)
-  return { title: team ? `${team.name} · ${team.tag}` : '参赛战队' }
+  return team
+    ? publicMetadata(
+        `${team.name} · ${team.tag}`,
+        `${tournament.title}参赛战队 ${team.name}，查看完整阵容、比赛日程和战绩。`,
+        `/tournaments/${encodeURIComponent(slug)}/teams/${encodeURIComponent(team.tag)}`,
+      )
+    : { title: '参赛战队' }
 }
 
 function matchTime(value: string | null) {
@@ -107,6 +116,20 @@ export default async function TeamPage({
             </div>
           </div>
         </div>
+
+        <PublicActions
+          label="分享战队"
+          share={{
+            title: `${team.name} · ${team.tag}`,
+            text: `${tournament.title} · 支持我们的下一场比赛，查看阵容与赛程。`,
+            url: `${resolveSiteOrigin()}/tournaments/${encodeURIComponent(slug)}/teams/${encodeURIComponent(team.tag)}`,
+            label: 'TEAM FILE / 参赛战队',
+          }}
+          calendar={{
+            href: `/tournaments/${encodeURIComponent(slug)}/calendar.ics?teamId=${team.id}`,
+            label: '加入本队日历',
+          }}
+        />
 
         <div style={{ marginTop: 44 }}>
           <SectionHead eyebrow="阵容" title="首发与替补" />

@@ -6,7 +6,7 @@
   padding: 16px;
   border: 1px dashed rgba(11, 93, 148, 0.42);
   background: rgba(11, 93, 148, 0.055);
-  animation: noticeIn 0.68s 0.25s var(--ease-out) both;
+  animation: none;
 }
 
 .notice > span {
@@ -14,20 +14,20 @@
   padding-top: 3px;
   color: var(--pass-blue);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.51rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.1em;
 }
 
 .notice strong {
   font-family: 'NLC Role Sans', var(--font-body);
-  font-size: 0.82rem;
+  font-size: 0.9375rem;
 }
 
 .notice p {
   margin-top: 5px;
   color: #626b6d;
-  font-size: 0.7rem;
+  font-size: 0.875rem;
   line-height: 1.55;
 }
 

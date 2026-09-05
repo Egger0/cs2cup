@@ -1,23 +1,22 @@
 .pageHead,
 .head {
   display: grid;
-  grid-template-columns: minmax(112px, 180px) minmax(0, 1fr);
-  column-gap: clamp(28px, 5vw, 74px);
+  grid-template-columns: minmax(0, 1fr);
   width: 100%;
-  padding-top: 18px;
+  padding-top: 16px;
   border-top: 1px solid var(--line-strong);
 }
 
 .pageHead {
-  margin-bottom: clamp(64px, 8vw, 104px);
+  margin-bottom: 32px;
 }
 
 .pageHeadCompact {
-  margin-bottom: clamp(46px, 6vw, 72px);
+  margin-bottom: 28px;
 }
 
 .head {
-  margin-bottom: clamp(48px, 6.5vw, 82px);
+  margin-bottom: 24px;
 }
 
 .eyebrow {
@@ -28,8 +27,8 @@
   gap: 10px;
   color: var(--accent);
   font-family: var(--font-mono), monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
   line-height: 1.4;
   text-transform: uppercase;
 }
@@ -44,44 +43,49 @@
 
 .pageTitle,
 .title {
-  grid-column: 2;
+  grid-column: 1;
+  margin-top: 12px;
   color: var(--ink);
   font-family:
     'NLC Serif', 'Songti SC', 'STSong', 'Noto Serif CJK SC', 'Source Han Serif SC', serif;
   font-weight: 800;
-  letter-spacing: -0.07em;
-  line-height: 0.92;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
 }
 
 .pageTitle {
-  max-width: 13ch;
-  font-size: clamp(4rem, 7.8vw, 8rem);
+  max-width: 22ch;
+  font-size: clamp(2.1rem, 4vw, 3.5rem);
 }
 
 .pageHeadCompact .pageTitle {
-  font-size: clamp(3.8rem, 7vw, 7.2rem);
+  font-size: clamp(2rem, 3.5vw, 3rem);
 }
 
 .title {
-  max-width: 14ch;
-  font-size: clamp(3.25rem, 6.3vw, 6.4rem);
+  max-width: none;
+  font-family: var(--font-body);
+  font-size: clamp(1.4rem, 2.2vw, 1.8rem);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.015em;
 }
 
 .pageLede,
 .lede {
-  grid-column: 2;
-  max-width: 52ch;
+  grid-column: 1;
+  max-width: 64ch;
   color: var(--muted);
-  font-size: clamp(0.9rem, 1.2vw, 1rem);
-  line-height: 1.85;
+  font-size: 1rem;
+  line-height: 1.75;
 }
 
 .pageLede {
-  margin-top: clamp(24px, 3.5vw, 42px);
+  margin-top: 16px;
 }
 
 .lede {
-  margin-top: clamp(20px, 3vw, 34px);
+  margin-top: 10px;
 }
 
 .stats {
@@ -93,7 +97,7 @@
 
 .stat {
   position: relative;
-  min-height: 174px;
+  min-height: 120px;
   padding: 22px clamp(16px, 2.2vw, 30px) 24px;
   border-right: 1px solid var(--line);
 }
@@ -116,7 +120,7 @@
 .statValue {
   color: var(--ink);
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(4rem, 8vw, 7.2rem);
+  font-size: clamp(2.5rem, 5vw, 4rem);
   font-variant-numeric: tabular-nums;
   font-weight: 570;
   letter-spacing: -0.07em;
@@ -134,8 +138,8 @@
   margin-top: 22px;
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.16em;
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
@@ -147,7 +151,7 @@
 }
 
 .rule {
-  min-height: 230px;
+  min-height: 180px;
   padding: 22px clamp(20px, 2.6vw, 34px) 30px;
   border-right: 1px solid var(--line);
 }
@@ -159,15 +163,15 @@
 .ruleLabel {
   color: var(--accent);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .ruleTitle {
-  margin-block: 36px 16px;
+  margin-block: 18px 12px;
   color: var(--ink);
-  font-size: clamp(1.4rem, 2.2vw, 2rem);
+  font-size: 1.25rem;
   font-weight: 620;
   letter-spacing: -0.04em;
 }
@@ -175,7 +179,7 @@
 .ruleBody {
   max-width: 36ch;
   color: var(--muted);
-  font-size: 0.88rem;
+  font-size: 0.9375rem;
   line-height: 1.8;
 }
 
@@ -243,15 +247,15 @@
   }
 
   .pageHead {
-    margin-bottom: 58px;
+    margin-bottom: 28px;
   }
 
   .pageHeadCompact {
-    margin-bottom: 46px;
+    margin-bottom: 24px;
   }
 
   .head {
-    margin-bottom: 52px;
+    margin-bottom: 20px;
   }
 
   .eyebrow,
@@ -264,24 +268,24 @@
 
   .pageTitle,
   .title {
-    margin-top: 34px;
+    margin-top: 10px;
   }
 
   .pageTitle {
-    font-size: clamp(3.5rem, 16vw, 5.4rem);
+    font-size: clamp(2rem, 7vw, 2.75rem);
   }
 
   .pageHeadCompact .pageTitle {
-    font-size: clamp(3.35rem, 15vw, 5rem);
+    font-size: clamp(2rem, 7vw, 2.75rem);
   }
 
   .title {
-    font-size: clamp(3rem, 14vw, 4.7rem);
+    font-size: 1.4rem;
   }
 
   .pageLede,
   .lede {
-    margin-top: 26px;
+    margin-top: 12px;
   }
 
   .stats {
@@ -289,7 +293,7 @@
   }
 
   .stat {
-    min-height: 144px;
+    min-height: 112px;
     border-bottom: 1px solid var(--line);
   }
 

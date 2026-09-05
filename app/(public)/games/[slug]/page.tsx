@@ -34,15 +34,20 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
             <div className={styles.en}>{game.nameEn ?? game.slug}</div>
             <h1 className={styles.name}>{game.name}</h1>
             {game.tagline ? <p className={styles.tagline}>{game.tagline}</p> : null}
+            <div style={{ marginTop: 20 }}>
+              <ButtonLink href="#game-tournaments" variant="primary">
+                查看本项目赛事
+              </ButtonLink>
+            </div>
           </div>
           <div className={styles.stats}>
             <span className={styles.stat}>
               <b>{String(mine.length).padStart(2, '0')}</b>
-              <span>TOURNAMENTS · 届赛事</span>
+              <span>届赛事</span>
             </span>
             <span className={styles.stat}>
               <b>{String(news.length).padStart(2, '0')}</b>
-              <span>JOURNAL · 条动态</span>
+              <span>条动态</span>
             </span>
           </div>
         </div>
@@ -69,7 +74,7 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
 
       <div className="divider" />
 
-      <section className="section">
+      <section className="section" id="game-tournaments">
         <div className="wrap">
           <div data-rise>
             <SectionHead eyebrow="赛事" title={`${game.name} 的比赛`} />

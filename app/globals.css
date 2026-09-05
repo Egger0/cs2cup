@@ -47,6 +47,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 148px;
 }
 
 @property --progress {
@@ -151,7 +152,7 @@ button {
 }
 
 .section {
-  padding-block: clamp(84px, 11vh, 136px);
+  padding-block: var(--section-space, clamp(40px, 6vh, 72px));
 }
 
 .divider {
@@ -161,8 +162,8 @@ button {
 
 .readout {
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.16em;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted-2);
 }

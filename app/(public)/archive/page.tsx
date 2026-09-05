@@ -1,4 +1,5 @@
 import { PageMasthead } from '@/components/domain/Sections'
+import { ButtonLink, Empty } from '@/components/ui'
 import { PosterWall, type Edition } from '@/components/domain/PosterWall'
 import { getPhotos, listTournaments, safely } from '@/lib/queries/public'
 
@@ -37,7 +38,19 @@ export default async function ArchivePage() {
             density="compact"
           />
         </div>
-        <PosterWall editions={editions} emptyText="档案整理中，第一批影像将在核对后公开。" />
+        {editions.length ? (
+          <PosterWall editions={editions} />
+        ) : (
+          <Empty
+            action={
+              <ButtonLink href="/tournaments" variant="primary">
+                看看正在发生的赛事
+              </ButtonLink>
+            }
+          >
+            档案整理中，第一批影像将在核对后公开。
+          </Empty>
+        )}
       </div>
     </section>
   )

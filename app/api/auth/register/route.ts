@@ -24,6 +24,7 @@ import { getAuthContext, setIdentitySessionCookie } from '@/lib/identity/kernel'
 import { legacySessionStateFromRequest } from '@/lib/legacy-session-state'
 import { clearParticipantSessionCookie } from '@/lib/participant-auth'
 import { resolveSiteOrigin } from '@/lib/site-config'
+import { registrationAccountHref, registrationAuthHref } from '@/lib/registration-navigation'
 
 const FIELDS = ['username', 'displayName', 'password', 'passwordConfirmation'] as const
 
@@ -36,12 +37,14 @@ interface Failure {
 }
 
 function failureResponse(request: NextRequest, failure: Failure) {
+  const retry = new URL(
+    registrationAuthHref('register', request.nextUrl.searchParams.get('tournamentSlug')),
+    resolveSiteOrigin(),
+  )
+  retry.searchParams.set('error', failure.code)
   const response = identityWantsJson(request)
     ? NextResponse.json({ ok: false, ...failure }, { status: failure.status })
-    : NextResponse.redirect(
-        new URL(`/register?error=${encodeURIComponent(failure.code)}`, resolveSiteOrigin()),
-        303,
-      )
+    : NextResponse.redirect(retry, 303)
   if (failure.retryAfter) response.headers.set('Retry-After', String(failure.retryAfter))
   return withPrivateNoStore(response)
 }
@@ -121,10 +124,14 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    const destination = registrationAccountHref(
+      request.nextUrl.searchParams.get('tournamentSlug'),
+      true,
+    )
     const response = withPrivateNoStore(
       identityWantsJson(request)
-        ? NextResponse.json({ ok: true, redirectTo: '/account?welcome=1' })
-        : NextResponse.redirect(new URL('/account?welcome=1', resolveSiteOrigin()), 303),
+        ? NextResponse.json({ ok: true, redirectTo: destination })
+        : NextResponse.redirect(new URL(destination, resolveSiteOrigin()), 303),
     )
     clearParticipantSessionCookie(clearAdminSessionCookie(response))
     return setIdentitySessionCookie(response, result.token, result.absoluteExpiresAt)

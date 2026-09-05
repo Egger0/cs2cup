@@ -1,0 +1,141 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-top: 3px solid var(--ct);
+}
+.heading > span {
+  color: var(--ct);
+  font:
+    0.75rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.13em;
+}
+.heading h2 {
+  margin-top: 10px;
+  font-size: 1.5rem;
+  letter-spacing: -0.04em;
+  line-height: 1.5;
+}
+.capacity p {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.capacity strong {
+  color: var(--ct);
+  font:
+    560 3rem/1 var(--font-display),
+    sans-serif;
+}
+.capacity p > span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.capacity progress {
+  display: block;
+  width: 100%;
+  height: 4px;
+  margin-block: 14px 10px;
+  appearance: none;
+  border: 0;
+  background: var(--bg-2);
+  color: var(--ct);
+}
+.capacity progress::-webkit-progress-bar {
+  background: var(--bg-2);
+}
+.capacity progress::-webkit-progress-value {
+  background: var(--ct);
+}
+.capacity progress::-moz-progress-bar {
+  background: var(--ct);
+}
+.capacity > span {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.dates {
+  display: grid;
+  gap: 14px;
+}
+.dates > div {
+  display: grid;
+  gap: 4px;
+}
+.dates dt {
+  font-size: 0.8125rem;
+  color: var(--muted-2);
+}
+.dates dd {
+  font-size: 0.9375rem;
+  font-weight: 550;
+}
+.timezone {
+  margin-top: -8px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.8;
+}
+.panel > a {
+  min-height: 44px;
+}
+.mine {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: -12px;
+  color: var(--ct);
+  font-size: 0.8125rem;
+}
+.steps {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+.steps summary {
+  cursor: pointer;
+  min-height: 44px;
+  align-content: center;
+  font-size: 0.875rem;
+}
+.steps ol {
+  list-style: none;
+  counter-reset: step;
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+.steps li {
+  position: relative;
+  padding-left: 32px;
+  counter-increment: step;
+}
+.steps li::before {
+  content: counter(step, decimal-leading-zero);
+  position: absolute;
+  top: 3px;
+  left: 0;
+  color: var(--ct);
+  font:
+    0.66rem var(--font-mono),
+    monospace;
+}
+.steps a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 0.83rem;
+  margin-top: -10px;
+}
+.steps a:hover {
+  color: var(--ct);
+}
+.steps li span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}

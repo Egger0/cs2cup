@@ -8,7 +8,7 @@ const NEW_PASSWORD = 'Marble orchard signal 2026!'
 async function passwordLogin(page, base, username, password) {
   await page.goto(`${base}/login`, { waitUntil: 'networkidle' })
   await page.getByLabel('用户名').fill(username)
-  await page.getByLabel('密码').fill(password)
+  await page.getByLabel('密码', { exact: true }).fill(password)
   await Promise.all([
     page.waitForURL(url => url.pathname === '/account'),
     page.getByRole('button', { name: '使用账号密码登录' }).click(),
@@ -75,10 +75,10 @@ export async function verifyRecoveryPasswordCycle({
     await signOut(page)
     await page.goto(`${base}/login`)
     await page.getByLabel('用户名').fill(user.username)
-    await page.getByLabel('密码').fill(user.password)
+    await page.getByLabel('密码', { exact: true }).fill(user.password)
     await page.getByRole('button', { name: '使用账号密码登录' }).click()
     await page.getByText('用户名或密码不正确，请重新输入。').waitFor()
-    await page.getByLabel('密码').fill(NEW_PASSWORD)
+    await page.getByLabel('密码', { exact: true }).fill(NEW_PASSWORD)
     await Promise.all([
       page.waitForURL(url => url.pathname === '/account'),
       page.getByRole('button', { name: '使用账号密码登录' }).click(),

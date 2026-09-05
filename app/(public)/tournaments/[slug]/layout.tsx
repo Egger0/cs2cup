@@ -11,6 +11,9 @@ import {
 } from '@/lib/queries/public'
 import { buildScheduleEntries, selectNextScheduleEntry } from '@/lib/schedule'
 import type { TournamentStatus } from '@/lib/types'
+import { resolveSiteOrigin } from '@/lib/site-config'
+import { CLUB_BRAND } from '@/lib/brand'
+import { formatSiteDateTime } from '@/lib/datetime'
 
 const STATUS_TEXT: Record<TournamentStatus, string> = {
   draft: '筹备中',
@@ -36,8 +39,21 @@ export async function generateMetadata({
     },
     description: tournament.lede,
     openGraph: {
+      title: `${tournament.title} · ${CLUB_BRAND.shortName}`,
+      description: tournament.lede,
+      url: `/tournaments/${encodeURIComponent(slug)}`,
+      siteName: CLUB_BRAND.name,
+      locale: 'zh_CN',
+      type: 'website',
+      images: [
+        { url: '/opengraph-image.png', width: 1200, height: 630, alt: CLUB_BRAND.shortName },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
       title: tournament.title,
       description: tournament.lede,
+      images: ['/opengraph-image.png'],
     },
   }
 }
@@ -72,19 +88,33 @@ export default async function TournamentLayout({
   return (
     <>
       <TournamentHeader
+        tournamentId={tournament.id}
+        share={{
+          title: tournament.title,
+          text: `${status} · ${tournament.gameName ?? '校园电竞'}。${tournament.regDeadline && tournament.status === 'registration' ? `报名截止：${formatSiteDateTime(tournament.regDeadline) ?? '以赛事页为准'}（北京时间）。` : tournament.lede}`,
+          url: `${resolveSiteOrigin()}${base}`,
+          label: `${tournament.season} / ${status}`,
+        }}
         base={base}
         status={status}
         eyebrow={eyebrow}
-        title={tournament.heroBottom || tournament.title}
+        title={tournament.title}
         game={tournament.gameName ?? ''}
         edition={tournament.edition}
         season={tournament.season}
         tagline={tournament.lede}
         seats={seats}
         played={[played, playable]}
-        maps={tournament.mapPool.length}
+        deadline={formatSiteDateTime(tournament.regDeadline ?? '')}
+        primaryAction={
+          registration?.open
+            ? { href: `${base}/register`, label: '组队报名' }
+            : tournament.status === 'finished'
+              ? { href: `${base}/results`, label: '查看战报' }
+              : { href: `${base}/schedule`, label: '查看赛程' }
+        }
         next={
-          next
+          next && tournament.status !== 'registration'
             ? {
                 id: next.match.id,
                 roundLabel: next.match.roundLabel,
@@ -94,6 +124,7 @@ export default async function TournamentLayout({
                 aName: next.a?.name ?? '待定',
                 bTag: next.b?.tag ?? 'TBD',
                 bName: next.b?.name ?? '待定',
+                status: next.status,
               }
             : null
         }

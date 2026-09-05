@@ -75,6 +75,10 @@ try {
   const smokeScripts = [
     'scripts/a11y.mjs',
     'scripts/keyboard.mjs',
+    'scripts/header-fallback-browser.mjs',
+    'scripts/discovery-browser.mjs',
+    'scripts/share-browser.mjs',
+    'scripts/frontend-browser.mjs',
     'scripts/identity-signup-browser.mjs',
     'scripts/admin-ui-browser.mjs',
   ]

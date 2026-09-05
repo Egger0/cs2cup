@@ -16,8 +16,8 @@
 
 .fieldLabel {
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.64rem;
-  letter-spacing: 0.14em;
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted-2);
 }
@@ -45,7 +45,7 @@
   justify-content: center;
   padding-inline: 18px;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.68rem;
+  font-size: 0.875rem;
   letter-spacing: 0.08em;
   white-space: nowrap;
 }

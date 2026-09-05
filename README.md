@@ -121,6 +121,8 @@ are limited to 300 non-empty lines.
 
 ## Architecture contracts
 
+- [`docs/brand-design.md`](./docs/brand-design.md) describes the public visual system, tournament
+  discovery, browser-local follows, branded QR sharing, metadata, and home-screen access.
 - [`docs/identity-architecture.md`](./docs/identity-architecture.md) defines the unified account,
   authentication, session, authorization, recovery, migration, and identity UI contract.
 - [`docs/identity-stack-decision.md`](./docs/identity-stack-decision.md) assigns implementation

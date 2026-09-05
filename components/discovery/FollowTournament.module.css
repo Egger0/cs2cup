@@ -1,0 +1,31 @@
+.control {
+  position: relative;
+}
+.button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+.button:hover,
+.button[aria-pressed='true'] {
+  border-color: var(--ct);
+  color: var(--ct);
+  background: var(--ct-dim);
+}
+.error {
+  display: block;
+  max-width: 24ch;
+  margin-top: 6px;
+  font-size: 0.75rem;
+}

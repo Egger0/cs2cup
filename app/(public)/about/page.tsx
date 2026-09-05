@@ -1,4 +1,6 @@
 import { notFound } from 'next/navigation'
+import { ButtonLink } from '@/components/ui'
+import { CopyTextButton } from '@/components/ui/CopyTextButton'
 import { PostList } from '@/components/domain/PostList'
 import { PageMasthead, SectionHead, StatRow } from '@/components/domain/Sections'
 import {
@@ -54,6 +56,11 @@ export default async function ClubPage() {
                   一场比赛跑起来需要的远不止十个人——解说、OB 导播、现场摄影、海报设计、赛程编排，
                   每个位置都缺人。不打比赛也能加入。
                 </p>
+                <div className={styles.joinLink}>
+                  <ButtonLink href="#join" variant="primary">
+                    联系社团，加入我们
+                  </ButtonLink>
+                </div>
               </div>
 
               <div className={styles.facts}>
@@ -81,6 +88,35 @@ export default async function ClubPage() {
           ]}
         />
       </div>
+
+      <section id="join" className={`section ${styles.joinSection}`}>
+        <div className="wrap">
+          <div data-rise>
+            <div className={styles.join}>
+              <div className={styles.joinText}>
+                <h2>想加入？直接来找我们</h2>
+                <p>选手、解说、导播、摄影、设计、赛事运营——都缺人。先进群聊聊。</p>
+              </div>
+              <div className={styles.contacts}>
+                {setting.contactQq ? (
+                  <div className={styles.contact}>
+                    <span>QQ 群</span>
+                    {setting.contactQq}
+                    <CopyTextButton value={setting.contactQq} label="复制群号" />
+                  </div>
+                ) : null}
+                {setting.contactWechat && setting.contactWechat !== '无' ? (
+                  <div className={styles.contact}>
+                    <span>微信</span>
+                    {setting.contactWechat}
+                    <CopyTextButton value={setting.contactWechat} label="复制微信号" />
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {members.length > 0 ? (
         <section className="section">
@@ -116,33 +152,6 @@ export default async function ClubPage() {
           </div>
           <div data-rise="2">
             <PostList posts={posts} />
-          </div>
-        </div>
-      </section>
-
-      <section id="join" className={`section ${styles.joinSection}`} style={{ paddingTop: 0 }}>
-        <div className="wrap">
-          <div data-rise>
-            <div className={styles.join}>
-              <div className={styles.joinText}>
-                <h2>想加入？直接来找我们</h2>
-                <p>选手、解说、导播、摄影、设计、赛事运营——都缺人。先进群聊聊。</p>
-              </div>
-              <div className={styles.contacts}>
-                {setting.contactQq ? (
-                  <div className={styles.contact}>
-                    <span>QQ 群</span>
-                    {setting.contactQq}
-                  </div>
-                ) : null}
-                {setting.contactWechat && setting.contactWechat !== '无' ? (
-                  <div className={styles.contact}>
-                    <span>微信</span>
-                    {setting.contactWechat}
-                  </div>
-                ) : null}
-              </div>
-            </div>
           </div>
         </div>
       </section>

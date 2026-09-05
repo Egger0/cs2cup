@@ -8,6 +8,12 @@ import { getCurrentParticipant } from '@/lib/participant-auth'
 import loginStyles from '../login/login.module.css'
 import { RegisterForm } from './RegisterForm'
 import styles from './register.module.css'
+import {
+  registrationAccountHref,
+  registrationAuthHref,
+  registrationSlug,
+} from '@/lib/registration-navigation'
+import { RegistrationJourney } from '@/components/domain/RegistrationJourney'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,15 +27,20 @@ export const metadata: Metadata = {
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string | string[] }>
+  searchParams: Promise<{ error?: string | string[]; tournamentSlug?: string | string[] }>
 }) {
   const [params, context, participant] = await Promise.all([
     searchParams,
     getAuthContext(),
     getCurrentParticipant(),
   ])
+  const entrySlug = registrationSlug(params.tournamentSlug)
   if (context.kind === 'authenticated') {
-    redirect(context.session.recoveryRestricted ? '/account/security?recovery=1' : '/account')
+    redirect(
+      context.session.recoveryRestricted
+        ? '/account/security?recovery=1'
+        : registrationAccountHref(entrySlug),
+    )
   }
   if (participant) redirect('/me')
 
@@ -48,7 +59,7 @@ export default async function RegisterPage({
           <p className={loginStyles.eyebrow}>
             <span>YOUR ACCOUNT</span> / 你的账号
           </p>
-          <h1 id="registration-title">先建立账号，再确认资格。</h1>
+          <h1 id="registration-title">加入宁理电竞。</h1>
           <p className={loginStyles.lede}>
             账号会立即创建。即使审核尚未完成，你仍可登录、补充资料、绑定 Passkey 和保存报名草稿。
           </p>
@@ -64,15 +75,20 @@ export default async function RegisterPage({
           <p className={loginStyles.serial}>SELF REGISTRATION / NLC—01</p>
           <h2 id="create-account-title">创建你的账号</h2>
           <p>密码是默认登录方式；创建完成后可自行添加 Passkey。</p>
+          <Link href={registrationAuthHref('login', entrySlug)} className={loginStyles.backLink}>
+            已有账号？直接登录 →
+          </Link>
         </header>
+        {entrySlug ? <RegistrationJourney slug={entrySlug} /> : null}
         <div className={loginStyles.loginControl}>
           <RegisterForm
+            tournamentSlug={entrySlug}
             initialError={typeof params.error === 'string' ? params.error : undefined}
           />
         </div>
         <footer className={`${loginStyles.passFooter} ${styles.footer}`}>
           <p>已经有账号？</p>
-          <Link href="/login" className={loginStyles.backLink}>
+          <Link href={registrationAuthHref('login', entrySlug)} className={loginStyles.backLink}>
             <span aria-hidden="true">←</span> 返回登录
           </Link>
         </footer>

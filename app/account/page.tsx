@@ -11,6 +11,12 @@ import { AccountSignOut } from './AccountSignOut'
 import { MembershipPanel } from './MembershipPanel'
 import { ProfileNameForm } from './ProfileNameForm'
 import styles from './account.module.css'
+import { RegistrationJourney } from '@/components/domain/RegistrationJourney'
+import {
+  registrationAccountHref,
+  registrationAuthHref,
+  registrationSlug,
+} from '@/lib/registration-navigation'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,10 +29,12 @@ export const metadata: Metadata = {
 export default async function AccountPage({
   searchParams,
 }: {
-  searchParams: Promise<{ welcome?: string | string[] }>
+  searchParams: Promise<{ welcome?: string | string[]; tournamentSlug?: string | string[] }>
 }) {
   const [params, context] = await Promise.all([searchParams, getAuthContext()])
-  if (context.kind === 'anonymous') redirect('/login?redirectKey=account')
+  const entrySlug = registrationSlug(params.tournamentSlug)
+  if (context.kind === 'anonymous')
+    redirect(entrySlug ? registrationAuthHref('login', entrySlug) : '/login?redirectKey=account')
   if (context.session.recoveryRestricted) redirect('/account/security?recovery=1')
   const database = cloudflareBindings().db
   const now = currentTimeMillis()
@@ -42,7 +50,7 @@ export default async function AccountPage({
         </Link>
         <nav aria-label="账号导航">
           <Link href="/me">我的赛事</Link>
-          <Link href="/account#membership">资格状态</Link>
+          <Link href={`${registrationAccountHref(entrySlug)}#membership`}>资格状态</Link>
           {overview.hasWorkAccess ? <Link href="/admin">工作台</Link> : null}
           <Link href="/account/security">账号与安全</Link>
           <AccountSignOut />
@@ -51,6 +59,13 @@ export default async function AccountPage({
 
       <main id="main">
         <div className={styles.shell}>
+          {entrySlug ? (
+            <RegistrationJourney
+              slug={entrySlug}
+              accountReady
+              membershipReady={overview.membership.status === 'approved'}
+            />
+          ) : null}
           {params.welcome === '1' ? (
             <aside className={styles.welcome} role="status">
               <strong>账号已创建</strong>

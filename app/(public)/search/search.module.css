@@ -13,7 +13,7 @@
     linear-gradient(rgba(241, 239, 232, 0.045) 1px, transparent 1px),
     linear-gradient(90deg, rgba(241, 239, 232, 0.045) 1px, transparent 1px), var(--index-bg);
   background-size: 32px 32px;
-  animation: consoleEnter 620ms var(--ease-out) both;
+  animation: none;
 }
 
 .serial {
@@ -33,8 +33,8 @@
 .sources,
 .outputHead {
   font-family: var(--font-mono), monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.14em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -56,7 +56,7 @@
   display: grid;
   grid-template-columns: clamp(58px, 7vw, 88px) minmax(0, 1fr) auto;
   align-items: end;
-  padding: clamp(30px, 4vw, 50px) clamp(20px, 3vw, 36px);
+  padding: 24px clamp(20px, 3vw, 36px);
   border-bottom: 1px solid var(--index-line);
 }
 
@@ -76,8 +76,8 @@
 
 .console .form label {
   color: var(--index-muted);
-  font-size: 0.6rem;
-  letter-spacing: 0.16em;
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -114,8 +114,8 @@
   border-left: 1px solid var(--index-line);
   background: transparent;
   font-family: var(--font-mono), monospace;
-  font-size: 0.66rem;
-  letter-spacing: 0.14em;
+  font-size: 0.9375rem;
+  letter-spacing: 0.04em;
   cursor: pointer;
   transition:
     color 180ms ease,
@@ -147,7 +147,7 @@
 }
 
 .output {
-  margin-top: clamp(54px, 7vw, 84px);
+  margin-top: 32px;
   overflow-wrap: anywhere;
 }
 
@@ -204,8 +204,8 @@
   color: var(--accent);
   border: 1px solid currentColor;
   font-family: var(--font-mono), monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.14em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
   text-align: center;
 }
 
@@ -228,7 +228,7 @@
   overflow-wrap: anywhere;
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.64rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.06em;
 }
 

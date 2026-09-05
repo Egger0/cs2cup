@@ -1,10 +1,12 @@
 .nextBlock {
   display: grid;
   gap: 10px;
-  animation: cardEnter 600ms 260ms ease-out both;
 }
 
 .card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 16px;
   padding: 20px;
   color: inherit;
   background: rgba(23, 24, 23, 0.74);
@@ -24,8 +26,9 @@
   gap: 12px;
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.16em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  grid-column: 1 / -1;
 }
 
 .cardHead {
@@ -34,11 +37,10 @@
 }
 
 .cardSide {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 15px 0;
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  padding: 4px 0;
 }
 
 .cardTag {
@@ -51,19 +53,16 @@
 .cardName {
   overflow: hidden;
   color: var(--muted);
-  font-size: 0.76rem;
-  text-align: right;
+  font-size: 0.875rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .cardVs {
-  padding: 5px 0;
+  align-self: center;
   color: var(--ct);
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
   font-family: var(--font-mono), monospace;
-  font-size: 0.56rem;
+  font-size: 0.75rem;
   letter-spacing: 0.2em;
   text-align: center;
 }
@@ -85,7 +84,7 @@
   padding-inline: 8px;
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.08em;
 }
 
@@ -103,8 +102,7 @@
 
 @media (max-width: 980px) {
   .nextBlock {
-    max-width: 520px;
-    margin-top: 42px;
+    max-width: none;
   }
 }
 

@@ -74,7 +74,7 @@
 }
 
 .matchNumber {
-  font-size: 0.59rem;
+  font-size: 0.75rem;
   letter-spacing: 0.1em;
   color: var(--muted);
 }
@@ -89,7 +89,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
-  font-size: 0.63rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   color: var(--muted);
 }
@@ -121,7 +121,7 @@
   max-width: 12ch;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.78rem;
+  font-size: 0.875rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   white-space: nowrap;
@@ -132,7 +132,7 @@
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   white-space: nowrap;
   color: var(--muted);
 }
@@ -166,7 +166,7 @@
   min-height: 28px;
   padding-inline: 8px;
   border: 1px solid currentColor;
-  font-size: 0.61rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   white-space: nowrap;
 }
@@ -189,13 +189,16 @@
 }
 
 .open {
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   letter-spacing: 0.05em;
   color: var(--muted);
   white-space: nowrap;
 }
 
-.nextMatch .teamName {
+.nextMatch .teamName,
+.nextMatch .matchNumber,
+.nextMatch .meta,
+.nextMatch .open {
   color: var(--ink);
 }
 
@@ -239,7 +242,7 @@
 
 @media (max-width: 420px) {
   .open {
-    font-size: 0.57rem;
+    font-size: 0.75rem;
   }
 }
 
