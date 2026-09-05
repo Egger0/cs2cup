@@ -79,6 +79,9 @@ try {
     'scripts/discovery-browser.mjs',
     'scripts/share-browser.mjs',
     'scripts/frontend-browser.mjs',
+    'scripts/layout-browser.mjs',
+    'scripts/home-motion-browser.mjs',
+    'scripts/auth-feedback-browser.mjs',
     'scripts/identity-signup-browser.mjs',
     'scripts/admin-ui-browser.mjs',
   ]
