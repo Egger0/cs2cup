@@ -9,8 +9,7 @@ export interface QqAutomationDatabase {
   prepare(query: string): { bind(...values: unknown[]): QqAutomationStatement }
 }
 
-export const QQ_WELCOME_MESSAGE =
-  '欢迎加入宁理电竞社！\n前往 https://cn.nbtesportsclub.online/ 注册成员！'
+export const QQ_WELCOME_MESSAGE = '欢迎加入宁理电竞社！请前往群公告或机器人菜单打开官网注册成员。'
 export const QQ_MORNING_MESSAGE = '早安，宁理电竞社！今天记得签到哦'
 
 function deliveryKey(kind: 'welcome' | 'morning', groupOpenId: string, value: string) {
