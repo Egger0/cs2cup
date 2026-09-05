@@ -125,7 +125,13 @@ export async function POST(request: Request) {
       return new NextResponse(null, { status: 204 })
     }
     try {
-      await sendQqWelcome(config, cloudflareBindings().db, memberAdd.groupOpenId, memberAdd.eventId)
+      await sendQqWelcome(
+        config,
+        cloudflareBindings().db,
+        memberAdd.groupOpenId,
+        memberAdd.eventId,
+        memberAdd.memberOpenId,
+      )
       return new NextResponse(null, { status: 204 })
     } catch (error) {
       console.error('[qq-bot] welcome message unavailable', error)

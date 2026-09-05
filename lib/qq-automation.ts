@@ -12,6 +12,10 @@ export interface QqAutomationDatabase {
 export const QQ_WELCOME_MESSAGE = '欢迎加入宁理电竞社！请前往群公告或机器人菜单打开官网注册成员。'
 export const QQ_MORNING_MESSAGE = '早安，宁理电竞社！今天记得签到哦'
 
+export function qqWelcomeMessage(memberOpenId: string) {
+  return `<@!${memberOpenId}> ${QQ_WELCOME_MESSAGE}`
+}
+
 function deliveryKey(kind: 'welcome' | 'morning', groupOpenId: string, value: string) {
   return `${kind}:${groupOpenId}:${value}`
 }
@@ -53,11 +57,12 @@ export async function sendQqWelcome(
   database: QqAutomationDatabase,
   groupOpenId: string,
   eventId: string,
+  memberOpenId: string,
 ) {
   const key = deliveryKey('welcome', groupOpenId, eventId)
   if (!(await claimDelivery(database, key, 'welcome', groupOpenId))) return false
   try {
-    await sendQqGroupMessage(config, groupOpenId, QQ_WELCOME_MESSAGE, eventId)
+    await sendQqGroupMessage(config, groupOpenId, qqWelcomeMessage(memberOpenId), eventId)
     return true
   } catch (error) {
     await releaseDelivery(database, key)

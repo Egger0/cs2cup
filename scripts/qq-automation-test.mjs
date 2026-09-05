@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 
-const { sendQqMorning, sendQqWelcome, shanghaiDate } = await import('../lib/qq-automation.ts')
+const { qqWelcomeMessage, sendQqMorning, sendQqWelcome, shanghaiDate } = await import('../lib/qq-automation.ts')
 const { createMigratedDatabase } = await import('./sqlite-fixture.mjs')
 
 const sqliteDatabase = await createMigratedDatabase()
@@ -41,8 +41,8 @@ try {
   assert.equal(shanghaiDate(at(6, 0) - 1), '2026-09-05')
   assert.equal(shanghaiDate(at(6, 0)), '2026-09-06')
 
-  assert.equal(await sendQqWelcome(config, database, groupOpenId, 'member-event-1'), true)
-  assert.equal(await sendQqWelcome(config, database, groupOpenId, 'member-event-1'), false)
+  assert.equal(await sendQqWelcome(config, database, groupOpenId, 'member-event-1', 'member-1'), true)
+  assert.equal(await sendQqWelcome(config, database, groupOpenId, 'member-event-1', 'member-1'), false)
   assert.equal(await sendQqMorning(config, database, groupOpenId, at(5, 9)), true)
   assert.equal(await sendQqMorning(config, database, groupOpenId, at(5, 23)), false)
   assert.equal(await sendQqMorning(config, database, groupOpenId, at(6, 9)), true)
@@ -52,7 +52,7 @@ try {
     .map(request => JSON.parse(request.init.body))
   assert.deepEqual(sentBodies, [
     {
-      content: '欢迎加入宁理电竞社！请前往群公告或机器人菜单打开官网注册成员。',
+      content: qqWelcomeMessage('member-1'),
       msg_type: 0,
       event_id: 'member-event-1',
     },
