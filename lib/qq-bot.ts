@@ -227,6 +227,10 @@ interface QqCommandPanelRecord {
   panel?: { remark?: unknown }
 }
 
+interface QqCommandPanelDetail {
+  group_openids?: unknown
+}
+
 async function panelRequest(
   config: QqBotConfig,
   path: string,
@@ -257,9 +261,28 @@ export async function syncQqGroupCommandPanel(config: QqBotConfig) {
     record => typeof record.panel_id === 'string' && record.panel?.remark === COMMAND_PANEL_REMARK,
   )
   if (existing && typeof existing.panel_id === 'string') {
-    await panelRequest(config, `/panels/${encodeURIComponent(existing.panel_id)}`, 'PUT', {
+    const panelId = encodeURIComponent(existing.panel_id)
+    const detailResponse = await panelRequest(config, `/panels/${panelId}`, 'GET')
+    const detail = (await detailResponse.json().catch(() => null)) as QqCommandPanelDetail | null
+    const groups = Array.isArray(detail?.group_openids)
+      ? detail.group_openids.filter((group): group is string => typeof group === 'string')
+      : []
+    await panelRequest(config, `/panels/${panelId}`, 'PUT', {
       panel: COMMAND_PANEL,
     })
+    if (!groups.includes(config.allowedGroupOpenId)) {
+      await panelRequest(config, `/panels/${panelId}/target`, 'PUT', {
+        op: 'add',
+        group_openids: [config.allowedGroupOpenId],
+      })
+    }
+    const previousGroups = groups.filter(group => group !== config.allowedGroupOpenId)
+    if (previousGroups.length) {
+      await panelRequest(config, `/panels/${panelId}/target`, 'PUT', {
+        op: 'del',
+        group_openids: previousGroups,
+      })
+    }
     return 'updated'
   }
   await panelRequest(config, '/panels', 'POST', {

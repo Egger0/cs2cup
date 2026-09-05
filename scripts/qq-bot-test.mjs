@@ -74,6 +74,7 @@ assert.equal(
 const originalFetch = globalThis.fetch
 const requests = []
 let panels = []
+let panelDetail = { group_openids: [] }
 globalThis.fetch = async (url, init = {}) => {
   requests.push({ url: String(url), init })
   if (String(url).endsWith('/getAppAccessToken')) {
@@ -81,6 +82,8 @@ globalThis.fetch = async (url, init = {}) => {
   }
   if (String(url).includes('/panels?scope=group'))
     return new Response(JSON.stringify({ records: panels }))
+  if (String(url).endsWith('/panels/panel-1') && (!init.method || init.method === 'GET'))
+    return new Response(JSON.stringify(panelDetail))
   return new Response(JSON.stringify({ panel_id: 'panel-1' }))
 }
 try {
@@ -108,6 +111,7 @@ try {
     },
   })
   panels = [{ panel_id: 'panel-1', panel: { remark: 'nbt-qq-group-commands' } }]
+  panelDetail = { group_openids: ['old-group'] }
   assert.equal(
     await syncQqGroupCommandPanel({
       appId: 'app',
@@ -116,7 +120,20 @@ try {
     }),
     'updated',
   )
-  assert.match(requests.at(-1).url, /\/panels\/panel-1$/)
+  assert.ok(
+    requests.some(
+      request =>
+        request.url.endsWith('/panels/panel-1/target') &&
+        request.init.body === JSON.stringify({ op: 'add', group_openids: ['group-1'] }),
+    ),
+  )
+  assert.ok(
+    requests.some(
+      request =>
+        request.url.endsWith('/panels/panel-1/target') &&
+        request.init.body === JSON.stringify({ op: 'del', group_openids: ['old-group'] }),
+    ),
+  )
 } finally {
   globalThis.fetch = originalFetch
 }
