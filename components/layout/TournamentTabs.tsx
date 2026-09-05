@@ -23,7 +23,13 @@ function supportsViewTransition(): StartViewTransition | null {
   return start.bind(document)
 }
 
-export function TournamentTabs({ tabs }: { tabs: TournamentTab[] }) {
+export function TournamentTabs({
+  tabs,
+  label = '赛事导航',
+}: {
+  tabs: TournamentTab[]
+  label?: string
+}) {
   const pathname = usePathname()
   const router = useRouter()
   const tabsRef = useRef<HTMLElement>(null)
@@ -74,7 +80,7 @@ export function TournamentTabs({ tabs }: { tabs: TournamentTab[] }) {
       <span className={styles.scrollHint} aria-hidden="true">
         左右滑动查看更多 <span>↔</span>
       </span>
-      <nav ref={tabsRef} className={styles.tabs} aria-label="赛事导航">
+      <nav ref={tabsRef} className={styles.tabs} aria-label={label}>
         {tabs.map((tab, index) => {
           const active = tab.exact
             ? pathname === tab.href

@@ -1,0 +1,91 @@
+.edition {
+  border-top: 2px solid var(--ct);
+}
+
+.heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding-block: 28px;
+}
+
+.heading h2 {
+  margin-top: 8px;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+}
+
+.year,
+.summary {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.summary strong {
+  color: var(--honour);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table caption {
+  padding-bottom: 20px;
+  text-align: left;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.table th,
+.table td {
+  padding: 22px 16px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.table thead {
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.table tbody th {
+  width: 30%;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.contribution {
+  color: var(--honour);
+  font-variant-numeric: tabular-nums;
+}
+
+.note {
+  margin-top: 8px;
+  max-width: 42ch;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.date {
+  color: var(--muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 600px) {
+  .table th,
+  .table td {
+    padding: 18px 8px;
+    font-size: 0.8rem;
+  }
+
+  .table .date,
+  .note {
+    font-size: 0.7rem;
+  }
+}
