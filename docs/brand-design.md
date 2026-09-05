@@ -65,6 +65,58 @@ Next.js still uses a streaming document shell. A no-script notice explains how t
 
 ## Validation
 
+### Grid and motion contract
+
+The September 2026 visual pass draws on the [Swiss National Library's account of the
+International Style](https://www.nb.admin.ch/en/the-international-style-1950-1970): deliberate
+typographic hierarchy, precise alignment, restrained color, and a strong composition.
+This is an adaptation for a Chinese esports club, not a claim to reproduce a historical standard.
+
+`app/layout-tokens.css` owns the 1536px outer container, safe-area-aware page insets, 24px desktop
+and 16px mobile gutters, and an 8px spacing scale. The navigation, homepage sections, tournament
+pages, and footer share the same content edges. Open three- and four-column groups align with the
+12-column desktop grid; tournament content uses eight columns plus a four-column entry rail.
+Reading columns and auth forms have intentionally narrower measures. Form labels align to the
+top of their rows: a longer hint must never change a neighboring input's position or height.
+
+The homepage also takes inspiration from the [Lando Norris official site](https://landonorris.com/)
+for a singular, expressive first screen, and [Pentagram's Nuverse identity](https://www.pentagram.com/work/nuverse)
+for motion rooted in a brand symbol and a sense of connection. No reference assets or layouts
+are copied. The existing club emblem, Chinese display type, and converging bracket routes remain
+the primary visual language.
+
+Motion uses CSS and existing SVG artwork, without video, WebGL, or an animation dependency.
+Mouse response is limited to 12px horizontally, 9px vertically, and a small emblem tilt; action
+targets never follow the pointer. A visible toggle pauses decoration. System reduced-motion
+preferences disable it, touch devices receive no pointer parallax, and the hero suspends ambient
+animation when off screen or when the document is hidden. Scroll reveals use IntersectionObserver
+and leave content visible if the enhancement is unavailable. Keyboard-focused content is never
+hidden by a reveal. Mobile headings and artwork must not obscure the registration action.
+
+### Authentication experience
+
+The [GitHub sign-in page](https://github.com/login) informs the clear primary action and separation
+of password, passkey, signup, and recovery entry points. The
+[GOV.UK error-message guidance](https://design-system.service.gov.uk/components/error-message/)
+informs actionable language, retaining entered information, and associating feedback with the
+affected input. Internal security codes and breached-password terminology are not user guidance.
+
+Display names are optional at signup and default to the username on the server. This does not
+alter username validation, password screening, CSRF protection, rate limits, or authorization.
+Password managers retain the native autocomplete attributes. Errors are cleared when the related
+input changes, submitted values cannot be edited during a pending request, and validation focus
+is restored after inputs are re-enabled. Auth content is top-aligned so an error does not move the
+submit button. An interrupted signup offers a contextual sign-in route rather than claiming that
+no account was created. Recovery explains the existing backup-code and passkey paths and offers
+a contact route without promising an unverified reset.
+
+`node scripts/layout-browser.mjs` checks shared edges at six widths and aligned, equal-height
+auth controls. `node scripts/home-motion-browser.mjs` covers pointer, keyboard, pause/resume,
+live reduced-motion changes, off-screen suspension, touch, and first-screen actions.
+`node scripts/auth-feedback-browser.mjs` covers optional profile information, server rejection,
+plain-language feedback, stable button positions, retained input, network interruption, and
+recovery alternatives. All three run in the browser smoke gate against the loopback fixture.
+
 `npm run test:discovery` checks filter parsing, Unicode matching, public visibility, and URL round trips.
 `node scripts/discovery-browser.mjs` verifies search, follows, PNG export, focus restoration,
 metadata, app icons, mobile overflow, and accessibility against the disposable loopback fixture.

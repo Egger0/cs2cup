@@ -8,7 +8,24 @@
 .nameGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  align-items: start;
+  gap: var(--space-2);
+}
+
+.optional {
+  margin-left: var(--space-1);
+  color: #59615f;
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+.tryLogin {
+  display: flex;
+  width: fit-content;
+  min-height: 44px;
+  align-items: center;
+  color: var(--pass-blue);
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .after {

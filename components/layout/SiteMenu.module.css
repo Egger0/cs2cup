@@ -56,10 +56,10 @@
   z-index: 1;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  width: min(100%, 1600px);
+  width: min(100%, var(--wrap));
   min-height: 100%;
   margin-inline: auto;
-  padding: clamp(48px, 7vh, 76px) clamp(22px, 3.8vw, 62px) 30px;
+  padding: var(--space-8) var(--pad) var(--space-4);
 }
 
 .menuMeta,
@@ -231,8 +231,7 @@
   }
 
   .menuInner {
-    padding: 28px max(20px, env(safe-area-inset-right)) max(22px, env(safe-area-inset-bottom))
-      max(20px, env(safe-area-inset-left));
+    padding: var(--space-4) var(--pad) max(24px, env(safe-area-inset-bottom));
   }
 
   .menuMeta {

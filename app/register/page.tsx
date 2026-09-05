@@ -60,13 +60,11 @@ export default async function RegisterPage({
             <span>YOUR ACCOUNT</span> / 你的账号
           </p>
           <h1 id="registration-title">加入宁理电竞。</h1>
-          <p className={loginStyles.lede}>
-            账号会立即创建。即使审核尚未完成，你仍可登录、补充资料、绑定 Passkey 和保存报名草稿。
-          </p>
+          <p className={loginStyles.lede}>保存报名资料，找到并肩的队友，一起参加校园赛事。</p>
         </div>
         <p className={loginStyles.assurances}>
           <span>01 / ACCOUNT FIRST</span>
-          审核成员资格，不审核你的登录权
+          先拥有账号，再找到你的队伍
         </p>
       </section>
 
@@ -74,7 +72,7 @@ export default async function RegisterPage({
         <header className={loginStyles.passHeader}>
           <p className={loginStyles.serial}>SELF REGISTRATION / NLC—01</p>
           <h2 id="create-account-title">创建你的账号</h2>
-          <p>密码是默认登录方式；创建完成后可自行添加 Passkey。</p>
+          <p>创建后即可登录并保存报名资料。</p>
           <Link href={registrationAuthHref('login', entrySlug)} className={loginStyles.backLink}>
             已有账号？直接登录 →
           </Link>
@@ -87,9 +85,11 @@ export default async function RegisterPage({
           />
         </div>
         <footer className={`${loginStyles.passFooter} ${styles.footer}`}>
-          <p>已经有账号？</p>
-          <Link href={registrationAuthHref('login', entrySlug)} className={loginStyles.backLink}>
-            <span aria-hidden="true">←</span> 返回登录
+          <Link
+            href={entrySlug ? `/tournaments/${entrySlug}` : '/tournaments'}
+            className={loginStyles.backLink}
+          >
+            <span aria-hidden="true">←</span> 先看看赛事
           </Link>
         </footer>
       </section>

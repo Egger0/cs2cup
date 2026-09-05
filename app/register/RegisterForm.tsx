@@ -1,23 +1,26 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import Link from 'next/link'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { PasswordInput } from '@/components/ui/PasswordInput'
+import { COMPROMISED_PASSWORD_MESSAGE } from '@/lib/identity/registration-feedback'
+import { registrationAuthHref } from '@/lib/registration-navigation'
 import formStyles from '../login/credential-form.module.css'
 import loginStyles from '../login/login.module.css'
 import styles from './register.module.css'
 
-const SETUP_FAILURE = '创建账号服务暂时不可用，本次没有保存，请稍后重试。'
+const SETUP_FAILURE = '注册暂时不可用，请稍后重试。'
 
 const FAILURE_COPY: Record<string, string> = {
   rate: '创建尝试过于频繁，请稍后再试。',
-  request: '请求来源无法确认，请刷新页面后重试。',
-  screening_unavailable: '暂时无法安全检查新密码。你的账号尚未创建，请稍后重试。',
+  request: '这次提交未完成，请刷新页面后重试。',
+  screening_unavailable: SETUP_FAILURE,
   setup: SETUP_FAILURE,
   signed_in: '当前浏览器已有登录账号，请先退出后再创建新账号。',
   username_unavailable: '这个用户名不可用，请换一个再试。',
   invalid_format: '用户名需为 3–32 位小写字母、数字、点、短横线或下划线。',
   reserved: '这个用户名不可用，请换一个再试。',
-  password_compromised: '这个密码曾出现在公开泄露记录中，请换一个只在这里使用的密码。',
+  password_compromised: COMPROMISED_PASSWORD_MESSAGE,
 }
 
 function encodedForm(form: HTMLFormElement) {
@@ -39,24 +42,49 @@ export function RegisterForm({
     ? `/api/auth/register?tournamentSlug=${encodeURIComponent(tournamentSlug)}`
     : '/api/auth/register'
   const [working, setWorking] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
+  const [uncertain, setUncertain] = useState(false)
   const [error, setError] = useState(
     initialError
       ? (FAILURE_COPY[initialError] ?? '请检查用户名、显示名称和密码后重试。本次未创建账号。')
       : '',
   )
-  const [errorField, setErrorField] = useState('')
-  const [passwordLength, setPasswordLength] = useState(0)
+  const [errorField, setErrorField] = useState(
+    initialError === 'password_compromised' ? 'password' : '',
+  )
+
+  useEffect(() => {
+    if (working || !errorField) return
+    const field = formRef.current?.elements.namedItem(errorField)
+    if (field instanceof HTMLElement) field.focus()
+  }, [errorField, working])
+
+  function showUncertainResult() {
+    setUncertain(true)
+    setError('暂时没能确认创建结果。请先尝试登录；如果无法登录，再回来重试。')
+  }
+
+  function clearChangedError(event: FormEvent<HTMLFormElement>) {
+    if (!(event.target instanceof HTMLInputElement)) return
+    const name = event.target.name
+    const confirmationChanged =
+      errorField === 'passwordConfirmation' &&
+      (name === 'password' || name === 'passwordConfirmation')
+    if (name === errorField || confirmationChanged) {
+      setError('')
+      setErrorField('')
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (working) return
+    setUncertain(false)
     const form = event.currentTarget
-    const confirmation = form.elements.namedItem('passwordConfirmation')
     const data = new FormData(form)
     if (data.get('password') !== data.get('passwordConfirmation')) {
       setError('两次输入的密码不一致。')
       setErrorField('passwordConfirmation')
-      if (confirmation instanceof HTMLElement) confirmation.focus()
       return
     }
     setWorking(true)
@@ -77,16 +105,18 @@ export function RegisterForm({
         field?: string
         redirectTo?: string
       } | null
-      if (!response.ok || !payload?.redirectTo) {
+      if (!response.ok) {
         setError(payload?.error ?? SETUP_FAILURE)
         setErrorField(payload?.field ?? '')
-        const field = payload?.field ? form.elements.namedItem(payload.field) : null
-        if (field instanceof HTMLElement) field.focus()
+        return
+      }
+      if (!payload?.redirectTo) {
+        showUncertainResult()
         return
       }
       window.location.assign(payload.redirectTo)
     } catch {
-      setError(SETUP_FAILURE)
+      showUncertainResult()
     } finally {
       setWorking(false)
     }
@@ -94,10 +124,13 @@ export function RegisterForm({
 
   return (
     <form
+      ref={formRef}
       className={`${formStyles.passwordForm} ${styles.form}`}
       action={endpoint}
       method="post"
       onSubmit={submit}
+      onChange={clearChangedError}
+      aria-busy={working}
     >
       <div className={styles.nameGrid}>
         <label className={formStyles.field}>
@@ -105,27 +138,38 @@ export function RegisterForm({
           <input
             name="username"
             aria-label="用户名"
-            aria-describedby="username-guidance"
+            aria-describedby={
+              errorField === 'username' ? 'username-guidance signup-error' : 'username-guidance'
+            }
             autoComplete="username"
+            autoCapitalize="none"
+            enterKeyHint="next"
             maxLength={32}
             spellCheck={false}
             aria-invalid={errorField === 'username'}
+            disabled={working}
             required
           />
           <small id="username-guidance">3–32 位小写字母、数字、点、短横线或下划线</small>
         </label>
         <label className={formStyles.field}>
-          <span>显示名称</span>
+          <span>
+            显示名称 <span className={styles.optional}>选填</span>
+          </span>
           <input
             name="displayName"
             aria-label="显示名称"
-            aria-describedby="display-name-guidance"
+            aria-describedby={
+              errorField === 'displayName'
+                ? 'display-name-guidance signup-error'
+                : 'display-name-guidance'
+            }
             autoComplete="nickname"
             maxLength={80}
             aria-invalid={errorField === 'displayName'}
-            required
+            disabled={working}
           />
-          <small id="display-name-guidance">用于账号与审核界面，可以稍后修改</small>
+          <small id="display-name-guidance">留空时使用用户名，可以稍后修改</small>
         </label>
       </div>
       <label className={formStyles.field}>
@@ -137,11 +181,15 @@ export function RegisterForm({
           minLength={6}
           maxLength={1024}
           aria-invalid={errorField === 'password'}
-          aria-describedby="password-guidance"
-          onChange={event => setPasswordLength(Array.from(event.currentTarget.value).length)}
+          aria-describedby={
+            errorField === 'password' ? 'password-guidance signup-error' : 'password-guidance'
+          }
+          disabled={working}
           required
         />
-        <small id="password-guidance">至少 6 个字符；当前 {passwordLength} 个字符</small>
+        <small id="password-guidance">
+          至少 6 个字符，支持中文和空格。建议用几个不相关的词组合，不要使用用户名或昵称。
+        </small>
       </label>
       <label className={formStyles.field}>
         <span>确认密码</span>
@@ -152,22 +200,32 @@ export function RegisterForm({
           maxLength={1024}
           aria-invalid={errorField === 'passwordConfirmation'}
           aria-describedby={errorField === 'passwordConfirmation' ? 'signup-error' : undefined}
+          disabled={working}
           required
         />
       </label>
-      {error ? (
-        <p id="signup-error" className={formStyles.formError} role="alert">
-          {error}
-        </p>
-      ) : null}
       <button className={formStyles.passwordButton} type="submit" disabled={working}>
         <span className={loginStyles.buttonCode} aria-hidden="true">
           01
         </span>
-        <span>{working ? '正在安全创建…' : '创建账号'}</span>
+        <span>{working ? '正在创建…' : '创建账号'}</span>
         <span aria-hidden="true">↗</span>
       </button>
-      <p className={styles.after}>创建后会立即登录；成员资格申请是下一步，不会阻塞账号。</p>
+      {error ? (
+        <p
+          id="signup-error"
+          className={errorField ? formStyles.formError : formStyles.formNotice}
+          role="alert"
+        >
+          {error}
+          {uncertain ? (
+            <Link href={registrationAuthHref('login', tournamentSlug)} className={styles.tryLogin}>
+              尝试登录 →
+            </Link>
+          ) : null}
+        </p>
+      ) : null}
+      <p className={styles.after}>创建后会自动登录，报名资料可以稍后填写。</p>
     </form>
   )
 }

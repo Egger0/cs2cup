@@ -1,0 +1,39 @@
+.control {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 120px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid #526968;
+  color: #bfd1d8;
+  background: #172120;
+  font-size: 0.6875rem;
+  cursor: pointer;
+}
+.control:is(:hover, :focus-visible) {
+  border-color: var(--signal);
+  color: white;
+}
+.symbol {
+  color: var(--signal);
+  font-size: 1rem;
+  line-height: 1;
+}
+.state {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+}
+.control:disabled {
+  color: #a8b8bd;
+  cursor: default;
+}
+@media (max-width: 700px) {
+  .control {
+    gap: 6px;
+    min-width: 106px;
+    padding: 8px;
+  }
+}

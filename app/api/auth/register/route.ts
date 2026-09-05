@@ -5,6 +5,7 @@ import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { assertCsrfRequest, CsrfError } from '@/lib/csrf'
 import { withPrivateNoStore } from '@/lib/http-cache'
 import { registerAccount } from '@/lib/identity/account-registration'
+import { COMPROMISED_PASSWORD_MESSAGE } from '@/lib/identity/registration-feedback'
 import { activeAuthFingerprintKey } from '@/lib/identity/internal/auth-fingerprint-config'
 import { createAuthAttemptFingerprint } from '@/lib/identity/internal/auth-fingerprint'
 import {
@@ -88,7 +89,11 @@ export async function POST(request: NextRequest) {
     ])
     const database = cloudflareBindings().db
     await chargeAuthAttempts(database, 'enrollment', [networkCharge, usernameCharge])
-    const result = await registerAccount(database, fields, await passwordPepperSet(), {
+    const registrationFields = {
+      ...fields,
+      displayName: fields.displayName.trim() || fields.username.trim(),
+    }
+    const result = await registerAccount(database, registrationFields, await passwordPepperSet(), {
       clientLabel: clientSessionLabel(request.headers),
     })
 
@@ -114,13 +119,13 @@ export async function POST(request: NextRequest) {
           status: 400,
           code: result.reason,
           field: 'password',
-          error: '这个密码曾出现在公开泄露记录中，请换一个只在这里使用的密码。',
+          error: COMPROMISED_PASSWORD_MESSAGE,
         })
       }
       return failureResponse(request, {
         status: 503,
         code: result.reason,
-        error: '暂时无法安全检查新密码。你的账号尚未创建，请稍后重试。',
+        error: '注册暂时不可用，请稍后重试。',
       })
     }
 
@@ -140,7 +145,7 @@ export async function POST(request: NextRequest) {
       return failureResponse(request, {
         status: 403,
         code: 'request',
-        error: '请求来源无法确认，请刷新页面后重试。',
+        error: '这次提交未完成，请刷新页面后重试。',
       })
     }
     if (error instanceof AuthAttemptRateLimitError) {
@@ -155,7 +160,7 @@ export async function POST(request: NextRequest) {
     return failureResponse(request, {
       status: 503,
       code: 'setup',
-      error: '创建账号服务暂时不可用，本次没有保存，请稍后重试。',
+      error: '注册暂时不可用，请稍后重试。',
     })
   }
 }

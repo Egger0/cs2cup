@@ -1,8 +1,11 @@
 .cover {
   --paper: #f1efe8;
   --ink: #171817;
-  --blue: #0b4d87;
+  --blue: #2477b9;
   --signal: #9bcaeb;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
   color: var(--paper);
   background: var(--ink);
 }
@@ -10,86 +13,252 @@
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(310px, 410px);
-  align-items: center;
-  gap: clamp(32px, 6vw, 88px);
-  max-width: var(--wrap);
-  min-height: 490px;
+  grid-template-rows: auto 1fr auto;
+  gap: 28px;
+  width: min(100%, var(--wrap));
+  min-height: clamp(640px, calc(100svh - 76px), 940px);
   margin-inline: auto;
-  padding: 64px var(--pad);
+  padding: 26px var(--pad) 30px;
+}
+.canvas::before {
+  position: absolute;
+  z-index: -1;
+  inset: 18px 24px;
+  border: 1px solid rgb(155 202 235 / 12%);
+  content: '';
+  pointer-events: none;
 }
 .art {
   position: absolute;
   z-index: -1;
   inset: 0;
-  opacity: 0.2;
   overflow: hidden;
   pointer-events: none;
 }
-.copy {
-  min-width: 0;
+.topline,
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
 }
 .meta {
-  color: #afc9db;
+  justify-content: start;
+  color: #bdc7c4;
   font-size: 0.75rem;
-  letter-spacing: 0.06em;
+}
+.coordinate,
+.eyebrow,
+.scrollCue small {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+}
+.coordinate {
+  color: var(--signal);
+}
+.main {
+  display: flex;
+  align-items: center;
+  min-height: 380px;
+  padding: 10px 0 18px;
+}
+.copy {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+}
+.eyebrow {
+  margin-bottom: 26px;
+  color: #aac0c7;
 }
 .copy h1 {
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: 0.1em;
-  margin-top: 28px;
+  width: max-content;
   font-family: 'NLC Serif', 'Songti SC', serif;
-  font-size: clamp(3rem, 6.5vw, 5.8rem);
+  font-size: clamp(6rem, 12vw, 11.8rem);
   font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.16;
+  letter-spacing: -0.075em;
+  line-height: 0.98;
+}
+.copy h1 > span {
+  display: block;
+  animation: titleArrive 780ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.copy h1 > span + span {
+  position: relative;
+  margin-left: calc((min(100vw, var(--wrap)) - 2 * var(--pad) + var(--grid-gap)) / 12);
+  animation-delay: 90ms;
+}
+.titlePoint {
+  display: inline-block;
+  width: 0.075em;
+  height: 0.075em;
+  margin-left: 0.12em;
+  vertical-align: 0.13em;
+  background: var(--signal);
 }
 .tagline {
-  margin-top: 22px;
-  font-size: clamp(1.25rem, 2vw, 1.625rem);
-  font-weight: 600;
+  margin-top: 30px;
+  font-size: clamp(1rem, 1.4vw, 1.25rem);
+  letter-spacing: 0.08em;
 }
-.lede {
-  margin-top: 14px;
-  color: #bec5c4;
-  font-size: 1rem;
-  line-height: 1.8;
-}
-.actions {
+.links {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 28px;
-  margin-top: 24px;
+  gap: 8px 30px;
+  margin-top: 8px;
 }
-.actions a {
+.links a {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   min-height: 44px;
+  color: #b4c8d1;
+  font-size: 0.8125rem;
+}
+.links svg {
   color: var(--signal);
-  font-size: 0.9375rem;
+  transition: transform 220ms ease;
 }
-.actions a:hover {
+.links a:is(:hover, :focus-visible) {
   color: white;
-  text-decoration: underline;
-  text-underline-offset: 5px;
 }
-@media (max-width: 800px) {
+.links a:is(:hover, :focus-visible) svg {
+  transform: translateX(4px);
+}
+.dock {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: end;
+  gap: var(--grid-gap);
+}
+.dock > :first-child {
+  grid-column: span 4;
+}
+.dock > :last-child {
+  grid-column: span 8;
+}
+.scrollCue {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 54px;
+  font-size: 0.75rem;
+}
+.scrollCue > span:first-child {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid #617978;
+  border-radius: 50%;
+  color: var(--signal);
+  transition: transform 220ms ease;
+}
+.scrollCue:is(:hover, :focus-visible) > span:first-child {
+  transform: translateY(4px);
+}
+.scrollCue small {
+  display: block;
+  margin-top: 6px;
+  color: #a6b6bc;
+  font-size: 0.5625rem;
+}
+.cover :focus-visible {
+  outline-color: var(--signal);
+}
+@keyframes titleArrive {
+  from {
+    transform: translateY(14px);
+  }
+  to {
+    transform: none;
+  }
+}
+@media (max-width: 900px) {
   .canvas {
-    grid-template-columns: 1fr;
-    min-height: 0;
-    gap: 28px;
-    padding-block: 32px;
+    min-height: calc(100svh - 68px);
+  }
+  .scrollCue small {
+    display: none;
+  }
+}
+@media (max-width: 700px) {
+  .canvas {
+    gap: 16px;
+    padding: 16px var(--pad) 24px;
+  }
+  .canvas::before {
+    inset: 10px;
+  }
+  .meta {
+    font-size: 0.6875rem;
+  }
+  .coordinate {
+    display: none;
+  }
+  .main {
+    min-height: 280px;
+    padding: 12px 0;
+  }
+  .eyebrow {
+    margin-bottom: 22px;
+    font-size: 0.5625rem;
   }
   .copy h1 {
-    margin-top: 18px;
-    font-size: clamp(2.75rem, 10vw, 4rem);
+    font-size: clamp(4.3rem, 23vw, 8rem);
   }
   .tagline {
-    margin-top: 16px;
+    margin-top: 26px;
+    font-size: 1rem;
   }
-  .actions {
+  .links {
+    gap: 8px 24px;
+    margin-top: 12px;
+  }
+  .dock {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .dock > :last-child {
+    grid-column: 1;
+  }
+  .scrollCue {
+    display: none;
+  }
+}
+@media (max-width: 700px) and (max-height: 660px) {
+  .canvas {
+    gap: 8px;
+    padding: 10px var(--pad) 22px;
+  }
+  .main {
+    min-height: 220px;
+    padding: 0;
+  }
+  .copy h1 {
+    font-size: clamp(4rem, 21vw, 6rem);
+  }
+  .eyebrow {
+    margin-bottom: 14px;
+  }
+  .tagline {
     margin-top: 14px;
   }
+}
+@media (prefers-reduced-motion: reduce) {
+  .copy h1 > span {
+    animation: none;
+  }
+  .links svg,
+  .scrollCue > span:first-child {
+    transition: none;
+  }
+  .links a:is(:hover, :focus-visible) svg,
+  .scrollCue:is(:hover, :focus-visible) > span:first-child {
+    transform: none;
+  }
+}
+:global(html[data-home-effects='paused']) .copy h1 > span {
+  animation: none;
 }

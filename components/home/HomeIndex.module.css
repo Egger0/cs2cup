@@ -5,14 +5,15 @@
   --signal: #6da5d3;
   min-height: calc(100svh - 76px);
   overflow: hidden;
-  padding: clamp(82px, 10vh, 112px) clamp(24px, 6vw, 88px) clamp(78px, 8vh, 96px);
+  padding-block: clamp(80px, 10vh, 112px) 96px;
   color: var(--paper);
   background: var(--ink);
 }
 
 .inner {
-  width: min(100%, 1360px);
+  width: min(100%, var(--wrap));
   margin-inline: auto;
+  padding-inline: var(--pad);
 }
 
 .heading {
@@ -39,53 +40,10 @@
   line-height: 0.93;
 }
 
-.roles {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  margin-block: clamp(62px, 8vh, 88px) clamp(82px, 9vh, 100px);
-  border-top: 1px solid rgba(241, 239, 232, 0.28);
-  border-bottom: 1px solid rgba(241, 239, 232, 0.28);
-  list-style: none;
-}
-
-.roles li {
-  position: relative;
-  display: grid;
-  min-height: clamp(230px, 24vw, 340px);
-  align-content: space-between;
-  padding: 22px clamp(18px, 2vw, 30px) 26px;
-  overflow: hidden;
-  border-right: 1px solid rgba(241, 239, 232, 0.18);
-}
-
-.roles li:last-child {
-  border-right: 0;
-}
-
-.roles strong {
-  align-self: center;
-  justify-self: center;
-  color: var(--paper);
-  font-family: 'NLC Role Sans', 'PingFang SC', sans-serif;
-  font-size: clamp(7rem, 14vw, 13.5rem);
-  font-weight: 300;
-  letter-spacing: -0.16em;
-  line-height: 0.75;
-}
-
-.roles li:nth-child(3) strong {
-  color: #4f8dbe;
-}
-
-.roles span {
-  color: rgba(241, 239, 232, 0.55);
-  font-size: 0.66rem;
-  letter-spacing: 0.16em;
-}
-
 .links {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  column-gap: var(--grid-gap);
   border-top: 1px solid rgba(241, 239, 232, 0.35);
 }
 
@@ -95,13 +53,12 @@
   min-height: 104px;
   align-content: center;
   gap: 5px 18px;
-  padding: 18px clamp(16px, 2vw, 28px) 18px 0;
-  border-right: 1px solid rgba(241, 239, 232, 0.18);
+  padding-block: var(--space-3);
   transition: background-color 200ms ease;
 }
 
 .links a:not(:first-child) {
-  padding-left: clamp(16px, 2vw, 28px);
+  padding-left: 0;
 }
 
 .links a:last-child {
@@ -143,7 +100,7 @@
 @media (max-width: 760px) {
   .index {
     min-height: auto;
-    padding: 90px 20px 104px;
+    padding-block: 80px 96px;
   }
 
   .heading {
@@ -156,29 +113,6 @@
 
   .heading h2 {
     font-size: clamp(4.4rem, 21vw, 6.4rem);
-  }
-
-  .roles {
-    grid-template-columns: repeat(2, 1fr);
-    margin-block: 72px 96px;
-  }
-
-  .roles li {
-    min-height: 46vw;
-    padding: 16px 14px 18px;
-    border-bottom: 1px solid rgba(241, 239, 232, 0.18);
-  }
-
-  .roles li:nth-child(2n) {
-    border-right: 0;
-  }
-
-  .roles li:nth-child(n + 3) {
-    border-bottom: 0;
-  }
-
-  .roles strong {
-    font-size: clamp(6rem, 31vw, 9rem);
   }
 
   .links {

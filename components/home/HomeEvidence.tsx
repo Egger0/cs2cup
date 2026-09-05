@@ -17,7 +17,7 @@ export function HomeEvidence({ slug }: { slug?: string }) {
       aria-labelledby="route-title"
       data-header-tone="light"
     >
-      <div className={styles.routeCanvas}>
+      <div className={styles.routeCanvas} data-layout-container>
         <div className={styles.gridLines} aria-hidden="true">
           <i />
           <i />

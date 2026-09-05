@@ -168,7 +168,7 @@ export function SiteHeader({ setting, links, accountLink, status }: SiteHeaderPr
       aria-modal={open ? 'true' : undefined}
       aria-label={open ? '全站目录' : undefined}
     >
-      <div className={styles.inner}>
+      <div className={styles.inner} data-layout-container>
         <Link ref={brandRef} href="/" className={styles.brand} onClick={() => setOpen(false)}>
           <span className={styles.mark}>
             <Image

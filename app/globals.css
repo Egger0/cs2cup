@@ -15,8 +15,6 @@
   --t-dim: rgba(227, 166, 58, 0.14);
   --c4: #e5484d;
   --accent: var(--t);
-  --wrap: 1536px;
-  --pad: clamp(20px, 6vw, 88px);
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }

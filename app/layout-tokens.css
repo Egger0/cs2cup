@@ -1,0 +1,17 @@
+:root {
+  --wrap: 1536px;
+  --pad: max(clamp(20px, 4vw, 64px), env(safe-area-inset-left), env(safe-area-inset-right));
+  --grid-gap: 24px;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-6: 48px;
+  --space-8: 64px;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --grid-gap: 16px;
+  }
+}
