@@ -1,4 +1,4 @@
-import { sendQqGroupMessage, type QqBotApiConfig } from './qq-bot-api.ts'
+import { sendQqGroupMarkdown, sendQqGroupMessage, type QqBotApiConfig } from './qq-bot-api.ts'
 
 export interface QqAutomationStatement {
   first<T>(): Promise<T | null>
@@ -13,7 +13,7 @@ export const QQ_WELCOME_MESSAGE = '欢迎加入宁理电竞社！请前往群公
 export const QQ_MORNING_MESSAGE = '早安，宁理电竞社！今天记得签到哦'
 
 export function qqWelcomeMessage(memberOpenId: string) {
-  return `<@!${memberOpenId}> ${QQ_WELCOME_MESSAGE}`
+  return `<qqbot-at-user id="${memberOpenId}" /> ${QQ_WELCOME_MESSAGE}`
 }
 
 function deliveryKey(kind: 'welcome' | 'morning', groupOpenId: string, value: string) {
@@ -62,7 +62,7 @@ export async function sendQqWelcome(
   const key = deliveryKey('welcome', groupOpenId, eventId)
   if (!(await claimDelivery(database, key, 'welcome', groupOpenId))) return false
   try {
-    await sendQqGroupMessage(config, groupOpenId, qqWelcomeMessage(memberOpenId), eventId)
+    await sendQqGroupMarkdown(config, groupOpenId, qqWelcomeMessage(memberOpenId), eventId)
     return true
   } catch (error) {
     await releaseDelivery(database, key)

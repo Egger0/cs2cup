@@ -70,3 +70,16 @@ export function sendQqGroupMessage(
     ...(eventId ? { event_id: eventId } : {}),
   })
 }
+
+export function sendQqGroupMarkdown(
+  config: QqBotApiConfig,
+  groupOpenId: string,
+  content: string,
+  eventId?: string,
+) {
+  return qqBotApiRequest(config, `/groups/${encodeURIComponent(groupOpenId)}/messages`, 'POST', {
+    msg_type: 2,
+    markdown: { content },
+    ...(eventId ? { event_id: eventId } : {}),
+  })
+}

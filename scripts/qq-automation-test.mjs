@@ -52,8 +52,8 @@ try {
     .map(request => JSON.parse(request.init.body))
   assert.deepEqual(sentBodies, [
     {
-      content: qqWelcomeMessage('member-1'),
-      msg_type: 0,
+      msg_type: 2,
+      markdown: { content: qqWelcomeMessage('member-1') },
       event_id: 'member-event-1',
     },
     { content: '早安，宁理电竞社！今天记得签到哦', msg_type: 0 },
