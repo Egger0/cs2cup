@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { cloudflareBindings, cloudflareEnvironment } from '@/lib/cloudflare-bindings'
+import { sendQqWelcome } from '@/lib/qq-automation'
 import {
   checkInFromQq,
   linkQqAccountByUsername,
@@ -10,6 +11,7 @@ import {
 import {
   qqBotConfig,
   qqCommand,
+  qqGroupMemberAdd,
   qqGroupMessage,
   qqWebhookVerification,
   replyToQqGroup,
@@ -116,6 +118,19 @@ export async function POST(request: Request) {
     return new NextResponse('Forbidden', { status: 403 })
   if (!verifyQqWebhookSignature(request.headers, body, config.appSecret)) {
     return new NextResponse('Forbidden', { status: 403 })
+  }
+  const memberAdd = qqGroupMemberAdd(payload)
+  if (memberAdd) {
+    if (!config.allowedGroupOpenId || memberAdd.groupOpenId !== config.allowedGroupOpenId) {
+      return new NextResponse(null, { status: 204 })
+    }
+    try {
+      await sendQqWelcome(config, cloudflareBindings().db, memberAdd.groupOpenId, memberAdd.eventId)
+      return new NextResponse(null, { status: 204 })
+    } catch (error) {
+      console.error('[qq-bot] welcome message unavailable', error)
+      return new NextResponse('QQ bot unavailable', { status: 503 })
+    }
   }
   const message = qqGroupMessage(payload)
   if (!message) return new NextResponse(null, { status: 204 })

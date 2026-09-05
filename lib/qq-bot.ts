@@ -1,10 +1,9 @@
 import 'server-only'
 
 import { createPrivateKey, createPublicKey, sign, verify } from 'node:crypto'
+import { qqBotApiRequest, type QqBotApiConfig } from './qq-bot-api.ts'
 
-export interface QqBotConfig {
-  appId: string
-  appSecret: string
+export interface QqBotConfig extends QqBotApiConfig {
   allowedGroupOpenId: string | null
 }
 
@@ -16,17 +15,18 @@ export interface QqGroupMessage {
   content: string
 }
 
+export interface QqGroupMemberAdd {
+  eventId: string
+  groupOpenId: string
+  memberOpenId: string
+}
+
 export type QqCommand =
   | { kind: 'check_in' }
   | { kind: 'leaderboard' }
   | { kind: 'current_tournament' }
   | { kind: 'bind'; username: string }
   | { kind: 'unbind' }
-
-interface QqAccessToken {
-  value: string
-  expiresAt: number
-}
 
 interface UnknownRecord {
   [key: string]: unknown
@@ -38,8 +38,6 @@ interface QqBotEnvironment {
   QQ_BOT_ALLOWED_GROUP_OPEN_ID?: string
 }
 
-const TOKEN_ENDPOINT = 'https://bots.qq.com/app/getAppAccessToken'
-const API_BASE = 'https://api.sgroup.qq.com/v2'
 const FIVE_MINUTES_MS = 5 * 60 * 1000
 const COMMAND_PANEL_REMARK = 'nbt-qq-group-commands'
 const COMMAND_PANEL = {
@@ -52,8 +50,6 @@ const COMMAND_PANEL = {
   ],
   remark: COMMAND_PANEL_REMARK,
 }
-let cachedAccessToken: QqAccessToken | null = null
-
 function stringValue(value: unknown) {
   return typeof value === 'string' ? value : null
 }
@@ -160,6 +156,26 @@ export function qqGroupMessage(payload: unknown): QqGroupMessage | null {
   return { eventId, messageId, groupOpenId, memberOpenId, content }
 }
 
+export function qqGroupMemberAdd(payload: unknown): QqGroupMemberAdd | null {
+  const source = recordValue(payload)
+  if (!source) return null
+  const type = stringValue(source.t) ?? stringValue(source.type) ?? stringValue(source.eventType)
+  if (type !== 'GROUP_MEMBER_ADD') return null
+  const data = eventData(source)
+  const groupOpenId = data ? stringValue(data.group_openid) : null
+  const memberOpenId = data ? stringValue(data.member_openid) : null
+  const timestamp = data ? timestampValue(data.timestamp) : null
+  const eventId =
+    stringValue(source.id) ??
+    stringValue(source.event_id) ??
+    stringValue(source.eventId) ??
+    (groupOpenId && memberOpenId && timestamp
+      ? `GROUP_MEMBER_ADD:${groupOpenId}:${memberOpenId}:${timestamp}`
+      : null)
+  if (!eventId || !groupOpenId || !memberOpenId) return null
+  return { eventId, groupOpenId, memberOpenId }
+}
+
 export function qqCommand(content: string): QqCommand | null {
   const normalized = content
     .replace(/<@!?[^>]+>/g, '')
@@ -174,48 +190,13 @@ export function qqCommand(content: string): QqCommand | null {
   return normalized === '/解绑' ? { kind: 'unbind' } : null
 }
 
-async function accessToken(config: QqBotConfig, forceRefresh = false) {
-  const now = Date.now()
-  if (!forceRefresh && cachedAccessToken && cachedAccessToken.expiresAt > now + 60_000) {
-    return cachedAccessToken.value
-  }
-  const response = await fetch(TOKEN_ENDPOINT, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ appId: config.appId, clientSecret: config.appSecret }),
-  })
-  const payload = (await response.json().catch(() => null)) as {
-    access_token?: unknown
-    expires_in?: unknown
-  } | null
-  if (!response.ok || !payload || typeof payload.access_token !== 'string') {
-    throw new Error('QQ bot access token request failed')
-  }
-  const expiresIn = typeof payload.expires_in === 'number' ? payload.expires_in : 300
-  cachedAccessToken = {
-    value: payload.access_token,
-    expiresAt: now + Math.max(60, expiresIn) * 1000,
-  }
-  return cachedAccessToken.value
-}
-
-async function postGroupReply(
-  config: QqBotConfig,
-  message: QqGroupMessage,
-  content: string,
-  retry = true,
-) {
-  const token = await accessToken(config, !retry)
-  const response = await fetch(
-    `${API_BASE}/groups/${encodeURIComponent(message.groupOpenId)}/messages`,
-    {
-      method: 'POST',
-      headers: { authorization: `QQBot ${token}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ content, msg_type: 0, msg_id: message.messageId, msg_seq: 1 }),
-    },
+async function postGroupReply(config: QqBotConfig, message: QqGroupMessage, content: string) {
+  await qqBotApiRequest(
+    config,
+    `/groups/${encodeURIComponent(message.groupOpenId)}/messages`,
+    'POST',
+    { content, msg_type: 0, msg_id: message.messageId, msg_seq: 1 },
   )
-  if (response.status === 401 && retry) return postGroupReply(config, message, content, false)
-  if (!response.ok) throw new Error(`QQ group reply failed with ${response.status}`)
 }
 
 export function replyToQqGroup(config: QqBotConfig, message: QqGroupMessage, content: string) {
@@ -238,19 +219,10 @@ async function panelRequest(
   body?: unknown,
   retry = true,
 ) {
-  const token = await accessToken(config, !retry)
-  const response = await fetch(`${API_BASE}${path}`, {
-    method,
-    headers: {
-      authorization: `QQBot ${token}`,
-      ...(body ? { 'content-type': 'application/json' } : {}),
-    },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  })
-  if (response.status === 401 && retry) return panelRequest(config, path, method, body, false)
-  if (!response.ok) throw new Error(`QQ command panel request failed with ${response.status}`)
-  return response
+  return qqBotApiRequest(config, path, method, body, retry)
 }
+
+export { sendQqGroupMessage } from './qq-bot-api.ts'
 
 export async function syncQqGroupCommandPanel(config: QqBotConfig) {
   if (!config.allowedGroupOpenId) throw new Error('QQ allowed group is not configured')

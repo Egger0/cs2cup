@@ -1,10 +1,13 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "cs2cup-local-only",
-  "main": ".open-next/worker.js",
+  "main": "worker.ts",
   "compatibility_date": "2026-08-28",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "send_metrics": false,
+  "triggers": {
+    "crons": ["0 1 * * *"],
+  },
   "vars": {
     "NEXT_PUBLIC_SITE_URL": "http://localhost:3000",
     "REGISTRATION_CLIENT_IP_SOURCE": "x-real-ip",

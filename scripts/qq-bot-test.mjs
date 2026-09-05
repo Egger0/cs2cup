@@ -12,9 +12,11 @@ registerHooks({
 const {
   qqBotConfig,
   qqCommand,
+  qqGroupMemberAdd,
   qqGroupMessage,
   qqWebhookVerification,
   syncQqGroupCommandPanel,
+  sendQqGroupMessage,
   verifyQqWebhookSignature,
 } = await import('../lib/qq-bot.ts')
 
@@ -59,6 +61,30 @@ assert.deepEqual(
   },
 )
 assert.equal(qqGroupMessage({ t: 'GROUP_MESSAGE_CREATE', d: {} }), null)
+assert.deepEqual(
+  qqGroupMemberAdd({
+    id: 'event-2',
+    t: 'GROUP_MEMBER_ADD',
+    d: {
+      timestamp: 1_784_276_757,
+      group_openid: 'group-1',
+      member_openid: 'member-2',
+    },
+  }),
+  {
+    eventId: 'event-2',
+    groupOpenId: 'group-1',
+    memberOpenId: 'member-2',
+  },
+)
+assert.equal(
+  qqGroupMemberAdd({
+    t: 'GROUP_MEMBER_ADD',
+    d: { timestamp: 1_784_276_757, group_openid: 'group-1', member_openid: 'member-2' },
+  })?.eventId,
+  'GROUP_MEMBER_ADD:group-1:member-2:1784276757',
+)
+assert.equal(qqGroupMemberAdd({ t: 'GROUP_MEMBER_REMOVE', d: {} }), null)
 assert.equal(
   verifyQqWebhookSignature(
     new Headers({
@@ -134,6 +160,15 @@ try {
         request.init.body === JSON.stringify({ op: 'del', group_openids: ['old-group'] }),
     ),
   )
+  await sendQqGroupMessage(
+    { appId: 'app', appSecret: 'secret' },
+    'group-1',
+    '早安，宁理电竞社！今天记得签到哦',
+  )
+  assert.deepEqual(JSON.parse(requests.at(-1).init.body), {
+    content: '早安，宁理电竞社！今天记得签到哦',
+    msg_type: 0,
+  })
 } finally {
   globalThis.fetch = originalFetch
 }

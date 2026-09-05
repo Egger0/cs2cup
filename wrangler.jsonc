@@ -1,11 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "nbt",
-  "main": ".open-next/worker.js",
+  "main": "worker.ts",
   "minify": true,
   "upload_source_maps": true,
   "compatibility_date": "2026-08-28",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "triggers": {
+    "crons": ["0 1 * * *"],
+  },
   "vars": {
     "NEXT_PUBLIC_SITE_URL": "https://cn.nbtesportsclub.online",
     "REGISTRATION_CLIENT_IP_SOURCE": "cf-connecting-ip",
