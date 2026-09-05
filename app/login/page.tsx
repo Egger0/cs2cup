@@ -113,7 +113,7 @@ export default async function ParticipantLoginPage({
         <header className={styles.passHeader}>
           <p className={styles.serial}>ACCOUNT ACCESS / NLC—01</p>
           <h2 id="passkey-action-title">登录</h2>
-          <p>账号密码是默认方式；绑定过 Passkey 的账号也可使用设备快速确认。</p>
+          <p>登录后，继续填写报名或查看已保存的资料。</p>
           {!isStaffReturn ? (
             <Link
               href={registrationAuthHref('register', entrySlug)}

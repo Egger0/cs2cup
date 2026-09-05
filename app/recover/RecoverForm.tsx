@@ -15,12 +15,14 @@ function encodedForm(form: HTMLFormElement) {
 export function RecoverForm() {
   const [working, setWorking] = useState(false)
   const [error, setError] = useState('')
+  const [inputError, setInputError] = useState(false)
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (working) return
     setWorking(true)
     setError('')
+    setInputError(false)
     try {
       const response = await fetch('/api/auth/recovery-code', {
         method: 'POST',
@@ -37,6 +39,7 @@ export function RecoverForm() {
       } | null
       if (!response.ok || !payload?.redirectTo) {
         setError(payload?.error ?? '账号恢复暂时不可用，请稍后重试。')
+        setInputError(response.status === 400 || response.status === 401)
         return
       }
       window.location.assign(payload.redirectTo)
@@ -48,10 +51,29 @@ export function RecoverForm() {
   }
 
   return (
-    <form className={formStyles.passwordForm} onSubmit={submit}>
+    <form
+      className={formStyles.passwordForm}
+      onSubmit={submit}
+      aria-busy={working}
+      onChange={() => {
+        if (inputError) {
+          setError('')
+          setInputError(false)
+        }
+      }}
+    >
       <label className={formStyles.field}>
         <span>用户名</span>
-        <input name="username" autoComplete="username" maxLength={32} spellCheck={false} required />
+        <input
+          name="username"
+          autoComplete="username"
+          maxLength={32}
+          spellCheck={false}
+          disabled={working}
+          aria-invalid={inputError}
+          aria-describedby={error ? 'recovery-error' : undefined}
+          required
+        />
       </label>
       <label className={formStyles.field}>
         <span>恢复码</span>
@@ -61,14 +83,12 @@ export function RecoverForm() {
           maxLength={32}
           spellCheck={false}
           placeholder="XXXX-XXXX-XXXX-XXXX"
+          disabled={working}
+          aria-invalid={inputError}
+          aria-describedby={error ? 'recovery-error' : undefined}
           required
         />
       </label>
-      {error ? (
-        <p className={formStyles.formError} role="alert">
-          {error}
-        </p>
-      ) : null}
       <button className={formStyles.passwordButton} type="submit" disabled={working}>
         <span className={loginStyles.buttonCode} aria-hidden="true">
           RC
@@ -76,6 +96,15 @@ export function RecoverForm() {
         <span>{working ? '正在验证…' : '继续重设密码'}</span>
         <span aria-hidden="true">↗</span>
       </button>
+      {error ? (
+        <p
+          id="recovery-error"
+          className={inputError ? formStyles.formError : formStyles.formNotice}
+          role="alert"
+        >
+          {error}
+        </p>
+      ) : null}
     </form>
   )
 }

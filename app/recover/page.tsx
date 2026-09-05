@@ -53,14 +53,18 @@ export default async function RecoverPage({
         <header className={loginStyles.passHeader}>
           <p className={loginStyles.serial}>OFFLINE RECOVERY / NLC—01</p>
           <h2 id="recovery-form-title">验证恢复码</h2>
-          <p>输入用户名以及之前保存的一枚恢复码。</p>
+          <p>输入用户名，以及之前在「账号安全」中保存的一个备用恢复码。</p>
         </header>
         {entrySlug ? <RegistrationJourney slug={entrySlug} /> : null}
         <div className={loginStyles.loginControl}>
           <RecoverForm />
         </div>
         <footer className={loginStyles.passFooter}>
-          <p>仍然记得密码？</p>
+          <details className={loginStyles.recoveryHelp}>
+            <summary>没有保存恢复码？</summary>
+            <p>如果设置过通行密钥，可以返回登录，使用指纹、面容或设备解锁。</p>
+            <Link href="/about#join">仍无法登录？联系社团咨询 →</Link>
+          </details>
           <Link href={registrationAuthHref('login', entrySlug)} className={loginStyles.backLink}>
             <span aria-hidden="true">←</span> 返回登录
           </Link>

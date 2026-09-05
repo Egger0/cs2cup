@@ -36,6 +36,7 @@ export function PasswordLoginForm({
 }) {
   const [working, setWorking] = useState(false)
   const [error, setError] = useState(initialError ? FAILURE_COPY[initialError] : '')
+  const [inputError, setInputError] = useState(initialError === 'invalid')
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -43,6 +44,7 @@ export function PasswordLoginForm({
     const form = event.currentTarget
     setWorking(true)
     setError('')
+    setInputError(false)
     try {
       const response = await fetch('/api/auth/session', {
         method: 'POST',
@@ -59,6 +61,7 @@ export function PasswordLoginForm({
       } | null
       if (!response.ok || !payload?.redirectTo) {
         setError(payload?.error ?? FAILURE_COPY.setup)
+        setInputError(response.status === 401)
         return
       }
       window.location.assign(payload.redirectTo)
@@ -75,6 +78,13 @@ export function PasswordLoginForm({
       action="/api/auth/session"
       method="post"
       onSubmit={submit}
+      aria-busy={working}
+      onChange={() => {
+        if (inputError) {
+          setError('')
+          setInputError(false)
+        }
+      }}
     >
       <input type="hidden" name="redirectKey" value={redirectKey} />
       <input type="hidden" name="tournamentSlug" value={tournamentSlug} />
@@ -84,28 +94,50 @@ export function PasswordLoginForm({
         <input
           name="username"
           autoComplete="username"
+          autoCapitalize="none"
+          enterKeyHint="next"
           inputMode="text"
           maxLength={32}
           spellCheck={false}
+          disabled={working}
+          aria-invalid={inputError}
+          aria-describedby={error ? 'login-error' : undefined}
           required
         />
       </label>
       <label className={formStyles.field}>
         <span>密码</span>
-        <PasswordInput name="password" autoComplete="current-password" maxLength={1024} required />
+        <PasswordInput
+          name="password"
+          autoComplete="current-password"
+          maxLength={1024}
+          disabled={working}
+          aria-invalid={inputError}
+          aria-describedby={error ? 'login-error' : undefined}
+          required
+        />
       </label>
-      {error ? (
-        <p className={formStyles.formError} role="alert">
-          {error}
-        </p>
-      ) : null}
-      <button className={formStyles.passwordButton} type="submit" disabled={working}>
+      <button
+        className={formStyles.passwordButton}
+        type="submit"
+        disabled={working}
+        aria-label={working ? '正在登录' : '使用账号密码登录'}
+      >
         <span className={styles.buttonCode} aria-hidden="true">
           PW
         </span>
-        <span>{working ? '正在登录…' : '使用账号密码登录'}</span>
+        <span>{working ? '正在登录…' : '登录'}</span>
         <span aria-hidden="true">↗</span>
       </button>
+      {error ? (
+        <p
+          id="login-error"
+          className={inputError ? formStyles.formError : formStyles.formNotice}
+          role="alert"
+        >
+          {error}
+        </p>
+      ) : null}
       <Link
         className={formStyles.recoveryLink}
         href={registrationAuthHref('recover', tournamentSlug)}

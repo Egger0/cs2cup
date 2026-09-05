@@ -56,7 +56,9 @@ function RecoveryPanel({
 }) {
   return (
     <div className={recoveryStyles.recovery} data-code={code}>
-      <span className={recoveryStyles.recoverySignal}>{signal}</span>
+      <span className={recoveryStyles.recoverySignal} hidden>
+        {signal}
+      </span>
       <strong>{title}</strong>
       <p>{description}</p>
       {receiptPath ? (
@@ -249,7 +251,7 @@ export default function PasskeyLogin({
           <p>设备确认窗口已打开，请在系统界面中继续。</p>
         ) : null}
         {support === 'supported' && loginState === 'idle' && !failure ? (
-          <p>验证只会在系统界面中进行。</p>
+          <p>已设置过通行密钥？使用指纹、面容或设备解锁，无需输入密码。</p>
         ) : null}
       </div>
     </div>
