@@ -1,11 +1,23 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Image from 'next/image'
 import { Button, Empty } from '@/components/ui'
 import { photoUrl } from '@/lib/media'
+import { variantStorageKey } from '@/lib/photo-variants'
 import type { Photo } from '@/lib/types'
 import styles from './PosterWall.module.css'
+
+function displayKey(poster: Photo) {
+  const widest = poster.variantWidths.at(-1)
+  return widest ? variantStorageKey(poster.storageKey, widest) : poster.storageKey
+}
+
+function srcSetFor(poster: Photo) {
+  if (!poster.variantWidths.length) return undefined
+  return poster.variantWidths
+    .map(width => `${photoUrl(variantStorageKey(poster.storageKey, width))} ${width}w`)
+    .join(', ')
+}
 
 export interface Edition {
   key: string
@@ -57,21 +69,19 @@ export function PosterWall({
                   onClick={() => setActive(poster)}
                   aria-label={`放大查看 ${poster.caption || `${edition.name} 海报`}`}
                 >
-                  <Image
-                    src={photoUrl(poster.storageKey)}
+                  <img
+                    src={photoUrl(displayKey(poster))}
+                    srcSet={srcSetFor(poster)}
+                    sizes="(max-width: 720px) 100vw, 380px"
                     alt={poster.caption ?? `${edition.name} 海报`}
-                    unoptimized
                     width={poster.width}
                     height={poster.height}
-                    sizes="(max-width: 720px) 100vw, 380px"
-                    placeholder={poster.blurDataUrl ? 'blur' : 'empty'}
-                    blurDataURL={poster.blurDataUrl ?? undefined}
+                    loading="lazy"
+                    decoding="async"
+                    style={{ aspectRatio: `${poster.width} / ${poster.height}` }}
                   />
                   <span className={styles.caption}>
                     <span>{poster.caption ?? edition.name}</span>
-                    <span>
-                      {poster.width}×{poster.height}
-                    </span>
                   </span>
                 </button>
               ))}
@@ -93,13 +103,14 @@ export function PosterWall({
       >
         {active ? (
           <>
-            <Image
-              src={photoUrl(active.storageKey)}
+            <img
+              src={photoUrl(displayKey(active))}
+              srcSet={srcSetFor(active)}
+              sizes="94vw"
               alt={active.caption ?? ''}
-              unoptimized
               width={active.width}
               height={active.height}
-              sizes="94vw"
+              decoding="async"
             />
             <Button size="mini" className={styles.close} onClick={() => setActive(null)}>
               关闭

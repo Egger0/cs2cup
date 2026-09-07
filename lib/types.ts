@@ -117,6 +117,7 @@ export interface Photo {
   blurDataUrl: string | null
   caption: string | null
   sortOrder: number
+  variantWidths: number[]
 }
 
 export type VetoAction = 'ban' | 'pick' | 'decider'
