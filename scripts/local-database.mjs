@@ -10,6 +10,7 @@ const SEED_PATH = join(ROOT, 'cloudflare', 'fixtures', 'local-seed.sql')
 const STATE_ROOT = join(ROOT, '.local', 'cloudflare')
 const PERSIST_PATH = join(STATE_ROOT, 'v3')
 const COMMANDS = new Set(['migrate', 'seed', 'reset'])
+const FIXTURE_VARIANT_WIDTHS = [480, 960]
 const CREDENTIAL_VARIABLES = [
   'CLOUDFLARE_ACCOUNT_ID',
   'CLOUDFLARE_API_KEY',
@@ -62,6 +63,35 @@ async function seed(db, splitSqlQuery) {
   await db.batch(statements(db, splitSqlQuery, sql))
 }
 
+async function seedMedia(bucket, db) {
+  if (!bucket) throw new Error('The local R2 binding is missing')
+  const sharp = (await import('sharp')).default
+  const { results } = await db.prepare('SELECT storage_key, width, height FROM photo').all()
+
+  for (const photo of results) {
+    const widths = [photo.width, ...FIXTURE_VARIANT_WIDTHS]
+    for (const width of widths) {
+      const height = Math.max(1, Math.round((photo.height * width) / photo.width))
+      const body = await sharp({
+        create: {
+          width,
+          height,
+          channels: 3,
+          background: { r: 24, g: 26, b: 30 },
+          noise: { type: 'gaussian', mean: 128, sigma: 42 },
+        },
+      })
+        .webp({ quality: 82 })
+        .toBuffer()
+      const key =
+        width === photo.width
+          ? photo.storage_key
+          : photo.storage_key.replace(/\.webp$/, `.${width}.webp`)
+      await bucket.put(key, body, { httpMetadata: { contentType: 'image/webp' } })
+    }
+  }
+}
+
 const command = process.argv[2]
 if (!COMMANDS.has(command) || process.argv.length !== 3) {
   throw new Error('Usage: node scripts/local-database.mjs <migrate|seed|reset>')
@@ -85,7 +115,10 @@ try {
   const db = proxy.env.CS2CUP_DB
   if (!db) throw new Error('The local D1 binding is missing')
   await migrate(db, splitSqlQuery)
-  if (command !== 'migrate') await seed(db, splitSqlQuery)
+  if (command !== 'migrate') {
+    await seed(db, splitSqlQuery)
+    await seedMedia(proxy.env.CS2CUP_MEDIA, db)
+  }
   console.log(`Local database ${command} completed`)
 } finally {
   await proxy.dispose()

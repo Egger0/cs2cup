@@ -85,3 +85,16 @@ INSERT OR IGNORE INTO admin_account (
   1, 'local-admin', 'cs2cup-local-v1',
   'c04fc96b2aa5ff14335d19385244c15110ded8a1e5569066a5e54733c62a25a4'
 );
+
+INSERT OR IGNORE INTO tournament (
+  id, slug, title, game_id, season, edition, status, team_cap, champion_name
+) VALUES (
+  2, '2025-nlc', '2025 NLC 校园杯', 1, '2025', 0, 'finished', 8, '牛牛大大队'
+);
+
+INSERT OR IGNORE INTO photo (
+  id, tournament_id, storage_key, width, height, caption, sort_order, variant_widths
+) VALUES
+  (1, 2, '2025-nlc/fixture-poster.webp', 1600, 2263, '海报', 0, '[480,960]'),
+  (2, 2, '2025-nlc/fixture-arena.webp', 1920, 1080, '比赛实况', 1, '[480,960]'),
+  (3, 2, '2025-nlc/fixture-merch.webp', 1200, 1600, '官方周边', 2, '[480,960]');
