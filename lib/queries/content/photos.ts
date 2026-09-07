@@ -65,6 +65,8 @@ export function adminInsertPhoto(values: {
   height: number
   caption: string | null
   sortOrder: number
+  blurDataUrl: string | null
+  variantWidths: number[]
 }) {
   return adminMutation(() =>
     insertPrivateRows('photo', {
@@ -74,6 +76,8 @@ export function adminInsertPhoto(values: {
       height: values.height,
       caption: values.caption,
       sort_order: values.sortOrder,
+      blur_data_url: values.blurDataUrl,
+      variant_widths: JSON.stringify(values.variantWidths),
     }),
   )
 }

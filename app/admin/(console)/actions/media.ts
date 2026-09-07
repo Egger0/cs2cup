@@ -4,6 +4,7 @@ import { updateTag } from 'next/cache'
 import { requireAdmin } from '@/lib/auth'
 import { MIME_TO_EXT, imageSize, sniffMime } from '@/lib/image'
 import { createPhotoStorageKey } from '@/lib/photo-storage-key'
+import { VARIANT_WIDTHS, variantStorageKey } from '@/lib/photo-variants'
 import {
   adminDeletePhoto,
   adminGetPhoto,
@@ -47,10 +48,24 @@ export async function uploadPhoto(form: FormData) {
   const existing = await adminListPhotos()
   const mine = existing.filter(photo => photo.tournamentId === tournamentId)
   let key: string | null = null
+  const writtenKeys: string[] = []
 
   try {
     key = createPhotoStorageKey(tournament.slug, MIME_TO_EXT[mime] ?? 'bin')
     await putObject(key, buffer, mime)
+    writtenKeys.push(key)
+
+    const variantWidths: number[] = []
+    for (const width of VARIANT_WIDTHS) {
+      const variant = form.get(`variant${width}`)
+      if (!(variant instanceof File) || variant.size === 0) continue
+      const variantKey = variantStorageKey(key, width)
+      await putObject(variantKey, Buffer.from(await variant.arrayBuffer()), 'image/webp')
+      writtenKeys.push(variantKey)
+      variantWidths.push(width)
+    }
+
+    const blur = String(form.get('blurDataUrl') ?? '')
     await adminInsertPhoto({
       tournamentId,
       storageKey: key,
@@ -58,11 +73,13 @@ export async function uploadPhoto(form: FormData) {
       height: size.height,
       caption: String(form.get('caption') ?? '').trim() || null,
       sortOrder: mine.length,
+      blurDataUrl: blur.startsWith('data:image/') && blur.length <= 4096 ? blur : null,
+      variantWidths,
     })
   } catch (error) {
     console.error('photo upload failed', error)
-    if (key) {
-      await removeObject(key).catch(cleanupError =>
+    for (const written of writtenKeys) {
+      await removeObject(written).catch(cleanupError =>
         console.error('photo upload cleanup failed', cleanupError),
       )
     }

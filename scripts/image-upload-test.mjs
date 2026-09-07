@@ -25,6 +25,22 @@ assert.match(uploader, /catch \{/)
 assert.match(uploader, /已保留所选图片/)
 assert.match(uploader, /disabled=\{pending\}/)
 assert.match(uploader, /role=\{feedback\.ok \? 'status' : 'alert'\}/)
+assert.match(uploader, /renderImageVariants/)
+
+const uploadAction = await readFile(
+  new URL('../app/admin/(console)/actions/media.ts', import.meta.url),
+  'utf8',
+)
+assert.match(uploadAction, /variantStorageKey/)
+assert.match(uploadAction, /blurDataUrl/)
+assert.match(uploadAction, /variantWidths/)
+
+const photosQuery = await readFile(
+  new URL('../lib/queries/content/photos.ts', import.meta.url),
+  'utf8',
+)
+assert.match(photosQuery, /blur_data_url: values\.blurDataUrl/)
+assert.match(photosQuery, /variant_widths: JSON\.stringify\(values\.variantWidths\)/)
 
 const photoRow = await readFile(
   new URL('../app/admin/(console)/photos/PhotoRow.tsx', import.meta.url),

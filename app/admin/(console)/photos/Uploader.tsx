@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, Field } from '@/components/ui'
-import { normalizeImageFile } from '@/lib/client-image'
+import { renderImageVariants } from '@/lib/client-image'
 import type { Tournament } from '@/lib/types'
 import { uploadPhoto } from '../actions/media'
 import styles from '../admin.module.css'
@@ -40,7 +40,12 @@ export function Uploader({ tournaments }: { tournaments: Tournament[] }) {
         startTransition(async () => {
           let uploadStarted = false
           try {
-            formData.set('file', await normalizeImageFile(file))
+            const rendered = await renderImageVariants(file)
+            formData.set('file', rendered.base)
+            formData.set('blurDataUrl', rendered.blurDataUrl)
+            for (const variant of rendered.variants) {
+              formData.set(`variant${variant.width}`, variant.file)
+            }
             setPhase('正在上传…')
             uploadStarted = true
             const result = await uploadPhoto(formData)

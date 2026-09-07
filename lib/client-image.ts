@@ -34,17 +34,6 @@ async function encode(image: ImageBitmap, width: number, height: number, quality
   return { blob, canvas }
 }
 
-export async function normalizeImageFile(file: File) {
-  const image = await createImageBitmap(file)
-  try {
-    const size = fittedImageSize(image.width, image.height)
-    const rendered = await encode(image, size.width, size.height, 0.9)
-    return new File([rendered.blob], 'upload.webp', { type: 'image/webp' })
-  } finally {
-    image.close()
-  }
-}
-
 export async function renderImageVariants(file: File) {
   const image = await createImageBitmap(file)
   try {
