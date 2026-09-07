@@ -45,6 +45,12 @@ const rdbModule = dataModule(`
   export async function selectPrivateRow() {
     return globalThis.__mediaPrivate ? { id: 1 } : null
   }
+  export async function selectPublicRows() {
+    return globalThis.__mediaPublishedRows ?? []
+  }
+  export async function selectPrivateRows() {
+    return globalThis.__mediaPrivateRows ?? []
+  }
 `)
 const storageModule = dataModule(`
   export async function getObject() {
@@ -74,6 +80,9 @@ registerHooks({
       return { url: source('../lib/http-cache.ts'), shortCircuit: true }
     }
     if (specifier === '@/lib/rdb') return { url: rdbModule, shortCircuit: true }
+    if (specifier === '@/lib/photo-variants') {
+      return { url: source('../lib/photo-variants.ts'), shortCircuit: true }
+    }
     if (specifier === '@/lib/storage') return { url: storageModule, shortCircuit: true }
     try {
       return nextResolve(specifier, context)
@@ -251,9 +260,26 @@ try {
   assert.equal(publicPhoto.status, 200)
   assert.equal(globalThis.__mediaReads, 2)
 
-  for (const response of [denied, privatePhoto, publicPhoto]) {
+  for (const response of [denied, privatePhoto]) {
     assert.match(response.headers.get('cache-control') ?? '', /no-store/)
   }
+  assert.match(publicPhoto.headers.get('cache-control') ?? '', /immutable/)
+
+  globalThis.__mediaPublished = false
+  globalThis.__mediaPrivate = false
+  globalThis.__mediaPublishedRows = [{ storage_key: 'private/example.webp' }]
+  const variantRequest = new Request('http://localhost/media/private/example.960.webp')
+  const variantParams = { params: Promise.resolve({ key: ['private', 'example.960.webp'] }) }
+  const variantPhoto = await GET(variantRequest, variantParams)
+  assert.equal(variantPhoto.status, 200)
+  assert.match(variantPhoto.headers.get('cache-control') ?? '', /immutable/)
+
+  globalThis.__mediaPublishedRows = [{ storage_key: 'private/abc.webp' }]
+  const wildcardRequest = new Request('http://localhost/media/private/a_c.960.webp')
+  const wildcardParams = { params: Promise.resolve({ key: ['private', 'a_c.960.webp'] }) }
+  const wildcardPhoto = await GET(wildcardRequest, wildcardParams)
+  assert.equal(wildcardPhoto.status, 404)
+
   console.log('admin authorization session and media wiring tests passed')
 } finally {
   database.close()
