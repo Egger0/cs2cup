@@ -15,8 +15,8 @@ const BUDGET = {
 
 const PAGE_BUDGET = {
   '/archive': {
-    transferKb: 2400,
-    imageKb: 2100,
+    transferKb: 1200,
+    imageKb: 700,
   },
 }
 

@@ -47,6 +47,7 @@ interface PhotoRow {
   blur_data_url: string | null
   caption: string | null
   sort_order: number
+  variant_widths: string
 }
 
 interface MatchMapRow {
@@ -131,6 +132,15 @@ export async function getMatches(tournamentId: number): Promise<Match[]> {
   return rows.map(toMatch)
 }
 
+function parseVariantWidths(value: string) {
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed.filter(entry => Number.isInteger(entry) && entry > 0) : []
+  } catch {
+    return []
+  }
+}
+
 export async function getPhotos(tournamentId?: number): Promise<Photo[]> {
   const rows = await selectPublicRows<PhotoRow>('photo_public', {
     filters: tournamentId ? { tournament_id: `eq.${tournamentId}` } : undefined,
@@ -145,6 +155,7 @@ export async function getPhotos(tournamentId?: number): Promise<Photo[]> {
     blurDataUrl: row.blur_data_url,
     caption: row.caption,
     sortOrder: row.sort_order,
+    variantWidths: parseVariantWidths(row.variant_widths),
   }))
 }
 

@@ -20,10 +20,11 @@ try {
     guestbook_message: 1,
     match: 3,
     match_map: 1,
+    photo: 3,
     player: 20,
     post: 1,
     team: 4,
-    tournament: 1,
+    tournament: 2,
   }
 
   for (const [table, expected] of Object.entries(expectedCounts)) {
@@ -32,6 +33,11 @@ try {
   }
 
   assert.equal(database.prepare('SELECT slug FROM tournament WHERE id = 1').get().slug, '2026-nlc')
+
+  const photos = database.prepare('SELECT storage_key, variant_widths FROM photo ORDER BY id').all()
+  for (const photo of photos) {
+    assert.ok(JSON.parse(photo.variant_widths).length > 0, `${photo.storage_key} needs variants`)
+  }
 
   const rosters = database
     .prepare(

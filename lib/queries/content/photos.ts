@@ -6,6 +6,7 @@ import {
   insertPrivateRows,
   selectPrivateRow,
   selectPrivateRows,
+  updatePrivateRows,
 } from '../../rdb'
 import { adminMutation } from './shared'
 
@@ -18,6 +19,16 @@ interface PhotoRow {
   blur_data_url: string | null
   caption: string | null
   sort_order: number
+  variant_widths: string
+}
+
+function parseVariantWidths(value: string) {
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed.filter(entry => Number.isInteger(entry) && entry > 0) : []
+  } catch {
+    return []
+  }
 }
 
 const toAdminPhoto = (row: PhotoRow) => ({
@@ -28,6 +39,7 @@ const toAdminPhoto = (row: PhotoRow) => ({
   height: row.height,
   caption: row.caption,
   sortOrder: row.sort_order,
+  variantWidths: parseVariantWidths(row.variant_widths),
 })
 
 export async function adminListPhotos(): Promise<
@@ -39,6 +51,7 @@ export async function adminListPhotos(): Promise<
     height: number
     caption: string | null
     sortOrder: number
+    variantWidths: number[]
   }[]
 > {
   await requireAdmin()
@@ -65,6 +78,8 @@ export function adminInsertPhoto(values: {
   height: number
   caption: string | null
   sortOrder: number
+  blurDataUrl: string | null
+  variantWidths: number[]
 }) {
   return adminMutation(() =>
     insertPrivateRows('photo', {
@@ -74,7 +89,26 @@ export function adminInsertPhoto(values: {
       height: values.height,
       caption: values.caption,
       sort_order: values.sortOrder,
+      blur_data_url: values.blurDataUrl,
+      variant_widths: JSON.stringify(values.variantWidths),
     }),
+  )
+}
+
+export function adminAttachPhotoVariants(values: {
+  id: number
+  blurDataUrl: string | null
+  variantWidths: number[]
+}) {
+  return adminMutation(() =>
+    updatePrivateRows(
+      'photo',
+      {
+        blur_data_url: values.blurDataUrl,
+        variant_widths: JSON.stringify(values.variantWidths),
+      },
+      { filters: { id: `eq.${values.id}` } },
+    ),
   )
 }
 

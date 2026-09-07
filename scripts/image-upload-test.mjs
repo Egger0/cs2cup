@@ -1,11 +1,19 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
-import { fittedImageSize } from '../lib/client-image.ts'
+import { fittedImageSize, scaledImageSize } from '../lib/client-image.ts'
 
 assert.deepEqual(fittedImageSize(1280, 717), { width: 1280, height: 717 })
 assert.deepEqual(fittedImageSize(3472, 4624), { width: 1922, height: 2560 })
 assert.deepEqual(fittedImageSize(4624, 3472), { width: 2560, height: 1922 })
+
+assert.deepEqual(scaledImageSize(2560, 1440, 960), { width: 960, height: 540 })
+assert.deepEqual(scaledImageSize(1000, 2000, 480), { width: 480, height: 960 })
+assert.deepEqual(scaledImageSize(400, 300, 960), { width: 400, height: 300 })
+
+const clientImage = await readFile(new URL('../lib/client-image.ts', import.meta.url), 'utf8')
+assert.match(clientImage, /export async function renderImageVariants/)
+assert.match(clientImage, /blurDataUrl/)
 
 const uploader = await readFile(
   new URL('../app/admin/(console)/photos/Uploader.tsx', import.meta.url),
@@ -17,6 +25,33 @@ assert.match(uploader, /catch \{/)
 assert.match(uploader, /已保留所选图片/)
 assert.match(uploader, /disabled=\{pending\}/)
 assert.match(uploader, /role=\{feedback\.ok \? 'status' : 'alert'\}/)
+assert.match(uploader, /renderImageVariants/)
+
+const uploadAction = await readFile(
+  new URL('../app/admin/(console)/actions/media.ts', import.meta.url),
+  'utf8',
+)
+assert.match(uploadAction, /variantStorageKey/)
+assert.match(uploadAction, /blurDataUrl/)
+assert.match(uploadAction, /variantWidths/)
+
+const photosQuery = await readFile(
+  new URL('../lib/queries/content/photos.ts', import.meta.url),
+  'utf8',
+)
+assert.match(photosQuery, /blur_data_url: values\.blurDataUrl/)
+assert.match(photosQuery, /variant_widths: JSON\.stringify\(values\.variantWidths\)/)
+assert.match(photosQuery, /variantWidths: parseVariantWidths\(row\.variant_widths\)/)
+
+assert.match(uploadAction, /export async function attachPhotoVariants/)
+
+const backfill = await readFile(
+  new URL('../app/admin/(console)/photos/Backfill.tsx', import.meta.url),
+  'utf8',
+)
+assert.match(backfill, /renderImageVariants/)
+assert.match(backfill, /attachPhotoVariants/)
+assert.match(backfill, /disabled=\{pending\}/)
 
 const photoRow = await readFile(
   new URL('../app/admin/(console)/photos/PhotoRow.tsx', import.meta.url),

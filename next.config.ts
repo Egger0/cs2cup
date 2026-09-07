@@ -11,7 +11,6 @@ const PRIVATE_ROUTE_SOURCES = [
   '/invitations/:path*',
   '/login',
   '/me',
-  '/media/:path*',
   '/photos/:path*',
   '/registrations/:path*',
 ]

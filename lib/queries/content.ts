@@ -22,6 +22,7 @@ export {
   adminSaveTournament,
 } from './content/tournaments'
 export {
+  adminAttachPhotoVariants,
   adminDeletePhoto,
   adminGetPhoto,
   adminInsertPhoto,
