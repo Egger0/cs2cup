@@ -41,6 +41,17 @@ const photosQuery = await readFile(
 )
 assert.match(photosQuery, /blur_data_url: values\.blurDataUrl/)
 assert.match(photosQuery, /variant_widths: JSON\.stringify\(values\.variantWidths\)/)
+assert.match(photosQuery, /variantWidths: parseVariantWidths\(row\.variant_widths\)/)
+
+assert.match(uploadAction, /export async function attachPhotoVariants/)
+
+const backfill = await readFile(
+  new URL('../app/admin/(console)/photos/Backfill.tsx', import.meta.url),
+  'utf8',
+)
+assert.match(backfill, /renderImageVariants/)
+assert.match(backfill, /attachPhotoVariants/)
+assert.match(backfill, /disabled=\{pending\}/)
 
 const photoRow = await readFile(
   new URL('../app/admin/(console)/photos/PhotoRow.tsx', import.meta.url),

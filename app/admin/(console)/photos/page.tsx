@@ -2,6 +2,7 @@ import { Empty } from '@/components/ui'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { requireAdmin } from '@/lib/auth'
 import { adminListPhotos, adminListTournaments } from '@/lib/queries/content'
+import { Backfill } from './Backfill'
 import { PhotoRow } from './PhotoRow'
 import { Uploader } from './Uploader'
 import styles from '../admin.module.css'
@@ -32,6 +33,12 @@ export default async function AdminPhotosPage() {
           <Uploader tournaments={tournaments} />
         )}
       </section>
+
+      <Backfill
+        photos={photos
+          .filter(photo => photo.variantWidths.length === 0)
+          .map(photo => ({ id: photo.id, storageKey: photo.storageKey, caption: photo.caption }))}
+      />
 
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>已有素材 · {photos.length} 张</h2>
