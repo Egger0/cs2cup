@@ -70,9 +70,6 @@ export function csrfRequestAllowed(
     return exactHeaderOrigin(originHeader) === expected
   }
 
-  // Non-browser and older clients may omit Fetch Metadata and Origin. A full
-  // same-origin Referer is the only accepted fallback; Host and forwarded-host
-  // headers are intentionally not authority sources.
   const referer = exactRefererOrigin(request.headers.get('referer'))
   return referer === expected
 }

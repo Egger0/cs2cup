@@ -69,12 +69,10 @@ export {
 }
 
 export interface GetAuthContextOptions extends IdentityKernelDependencies {
-  /** Supplying token, including null, is the explicit transport seam for tests and non-HTTP jobs. */
   token?: string | null
 }
 
 export interface AuthorizeOptions extends IdentityKernelDependencies {
-  /** May strengthen but can never weaken the capability's built-in requirement. */
   assurance?: AssuranceRequirement
 }
 
@@ -125,10 +123,6 @@ export async function revokeSession(
   )
 }
 
-/**
- * A ceremony service batches this statement with its credential/intent transition and security
- * event. Calling it alone would violate the unified identity transaction contract.
- */
 export function sessionInsertStatement(database: IdentityDatabase, draft: SessionDraft) {
   return prepareSessionInsert(database, draft)
 }

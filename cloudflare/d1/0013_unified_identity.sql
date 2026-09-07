@@ -196,7 +196,6 @@ CREATE TABLE IF NOT EXISTS identity_verified_identity (
     ),
   identity_key_version INTEGER NOT NULL DEFAULT 1
     CHECK (typeof(identity_key_version) = 'integer' AND identity_key_version >= 1),
-  -- Versioned HMAC of the framed provider + issuer + subject identity key. The key is not in D1.
   identity_key_hash TEXT NOT NULL COLLATE BINARY
     CHECK (
       length(identity_key_hash) = 64
@@ -949,8 +948,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS identity_recovery_code_set_active_idx
 ON identity_recovery_code_set(account_id)
 WHERE status = 'active';
 
--- Building a set is a bounded, single-writer operation. This prevents abandoned or
--- concurrent generation attempts from accumulating multiple incomplete sets per account.
 CREATE UNIQUE INDEX IF NOT EXISTS identity_recovery_code_set_building_idx
 ON identity_recovery_code_set(account_id)
 WHERE status = 'building';
@@ -1039,7 +1036,6 @@ CREATE TABLE IF NOT EXISTS identity_recovery_code (
     REFERENCES identity_recovery_code_set(id) ON DELETE RESTRICT,
   ordinal INTEGER NOT NULL
     CHECK (typeof(ordinal) = 'integer' AND ordinal BETWEEN 0 AND 19),
-  -- Versioned HMAC-SHA-256; the key version is held by the parent set and the key is not in D1.
   verifier TEXT NOT NULL UNIQUE COLLATE BINARY
     CHECK (
       length(verifier) = 64
@@ -1320,7 +1316,6 @@ CREATE TABLE IF NOT EXISTS identity_auth_attempt_bucket (
       typeof(fingerprint_key_version) = 'integer'
       AND fingerprint_key_version BETWEEN 1 AND 255
     ),
-  -- Domain-separated HMAC of the normalized dimension value; never a raw identity or IP address.
   fingerprint_hash TEXT NOT NULL COLLATE BINARY
     CHECK (
       length(fingerprint_hash) = 64
@@ -1791,9 +1786,6 @@ CREATE INDEX IF NOT EXISTS identity_invitation_expiry_idx
 ON identity_access_invitation(expires_at)
 WHERE accepted_at IS NULL AND revoked_at IS NULL;
 
--- SQLite forbids non-deterministic wall-clock expressions in a partial index. An expired invitation
--- therefore keeps its uniqueness slot until the reissue command atomically closes it as expired and
--- inserts its replacement. This lookup keeps that close-and-reissue operation bounded.
 CREATE INDEX IF NOT EXISTS identity_invitation_target_expiry_idx
 ON identity_access_invitation(
   intended_identity_key_version,
@@ -2362,10 +2354,6 @@ BEGIN
   SELECT RAISE(ABORT, 'identity cutover state is monotonic');
 END;
 
--- SQLite's INSERT OR REPLACE conflict algorithm may delete the conflicting row without running
--- DELETE triggers when recursive_triggers is disabled (the default used by D1 clients). Reject every
--- insert that would collide with protected identity state before conflict handling can replace it.
--- Commands use explicit INSERT or compare-and-swap UPDATE statements; these tables do not use UPSERT.
 CREATE TRIGGER IF NOT EXISTS identity_account_insert_conflict_guard
 BEFORE INSERT ON identity_account
 WHEN EXISTS (

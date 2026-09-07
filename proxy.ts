@@ -5,8 +5,6 @@ export async function proxy(request: NextRequest) {
     return withPrivateNoStore(new NextResponse('not found', { status: 404 }))
   }
 
-  // D1-backed authorization runs in the admin server layout. Keep this proxy
-  // limited to the route that is intentionally retired so it stays Edge-safe.
   return NextResponse.next()
 }
 

@@ -19,11 +19,6 @@ export interface LegacySessionState {
   readonly participantTokenHash: string | null
 }
 
-/**
- * Reads both legacy cookies from the request that is about to mutate identity state.
- * The hashes are returned even for stale cookies so the final D1 write can defend
- * against the matching opposite session becoming valid after this initial read.
- */
 export async function legacySessionStateFromRequest(
   request: Pick<NextRequest, 'cookies'>,
   now = Date.now(),

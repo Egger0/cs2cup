@@ -1,7 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { CLUB_BRAND } from '@/lib/brand'
 
-// Metadata route revalidation must not write to the read-only OpenNext asset cache.
 export const dynamic = 'force-dynamic'
 
 export default function manifest(): MetadataRoute.Manifest {

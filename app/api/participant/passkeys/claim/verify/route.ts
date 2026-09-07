@@ -79,8 +79,6 @@ export async function POST(request: NextRequest) {
     }
     const info = verification.registrationInfo
     const session = await createParticipantSessionDraft()
-    // Prepare both cookies before the atomic write. A later response-construction
-    // failure therefore cannot leave a committed claim reported as a 5xx.
     const successResponse = clearCeremonyCookie(
       setParticipantSessionCookie(privateEmpty(), session.token),
     )

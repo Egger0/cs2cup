@@ -22,10 +22,6 @@ function hasUnpairedSurrogate(value: string) {
   return false
 }
 
-/**
- * NIST-style password policy: length and compromised-value screening, not composition rules.
- * Breached/context-specific password screening is deliberately performed by the server adapter.
- */
 export function evaluatePasswordPolicy(value: unknown): PasswordPolicyResult {
   if (typeof value !== 'string') return { ok: false, reason: 'invalid_type' }
   if (hasUnpairedSurrogate(value)) return { ok: false, reason: 'invalid_unicode' }

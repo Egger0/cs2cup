@@ -104,7 +104,6 @@ function bytesToHex(bytes: Uint8Array) {
 }
 
 async function sha1ForRangeLookup(value: string) {
-  // SHA-1 is required by the HIBP range protocol only; it is never used as a password verifier.
   const digest = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(value))
   return bytesToHex(new Uint8Array(digest))
 }
@@ -214,7 +213,6 @@ function comparable(value: string) {
     .replaceAll(/[^\p{L}\p{N}]+/gu, '')
 }
 
-/** Rejects account/site terms before the remote compromised-password check. */
 export function containsPasswordContext(normalizedPassword: string, terms: readonly string[]) {
   const password = comparable(normalizedPassword)
   return terms.some(term => {

@@ -181,9 +181,7 @@ export function ParticipantPasskeyClaim({
         return
       }
 
-      // The verification response establishes the participant session cookie.
-      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-      window.location.assign('/me')
+      window.location.assign(new URL('/me', window.location.origin))
     } catch {
       finishClaimFailure(passkeyClaimHttpFailure(requestStage, 0))
     }
@@ -209,9 +207,9 @@ export function ParticipantPasskeyClaim({
       })
       if (response.status === 401) {
         const separator = loginHref.includes('?') ? '&' : '?'
-        // A full navigation applies the expired-session cookie deletion before login renders.
-        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-        window.location.assign(`${loginHref}${separator}reason=expired`)
+        window.location.assign(
+          new URL(`${loginHref}${separator}reason=expired`, window.location.origin),
+        )
         return
       }
       if (response.status === 409) {
@@ -221,7 +219,6 @@ export function ParticipantPasskeyClaim({
       }
       if (response.status !== 204) throw new Error('attach request failed')
 
-      // A full navigation reads the newly attached entry from the server.
       window.location.assign(participantEntryAddedPath(teamId) ?? '/me')
     } catch {
       setAttachState('error')
@@ -241,7 +238,6 @@ export function ParticipantPasskeyClaim({
       if (response.status !== 204) throw new Error('participant logout failed')
 
       publishParticipantSessionEnded()
-      // A full navigation applies the cleared session cookie before login renders.
       window.location.assign(loginHref)
     } catch {
       switchInFlight.current = false

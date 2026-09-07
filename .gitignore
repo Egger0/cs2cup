@@ -21,7 +21,7 @@ next-env.d.ts
 *.tsbuildinfo
 cs2-cup.html
 egger/
-docs/superpowers/
+docs/
 migration-output/
 public/photos/
 output/playwright/

@@ -216,8 +216,6 @@ export default async function ParticipantAccountPage({
     <ParticipantSessionBoundary sessionRemainingMs={sessionRemainingMs}>
       <div className={styles.page}>
         <header className={styles.topbar}>
-          {/* Sensitive archive exits intentionally bypass the client route cache. */}
-          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a href="/" className={styles.brand}>
             <span aria-hidden="true">
               <Image src="/brand/club-mark.svg" alt="" width={28} height={28} priority />
@@ -276,7 +274,6 @@ export default async function ParticipantAccountPage({
               <p>REGISTRATION / EMPTY</p>
               <h2 id="empty-title">尚无已绑定的赛事报名</h2>
               <span>请从报名回执中的报名管理链接完成关联，之后记录会出现在这里。</span>
-              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
               <a href="/tournaments">浏览公开赛事</a>
             </section>
           )}

@@ -117,22 +117,10 @@ The identity browser flow covers membership review, saved registration drafts, a
 registrations, collaboration transfer, Passkey enrollment/sign-in, recovery codes, and session
 revocation against the same local Worker and D1 state.
 
-Repository documentation, configuration, comments, identifiers, and file names use English, except
-for explicitly localized product-copy specifications. User-facing copy may use Chinese. Source files
-are limited to 300 non-empty lines.
-
-## Architecture contracts
-
-- [`docs/brand-design.md`](./docs/brand-design.md) describes the public visual system, tournament
-  discovery, browser-local follows, branded QR sharing, metadata, and home-screen access.
-- [`docs/identity-architecture.md`](./docs/identity-architecture.md) defines the unified account,
-  authentication, session, authorization, recovery, migration, and identity UI contract.
-- [`docs/identity-stack-decision.md`](./docs/identity-stack-decision.md) assigns implementation
-  ownership and records the authentication-stack decision.
-- [`docs/identity-product-language.zh-CN.md`](./docs/identity-product-language.zh-CN.md) is the
-  localized identity terminology and interface-copy contract.
-- [`docs/performance-budget.md`](./docs/performance-budget.md) defines Worker and browser budgets and
-  explains which resources belong in the Worker, Static Assets, or R2.
+Source files carry no comments; naming and structure carry the meaning, and rule exceptions live in
+configuration rather than inline directives. Repository documentation, configuration, identifiers,
+and file names use English. User-facing copy may use Chinese. Source files are limited to 300
+non-empty lines. Design documents and implementation plans stay in the untracked `docs/`.
 
 ## Structure
 

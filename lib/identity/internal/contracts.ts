@@ -64,7 +64,6 @@ export type SessionAuthentication =
       recovery: { authIntentId: string; recoveryCodeId: string }
     }
   | {
-      /** Requires a consumed, approved assisted-recovery authorization in the database. */
       method: 'assisted_recovery'
       recovery: { authIntentId: string }
     }

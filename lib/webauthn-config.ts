@@ -39,7 +39,6 @@ function isDnsHostname(hostname: string) {
   )
 }
 
-/** Resolve only deployment-owned configuration, never request Host headers. */
 export function resolveWebAuthnConfig(
   trustedOrigin = process.env.NEXT_PUBLIC_SITE_URL,
 ): WebAuthnConfig {

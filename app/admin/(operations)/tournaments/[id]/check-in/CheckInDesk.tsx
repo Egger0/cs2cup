@@ -22,6 +22,7 @@ export function CheckInDesk({
 }) {
   const router = useRouter()
   const [teams, setTeams] = useState(initialTeams)
+  const [serverTeams, setServerTeams] = useState(initialTeams)
   const [refreshPending, startRefresh] = useTransition()
   const [keyword, setKeyword] = useState('')
   const [busyId, setBusyId] = useState<number | null>(null)
@@ -29,6 +30,12 @@ export function CheckInDesk({
   const [closed, setClosed] = useState(false)
   const writeInFlight = useRef(false)
   const refreshInFlight = useRef(false)
+
+  if (initialTeams !== serverTeams) {
+    setServerTeams(initialTeams)
+    setTeams(initialTeams)
+  }
+
   const query = keyword.trim().toLocaleLowerCase('zh-CN')
   const visibleTeams = teams.filter(team =>
     query
@@ -39,12 +46,6 @@ export function CheckInDesk({
       : true,
   )
   const checkedInCount = teams.filter(team => team.checkedInAt).length
-
-  useEffect(() => {
-    // The latest server projection wins after another operator changes the roster or check-in state.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTeams(initialTeams)
-  }, [initialTeams])
 
   useEffect(() => {
     refreshInFlight.current = refreshPending

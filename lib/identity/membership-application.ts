@@ -46,8 +46,6 @@ async function submitFrom(
   const digest = await membershipSubmissionDigest(normalized.value)
   const nextVersion = application.submission_version + 1
   try {
-    // Do not turn a stale revision into a silent zero-row UPDATE: the immutable retained id makes
-    // the row hit the revision trigger, which rolls back this command and its security event.
     await database.batch([
       database
         .prepare(

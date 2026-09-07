@@ -34,7 +34,6 @@ export async function installLoopbackRequestGuard(context) {
 
   await context.route('**/*', async route => {
     const url = route.request().url()
-    // WebKit routes local object URLs through the request guard as well.
     const source = url.startsWith('blob:') ? url.slice(5) : url
     if (isLoopbackRequest(source, new Set(['http:', 'https:']))) {
       await route.continue()

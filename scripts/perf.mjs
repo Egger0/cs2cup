@@ -3,7 +3,6 @@ import { installLoopbackRequestGuard, resolveE2EBaseUrl } from './loopback-url.m
 
 const BASE = resolveE2EBaseUrl()
 
-// Budgets keep roughly 15% headroom and retain the site's display font.
 const BUDGET = {
   transferKb: 700,
   jsKb: 180,
@@ -14,7 +13,6 @@ const BUDGET = {
   requests: 60,
 }
 
-// Keep the guarded archive ceiling until authorization-aware thumbnails replace originals.
 const PAGE_BUDGET = {
   '/archive': {
     transferKb: 2400,

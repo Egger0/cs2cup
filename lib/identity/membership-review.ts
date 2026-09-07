@@ -44,8 +44,6 @@ export async function claimMembershipApplication(
   if (application.revision !== input.revision) return { ok: false, reason: 'conflict' } as const
   if (application.status !== 'pending') return { ok: false, reason: 'invalid_state' } as const
   try {
-    // The application cannot be deleted, so targeting its immutable id lets the revision trigger
-    // fail stale claims atomically instead of allowing an unaudited zero-row CAS.
     await database.batch([
       database
         .prepare(

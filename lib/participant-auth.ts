@@ -70,8 +70,6 @@ export function clearParticipantSessionCookie(response: NextResponse) {
   return response
 }
 
-// Exported only so the legacy admin guard can compare both server-validated subjects without
-// creating an auth-module import cycle. Ordinary callers must use getCurrentParticipant().
 export const getCurrentLegacyParticipantSession = cache(
   async (): Promise<ParticipantIdentity | null> => {
     const token = (await cookies()).get(COOKIE_NAME)?.value

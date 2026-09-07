@@ -26,7 +26,6 @@ try {
   const probeName = 'feedback.' + Date.now()
   await username.fill(probeName)
   assert.equal(await page.getByLabel('显示名称', { exact: true }).getAttribute('required'), null)
-  // A deliberately compromised fixture value rejects before any account is created.
   await password.fill('password')
   await confirmation.fill('password')
   await page.evaluate(() => document.fonts.ready)

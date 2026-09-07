@@ -13,7 +13,6 @@ export function SiteHeaderLoader({
     let active = true
     let loaded: ComponentType<SiteHeaderProps> | null = null
     function enhance() {
-      // Do not replace a native navigation control while someone is using it.
       if (!active || !loaded || document.activeElement?.closest('[data-basic-site-header]')) {
         return
       }

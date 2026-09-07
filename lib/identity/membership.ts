@@ -162,8 +162,6 @@ export async function saveMembershipDraft(
        review_started_at = NULL,`
     : ''
   try {
-    // The retained row is targeted by immutable id/account without a revision predicate so a
-    // stale supplied revision reaches the DB trigger and aborts the whole audit batch.
     await database.batch([
       database
         .prepare(

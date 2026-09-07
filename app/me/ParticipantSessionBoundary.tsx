@@ -77,7 +77,6 @@ export function PrivateSessionBoundary({
   const sessionClock = useRef<SessionClock | null>(null)
 
   const scrub = useCallback((nextMode: Exclude<BoundaryMode, 'open'>) => {
-    // Synchronously remove the private subtree before navigation or BFCache can retain it.
     flushSync(() => setMode(nextMode))
   }, [])
 
@@ -172,8 +171,6 @@ export function PrivateSessionBoundary({
       return
     }
 
-    // The initial gate is only revealed after the session and history state pass pre-paint checks.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMode('open')
   }, [remainingSessionTime, returnPath, safeSessionEndDestination])
 
@@ -283,8 +280,6 @@ export function PrivateSessionBoundary({
               <button type="button" onClick={requestSignOut}>
                 重试安全退出
               </button>
-              {/* A full navigation keeps the private archive out of the client route cache. */}
-              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
               <a href="/">返回公开首页</a>
             </div>
           ) : null}

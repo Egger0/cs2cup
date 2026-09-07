@@ -46,9 +46,6 @@ export function normalizeRateLimitAddress(value: string) {
     return `${high >> 8}.${high & 0xff}.${low >> 8}.${low & 0xff}`
   }
 
-  // IPv6 privacy addresses commonly rotate the lower 64 bits. Limit the
-  // stable /64 network instead of allowing each temporary interface address
-  // to receive a fresh quota.
   return `${segments
     .slice(0, 4)
     .map(segment => segment.padStart(4, '0'))

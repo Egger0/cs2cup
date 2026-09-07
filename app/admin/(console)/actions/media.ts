@@ -82,7 +82,6 @@ export async function deletePhotoAndFile(id: number) {
   const photo = await adminGetPhoto(id)
   if (!photo) return { ok: false as const, error: '照片不存在或已被删除' }
 
-  // Delete the database row first so guarded media access stops even if object cleanup fails.
   try {
     await adminDeletePhoto(id)
   } catch (error) {

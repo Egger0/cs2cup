@@ -136,8 +136,6 @@ export async function createIdentityKernelFixture() {
     )
   assignment(opaque('R'), accountIds.owner, 'organizer', 'tournament', 71)
   assignment(opaque('S'), accountIds.manager, 'check_in_operator', 'tournament', 71)
-  // Schema tests cover the one-time legacy bootstrap. This isolated policy fixture needs an
-  // already-migrated owner so it can exercise the steady-state role-to-capability mapping.
   database.exec('DROP TRIGGER identity_initial_platform_owner_provenance_guard')
   assignment(opaque('T'), accountIds.platformOwner, 'platform_owner', 'platform')
   assignment(opaque('U'), accountIds.weakStaff, 'organizer', 'tournament', 71)

@@ -76,8 +76,6 @@ export default async function TournamentCheckInPage({
   const page = (
     <div className={styles.page}>
       <header className={styles.topbar}>
-        {/* Private workspaces use full navigations so cached content is never restored in place. */}
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
         <a href="/" className={styles.brand}>
           <Image src="/brand/club-mark.svg" alt="" width={34} height={34} priority />
           <span>
@@ -96,7 +94,6 @@ export default async function TournamentCheckInPage({
           <a href={isParticipant ? '/me' : '/admin'}>
             {isParticipant ? '返回我的赛事' : isUnified ? '返回工作区' : '返回管理台'}
           </a>
-          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a href="/" className={styles.publicLink}>
             公开网站
           </a>

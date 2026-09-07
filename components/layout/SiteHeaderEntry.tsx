@@ -22,8 +22,6 @@ export function SiteHeaderEntry(props: SiteHeaderProps) {
       fallback={
         <header className={styles.header} data-basic-site-header>
           <div className={styles.inner} data-layout-container>
-            {/* Native document navigation must not depend on a client chunk. */}
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a href="/" className={styles.brand}>
               <span className={styles.mark}>
                 <Image

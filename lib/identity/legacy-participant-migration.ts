@@ -128,8 +128,6 @@ export async function prepareLegacyParticipantMigration(
     )
     .bind(source.principal_id)
     .first<{ account_id: string }>()
-  // A mapping is the authority boundary. Retrying migration must never replay stale
-  // legacy grants or credentials over later changes made in the unified system.
   if (mapped) return { kind: 'mapped', accountId: mapped.account_id }
 
   const [occupied, credentialRows, entryRows, roleRows] = await Promise.all([

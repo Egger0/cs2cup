@@ -5,6 +5,6 @@
 node_modules/
 dist/
 migration-output/
-docs/images/
+docs/
 public/photos/
 THIRD_PARTY_NOTICES.md

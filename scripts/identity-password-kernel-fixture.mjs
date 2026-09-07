@@ -7,8 +7,6 @@ export function installPasswordKernelFixture({
   accountIds,
   passwordCredentialIds,
 }) {
-  // Enrollment provenance has its own schema suite. Authorization tests bypass only these
-  // enrollment insert guards, then retain the real credential CAS and session proof guards.
   database.exec(`
     DROP TRIGGER identity_self_registration_fresh_insert_guard;
     DROP TRIGGER identity_password_credential_fresh_insert_guard;

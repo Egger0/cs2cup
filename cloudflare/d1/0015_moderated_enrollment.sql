@@ -1,10 +1,3 @@
--- Self-service account creation, moderated membership, password authentication, and recovery.
---
--- This migration deliberately keeps request proofs, password material, and recovery authorizations
--- out of D1. Only hashes or one-way password verifiers are persisted.
-
--- `identity_reviewer` is a narrow platform role. It does not inherit general platform-owner
--- capabilities in application policy; it exists only for the identity moderation capability.
 DROP TRIGGER IF EXISTS identity_role_assignment_update_guard;
 DROP TRIGGER IF EXISTS identity_role_assignment_insert_conflict_guard;
 DROP INDEX IF EXISTS identity_role_active_platform_idx;
@@ -128,8 +121,6 @@ BEGIN
   SELECT RAISE(ABORT, 'role assignment insert conflict');
 END;
 
--- SQLite cannot add a checked enum value or a provenance column in place. Rebuild the session
--- table while preserving IDs, hashes, assurance, and all existing foreign-key relationships.
 PRAGMA foreign_keys = OFF;
 PRAGMA legacy_alter_table = ON;
 

@@ -27,6 +27,19 @@ const config = [
       'max-lines': ['error', { max: 300, skipBlankLines: true, skipComments: true }],
     },
   },
+  {
+    files: [
+      'app/admin/**/check-in/page.tsx',
+      'app/me/ParticipantSessionBoundary.tsx',
+      'app/me/page.tsx',
+      'components/layout/SiteHeaderEntry.tsx',
+    ],
+    rules: { '@next/next/no-html-link-for-pages': 'off' },
+  },
+  {
+    files: ['app/me/ParticipantSessionBoundary.tsx'],
+    rules: { 'react-hooks/set-state-in-effect': 'off' },
+  },
 ]
 
 export default config

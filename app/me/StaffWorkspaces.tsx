@@ -36,7 +36,6 @@ export function StaffWorkspaces({
       <ul>
         {workspaces.map(workspace => (
           <li key={workspace.id}>
-            {/* A full navigation keeps private operations out of the client route cache. */}
             <a href={`/admin/tournaments/${workspace.id}/check-in`}>
               <span className={styles.signal} aria-hidden="true" />
               <span className={styles.copy}>

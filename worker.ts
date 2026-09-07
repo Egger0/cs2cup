@@ -1,9 +1,6 @@
+import nextWorker from './.open-next/worker.js'
 import { sendQqMorning, type QqAutomationDatabase } from './lib/qq-automation'
 import type { QqBotApiConfig } from './lib/qq-bot-api'
-
-interface NextWorker {
-  fetch(request: Request, env: unknown, ctx: unknown): Promise<Response>
-}
 
 interface WorkerExecutionContext {
   waitUntil(promise: Promise<unknown>): void
@@ -15,12 +12,6 @@ interface WorkerEnvironment {
   QQ_BOT_APP_SECRET?: string
   QQ_BOT_ALLOWED_GROUP_OPEN_ID?: string
 }
-
-// OpenNext creates this module during `npm run cf:build`.
-// @ts-expect-error Generated OpenNext worker has no source declaration.
-import generatedWorker from './.open-next/worker.js'
-
-const nextWorker = generatedWorker as NextWorker
 
 function botConfig(environment: WorkerEnvironment): QqBotApiConfig | null {
   const appId = environment.QQ_BOT_APP_ID?.trim()

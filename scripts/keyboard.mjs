@@ -145,7 +145,6 @@ await Promise.all([
   page.waitForURL(url => new URL(url).searchParams.get('team') === selectedTeam),
   page.keyboard.press('Enter'),
 ])
-// The URL changes before the streamed schedule has replaced its old links.
 await page.waitForLoadState('networkidle')
 const keyboardScheduleLinks = page.locator('main a[href^="/tournaments/2026-nlc/matches/"]')
 check('Keyboard-filtered schedule exposes match links', (await keyboardScheduleLinks.count()) > 0)

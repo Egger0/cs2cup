@@ -6,8 +6,6 @@ export const metadata = {
   description: '第三届宁理杯捐赠鸣谢，记录每一份对比赛的支持。',
 }
 
-// Source: third-edition donation workbook, rows 2-7; only public recognition fields.
-// SonicZhan's amount was corrected to 1400 by the user on 2026-09-05.
 const DONATIONS = [
   { name: 'SonicZhan', date: '2025-03-12', amount: 1400 },
   { name: '我也想成为抖音高手', date: '2025-03-12', amount: 200 },

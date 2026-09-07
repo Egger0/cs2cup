@@ -870,7 +870,6 @@ BEGIN
   SELECT RAISE(ABORT, 'initial platform owner requires legacy admin bootstrap');
 END;
 
--- Reject INSERT OR REPLACE before SQLite can silently delete append-only or one-time state.
 CREATE TRIGGER identity_self_registration_insert_conflict_guard
 BEFORE INSERT ON identity_self_registration
 WHEN EXISTS (
