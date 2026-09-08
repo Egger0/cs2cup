@@ -84,12 +84,9 @@ try {
     'scripts/auth-feedback-browser.mjs',
     'scripts/identity-signup-browser.mjs',
     'scripts/admin-ui-browser.mjs',
-  ]
-  const identityScripts = [
     'scripts/perf.mjs',
-    'scripts/identity-migration-browser.mjs',
-    'scripts/identity-browser.mjs',
   ]
+  const identityScripts = ['scripts/identity-migration-browser.mjs', 'scripts/identity-browser.mjs']
   for (const script of smokeOnly ? smokeScripts : [...smokeScripts, ...identityScripts]) {
     run(process.execPath, [script], environment)
   }
