@@ -12,6 +12,7 @@ const publicRoutes = [
   ['tournament-detail', '/tournaments/2026-nlc'],
   ['tournament-schedule', '/tournaments/2026-nlc/schedule?state=all'],
   ['tournament-teams', '/tournaments/2026-nlc/teams'],
+  ['tournament-team', '/tournaments/2026-nlc/teams/FLC'],
   ['tournament-bracket', '/tournaments/2026-nlc/bracket'],
   ['tournament-results', '/tournaments/2026-nlc/results'],
   ['games', '/games'],

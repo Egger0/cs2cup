@@ -14,6 +14,8 @@ import {
   getTournament,
   safely,
 } from '@/lib/queries/public'
+import { cloudflareBindings } from '@/lib/cloudflare-bindings'
+import { rosterClaims } from '@/lib/queries/roster-claims'
 import styles from '@/components/domain/TeamProfile.module.css'
 import { PublicActions } from '@/components/share/PublicActions'
 import { publicMetadata } from '@/lib/public-metadata'
@@ -66,6 +68,8 @@ export default async function TeamPage({
     entry => entry.tag.toLowerCase() === decodeURIComponent(tag).toLowerCase(),
   )
   if (!team) notFound()
+
+  const claims = await safely(() => rosterClaims(cloudflareBindings().db, team.id), new Map())
 
   const matchIndex = indexMatches(matches)
   const teamIndex = indexTeams(teams)
@@ -147,6 +151,9 @@ export default async function TeamPage({
                   >
                     {player.nickname}
                   </div>
+                  {claims.get(player.id) ? (
+                    <div className={styles.playerAccount}>{claims.get(player.id)?.displayName}</div>
+                  ) : null}
                 </div>
               ))}
             </div>
