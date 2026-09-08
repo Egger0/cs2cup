@@ -286,7 +286,7 @@ button {
   z-index: 60;
   transform-origin: left;
   transform: scaleX(0);
-  background: linear-gradient(90deg, var(--ct), #8fc8fa);
+  background: linear-gradient(90deg, #3d9be9, #8fc8fa);
   pointer-events: none;
 }
 
