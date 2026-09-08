@@ -13,7 +13,6 @@ import {
 import { IDENTITY_SESSION_COOKIE_NAME } from './identity/internal/cookie.ts'
 import {
   resolveUnifiedConsolePermissions,
-  type AdminIdentity,
   type PlatformConsoleAccess,
   type PlatformConsoleIdentity,
   type UnifiedPlatformOwnerIdentity,
@@ -35,7 +34,6 @@ export {
   LegacySessionConflictError,
 } from './legacy-admin-session-issuer'
 export type {
-  AdminIdentity,
   PlatformConsoleAccess,
   PlatformConsoleCapability,
   PlatformConsoleIdentity,
@@ -90,12 +88,6 @@ export async function endLegacySessions() {
   })
 }
 
-const currentAdminCanManagePlatform = cache((adminId: number) =>
-  hasStaffCapability(cloudflareBindings().db, { kind: 'admin', adminId }, 'platform.manage', {
-    kind: 'platform',
-  }),
-)
-
 async function unifiedPlatformDecision(context: AuthenticatedAuthContext) {
   return authorizeIdentity(context, 'platform.configure', { kind: 'platform' })
 }
@@ -137,15 +129,6 @@ export const hasUnifiedPlatformOwnerProvisioned = cache(async () => {
   return row?.present === 1
 })
 
-export const getCurrentPlatformOwner = cache(async (): Promise<AdminIdentity | null> => {
-  const [admin, participant] = await Promise.all([
-    getCurrentAdminSessionIdentity(),
-    getCurrentLegacyParticipantSession(),
-  ])
-  if (!admin || participant || !(await currentAdminCanManagePlatform(admin.adminId))) return null
-  return { adminId: admin.adminId, uid: admin.uid }
-})
-
 export async function hasConflictingLegacySessions() {
   const [admin, participant] = await Promise.all([
     getCurrentAdminSessionIdentity(),
@@ -158,15 +141,11 @@ export async function hasCurrentLegacyAdminSession() {
   return Boolean(await getCurrentAdminSessionIdentity())
 }
 
-async function requireLegacyPlatformTransition(): Promise<never> {
-  const [admin, participant] = await Promise.all([
-    getCurrentAdminSessionIdentity(),
-    getCurrentLegacyParticipantSession(),
-  ])
-  if (!admin) redirect('/admin/login')
-  if (participant) redirect('/login?reason=conflict&reauth=admin')
-  if (!(await currentAdminCanManagePlatform(admin.adminId))) notFound()
-  redirect('/admin/bootstrap')
+async function requireUnifiedSignIn(): Promise<never> {
+  if (await getCurrentLegacyParticipantSession()) {
+    redirect('/login?reason=conflict&reauth=admin')
+  }
+  redirect('/login?redirectKey=workspaces')
 }
 
 export async function getCurrentTournamentStaffAccess(
@@ -241,16 +220,6 @@ export async function getCurrentTournamentStaffAccess(
     }
   }
 
-  if (admin) {
-    const actor: StaffActor = { kind: 'admin', adminId: admin.adminId }
-    if (await hasStaffCapability(db, actor, capability, resource, now)) {
-      return {
-        ok: true,
-        actor: { ...actor, uid: admin.uid, sessionExpiresAt: admin.sessionExpiresAt },
-      }
-    }
-  }
-
   return {
     ok: false,
     reason:
@@ -285,7 +254,7 @@ export async function requireAdmin(): Promise<PlatformConsoleIdentity> {
     }
     notFound()
   }
-  return requireLegacyPlatformTransition()
+  return requireUnifiedSignIn()
 }
 
 export async function requirePlatformConsole(): Promise<PlatformConsoleAccess> {
@@ -295,5 +264,5 @@ export async function requirePlatformConsole(): Promise<PlatformConsoleAccess> {
     if (access) return access
     notFound()
   }
-  return requireLegacyPlatformTransition()
+  return requireUnifiedSignIn()
 }

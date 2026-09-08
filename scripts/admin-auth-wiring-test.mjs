@@ -31,9 +31,6 @@ const identityKernelModule = dataModule(`
   }
 `)
 const mediaAuthModule = dataModule(`
-  export async function getCurrentPlatformOwner() {
-    return globalThis.__mediaPlatformOwner
-  }
   export async function getCurrentUnifiedPlatformOwner() {
     return globalThis.__mediaUnifiedPlatformOwner
   }
@@ -175,65 +172,21 @@ try {
 
   globalThis.__adminUnifiedContext = { kind: 'anonymous' }
   globalThis.__adminUnifiedDecision = { ok: false, reason: 'forbidden' }
-  const active = await authModule('active')
-  assert.deepEqual(await active.getCurrentPlatformOwner(), { adminId: 1, uid: 'owner' })
-  await assert.rejects(
-    () => active.requireAdmin(),
-    error => error.kind === 'redirect' && error.path === '/admin/bootstrap',
-  )
-
-  database.exec(`
-    SAVEPOINT mapped_admin_session;
-    INSERT INTO identity_account
-      (id, webauthn_user_handle, display_name, status, verification_state, created_at, updated_at)
-    VALUES ('${'M'.repeat(43)}', '${'H'.repeat(43)}', 'Migrated owner',
-            'active', 'verified', 1, 1);
-    INSERT INTO identity_legacy_subject_map
-      (subject_type, subject_id, account_id, source_revision, source_snapshot_hash,
-       migration_version, mapped_at)
-    VALUES ('admin_account', '1', '${'M'.repeat(43)}', 0, '${'a'.repeat(64)}', 1, 1);
-  `)
-  const mapped = await authModule('mapped')
-  assert.equal(await mapped.getCurrentPlatformOwner(), null)
-  await assert.rejects(
-    () => mapped.requireAdmin(),
-    error => error.kind === 'redirect' && error.path === '/admin/login',
-  )
-  database.exec('ROLLBACK TO mapped_admin_session; RELEASE mapped_admin_session')
-
-  database.exec('UPDATE platform_role_assignment SET revoked_at = granted_at WHERE admin_id = 1')
-  const revoked = await authModule('revoked')
-  assert.equal(await revoked.getCurrentPlatformOwner(), null)
-  await assert.rejects(
-    () => revoked.requireAdmin(),
-    error => error.kind === 'not-found',
-  )
-
-  database.exec(`
-    UPDATE platform_role_assignment
-    SET granted_at = 1, revoked_at = NULL, expires_at = 2
-    WHERE admin_id = 1
-  `)
-  const expired = await authModule('expired')
-  assert.equal(await expired.getCurrentPlatformOwner(), null)
-  await assert.rejects(
-    () => expired.requireAdmin(),
-    error => error.kind === 'not-found',
-  )
-
-  database.exec('DELETE FROM platform_role_assignment WHERE admin_id = 1')
-  const missing = await authModule('missing')
-  assert.equal(await missing.getCurrentPlatformOwner(), null)
-  await assert.rejects(
-    () => missing.requireAdmin(),
-    error => error.kind === 'not-found',
-  )
+  for (const label of ['active', 'revoked', 'expired', 'missing']) {
+    const legacy = await authModule(label)
+    assert.equal(legacy.getCurrentPlatformOwner, undefined)
+    await assert.rejects(
+      () => legacy.requireAdmin(),
+      error => error.kind === 'redirect' && error.path === '/login?redirectKey=workspaces',
+      `a legacy admin session must not reach the console (${label})`,
+    )
+  }
 
   globalThis.__adminAuthToken = null
   const anonymous = await authModule('anonymous')
   await assert.rejects(
     () => anonymous.requireAdmin(),
-    error => error.kind === 'redirect' && error.path === '/admin/login',
+    error => error.kind === 'redirect' && error.path === '/login?redirectKey=workspaces',
   )
 
   const { GET } = await import('../app/media/[...key]/route.ts')
@@ -241,7 +194,6 @@ try {
   const mediaParams = { params: Promise.resolve({ key: ['private', 'example.png'] }) }
   globalThis.__mediaPublished = false
   globalThis.__mediaPrivate = true
-  globalThis.__mediaPlatformOwner = null
   globalThis.__mediaUnifiedPlatformOwner = null
   globalThis.__mediaReads = 0
 
@@ -249,13 +201,13 @@ try {
   assert.equal(denied.status, 404)
   assert.equal(globalThis.__mediaReads, 0)
 
-  globalThis.__mediaPlatformOwner = { adminId: 1, uid: 'owner' }
+  globalThis.__mediaUnifiedPlatformOwner = { accountId: 'U'.repeat(43), uid: 'Unified Owner' }
   const privatePhoto = await GET(request, mediaParams)
   assert.equal(privatePhoto.status, 200)
   assert.equal(globalThis.__mediaReads, 1)
 
   globalThis.__mediaPublished = true
-  globalThis.__mediaPlatformOwner = null
+  globalThis.__mediaUnifiedPlatformOwner = null
   const publicPhoto = await GET(request, mediaParams)
   assert.equal(publicPhoto.status, 200)
   assert.equal(globalThis.__mediaReads, 2)

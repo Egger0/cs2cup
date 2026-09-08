@@ -1,5 +1,5 @@
 import { posix } from 'node:path'
-import { getCurrentPlatformOwner, getCurrentUnifiedPlatformOwner } from '@/lib/auth'
+import { getCurrentUnifiedPlatformOwner } from '@/lib/auth'
 import { PRIVATE_NO_STORE_HEADERS } from '@/lib/http-cache'
 import { parseVariantKey, variantStemMatches } from '@/lib/photo-variants'
 import { selectPrivateRow, selectPrivateRows, selectPublicRow, selectPublicRows } from '@/lib/rdb'
@@ -42,11 +42,8 @@ async function findPhoto(published: boolean, storageKey: string) {
 async function canReadPhoto(storageKey: string) {
   if (await findPhoto(true, storageKey)) return 'published' as const
 
-  const [admin, unifiedOwner] = await Promise.all([
-    getCurrentPlatformOwner().catch(() => null),
-    getCurrentUnifiedPlatformOwner().catch(() => null),
-  ])
-  if (!admin && !unifiedOwner) return null
+  const unifiedOwner = await getCurrentUnifiedPlatformOwner().catch(() => null)
+  if (!unifiedOwner) return null
 
   return (await findPhoto(false, storageKey)) ? ('private' as const) : null
 }

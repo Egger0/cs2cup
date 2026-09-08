@@ -98,28 +98,19 @@ try {
   )
 
   const owner = { kind: 'admin', adminId: 1 }
-  assert.equal(await hasStaffCapability(db, owner, 'platform.manage', platform, now), true)
-  for (const capability of STAFF_CAPABILITIES.filter(value => value !== 'platform.manage')) {
-    assert.equal(await hasStaffCapability(db, owner, capability, tournament(2), now), true)
-  }
-
-  database.exec(`
-    SAVEPOINT mapped_admin_authorization;
-    INSERT INTO identity_account
-      (id, webauthn_user_handle, display_name, status, verification_state, created_at, updated_at)
-    VALUES ('${'M'.repeat(43)}', '${'M'.repeat(43)}', 'Migrated owner',
-            'active', 'verified', 1, 1);
-    INSERT INTO identity_legacy_subject_map
-      (subject_type, subject_id, account_id, source_revision, source_snapshot_hash,
-       migration_version, mapped_at)
-    VALUES ('admin_account', '1', '${'M'.repeat(43)}', 0, '${'f'.repeat(64)}', 1, 1);
-  `)
-  assert.equal(await hasStaffCapability(db, owner, 'platform.manage', platform, now), false)
   assert.equal(
-    await hasStaffCapability(db, owner, 'tournament.check_in.write', tournament(2), now),
+    await hasStaffCapability(db, owner, 'platform.manage', platform, now),
     false,
+    'the legacy administrator actor must grant nothing',
   )
-  database.exec('ROLLBACK TO mapped_admin_authorization; RELEASE mapped_admin_authorization')
+  for (const capability of STAFF_CAPABILITIES) {
+    assert.equal(
+      await hasStaffCapability(db, owner, capability, tournament(2), now),
+      false,
+      `a legacy administrator actor must not hold ${capability}`,
+    )
+    assert.equal(await hasStaffCapability(db, owner, capability, platform, now), false)
+  }
 
   const checkIn = participant('a')
   for (const capability of [
@@ -194,7 +185,7 @@ try {
   assert.equal(
     await hasStaffCapability(db, owner, 'platform.manage', platform, now + 1),
     false,
-    'admin id 1 must not bypass a revoked assignment',
+    'a revoked legacy assignment must stay revoked',
   )
 
   for (const sql of [
