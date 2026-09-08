@@ -10,6 +10,7 @@ import { getAuthContext } from '@/lib/identity/kernel'
 import { AccountSignOut } from './AccountSignOut'
 import { MembershipPanel } from './MembershipPanel'
 import { ProfileNameForm } from './ProfileNameForm'
+import { PublicHandleForm } from './PublicHandleForm'
 import styles from './account.module.css'
 import { RegistrationJourney } from '@/components/domain/RegistrationJourney'
 import {
@@ -81,6 +82,7 @@ export default async function AccountPage({
                 {overview.account.username ? `@${overview.account.username}` : 'Passkey 迁移账号'}
               </span>
               <ProfileNameForm displayName={overview.account.displayName} />
+              <PublicHandleForm handle={overview.account.publicHandle} />
             </div>
             <aside>
               <small>当前会话</small>

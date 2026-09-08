@@ -12,7 +12,12 @@ export type MembershipApplicationState =
   | 'withdrawn'
 
 export interface AccountOverview {
-  readonly account: { id: string; displayName: string; username: string | null }
+  readonly account: {
+    id: string
+    displayName: string
+    username: string | null
+    publicHandle: string | null
+  }
   readonly membership: {
     status: 'approved' | 'suspended' | 'revoked' | null
     application: {
@@ -35,6 +40,7 @@ export interface AccountOverview {
 interface OverviewRow {
   id: string
   display_name: string
+  public_handle: string | null
   username: string | null
   membership_status: 'approved' | 'suspended' | 'revoked' | null
   application_id: string | null
@@ -69,7 +75,7 @@ export async function accountOverview(
 ): Promise<AccountOverview | null> {
   const row = await database
     .prepare(
-      `SELECT account.id, account.display_name, password.username,
+      `SELECT account.id, account.display_name, account.public_handle, password.username,
               membership.status AS membership_status,
               application.id AS application_id,
               application.identity_claim, application.contact,
@@ -128,7 +134,12 @@ export async function accountOverview(
         }
       : null
   return {
-    account: { id: row.id, displayName: row.display_name, username: row.username },
+    account: {
+      id: row.id,
+      displayName: row.display_name,
+      username: row.username,
+      publicHandle: row.public_handle,
+    },
     membership: { status: row.membership_status, application },
     security: {
       activePasskeys: Number(row.active_passkeys) || 0,
