@@ -1,0 +1,87 @@
+.section {
+  padding-block: var(--space-8) var(--space-8);
+}
+
+.entries {
+  display: grid;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: baseline;
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.entryMeta {
+  display: grid;
+  gap: 4px;
+}
+
+.season {
+  color: var(--muted);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+}
+
+.role {
+  color: var(--muted-2);
+  font-size: 0.72rem;
+}
+
+.tournament {
+  font-size: 1.02rem;
+  border-bottom: 1px solid transparent;
+}
+
+.tournament:hover {
+  border-bottom-color: var(--accent);
+}
+
+.team {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.team:hover {
+  color: var(--ink);
+}
+
+.tag {
+  color: var(--accent);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+}
+
+.nickname {
+  color: var(--ink);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.86rem;
+  justify-self: end;
+}
+
+@media (max-width: 760px) {
+  .entry {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .entryMeta {
+    grid-column: 1 / -1;
+    grid-auto-flow: column;
+    justify-content: start;
+    gap: var(--space-2);
+  }
+
+  .nickname {
+    grid-column: 2;
+  }
+}

@@ -62,11 +62,12 @@ export async function playerProfileByHandle(
     .bind(handle)
     .all<ProfileRow>()
 
-  if (results.length === 0) return null
+  const [first] = results
+  if (!first) return null
 
   return {
-    displayName: results[0].display_name,
-    handle: results[0].public_handle,
+    displayName: first.display_name,
+    handle: first.public_handle,
     entries: results
       .filter(row => row.tournament_slug && row.team_tag)
       .map(row => ({
