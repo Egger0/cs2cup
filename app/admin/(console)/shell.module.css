@@ -13,11 +13,17 @@
   --t: var(--admin-blue);
   --t-dim: rgba(109, 165, 211, 0.12);
   --surface: var(--admin-paper);
+  --bg: var(--admin-paper);
   --bg-2: var(--admin-paper-deep);
+  --void: #05070c;
   --line: var(--admin-line);
   --line-strong: var(--admin-line-strong);
+  --muted: var(--admin-muted);
+  --muted-2: var(--admin-muted);
+  --c4: #e5484d;
   min-height: 100svh;
   padding-bottom: 72px;
+  color: var(--ink);
   background:
     linear-gradient(90deg, rgba(241, 239, 232, 0.018) 1px, transparent 1px) 0 0 / 80px 80px,
     #171817;
