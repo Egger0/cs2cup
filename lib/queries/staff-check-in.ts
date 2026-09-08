@@ -27,6 +27,21 @@ interface CheckInTeamRow {
   checked_in_at: string | null
 }
 
+interface SeatRow {
+  player_id: number
+  team_id: number
+  nickname: string
+  is_substitute: number
+  holder: string | null
+}
+
+export interface TournamentCheckInSeat {
+  playerId: number
+  nickname: string
+  isSubstitute: boolean
+  holder: string | null
+}
+
 export interface TournamentCheckInTeam {
   id: number
   tournamentId: number
@@ -35,6 +50,7 @@ export interface TournamentCheckInTeam {
   captain: string
   dept: string | null
   checkedInAt: string | null
+  seats: TournamentCheckInSeat[]
 }
 
 export type ParticipantCheckInWorkspace = TournamentRow
@@ -73,7 +89,7 @@ export interface TournamentCheckInDesk {
   teams: TournamentCheckInTeam[]
 }
 
-function checkInTeam(row: CheckInTeamRow): TournamentCheckInTeam {
+function checkInTeam(row: CheckInTeamRow, seats: TournamentCheckInSeat[]): TournamentCheckInTeam {
   return {
     id: row.id,
     tournamentId: row.tournament_id,
@@ -82,6 +98,7 @@ function checkInTeam(row: CheckInTeamRow): TournamentCheckInTeam {
     captain: row.captain,
     dept: row.dept,
     checkedInAt: row.checked_in_at,
+    seats,
   }
 }
 
@@ -140,10 +157,39 @@ export async function getTournamentCheckInDesk(
   ])
 
   if (!tournament) return null
+
+  const seatResult = await db
+    .prepare(
+      `SELECT player.id AS player_id, player.team_id AS team_id, player.nickname AS nickname,
+              player.is_substitute AS is_substitute, account.display_name AS holder
+       FROM player
+       JOIN team ON team.id = player.team_id
+       LEFT JOIN identity_registration_membership AS membership
+         ON membership.player_id = player.id
+        AND membership.relationship = 'player'
+        AND membership.revoked_at IS NULL
+       LEFT JOIN identity_account AS account ON account.id = membership.account_id
+       WHERE team.tournament_id = ? AND team.status = 'approved'
+       ORDER BY player.sort_order ASC, player.id ASC`,
+    )
+    .bind(tournamentId)
+    .all<SeatRow>()
+
+  const seatsByTeam = new Map<number, TournamentCheckInSeat[]>()
+  for (const row of seatResult.results) {
+    const seats = seatsByTeam.get(row.team_id) ?? []
+    seats.push({
+      playerId: row.player_id,
+      nickname: row.nickname,
+      isSubstitute: row.is_substitute === 1,
+      holder: row.holder,
+    })
+    seatsByTeam.set(row.team_id, seats)
+  }
   return {
     actor,
     tournament,
-    teams: teamResult.results.map(checkInTeam),
+    teams: teamResult.results.map(row => checkInTeam(row, seatsByTeam.get(row.id) ?? [])),
   }
 }
 

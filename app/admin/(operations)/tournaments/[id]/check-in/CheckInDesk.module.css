@@ -281,3 +281,59 @@
     transition: none;
   }
 }
+
+.seats {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.seatsToggle {
+  justify-self: start;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+.seatsError {
+  color: var(--c4);
+  font-size: 0.72rem;
+}
+
+.seatsList {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+}
+
+.seatsList li {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.seatsList span {
+  display: grid;
+  gap: 2px;
+}
+
+.seatsList strong {
+  font-size: 0.78rem;
+}
+
+.seatsList small {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.seatsList form {
+  display: flex;
+  gap: 6px;
+}

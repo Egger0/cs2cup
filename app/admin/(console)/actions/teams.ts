@@ -6,7 +6,10 @@ import {
   requireAdmin,
   TournamentStaffAccessError,
 } from '@/lib/auth'
+import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { isIsoInstant } from '@/lib/datetime'
+import { getAuthContext } from '@/lib/identity/kernel'
+import { claimRosterSeat } from '@/lib/identity/roster-claim'
 import { assignTeamSeed, removeTeam, setTeamCheckedIn, setTeamStatus } from '@/lib/queries/admin'
 import type { TeamStatus } from '@/lib/types'
 import { writeError } from './_errors'
@@ -127,4 +130,54 @@ export async function deleteTeam(id: number, tournamentId: number) {
   }
   updateTag(`teams:${tournamentId}`)
   return { ok: true as const }
+}
+
+export async function confirmRosterSeat(
+  tournamentId: number,
+  playerId: number,
+  username: string,
+): Promise<{ ok: boolean; holder?: string; error?: string }> {
+  try {
+    await getCurrentTournamentStaffAccess(tournamentId, 'tournament.check_in.write')
+  } catch (error) {
+    if (error instanceof TournamentStaffAccessError) {
+      return { ok: false, error: '没有本赛事的签到权限。' }
+    }
+    throw error
+  }
+  const context = await getAuthContext()
+  if (context.kind !== 'authenticated') return { ok: false, error: '请重新登录后再试。' }
+
+  const database = cloudflareBindings().db
+  const target = await database
+    .prepare(
+      `SELECT account.id AS id, account.display_name AS display_name
+       FROM identity_account AS account
+       JOIN identity_password_credential AS credential ON credential.account_id = account.id
+       WHERE credential.username = ? AND account.status = 'active'`,
+    )
+    .bind(username.trim())
+    .first<{ id: string; display_name: string }>()
+  if (!target) return { ok: false, error: '找不到这个用户名对应的账号。' }
+
+  const claim = await claimRosterSeat(database, {
+    playerId,
+    accountId: target.id,
+    authorisedByAccountId: context.account.id,
+    reason: 'Verified in person at check-in',
+    now: Date.now(),
+  })
+  if (!claim.ok) {
+    return {
+      ok: false,
+      error: {
+        not_authorised: '没有确认这个席位的权限。',
+        seat_taken: '这个席位已经由其他账号认领。',
+        seat_missing: '找不到这个席位。',
+        self_authorised: '不能把席位确认给自己。',
+      }[claim.reason],
+    }
+  }
+  updateTag(`check-in-${tournamentId}`)
+  return { ok: true, holder: target.display_name }
 }

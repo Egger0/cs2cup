@@ -7,6 +7,7 @@ import { updateTeamCheckIn } from '@/app/admin/(console)/actions/teams'
 import { Badge, Button, Empty, Field } from '@/components/ui'
 import { formatSiteTime } from '@/lib/datetime'
 import type { TournamentCheckInTeam } from '@/lib/queries/staff-check-in'
+import { CheckInSeats } from './CheckInSeats'
 import styles from './CheckInDesk.module.css'
 
 const AUTO_REFRESH_MS = 15_000
@@ -241,6 +242,11 @@ export function CheckInDesk({
                 >
                   {isBusy ? '正在记录…' : team.checkedInAt ? '取消签到' : '确认签到'}
                 </Button>
+                <CheckInSeats
+                  tournamentId={tournamentId}
+                  seats={team.seats}
+                  disabled={busyId !== null || refreshPending}
+                />
               </li>
             )
           })}

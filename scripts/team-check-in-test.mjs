@@ -53,8 +53,24 @@ registerHooks({
     }
     if (specifier === 'next/cache') return { url: cacheModule, shortCircuit: true }
     if (specifier === './_errors') return { url: errorsModule, shortCircuit: true }
-    if (specifier === './cloudflare-bindings' || specifier === '../../cloudflare-bindings') {
+    if (
+      specifier === './cloudflare-bindings' ||
+      specifier === '../../cloudflare-bindings' ||
+      specifier === '@/lib/cloudflare-bindings'
+    ) {
       return { url: bindingsModule, shortCircuit: true }
+    }
+    if (specifier === '@/lib/identity/kernel') {
+      return {
+        url: 'data:text/javascript,export async function getAuthContext(){return globalThis.__teamCheckInAuthContext ?? { kind: "anonymous" }}',
+        shortCircuit: true,
+      }
+    }
+    if (specifier === '@/lib/identity/roster-claim') {
+      return {
+        url: 'data:text/javascript,export async function claimRosterSeat(){return globalThis.__teamCheckInClaim ?? { ok: false, reason: "not_authorised" }}',
+        shortCircuit: true,
+      }
     }
     try {
       return nextResolve(specifier, context)

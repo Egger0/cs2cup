@@ -169,6 +169,7 @@ try {
     'dept',
     'id',
     'name',
+    'seats',
     'tag',
     'tournamentId',
   ])
@@ -178,6 +179,13 @@ try {
     .map(query => query.sql)
     .join('\n')
   assert.doesNotMatch(deskQueries, /contact|note|management|player|seed|SELECT\s+\*/i)
+  const seatQuery = d1.queries[2]?.sql ?? ''
+  assert.match(seatQuery, /FROM player/i, 'the desk reads roster seats in its own query')
+  assert.doesNotMatch(
+    seatQuery,
+    /contact|note|management|seed|SELECT\s+\*/i,
+    'the seat query must not widen what the desk fetches',
+  )
   assert.match(deskQueries, /status = 'approved'/)
 
   globalThis.__staffQueryDenied = true
