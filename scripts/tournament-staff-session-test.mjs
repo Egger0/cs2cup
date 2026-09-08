@@ -155,8 +155,9 @@ try {
 
   globalThis.__staffSessionCookies = { cs2cup_admin: adminToken }
   const ownerAccess = await access(2)
-  assert.equal(ownerAccess.ok, true)
-  assert.equal(ownerAccess.actor.kind, 'admin')
+  assert.equal(ownerAccess.ok, false, 'a legacy admin cookie must not grant tournament work')
+  assert.equal(ownerAccess.reason, 'forbidden')
+  assert.equal(ownerAccess.hadAdminCookie, true)
 
   globalThis.__staffSessionCookies = {
     '__Host-cs2cup_participant': token('A'),
@@ -175,9 +176,9 @@ try {
     cs2cup_admin: adminToken,
   }
   assert.equal(
-    (await access(1)).actor.kind,
-    'admin',
-    'an expired participant session cannot mask owner',
+    (await access(1)).reason,
+    'forbidden',
+    'an expired participant session plus a legacy admin cookie grants nothing',
   )
 
   globalThis.__staffSessionCookies = { '__Host-cs2cup_participant': token('A') }

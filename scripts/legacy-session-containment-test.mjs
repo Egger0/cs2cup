@@ -170,11 +170,6 @@ try {
     () => participantAuth.requireParticipant(),
     error => error.kind === 'redirect' && error.path === '/login?reason=conflict',
   )
-  assert.equal(
-    await auth.getCurrentPlatformOwner(),
-    null,
-    'admin surfaces must reject a second authenticated participant subject',
-  )
   await assert.rejects(
     () => auth.requireAdmin(),
     error => error.kind === 'redirect' && error.path === '/login?reason=conflict&reauth=admin',
