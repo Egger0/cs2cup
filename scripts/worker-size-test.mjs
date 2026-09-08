@@ -2,7 +2,8 @@ import { execFile } from 'node:child_process'
 import { access } from 'node:fs/promises'
 import { promisify } from 'node:util'
 
-const MAX_GZIP_KIB = 2300
+const LIMIT_KIB = 65536
+const MAX_UPLOAD_KIB = 8192
 const run = promisify(execFile)
 const wrangler = 'node_modules/wrangler/bin/wrangler.js'
 
@@ -19,17 +20,22 @@ const { stdout, stderr } = await run(
   },
 )
 const output = `${stdout}\n${stderr}`
-const match = output.match(/gzip:\s*([\d.]+)\s*KiB/i)
+const match = output.match(/Total Upload:\s*([\d.]+)\s*KiB/i)
 
 if (!match) {
   process.stderr.write(output)
-  throw new Error('Wrangler did not report a gzip bundle size')
+  throw new Error('Wrangler did not report an upload size')
 }
 
-const gzipKiB = Number(match[1])
-if (!Number.isFinite(gzipKiB)) throw new Error('Wrangler reported an invalid gzip bundle size')
+const uploadKiB = Number(match[1])
+if (!Number.isFinite(uploadKiB)) throw new Error('Wrangler reported an invalid upload size')
 
-console.log(`Worker gzip size: ${gzipKiB.toFixed(2)} KiB / ${MAX_GZIP_KIB} KiB budget`)
-if (gzipKiB > MAX_GZIP_KIB) {
-  throw new Error(`Worker exceeds the project budget by ${(gzipKiB - MAX_GZIP_KIB).toFixed(2)} KiB`)
+const share = ((uploadKiB / LIMIT_KIB) * 100).toFixed(1)
+console.log(
+  `Worker upload: ${uploadKiB.toFixed(2)} KiB / ${MAX_UPLOAD_KIB} KiB budget (${share}% of the ${LIMIT_KIB} KiB platform limit)`,
+)
+if (uploadKiB > MAX_UPLOAD_KIB) {
+  throw new Error(
+    `Worker exceeds the project budget by ${(uploadKiB - MAX_UPLOAD_KIB).toFixed(2)} KiB`,
+  )
 }
