@@ -41,7 +41,16 @@ for (const path of PAGES) {
   const response = await page.goto(BASE + path, { waitUntil: 'domcontentloaded' })
   if (!response?.ok()) throw new Error(`${path} returned HTTP ${response?.status() ?? 'unknown'}`)
   await page.waitForTimeout(1200)
+  await page.evaluate(() => document.fonts.ready)
   await page.evaluate(() => {
+    for (const animation of document.getAnimations()) {
+      const iterations = animation.effect?.getComputedTiming().iterations ?? 1
+      if (Number.isFinite(iterations)) animation.finish()
+      else {
+        animation.pause()
+        animation.currentTime = 0
+      }
+    }
     document.querySelectorAll('[data-rise]').forEach(el => {
       el.style.setProperty('animation', 'none', 'important')
       el.style.setProperty('opacity', '1', 'important')
