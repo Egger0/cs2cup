@@ -14,19 +14,12 @@ export interface UnifiedConsolePermissions {
   readonly hasTournamentWork: boolean
 }
 
-export interface AdminIdentity {
-  readonly adminId: number
-  readonly uid: string
-}
-
 export interface UnifiedPlatformOwnerIdentity {
   readonly accountId: string
   readonly uid: string
 }
 
-export type PlatformConsoleIdentity =
-  | ({ kind: 'unified' } & UnifiedPlatformOwnerIdentity)
-  | ({ kind: 'legacy' } & AdminIdentity)
+export type PlatformConsoleIdentity = { kind: 'unified' } & UnifiedPlatformOwnerIdentity
 
 export type PlatformConsoleAccess = PlatformConsoleIdentity & UnifiedConsolePermissions
 

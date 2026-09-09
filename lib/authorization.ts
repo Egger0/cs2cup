@@ -17,9 +17,7 @@ export const STAFF_CAPABILITIES = [
 export type StaffCapability = (typeof STAFF_CAPABILITIES)[number]
 export type TournamentStaffCapability = Exclude<StaffCapability, 'platform.manage'>
 export type StaffRole = 'platform_owner' | 'organizer' | 'referee' | 'check_in_operator'
-export type StaffActor =
-  | { kind: 'admin'; adminId: number }
-  | { kind: 'participant'; principalId: string }
+export type StaffActor = { kind: 'participant'; principalId: string }
 export type StaffResource = { kind: 'platform' } | { kind: 'tournament'; tournamentId: number }
 
 interface AuthorizationStatement {
@@ -63,7 +61,7 @@ function validRequest(
     return false
   }
   if (resource.kind === 'tournament' && !validId(resource.tournamentId)) return false
-  return actor.kind === 'admin' ? validId(actor.adminId) : PARTICIPANT_ID.test(actor.principalId)
+  return PARTICIPANT_ID.test(actor.principalId)
 }
 
 function validId(value: number) {
@@ -89,28 +87,6 @@ export async function hasStaffCapability(
   now = Date.now(),
 ) {
   if (!validRequest(actor, capability, resource, now)) return false
-
-  if (actor.kind === 'admin') {
-    if (!staffRoleAllows('platform_owner', capability)) return false
-    const row = await db
-      .prepare(
-        `SELECT 1 AS allowed
-         FROM platform_role_assignment
-         WHERE admin_id = ?
-           AND role = 'platform_owner'
-           AND revoked_at IS NULL
-           AND (expires_at IS NULL OR expires_at > ?)
-           AND NOT EXISTS (
-             SELECT 1 FROM identity_legacy_subject_map AS migrated
-             WHERE migrated.subject_type = 'admin_account'
-               AND migrated.subject_id = CAST(platform_role_assignment.admin_id AS TEXT)
-           )
-         LIMIT 1`,
-      )
-      .bind(actor.adminId, now)
-      .first<{ allowed: number }>()
-    return row?.allowed === 1
-  }
 
   if (resource.kind !== 'tournament') return false
   const roles = participantRolesForCapability(capability as TournamentStaffCapability)
