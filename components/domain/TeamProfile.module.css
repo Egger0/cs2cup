@@ -211,3 +211,11 @@
     transform: none;
   }
 }
+
+.playerAccount {
+  color: var(--muted-2);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+}

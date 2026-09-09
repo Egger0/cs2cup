@@ -16,6 +16,7 @@ import {
   RegistrationManagementError,
   saveAccountManagedRegistration,
 } from '@/lib/queries/registration-management'
+import { claimRosterSeat } from '@/lib/identity/roster-claim'
 import { parseRegistrationForm } from '@/lib/registration-form'
 
 export interface RegistrationActionResult {
@@ -167,4 +168,44 @@ export async function deleteAccountRegistration(teamId: number): Promise<Registr
   } catch (error) {
     return workflowFailure(error)
   }
+}
+
+export async function assignRosterSeat(
+  teamId: number,
+  playerId: number,
+  username: string,
+): Promise<RegistrationActionResult> {
+  const context = await getAuthContext()
+  if (context.kind !== 'authenticated') {
+    return { ok: false, reauthenticate: true, error: '请先登录后再指派席位。' }
+  }
+  const database = cloudflareBindings().db
+  const target = await database
+    .prepare(
+      `SELECT account.id AS id FROM identity_account AS account
+       JOIN identity_password_credential AS credential ON credential.account_id = account.id
+       WHERE credential.username = ? AND account.status = 'active'`,
+    )
+    .bind(username.trim())
+    .first<{ id: string }>()
+  if (!target) return { ok: false, error: '找不到这个用户名对应的账号。' }
+
+  const claim = await claimRosterSeat(database, {
+    playerId,
+    accountId: target.id,
+    authorisedByAccountId: context.account.id,
+    reason: 'Captain assigned the roster seat',
+    now: Date.now(),
+  })
+  if (!claim.ok) {
+    const message = {
+      not_authorised: '只有本队报名的持有者可以指派席位。',
+      seat_taken: '这个席位已经由其他账号认领。',
+      seat_missing: '找不到这个席位。',
+      self_authorised: '不能把席位指派给自己。',
+    }[claim.reason]
+    return { ok: false, error: message }
+  }
+  updateTag(`registration-${teamId}`)
+  return { ok: true, teamId }
 }

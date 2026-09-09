@@ -14,6 +14,8 @@ import {
   RegistrationManagementError,
 } from '@/lib/queries/registration-management'
 import { RegistrationAccessPanel } from '../RegistrationAccessPanel'
+import { RosterSeatPanel } from '../RosterSeatPanel'
+import { rosterClaims } from '@/lib/queries/roster-claims'
 import styles from './registration.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -55,6 +57,7 @@ export default async function AccountRegistrationPage({
     registration.relationship === 'owner'
       ? await registrationAccessOverview(database, context, teamId)
       : { managers: [], invitations: [] }
+  const claims = await rosterClaims(database, teamId)
   const deadline = registration.tournament.regDeadline
     ? formatSiteDateTime(registration.tournament.regDeadline)
     : null
@@ -123,6 +126,16 @@ export default async function AccountRegistrationPage({
               </div>
             )}
           </section>
+
+          <RosterSeatPanel
+            teamId={teamId}
+            seats={registration.team.players.map(player => ({
+              playerId: player.id,
+              nickname: player.nickname,
+              isSubstitute: player.isSubstitute,
+              holder: claims.get(player.id)?.displayName ?? null,
+            }))}
+          />
 
           <RegistrationAccessPanel
             teamId={teamId}
