@@ -88,7 +88,7 @@
     "test:poster-wall": "node scripts/poster-wall-test.mjs",
     "test:colour-token": "node scripts/colour-token-test.mjs",
     "test:roster-identity-schema": "node scripts/roster-identity-schema-test.mjs",
-    "test:roster-claim": "node --conditions=react-server --experimental-strip-types scripts/roster-claim-test.mjs",
+    "test:roster-claim": "node --conditions=react-server --experimental-strip-types scripts/roster-claim-test.mjs && node --conditions=react-server --experimental-strip-types scripts/roster-claim-acceptance-test.mjs",
     "test:public-handle-schema": "node scripts/public-handle-schema-test.mjs",
     "test:public-handle": "node --conditions=react-server --experimental-strip-types scripts/public-handle-test.mjs",
     "test:player-profile": "node --experimental-strip-types scripts/player-profile-test.mjs"

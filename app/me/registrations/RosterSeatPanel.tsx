@@ -31,7 +31,11 @@ export function RosterSeatPanel({ teamId, seats }: { teamId: number; seats: Rost
     }
     startTransition(async () => {
       const result = await assignRosterSeat(teamId, playerId, username)
-      setFeedback(result.ok ? null : (result.error ?? '指派失败，请稍后再试。'))
+      setFeedback(
+        result.ok
+          ? '已发送席位邀请，等待对方在“我的赛事”中确认。'
+          : (result.error ?? '邀请失败，请稍后再试。'),
+      )
       if (result.ok) {
         setActive(null)
         router.refresh()
@@ -44,7 +48,7 @@ export function RosterSeatPanel({ teamId, seats }: { teamId: number; seats: Rost
       <div className={styles.eyebrow}>ROSTER / 席位</div>
       <h2>队员席位</h2>
       <p className={styles.lede}>
-        指派后，这名队员的账号与这个席位关联，赛事记录会计入他的个人页。本站不会发送认领链接。
+        填写用户名后会向该账号发送席位邀请；只有对方登录确认，赛事记录才会计入他的个人页。
       </p>
       {feedback ? <p className={styles.error}>{feedback}</p> : null}
       <ul className={styles.people}>
@@ -61,12 +65,12 @@ export function RosterSeatPanel({ teamId, seats }: { teamId: number; seats: Rost
               <form onSubmit={event => submit(event, seat.playerId)} className={styles.inviteForm}>
                 <input name="username" placeholder="队员用户名" autoComplete="off" />
                 <Button type="submit" size="mini" disabled={pending}>
-                  指派
+                  发送邀请
                 </Button>
               </form>
             ) : (
               <Button size="mini" variant="ghost" onClick={() => setActive(seat.playerId)}>
-                指派账号
+                邀请队员
               </Button>
             )}
           </li>

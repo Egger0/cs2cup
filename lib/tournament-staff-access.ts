@@ -1,5 +1,4 @@
 export type TournamentStaffIdentity =
-  | { kind: 'admin'; adminId: number; uid: string; sessionExpiresAt: number }
   | { kind: 'participant'; principalId: string; sessionExpiresAt: number }
   | { kind: 'unified'; accountId: string; uid: string; sessionExpiresAt: number }
 

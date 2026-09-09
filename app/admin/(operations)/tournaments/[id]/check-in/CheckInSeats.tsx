@@ -17,14 +17,13 @@ export function CheckInSeats({
   disabled: boolean
 }) {
   const [open, setOpen] = useState(false)
-  const [held, setHeld] = useState<Record<number, string>>({})
   const [active, setActive] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
   if (seats.length === 0) return null
 
-  const holderOf = (seat: TournamentCheckInSeat) => held[seat.playerId] ?? seat.holder
+  const holderOf = (seat: TournamentCheckInSeat) => seat.holder
   const remaining = seats.filter(seat => !holderOf(seat)).length
 
   const submit = (event: FormEvent<HTMLFormElement>, playerId: number) => {
@@ -36,10 +35,9 @@ export function CheckInSeats({
     }
     startTransition(async () => {
       const result = await confirmRosterSeat(tournamentId, playerId, username)
-      if (result.ok && result.holder) {
-        setHeld(current => ({ ...current, [playerId]: result.holder as string }))
+      if (result.ok) {
         setActive(null)
-        setError(null)
+        setError('已发送席位邀请，等待该账号在“我的赛事”中确认。')
       } else {
         setError(result.error ?? '确认失败，请稍后再试。')
       }
@@ -69,7 +67,7 @@ export function CheckInSeats({
                     <form onSubmit={event => submit(event, seat.playerId)}>
                       <input name="username" placeholder="用户名" autoComplete="off" />
                       <Button type="submit" size="mini" disabled={pending || disabled}>
-                        确认
+                        发送邀请
                       </Button>
                     </form>
                   ) : (
