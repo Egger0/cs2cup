@@ -16,7 +16,7 @@ import {
   RegistrationManagementError,
   saveAccountManagedRegistration,
 } from '@/lib/queries/registration-management'
-import { claimRosterSeat } from '@/lib/identity/roster-claim'
+import { acceptRosterClaimRequest, claimRosterSeat } from '@/lib/identity/roster-claim'
 import { parseRegistrationForm } from '@/lib/registration-form'
 
 export interface RegistrationActionResult {
@@ -201,6 +201,7 @@ export async function assignRosterSeat(
     const message = {
       not_authorised: '只有本队报名的持有者可以指派席位。',
       seat_taken: '这个席位已经由其他账号认领。',
+      seat_pending: '这个席位已经在等待其他账号确认。',
       seat_missing: '找不到这个席位。',
       self_authorised: '不能把席位指派给自己。',
     }[claim.reason]
@@ -208,4 +209,29 @@ export async function assignRosterSeat(
   }
   updateTag(`registration-${teamId}`)
   return { ok: true, teamId }
+}
+
+export async function acceptRosterSeatInvitation(
+  requestId: string,
+): Promise<RegistrationActionResult> {
+  const session = await authenticated()
+  if (!session) return { ok: false, reauthenticate: true, error: '请重新登录后再试。' }
+  try {
+    const accepted = await acceptRosterClaimRequest(session.database, session.context, requestId)
+    if (!accepted.ok) {
+      return {
+        ok: false,
+        error: {
+          not_authorised: '当前账号不能接受这个席位邀请。',
+          seat_taken: '这个席位已经由其他账号认领。',
+          seat_pending: '这个席位正在等待确认。',
+          seat_missing: '这个席位邀请不存在、已过期或已经处理。',
+          self_authorised: '当前账号不能接受这个席位邀请。',
+        }[accepted.reason],
+      }
+    }
+    return { ok: true }
+  } catch (error) {
+    return workflowFailure(error)
+  }
 }

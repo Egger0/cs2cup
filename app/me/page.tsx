@@ -11,6 +11,7 @@ import {
   listIncomingRegistrationInvitations,
   listRegistrationDrafts,
 } from '@/lib/identity/registration-workflow'
+import { listIncomingRosterClaimRequests } from '@/lib/identity/roster-claim'
 import { participantSessionRemainingMs, requireParticipant } from '@/lib/participant-auth'
 import { parsePageNumber } from '@/lib/pagination'
 import { participantEntryAddedId } from '@/lib/participant-return'
@@ -34,6 +35,7 @@ import { NextMatchBrief } from './NextMatchBrief'
 import { PassReference } from './PassReference'
 import { ParticipantSessionBoundary, ParticipantSignOut } from './ParticipantSessionBoundary'
 import { RegistrationInvitations } from './RegistrationInvitations'
+import { RosterClaimRequests } from './RosterClaimRequests'
 import { StaffWorkspaces } from './StaffWorkspaces'
 
 export const dynamic = 'force-dynamic'
@@ -62,17 +64,19 @@ async function UnifiedAccountEvents({
       return undefined
     },
   )
-  const [entries, invitations, drafts, workspacePage, nextMatch] = await Promise.all([
-    listAccountTournamentRegistrations(database, context, now),
-    listIncomingRegistrationInvitations(database, context, now),
-    listRegistrationDrafts(database, context, now),
-    listCurrentUnifiedTournamentWorkspaces({
-      checkInOnly: true,
-      limit: STAFF_PAGE_SIZE,
-      offset: (staffPage - 1) * STAFF_PAGE_SIZE,
-    }),
-    nextMatchRequest,
-  ])
+  const [entries, invitations, rosterClaimRequests, drafts, workspacePage, nextMatch] =
+    await Promise.all([
+      listAccountTournamentRegistrations(database, context, now),
+      listIncomingRegistrationInvitations(database, context, now),
+      listIncomingRosterClaimRequests(database, context, now),
+      listRegistrationDrafts(database, context, now),
+      listCurrentUnifiedTournamentWorkspaces({
+        checkInOnly: true,
+        limit: STAFF_PAGE_SIZE,
+        offset: (staffPage - 1) * STAFF_PAGE_SIZE,
+      }),
+      nextMatchRequest,
+    ])
   const staffPages = Math.max(1, Math.ceil(workspacePage.total / STAFF_PAGE_SIZE))
   if (staffPage > staffPages) redirect(staffPages === 1 ? '/me' : `/me?staffPage=${staffPages}`)
   const hasApprovedEntry = entries.some(entry => entry.team.status === 'approved')
@@ -107,6 +111,7 @@ async function UnifiedAccountEvents({
         </div>
 
         <RegistrationInvitations items={invitations} />
+        <RosterClaimRequests items={rosterClaimRequests} />
 
         <StaffWorkspaces
           workspaces={workspacePage.workspaces}

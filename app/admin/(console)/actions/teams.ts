@@ -151,13 +151,13 @@ export async function confirmRosterSeat(
   const database = cloudflareBindings().db
   const target = await database
     .prepare(
-      `SELECT account.id AS id, account.display_name AS display_name
+      `SELECT account.id AS id
        FROM identity_account AS account
        JOIN identity_password_credential AS credential ON credential.account_id = account.id
        WHERE credential.username = ? AND account.status = 'active'`,
     )
     .bind(username.trim())
-    .first<{ id: string; display_name: string }>()
+    .first<{ id: string }>()
   if (!target) return { ok: false, error: '找不到这个用户名对应的账号。' }
 
   const claim = await claimRosterSeat(database, {
@@ -173,11 +173,12 @@ export async function confirmRosterSeat(
       error: {
         not_authorised: '没有确认这个席位的权限。',
         seat_taken: '这个席位已经由其他账号认领。',
+        seat_pending: '这个席位已经在等待其他账号确认。',
         seat_missing: '找不到这个席位。',
         self_authorised: '不能把席位确认给自己。',
       }[claim.reason],
     }
   }
   updateTag(`check-in-${tournamentId}`)
-  return { ok: true, holder: target.display_name }
+  return { ok: true }
 }

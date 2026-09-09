@@ -127,6 +127,7 @@ export async function createUnifiedIdentitySchemaFixture() {
     'identity_registration_membership',
     'identity_registration_token_redemption',
     'identity_role_assignment',
+    'identity_roster_claim_request',
     'identity_security_event',
     'identity_self_registration',
     'identity_session',

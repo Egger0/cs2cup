@@ -94,8 +94,9 @@ try {
     reason: 'Captain confirmed at registration',
     now: 100,
   })
-  assert.equal(captainClaim.ok, true, 'the captain may confirm a seat on their own entry')
-  assert.match(captainClaim.membershipId, /^[A-Za-z0-9_-]{43}$/)
+  assert.equal(captainClaim.ok, true, 'the captain may invite a player to claim their own seat')
+  assert.match(captainClaim.requestId, /^[A-Za-z0-9_-]{43}$/)
+  assert.equal(rows(), 1, 'an invitation must not grant the player membership before acceptance')
 
   const staffClaim = await claimRosterSeat(db, {
     playerId: 2,
@@ -104,7 +105,7 @@ try {
     reason: 'Verified at check-in',
     now: 100,
   })
-  assert.equal(staffClaim.ok, true, 'check-in staff may confirm a seat')
+  assert.equal(staffClaim.ok, true, 'check-in staff may invite a player to confirm a seat')
 
   assert.deepEqual(
     await claimRosterSeat(db, {
@@ -136,7 +137,7 @@ try {
       reason: 'Second claimant',
       now: 200,
     }),
-    { ok: false, reason: 'seat_taken' },
+    { ok: false, reason: 'seat_pending' },
   )
 
   assert.deepEqual(
@@ -158,8 +159,8 @@ try {
     reason: 'Captain confirmed at registration',
     now: 300,
   })
-  assert.deepEqual(repeated, captainClaim, 'a repeated claim returns the original membership')
-  assert.equal(rows(), before, 'a repeated claim must not insert a second row')
+  assert.deepEqual(repeated, { ok: false, reason: 'seat_pending' })
+  assert.equal(rows(), before, 'a repeated invitation must not insert a player membership')
 
   console.log('roster claim authorisation tests passed')
 } finally {

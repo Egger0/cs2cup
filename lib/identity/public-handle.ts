@@ -54,9 +54,10 @@ export async function setPublicHandle(
   }
 
   const writeNonce = createOpaqueToken()
-  await database
-    .prepare(
-      `UPDATE identity_account
+  try {
+    await database
+      .prepare(
+        `UPDATE identity_account
        SET public_handle = ?, updated_at = ?, revision = revision + 1, write_nonce = ?
        WHERE id = ? AND status = 'active'
          AND EXISTS (
@@ -66,9 +67,15 @@ export async function setPublicHandle(
              AND session.security_version = identity_account.security_version
              AND session.idle_expires_at > ? AND session.absolute_expires_at > ?
          )`,
-    )
-    .bind(normalised, now, writeNonce, context.account.id, context.session.id, now, now)
-    .run()
+      )
+      .bind(normalised, now, writeNonce, context.account.id, context.session.id, now, now)
+      .run()
+  } catch (error) {
+    if (normalised && error instanceof Error && /(?:unique|constraint)/i.test(error.message)) {
+      return { ok: false, reason: 'taken' }
+    }
+    throw error
+  }
 
   const stored = await database
     .prepare('SELECT public_handle FROM identity_account WHERE id = ?')
