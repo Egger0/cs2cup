@@ -43,6 +43,37 @@
   margin-top: 12px;
 }
 
+.kook {
+  display: grid;
+  width: fit-content;
+  gap: 4px;
+  margin-top: 18px;
+  padding: 10px 12px;
+  border: 1px solid rgba(241, 239, 232, 0.24);
+  color: #b2b5ac;
+  text-decoration: none;
+}
+
+.kook:hover {
+  border-color: var(--ct);
+  color: #f1efe8;
+}
+
+.kook:focus-visible {
+  outline: 2px solid var(--ct);
+  outline-offset: 3px;
+}
+
+.kook strong {
+  color: #f1efe8;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.kook span {
+  font-size: 0.72rem;
+}
+
 .douyin {
   display: grid;
   justify-self: end;

@@ -8,7 +8,33 @@ import type { SiteSetting } from '@/lib/types'
 import styles from './SiteFooter.module.css'
 import theme from '@/app/site-theme.module.css'
 
-export function SiteFooter({ setting }: { setting: SiteSetting }) {
+const KOOK_WIDGET_URL = 'https://kookapp.cn/api/guilds/3715592670073195/widget.json'
+const KOOK_INVITE_URL = 'https://kook.vip/f5xEe8'
+
+async function getKookWidget() {
+  try {
+    const response = await fetch(KOOK_WIDGET_URL, { next: { revalidate: 300 } })
+    if (!response.ok) return null
+
+    const data: unknown = await response.json()
+    if (typeof data !== 'object' || !data) return null
+
+    const { invite_link: inviteLink, online_count: onlineCount } = data as Record<string, unknown>
+    const online = Number(onlineCount)
+    if (typeof inviteLink !== 'string' || !Number.isSafeInteger(online) || online < 0) return null
+
+    const inviteUrl = new URL(inviteLink)
+    if (inviteUrl.protocol !== 'https:' || inviteUrl.hostname !== 'kook.vip') return null
+
+    return { inviteUrl: inviteUrl.href, onlineCount: online }
+  } catch {
+    return null
+  }
+}
+
+export async function SiteFooter({ setting }: { setting: SiteSetting }) {
+  const kook = await getKookWidget()
+
   return (
     <footer className={`${theme.dark} ${styles.footer}`}>
       <div className={styles.inner} data-layout-container>
@@ -57,6 +83,15 @@ export function SiteFooter({ setting }: { setting: SiteSetting }) {
                 <CopyTextButton value={setting.contactWechat} label="复制微信号" />
               </p>
             ) : null}
+            <a
+              className={styles.kook}
+              href={kook?.inviteUrl ?? KOOK_INVITE_URL}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <strong>KOOK 社群</strong>
+              <span>{kook ? `${kook.onlineCount} 人在线` : '加入语音社群'} ↗</span>
+            </a>
           </div>
           <figure className={styles.douyin}>
             <Image
