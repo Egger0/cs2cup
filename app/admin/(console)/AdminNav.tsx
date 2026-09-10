@@ -27,6 +27,7 @@ const LINKS = [
   { index: '07', href: '/admin/members', label: '成员', capability: 'platform.configure' },
   { index: '08', href: '/admin/guestbook', label: '留言', capability: 'platform.configure' },
   { index: '09', href: '/admin/settings', label: '设置', capability: 'platform.configure' },
+  { index: '10', href: '/admin/lottery', label: '抽奖核销', capability: 'platform.configure' },
 ] satisfies readonly {
   index: string
   href: string

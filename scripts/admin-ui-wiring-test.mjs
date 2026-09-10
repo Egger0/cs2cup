@@ -14,6 +14,7 @@ const numberedPages = [
   ['07', 'app/admin/(console)/members/page.tsx'],
   ['08', 'app/admin/(console)/guestbook/page.tsx'],
   ['09', 'app/admin/(console)/settings/page.tsx'],
+  ['10', 'app/admin/(console)/lottery/page.tsx'],
 ]
 
 for (const [index, path] of numberedPages) {
@@ -30,6 +31,7 @@ for (const [index, route] of [
   ['07', '/admin/members'],
   ['08', '/admin/guestbook'],
   ['09', '/admin/settings'],
+  ['10', '/admin/lottery'],
 ]) {
   assert.match(nav, new RegExp(`index: ["']${index}["'][\\s\\S]{0,80}?href: ["']${route}["']`))
 }

@@ -1,0 +1,67 @@
+.result {
+  display: grid;
+  gap: 16px;
+  max-width: 720px;
+  margin-bottom: 56px;
+  padding: clamp(24px, 4vw, 44px);
+  border: 1px solid var(--line-strong);
+  background: linear-gradient(135deg, rgba(61, 155, 233, 0.12), rgba(18, 26, 40, 0.92) 46%);
+}
+
+.label {
+  color: var(--accent);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.result h2 {
+  font-family: var(--font-display), var(--font-body), sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1.08;
+}
+
+.notice,
+.receipt p,
+.result div > p[role='alert'] {
+  color: var(--muted);
+}
+
+.result div > p[role='alert'] {
+  margin-top: 12px;
+  color: var(--c4);
+}
+
+.receipt {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 18px;
+  border: 1px solid var(--line-strong);
+  background: rgba(5, 7, 12, 0.5);
+}
+
+.receipt > span {
+  color: var(--muted-2);
+  font-size: 0.78rem;
+}
+
+.receipt strong {
+  color: var(--accent);
+  font-family: var(--font-mono), monospace;
+  font-size: clamp(1.7rem, 6vw, 2.7rem);
+  letter-spacing: 0.12em;
+}
+
+.receipt img {
+  width: min(180px, 100%);
+  height: auto;
+  padding: 8px;
+  background: white;
+}
+
+.textLink {
+  color: var(--ct);
+  font-weight: 600;
+}

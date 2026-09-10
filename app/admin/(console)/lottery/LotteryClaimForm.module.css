@@ -1,0 +1,7 @@
+.scanner {
+  width: min(100%, 480px);
+  max-height: 360px;
+  border: 1px solid var(--admin-line-strong, var(--line-strong));
+  background: var(--void);
+  object-fit: cover;
+}
