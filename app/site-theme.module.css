@@ -29,6 +29,43 @@
   background: var(--bg);
 }
 
+.dark {
+  --bg: #171817;
+  --bg-2: #111210;
+  --surface: #1f201e;
+  --surface-2: #171817;
+  --line: rgba(241, 239, 232, 0.16);
+  --line-strong: rgba(241, 239, 232, 0.32);
+  --ink: #f1efe8;
+  --muted: #c0c1ba;
+  --muted-2: #b0b2ac;
+  --ct: #8fc8ef;
+  --ct-dim: rgba(143, 200, 239, 0.12);
+  --accent: var(--ct);
+  --accent-dim: var(--ct-dim);
+  --button-ink: #171817;
+  color-scheme: dark;
+}
+
+.light {
+  --bg: #f1efe8;
+  --bg-2: #e9e6dc;
+  --surface: #f7f5ee;
+  --surface-2: #dfdcd2;
+  --line: rgba(23, 24, 23, 0.15);
+  --line-strong: #aaa69b;
+  --ink: #171817;
+  --muted: #5f605a;
+  --muted-2: #62645d;
+  --ct: #0b4d87;
+  --ct-dim: rgba(11, 77, 135, 0.1);
+  --accent: var(--ct);
+  --accent-dim: var(--ct-dim);
+  --void: #f7f5ee;
+  --button-ink: #f1efe8;
+  color-scheme: light;
+}
+
 .theme > main {
   min-height: calc(100svh - 76px);
 }

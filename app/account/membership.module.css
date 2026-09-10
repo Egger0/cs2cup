@@ -1,128 +1,113 @@
 .panel {
-  --blue: #0b5d94;
-  --line: rgba(255, 255, 255, 0.16);
-  padding: clamp(25px, 4vw, 48px);
-  border: 1px solid var(--line);
-  background: rgba(20, 26, 27, 0.78);
-  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.19);
+  padding: clamp(20px, 3vw, 34px);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
 }
 
 .header {
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 24px;
-}
-
-.header p {
-  color: #73acd2;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
+  gap: 20px;
 }
 
 .header h2 {
-  margin-top: 9px;
-  font-family: var(--font-display), sans-serif;
-  font-size: clamp(2rem, 4vw, 3.7rem);
-  letter-spacing: -0.045em;
-  line-height: 1;
+  color: var(--ink);
+  font-size: 1.25rem;
+  font-weight: 620;
+  letter-spacing: -0.02em;
 }
 
 .state {
   flex: 0 0 auto;
-  padding: 7px 9px;
-  border: 1px solid #667174;
-  color: #9aa5a5;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
 }
 
 .state[data-state='approved'] {
-  border-color: #50a47f;
-  color: #74d2a8;
+  color: var(--accent);
 }
 
 .state[data-state='changes_requested'],
 .state[data-state='rejected'] {
-  border-color: #bd7d5f;
-  color: #e0a487;
-}
-
-.state[data-state='pending'],
-.state[data-state='in_review'] {
-  border-color: #73acd2;
-  color: #9bd3f6;
+  color: var(--c4);
 }
 
 .summary {
-  max-width: 580px;
-  margin-top: 15px;
-  color: #9ea9a7;
-  font-size: 0.78rem;
+  max-width: 62ch;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  line-height: 1.75;
 }
 
 .nextAction {
-  margin-top: 10px;
-  color: #c7cfcd;
-  font-size: 0.74rem;
+  max-width: 62ch;
+  margin-top: 8px;
+  color: var(--ink);
+  font-size: 0.9375rem;
+  line-height: 1.75;
 }
 
 .nextAction strong {
-  color: #9bd3f6;
+  font-weight: 620;
 }
 
 .timeline {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  margin-top: 30px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 26px;
   border-block: 1px solid var(--line);
 }
 
 .timeline div {
   display: grid;
-  gap: 7px;
-  padding: 16px 18px 16px 0;
+  gap: 6px;
+  padding: 14px 16px 14px 0;
 }
 
 .timeline div + div {
-  padding-left: 18px;
+  padding-left: 16px;
   border-left: 1px solid var(--line);
 }
 
 .timeline small {
-  color: #71807f;
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
+  color: var(--muted-2);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.8rem;
 }
 
 .timeline strong {
-  font-size: 0.73rem;
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 580;
 }
 
 .reviewNote {
-  margin-top: 26px;
-  padding: 16px 18px;
-  border-left: 3px solid #c08264;
-  background: rgba(192, 130, 100, 0.09);
+  margin-top: 24px;
+  padding: 14px 18px;
+  border-left: 3px solid var(--c4);
+  background: var(--danger-dim);
 }
 
 .reviewNote strong {
-  color: #e1b19a;
-  font-size: 0.7rem;
+  color: var(--ink);
+  font-size: 0.9375rem;
 }
 
 .reviewNote p {
   margin-top: 5px;
-  color: #c0c6c3;
-  font-size: 0.75rem;
+  color: var(--muted);
+  font-size: 0.9375rem;
 }
 
 .form {
   display: grid;
-  gap: 17px;
-  margin-top: 30px;
+  max-width: 56ch;
+  gap: 16px;
+  margin-top: 26px;
 }
 
 .form label {
@@ -131,52 +116,64 @@
 }
 
 .form label span {
-  color: #a5afad;
-  font-size: 0.68rem;
-  font-weight: 680;
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.875rem;
 }
 
 .form input,
 .form textarea {
   width: 100%;
-  border: 1px solid #455052;
+  padding: 11px 13px;
+  border: 1px solid var(--line-strong);
   border-radius: 0;
   outline: none;
-  background: rgba(255, 255, 255, 0.035);
-  padding: 12px 13px;
-  color: #f0eee6;
+  background: color-mix(in srgb, var(--surface) 68%, transparent);
   font: inherit;
-  font-size: 0.78rem;
+  font-size: 1rem;
   resize: vertical;
 }
 
 .form input {
-  min-height: 50px;
+  min-height: 48px;
 }
 
 .form input:focus,
 .form textarea:focus {
-  border-color: #73acd2;
-  box-shadow: 0 0 0 1px #73acd2;
+  border-color: var(--accent);
+  outline: 1px solid var(--accent);
 }
 
 .form button,
 .pendingActions button {
-  min-height: 48px;
-  border: 1px solid #73acd2;
+  min-height: 46px;
+  padding: 10px 20px;
+  border: 1px solid var(--line-strong);
   border-radius: 0;
   background: transparent;
-  padding: 10px 16px;
-  color: #a9d8f6;
+  color: var(--ink);
   cursor: pointer;
-  font-size: 0.72rem;
-  font-weight: 720;
+  font-size: 0.9375rem;
+  font-weight: 580;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .form button {
-  margin-top: 5px;
-  background: var(--blue);
-  color: #f7f3e9;
+  justify-self: start;
+  margin-top: 4px;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--button-ink);
+}
+
+.form button:hover:not(:disabled),
+.pendingActions button:hover:not(:disabled) {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
 }
 
 .form button:disabled,
@@ -187,39 +184,35 @@
 
 .error {
   padding: 10px 12px;
-  border-left: 3px solid #c76666;
-  background: rgba(199, 102, 102, 0.08);
-  color: #efb3b3;
-  font-size: 0.72rem;
+  border-left: 3px solid var(--c4);
+  background: var(--danger-dim);
+  color: var(--c4);
+  font-size: 0.875rem;
 }
 
 .pendingActions {
-  margin-top: 28px;
+  margin-top: 26px;
   padding-top: 20px;
   border-top: 1px solid var(--line);
 }
 
 .pendingActions > p {
-  max-width: 610px;
-  color: #a0aaa8;
-  font-size: 0.74rem;
+  max-width: 62ch;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  line-height: 1.75;
 }
 
 .pendingActions > p + p {
   margin-top: 8px;
-  color: #9bd3f6;
+  color: var(--ink);
 }
 
 .pendingActions > div {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 17px;
-}
-
-.pendingActions button:last-child {
-  border-color: #596264;
-  color: #a8afad;
+  margin-top: 16px;
 }
 
 @media (max-width: 620px) {
@@ -232,12 +225,19 @@
   }
 
   .timeline {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .timeline div + div {
     padding-left: 0;
     border-top: 1px solid var(--line);
     border-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form button,
+  .pendingActions button {
+    transition: none;
   }
 }

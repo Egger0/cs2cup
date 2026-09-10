@@ -41,3 +41,7 @@ export async function assertMinimumTapHeight(locator, label, minimum = 40) {
   const undersized = boxes.filter(box => box.height + 0.5 < minimum)
   assert.deepEqual(undersized, [], `${label} has undersized tap targets`)
 }
+
+export function membershipState(page, text) {
+  return page.getByRole('region', { name: '成员资格' }).getByText(text, { exact: true })
+}

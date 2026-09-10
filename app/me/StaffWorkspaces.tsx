@@ -25,7 +25,6 @@ export function StaffWorkspaces({
   return (
     <section className={styles.switcher} aria-labelledby="staff-workspaces-title">
       <header>
-        <p>STAFF ACCESS / 工作权限</p>
         <h2 id="staff-workspaces-title">社团工作台</h2>
         <span>
           {total === 1
@@ -44,7 +43,7 @@ export function StaffWorkspaces({
                 </small>
                 <strong>{workspace.title}</strong>
               </span>
-              <span className={styles.action}>进入签到台&nbsp; ↗</span>
+              <span className={styles.action}>进入签到台</span>
             </a>
           </li>
         ))}

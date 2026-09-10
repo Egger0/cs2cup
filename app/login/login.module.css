@@ -141,15 +141,6 @@
   color: #4f595d;
   cursor: not-allowed;
 }
-.buttonCode {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border: 1px solid currentColor;
-  font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
-}
 .buttonArrow {
   font-size: 1rem;
 }

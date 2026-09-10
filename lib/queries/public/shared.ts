@@ -13,6 +13,17 @@ interface SiteSettingRow {
   footer_copy: string | null
 }
 
+export const FALLBACK_SITE_SETTING: SiteSetting = {
+  id: 1,
+  clubName: '宁波理工电竞社',
+  clubNameEn: null,
+  school: '浙大宁波理工学院',
+  logoUrl: null,
+  contactQq: '661543515',
+  contactWechat: '无',
+  footerCopy: null,
+}
+
 export async function safely<T>(work: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await work()

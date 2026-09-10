@@ -1,122 +1,76 @@
 .dossier {
-  position: relative;
-  padding: clamp(24px, 5vw, 62px) clamp(18px, 5vw, 68px) 20px;
-  overflow: hidden;
-  background:
-    repeating-linear-gradient(0deg, transparent 0 27px, rgba(21, 65, 88, 0.045) 28px), var(--paper);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
-  color: var(--paper-ink);
-  animation: fileIn 0.56s var(--ease-out) both;
-}
-
-.dossier::before {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 5px;
-  background: var(--stamp);
-  content: '';
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
 }
 
 .fileHeader {
   display: grid;
-  gap: 24px;
-  padding-bottom: 26px;
-  border-bottom: 2px solid var(--paper-ink);
-}
-
-.slug,
-.sectionLabel span,
-.fileFooter {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-}
-
-.slug {
-  color: var(--stamp);
-  font-size: 0.68rem;
-  font-weight: 700;
-  overflow-wrap: anywhere;
+  align-items: baseline;
+  gap: 6px 20px;
+  padding: clamp(18px, 2.4vw, 26px);
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .fileHeader h2 {
-  margin-top: 10px;
-  font-family: 'NLC Serif', 'Songti SC', serif;
-  font-size: clamp(2rem, 7vw, 4.3rem);
-  font-weight: 800;
-  letter-spacing: -0.045em;
-  line-height: 1;
+  color: var(--ink);
+  font-size: 1.25rem;
+  font-weight: 620;
+  letter-spacing: -0.02em;
 }
 
 .teamName {
-  margin-top: 12px;
-  color: #3d474b;
-  font-family: var(--font-display), 'NLC Role Sans', sans-serif;
-  font-size: clamp(1.2rem, 4vw, 2.15rem);
-  font-weight: 650;
-  line-height: 1.1;
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 0.9375rem;
 }
 
 .teamName span {
-  color: var(--stamp);
+  color: var(--accent);
+  font-family: var(--font-mono), monospace;
+  font-weight: 620;
 }
 
 .status {
   align-self: start;
   width: fit-content;
-  padding: 8px 12px 7px;
-  border: 2px solid currentColor;
-  color: var(--stamp);
-  font-family: 'NLC Role Sans', var(--font-body);
-  font-size: 0.78rem;
-  font-weight: 760;
-  letter-spacing: 0.08em;
-  line-height: 1.05;
-  text-align: center;
-  transform: rotate(-2deg);
-}
-
-.status small {
-  display: block;
-  margin-bottom: 3px;
+  color: var(--muted);
   font-family: var(--font-mono), monospace;
-  font-size: 0.65rem;
-  font-weight: 500;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
 }
 
-.status[data-status='pending'] {
-  border-style: double;
+.status[data-status='approved'] {
+  color: var(--accent);
 }
 
 .status[data-status='rejected'] {
-  opacity: 0.72;
+  color: var(--c4);
 }
 
 .facts {
   display: grid;
-  gap: 1px;
-  margin-top: 26px;
-  background: rgba(23, 32, 38, 0.18);
+  border-bottom: 1px solid var(--line-strong);
 }
 
-.facts > div,
-.private dl > div {
+.facts > div {
   min-width: 0;
-  padding: 13px 14px;
-  background: rgba(238, 234, 221, 0.96);
+  padding: 14px clamp(18px, 2.4vw, 26px);
+  border-bottom: 1px solid var(--line);
 }
 
 .facts dt,
 .private dt {
-  color: var(--paper-muted);
-  font-size: 0.68rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
 }
 
 .facts dd,
 .private dd {
   margin-top: 4px;
   overflow-wrap: anywhere;
-  font-size: 0.82rem;
+  color: var(--ink);
+  font-size: 0.9375rem;
 }
 
 .checkIn dd {
@@ -125,23 +79,23 @@
 }
 
 .checkIn dd > span {
-  font-weight: 720;
+  font-weight: 580;
 }
 
 .checkIn[data-state='checked-in'] dd > span {
-  color: var(--stamp);
+  color: var(--accent);
 }
 
 .checkIn time {
-  color: var(--paper-muted);
+  color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
+  font-size: 0.8125rem;
 }
 
 .roster,
 .private {
-  margin-top: 34px;
+  padding: clamp(18px, 2.4vw, 26px);
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .sectionLabel {
@@ -149,19 +103,20 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 16px;
-  padding-bottom: 9px;
-  border-bottom: 1px solid rgba(23, 32, 38, 0.35);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
 }
 
 .sectionLabel h3 {
-  font-family: 'NLC Role Sans', var(--font-body);
-  font-size: 0.9rem;
-  font-weight: 720;
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 620;
 }
 
 .sectionLabel span {
-  color: var(--stamp);
-  font-size: 0.65rem;
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.8125rem;
 }
 
 .roster ol {
@@ -170,19 +125,20 @@
 
 .roster li {
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr) auto;
+  grid-template-columns: 2.5em minmax(0, 1fr) auto;
   align-items: baseline;
-  gap: 10px;
-  padding: 10px 4px;
-  border-bottom: 1px dotted rgba(23, 32, 38, 0.24);
-  font-size: 0.78rem;
+  gap: 12px;
+  padding-block: 11px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 0.9375rem;
 }
 
 .roster li > span:last-child,
 .order,
 .emptyRoster {
-  color: var(--paper-muted);
-  font-size: 0.7rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
 }
 
 .order {
@@ -193,17 +149,14 @@
   padding-block: 18px;
 }
 
-.private {
-  padding: 16px;
-  border: 1px solid rgba(23, 90, 126, 0.42);
-  background: rgba(23, 107, 154, 0.055);
-}
-
 .private dl {
   display: grid;
-  gap: 1px;
-  margin-top: 1px;
-  background: rgba(23, 32, 38, 0.16);
+}
+
+.private dl > div {
+  min-width: 0;
+  padding-block: 12px;
+  border-bottom: 1px solid var(--line);
 }
 
 .private dd {
@@ -213,38 +166,27 @@
 .fileFooter {
   display: flex;
   flex-direction: column;
-  gap: 9px;
-  margin-top: 30px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(23, 32, 38, 0.22);
-  color: var(--paper-muted);
-  font-size: 0.65rem;
+  gap: 10px;
+  padding: 14px clamp(18px, 2.4vw, 26px);
+  color: var(--muted);
+  font-size: 0.8125rem;
 }
 
 .fileFooter a {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
-  width: fit-content;
-  border-bottom: 1px solid currentColor;
-  color: var(--stamp);
+  color: var(--accent);
+  font-size: 0.9375rem;
+  font-weight: 580;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .footerLinks {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-}
-
-@keyframes fileIn {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  gap: 20px;
 }
 
 @media (min-width: 680px) {
@@ -256,14 +198,25 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .private dl {
-    grid-template-columns: minmax(180px, 0.65fr) minmax(0, 1.35fr);
+  .facts > div:nth-child(odd) {
+    border-right: 1px solid var(--line);
+  }
+
+  .private dl > div {
+    display: grid;
+    grid-template-columns: minmax(140px, 0.4fr) minmax(0, 1fr);
+    align-items: baseline;
+    gap: 16px;
+  }
+
+  .private dd {
+    margin-top: 0;
   }
 
   .fileFooter {
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    flex-direction: row;
   }
 }
 
@@ -271,10 +224,12 @@
   .facts {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .dossier {
-    animation: none;
+  .facts > div {
+    border-right: 1px solid var(--line);
+  }
+
+  .facts > div:last-child {
+    border-right: 0;
   }
 }

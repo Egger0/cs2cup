@@ -107,12 +107,6 @@
 }
 
 .lightbox {
-  --bg: #111210;
-  --ink: #f1efe8;
-  --muted: rgba(241, 239, 232, 0.62);
-  --line: rgba(241, 239, 232, 0.16);
-  --line-strong: rgba(241, 239, 232, 0.34);
-  --accent: #6da5d3;
   position: fixed;
   inset: 0;
   z-index: 120;

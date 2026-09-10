@@ -113,10 +113,7 @@ export function RecoveryCodeManager() {
       aria-busy={working || loading}
     >
       <header>
-        <div>
-          <p>RECOVERY / 恢复码</p>
-          <h2 id="recovery-title">账号的离线退路</h2>
-        </div>
+        <h2 id="recovery-title">恢复码</h2>
         <span>
           {summary === null
             ? loading
