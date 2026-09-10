@@ -93,7 +93,7 @@ export async function SiteFooter({ setting }: { setting: SiteSetting }) {
               title={kookLabel}
             >
               <span className={styles.kookIcon} aria-hidden="true">
-                K
+                <Image src="/brand/kook.svg" alt="" width={21} height={21} />
               </span>
               <span>KOOK</span>
               {kook ? <small>{kook.onlineCount}</small> : null}
