@@ -8,6 +8,7 @@ import type { SiteSetting } from '@/lib/types'
 import styles from './SiteFooter.module.css'
 import theme from '@/app/site-theme.module.css'
 import { qqGroupContact } from '@/lib/qq-group'
+import { QqGroupJoin } from './QqGroupJoin'
 
 const KOOK_WIDGET_URL = 'https://kookapp.cn/api/guilds/3715592670073195/widget.json'
 const KOOK_INVITE_URL = 'https://kook.vip/f5xEe8'
@@ -74,65 +75,66 @@ export async function SiteFooter({ setting }: { setting: SiteSetting }) {
             </nav>
           </div>
           <div className={styles.contact}>
-            {qqGroup?.kind === 'invite' ? (
+            <span className={styles.communityLabel}>社群</span>
+            <div className={styles.community}>
+              {qqGroup?.kind === 'invite' ? (
+                <a
+                  className={styles.chip}
+                  href={qqGroup.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={qqGroup.number ? `加入 QQ 群 ${qqGroup.number}` : '加入官方 QQ 群'}
+                >
+                  <span className={styles.chipIcon} aria-hidden="true">
+                    <Image src="/brand/qq.svg" alt="" width={20} height={20} />
+                  </span>
+                  <span>QQ 群</span>
+                  {qqGroup.number ? <small>{qqGroup.number}</small> : null}
+                </a>
+              ) : qqGroup?.kind === 'number' ? (
+                <QqGroupJoin number={qqGroup.number} />
+              ) : null}
+
               <a
-                className={styles.qq}
-                href={qqGroup.href}
+                className={styles.chip}
+                href={kook?.inviteUrl ?? KOOK_INVITE_URL}
                 target="_blank"
-                rel="noopener noreferrer"
-                aria-label={qqGroup.number ? `加入 QQ 群 ${qqGroup.number}` : '加入官方 QQ 群'}
+                rel="noreferrer"
+                aria-label={kookLabel}
               >
-                <span className={styles.kookIcon} aria-hidden="true">
-                  <Image src="/brand/qq.svg" alt="" width={21} height={21} />
+                <span className={styles.chipIcon} aria-hidden="true">
+                  <Image src="/brand/kook.svg" alt="" width={20} height={20} />
                 </span>
-                <span>加入 QQ 群</span>
-                {qqGroup.number ? <small>{qqGroup.number}</small> : null}
+                <span>KOOK</span>
+                {kook ? <small>{kook.onlineCount} 在线</small> : null}
               </a>
-            ) : qqGroup?.kind === 'number' ? (
-              <p className={styles.qqNumber}>
-                <span className={styles.kookIcon} aria-hidden="true">
-                  <Image src="/brand/qq.svg" alt="" width={21} height={21} />
-                </span>
-                QQ 群：<b>{qqGroup.number}</b>
-                <CopyTextButton value={qqGroup.number} label="复制群号" />
-                <small>在 QQ 中搜索这个群号加入</small>
-              </p>
-            ) : null}
+
+              <details className={styles.douyin}>
+                <summary className={styles.chip} aria-label="展开抖音关注码">
+                  <span className={styles.chipIcon} aria-hidden="true">
+                    <Image src="/brand/douyin.svg" alt="" width={20} height={20} />
+                  </span>
+                  <span>抖音</span>
+                  <small>扫码</small>
+                </summary>
+                <Image
+                  className={styles.qrImage}
+                  src="/brand/douyin-qr-display.png"
+                  alt="抖音账号关注码"
+                  width={112}
+                  height={112}
+                  unoptimized
+                />
+              </details>
+            </div>
+
             {setting.contactWechat && setting.contactWechat !== '无' ? (
-              <p>
+              <p className={styles.wechat}>
                 负责人微信：<b>{setting.contactWechat}</b>
                 <CopyTextButton value={setting.contactWechat} label="复制微信号" />
               </p>
             ) : null}
-            <a
-              className={styles.kook}
-              href={kook?.inviteUrl ?? KOOK_INVITE_URL}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={kookLabel}
-              title={kookLabel}
-            >
-              <span className={styles.kookIcon} aria-hidden="true">
-                <Image src="/brand/kook.svg" alt="" width={21} height={21} />
-              </span>
-              <span>KOOK</span>
-              {kook ? <small>{kook.onlineCount}</small> : null}
-            </a>
           </div>
-          <figure className={styles.douyin}>
-            <Image
-              className={styles.qrImage}
-              src="/brand/douyin-qr-display.png"
-              alt="抖音账号关注码"
-              width={112}
-              height={112}
-              unoptimized
-            />
-            <figcaption>
-              <strong>关注抖音</strong>
-              <span>扫码关注宁波理工电竞社</span>
-            </figcaption>
-          </figure>
         </div>
         <div className={styles.legal}>
           <span>{setting.footerCopy ?? `${CLUB_BRAND.englishName} · 校园电竞，始于热爱。`}</span>

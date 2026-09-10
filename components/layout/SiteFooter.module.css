@@ -14,7 +14,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
   gap: var(--grid-gap);
   align-items: start;
 }
@@ -43,94 +43,10 @@
   margin-top: 12px;
 }
 
-.kook,
-.qq {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  gap: 7px;
-  margin-top: 18px;
-  min-height: 40px;
-  padding: 7px 10px;
-  border: 1px solid rgba(241, 239, 232, 0.24);
-  color: #b2b5ac;
-  font:
-    700 0.73rem var(--font-mono),
-    monospace;
-  letter-spacing: 0.08em;
-  text-decoration: none;
-}
-
-.kook:hover,
-.qqNumber {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px 8px;
-  margin-top: 18px;
-}
-
-.qqNumber small {
-  flex: 1 0 100%;
-  color: var(--muted-2);
-  font-size: 0.75rem;
-}
-
-.qq:hover {
-  border-color: var(--ct);
-  color: #f1efe8;
-}
-
 .kook:focus-visible,
 .qq:focus-visible {
   outline: 2px solid var(--ct);
   outline-offset: 3px;
-}
-
-.kookIcon {
-  display: flex;
-  width: 21px;
-  height: 21px;
-}
-
-.kook small,
-.qq small {
-  padding-left: 6px;
-  border-left: 1px solid rgba(241, 239, 232, 0.2);
-  color: #f1efe8;
-  font:
-    600 0.7rem var(--font-mono),
-    monospace;
-}
-
-.douyin {
-  display: grid;
-  justify-self: end;
-  grid-template-columns: 96px auto;
-  align-items: center;
-  gap: 16px;
-  color: rgba(241, 239, 232, 0.54);
-  text-align: left;
-}
-
-.qrImage {
-  width: 96px;
-  height: 96px;
-  padding: 6px;
-  background: #fff;
-  border: 1px solid rgba(241, 239, 232, 0.24);
-}
-
-.douyin figcaption {
-  display: grid;
-  gap: 3px;
-  font-size: 0.7rem;
-}
-
-.douyin strong {
-  color: #f1efe8;
-  font-size: 0.8rem;
-  font-weight: 600;
 }
 
 .legal {
@@ -197,53 +113,105 @@
   text-underline-offset: 5px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 760px) {
   .grid {
-    grid-template-areas:
-      'identity douyin'
-      'contact douyin';
-    grid-template-columns: minmax(0, 1fr) 96px;
-    gap: 20px;
-  }
-
-  .identity {
-    grid-area: identity;
-  }
-
-  .contact {
-    grid-area: contact;
-  }
-
-  .douyin {
-    grid-area: douyin;
-    align-self: center;
-    grid-template-columns: 1fr;
-    justify-items: center;
-    gap: 8px;
-    text-align: center;
-  }
-
-  .qrImage {
-    width: 92px;
-    height: 92px;
-  }
-
-  .douyin figcaption span {
-    font-size: 0.65rem;
-    white-space: nowrap;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
   }
 }
 
-@media (max-width: 480px) {
-  .grid {
-    grid-template-areas: 'identity' 'contact' 'douyin';
-    grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
-  }
-  .douyin {
-    justify-self: start;
-    grid-template-columns: 92px auto;
-    gap: 16px;
-    text-align: left;
-  }
+.communityLabel {
+  display: block;
+  color: var(--muted-2);
+  font:
+    600 0.7rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.community {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.chip {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid rgba(241, 239, 232, 0.2);
+  background: transparent;
+  color: #b2b5ac;
+  cursor: pointer;
+  font:
+    600 0.78rem var(--font-body),
+    sans-serif;
+  letter-spacing: 0.01em;
+  list-style: none;
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.chip::-webkit-details-marker {
+  display: none;
+}
+
+.chip:hover,
+.chip:focus-visible {
+  border-color: var(--ct);
+  color: #f1efe8;
+}
+
+.chipIcon {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.chip small {
+  padding-left: 8px;
+  border-left: 1px solid rgba(241, 239, 232, 0.2);
+  color: #f1efe8;
+  font:
+    600 0.72rem var(--font-mono),
+    monospace;
+}
+
+.qqControl {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.qqHint {
+  color: var(--muted-2);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.qqHint:empty {
+  display: none;
+}
+
+.douyin summary {
+  width: fit-content;
+}
+
+.douyin .qrImage {
+  width: 112px;
+  height: 112px;
+  margin-top: 10px;
+  border: 1px solid rgba(241, 239, 232, 0.2);
+}
+
+.wechat {
+  margin-top: 18px;
 }

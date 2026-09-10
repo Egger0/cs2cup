@@ -1,9 +1,19 @@
 'use client'
 
-import { useId, useState } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import styles from './CopyTextButton.module.css'
 
-export function CopyTextButton({ value, label }: { value: string; label: string }) {
+export function CopyTextButton({
+  value,
+  label,
+  className,
+  children,
+}: {
+  value: string
+  label: string
+  className?: string
+  children?: ReactNode
+}) {
   const [status, setStatus] = useState<'idle' | 'copied' | 'manual'>('idle')
   const hintId = useId()
 
@@ -18,8 +28,14 @@ export function CopyTextButton({ value, label }: { value: string; label: string 
 
   return (
     <span className={styles.control}>
-      <button type="button" onClick={copy} aria-describedby={hintId}>
-        {label}
+      <button
+        type="button"
+        className={className}
+        aria-label={children ? label : undefined}
+        onClick={copy}
+        aria-describedby={hintId}
+      >
+        {children ?? label}
       </button>
       <span id={hintId} className={styles.feedback} role="status">
         {status === 'copied'
