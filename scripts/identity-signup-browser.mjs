@@ -74,8 +74,8 @@ try {
     '/tournaments/2026-nlc/register',
   )
   await page.getByRole('status').getByText('账号已创建').waitFor()
-  await page.getByRole('heading', { name: USER.displayName }).waitFor()
-  await page.getByText('账号密码', { exact: true }).waitFor()
+  await page.getByRole('region', { name: '登录与安全' }).getByText('已设置').waitFor()
+  await page.getByRole('definition').filter({ hasText: USER.displayName }).first().waitFor()
   await page.screenshot({ path: 'output/playwright/frontend-account-1280.png', fullPage: true })
 
   const skipLink = page.getByRole('link', { name: '跳到主内容' })
@@ -84,8 +84,8 @@ try {
   await page.keyboard.press('Tab')
   assert.equal(await page.evaluate(() => document.activeElement?.closest('#main') !== null), true)
 
-  const membership = page.getByRole('region', { name: '尚未申请' })
-  const security = page.getByRole('region', { name: '账号与安全' })
+  const membership = page.getByRole('region', { name: '成员资格' })
+  const security = page.getByRole('region', { name: '登录与安全' })
   await assertLightSurface(security, 'account security card')
   await page.setViewportSize({ width: 781, height: 900 })
   await assertStacked(membership, security, 'account at 781px')
@@ -112,9 +112,9 @@ try {
     })
   }
   await page.goto(`${BASE}/account/security`)
-  await page.getByText(`@${USER.username}`, { exact: true }).waitFor()
-  await page.getByRole('heading', { name: '设备与会话' }).waitFor()
-  for (const name of ['你的设备密钥', '账号的离线退路', '设备与会话']) {
+  await page.getByRole('heading', { name: '登录与安全', level: 1 }).waitFor()
+  await page.getByRole('heading', { name: '已登录的设备' }).waitFor()
+  for (const name of ['通行密钥', '恢复码', '已登录的设备']) {
     const region = page.getByRole('region', { name })
     assert.equal(await region.getAttribute('aria-busy'), 'true')
     await region.getByText('读取中…', { exact: true }).waitFor()
@@ -167,7 +167,7 @@ try {
     page.waitForURL(url => url.pathname === '/account'),
     page.getByRole('button', { name: '使用账号密码登录' }).click(),
   ])
-  await page.getByRole('heading', { name: USER.displayName }).waitFor()
+  await page.getByRole('definition').filter({ hasText: USER.displayName }).first().waitFor()
   runtimeErrors.assertClean('signup browser')
   console.log('PASS  self-signup, duplicate username validation and password login')
 } finally {

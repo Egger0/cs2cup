@@ -10,15 +10,29 @@
   display: none;
 }
 
-.tabs {
+.row {
   display: flex;
-  gap: 28px;
   max-width: var(--wrap);
+  align-items: center;
+  gap: clamp(16px, 3vw, 32px);
   margin-inline: auto;
   padding-inline: var(--pad);
+}
+
+.tabs {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 28px;
   overflow-x: auto;
-  scroll-padding-inline: var(--pad);
   scrollbar-width: none;
+}
+
+.trailing {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: clamp(10px, 2vw, 20px);
 }
 
 .tabs::-webkit-scrollbar {
@@ -89,7 +103,8 @@
   .scrollHint {
     display: flex;
     justify-content: flex-end;
-    padding: 6px var(--pad) 0;
+    padding-block: 6px 0;
+    padding-inline: var(--pad);
     align-items: center;
     gap: 8px;
     color: var(--muted-2);

@@ -5,7 +5,6 @@ import { useState, type FormEvent } from 'react'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 import { registrationAuthHref } from '@/lib/registration-navigation'
 import formStyles from './credential-form.module.css'
-import styles from './login.module.css'
 
 const FAILURE_COPY: Record<string, string> = {
   invalid: '用户名或密码不正确，请重新输入。',
@@ -123,9 +122,6 @@ export function PasswordLoginForm({
         disabled={working}
         aria-label={working ? '正在登录' : '使用账号密码登录'}
       >
-        <span className={styles.buttonCode} aria-hidden="true">
-          PW
-        </span>
         <span>{working ? '正在登录…' : '登录'}</span>
         <span aria-hidden="true">↗</span>
       </button>

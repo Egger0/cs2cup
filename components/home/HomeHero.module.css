@@ -1,13 +1,13 @@
 .cover {
   --paper: #f1efe8;
-  --ink: #171817;
+  --cover-ink: #171817;
   --blue: #2477b9;
   --signal: #9bcaeb;
   position: relative;
   isolation: isolate;
   overflow: clip;
   color: var(--paper);
-  background: var(--ink);
+  background: var(--cover-ink);
 }
 .canvas {
   position: relative;

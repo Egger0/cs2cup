@@ -62,11 +62,8 @@ export function PasswordManager({ recovery }: { recovery: boolean }) {
   return (
     <section className={styles.section} aria-labelledby="password-title">
       <header>
-        <div>
-          <p>PASSWORD / 默认登录方式</p>
-          <h2 id="password-title">{recovery ? '设置新密码' : '修改密码'}</h2>
-        </div>
-        <span>{recovery ? '恢复中' : '已启用'}</span>
+        <h2 id="password-title">{recovery ? '设置新密码' : '密码'}</h2>
+        <span>{recovery ? '恢复中' : '已设置'}</span>
       </header>
       <p className={styles.explanation}>
         {recovery
