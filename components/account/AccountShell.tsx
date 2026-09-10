@@ -28,7 +28,17 @@ export async function AccountShell({
   signOut?: ReactNode
   children: ReactNode
 }) {
-  const setting = await safely(getSiteSetting, FALLBACK_SITE_SETTING)
+  let settingFailure = ''
+  let setting: Awaited<ReturnType<typeof getSiteSetting>> = null
+  try {
+    setting = await safely(getSiteSetting, FALLBACK_SITE_SETTING)
+  } catch (error) {
+    settingFailure =
+      error instanceof Error
+        ? `${error.name}: ${error.message}\n${error.stack ?? ''}`
+        : String(error)
+    console.error('[diag] getSiteSetting failed', error)
+  }
   const site = setting ?? FALLBACK_SITE_SETTING
 
   return (
@@ -50,6 +60,11 @@ export async function AccountShell({
         }
       />
       <main id="main" className={styles.main}>
+        {settingFailure ? (
+          <pre style={{ whiteSpace: 'pre-wrap', fontSize: '13px', marginBottom: '24px' }}>
+            {`getSiteSetting failed\n${settingFailure}`}
+          </pre>
+        ) : null}
         {children}
       </main>
       <SiteFooter setting={site} />
