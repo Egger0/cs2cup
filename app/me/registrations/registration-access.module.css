@@ -1,36 +1,31 @@
 .panel {
   display: grid;
-  gap: 18px;
-  margin-top: 28px;
-  padding: clamp(22px, 4vw, 38px);
-  border: 1px solid #37576a;
-  background: #11191d;
-  color: #e9ece8;
-}
-
-.eyebrow {
-  color: #75a9c5;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.12em;
+  gap: 16px;
+  margin-bottom: clamp(20px, 3vw, 32px);
+  padding: clamp(20px, 3vw, 34px);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
 }
 
 .panel h2 {
-  font-family: 'NLC Serif', 'Songti SC', serif;
-  font-size: clamp(1.9rem, 5vw, 3.4rem);
-  line-height: 1;
+  color: var(--ink);
+  font-size: 1.25rem;
+  font-weight: 620;
+  letter-spacing: -0.02em;
 }
 
 .lede,
 .panel > p:last-child,
 .empty {
-  color: #9ca8ac;
-  font-size: 0.76rem;
+  max-width: 62ch;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  line-height: 1.75;
 }
 
 .columns {
   display: grid;
-  gap: 30px;
+  gap: 28px;
 }
 
 .columns > div {
@@ -38,9 +33,11 @@
 }
 
 .columns h3 {
-  padding-bottom: 9px;
-  border-bottom: 1px solid #37576a;
-  font-size: 0.82rem;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 620;
 }
 
 .people {
@@ -53,7 +50,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  border-bottom: 1px solid rgba(117, 169, 197, 0.18);
+  border-bottom: 1px solid var(--line);
 }
 
 .people li > button {
@@ -68,13 +65,15 @@
 
 .people strong {
   overflow-wrap: anywhere;
-  font-size: 0.78rem;
+  color: var(--ink);
+  font-size: 0.9375rem;
+  font-weight: 580;
 }
 
 .people small {
   overflow-wrap: anywhere;
-  color: #87969d;
-  font-size: 0.7rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
 }
 
 .empty {
@@ -84,13 +83,13 @@
 .inviteForm {
   display: grid;
   gap: 8px;
-  margin-top: 18px;
+  margin-top: 16px;
 }
 
 .inviteForm label {
-  color: #b9d9e9;
-  font-size: 0.68rem;
-  font-weight: 700;
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.875rem;
 }
 
 .inviteForm div {
@@ -101,14 +100,20 @@
 
 .inviteForm input {
   min-width: min(100%, 220px);
-  min-height: 40px;
+  min-height: 44px;
   flex: 1;
-  padding: 8px 11px;
-  border: 1px solid #506d7c;
-  background: #0b1114;
-  color: #fff;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  outline: none;
+  background: color-mix(in srgb, var(--surface) 68%, transparent);
   font: inherit;
-  font-size: 0.74rem;
+  font-size: 1rem;
+}
+
+.inviteForm input:focus {
+  border-color: var(--accent);
+  outline: 1px solid var(--accent);
 }
 
 .success,
@@ -116,20 +121,23 @@
   display: flex;
   justify-content: space-between;
   gap: 14px;
-  padding: 12px 14px;
-  border-left: 3px solid #75a9c5;
-  background: rgba(117, 169, 197, 0.1);
-  font-size: 0.72rem;
+  padding: 11px 13px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-dim);
+  color: var(--ink);
+  font-size: 0.875rem;
 }
 
 .error {
-  border-left-color: #ee756a;
-  background: rgba(238, 117, 106, 0.1);
+  border-left-color: var(--c4);
+  background: var(--danger-dim);
+  color: var(--c4);
 }
 
 .success a,
 .error a {
-  border-bottom: 1px solid currentColor;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .danger {
@@ -139,18 +147,21 @@
   gap: 20px;
   margin-top: 8px;
   padding-top: 20px;
-  border-top: 1px solid rgba(238, 117, 106, 0.35);
+  border-top: 1px solid var(--line);
 }
 
 .danger strong {
-  color: #ffc1bb;
-  font-size: 0.78rem;
+  color: var(--ink);
+  font-size: 0.9375rem;
+  font-weight: 620;
 }
 
 .danger p {
+  max-width: 56ch;
   margin-top: 4px;
-  color: #87969d;
-  font-size: 0.72rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.7;
 }
 
 @media (min-width: 820px) {

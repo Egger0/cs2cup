@@ -6,6 +6,7 @@ import { CLUB_BRAND } from '@/lib/brand'
 import type { PublicShare } from '@/lib/share-poster'
 import { Icon } from '@/components/ui/Icon'
 import styles from './Share.module.css'
+import theme from '@/app/site-theme.module.css'
 
 export function ShareDialog({
   share,
@@ -80,7 +81,7 @@ export function ShareDialog({
   return (
     <dialog
       ref={dialog}
-      className={styles.dialog}
+      className={`${theme.light} ${styles.dialog}`}
       aria-labelledby={heading}
       aria-describedby={description}
       onClose={onClose}

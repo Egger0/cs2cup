@@ -1,84 +1,49 @@
-.page {
-  padding-bottom: 72px;
-}
-
 .shell {
   display: grid;
-  width: min(980px, calc(100% - clamp(36px, 8vw, 120px)));
-  gap: 22px;
-  margin-inline: auto;
-  padding-top: clamp(30px, 5vw, 64px);
-}
-
-.intro {
-  margin-bottom: clamp(16px, 3vw, 34px);
-}
-
-.intro p,
-.section header p {
-  color: #73acd2;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
-}
-
-.intro h1 {
-  max-width: 850px;
-  margin-top: 11px;
-  font-family: 'NLC Serif', 'Songti SC', serif;
-  font-size: clamp(2.5rem, 5.6vw, 4.8rem);
-  font-weight: 800;
-  letter-spacing: -0.065em;
-  line-height: 0.98;
-}
-
-.intro > span {
-  display: block;
-  margin-top: 14px;
-  color: #7f8a89;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.68rem;
+  max-width: 940px;
+  gap: clamp(20px, 3vw, 28px);
 }
 
 .section {
-  padding: clamp(24px, 4vw, 42px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(18, 24, 25, 0.82);
+  padding: clamp(20px, 3vw, 34px);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
 }
 
 .section > header {
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   justify-content: space-between;
   gap: 20px;
 }
 
 .section h2 {
-  margin-top: 6px;
-  font-family: var(--font-display), sans-serif;
-  font-size: clamp(1.7rem, 4vw, 3rem);
-  letter-spacing: -0.04em;
+  color: var(--ink);
+  font-size: 1.25rem;
+  font-weight: 620;
+  letter-spacing: -0.02em;
 }
 
 .section header > span {
-  padding: 6px 8px;
-  border: 1px solid #586467;
-  color: #a7b0af;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.66rem;
+  flex: none;
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
 }
 
 .explanation {
-  max-width: 700px;
-  margin-top: 14px;
-  color: #98a3a1;
-  font-size: 0.76rem;
+  max-width: 62ch;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  line-height: 1.75;
 }
 
 .passkeyList,
 .sessionList {
-  margin-top: 27px;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  margin-top: 24px;
+  border-top: 1px solid var(--line);
   list-style: none;
 }
 
@@ -88,8 +53,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding-block: 17px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  padding-block: 16px;
+  border-bottom: 1px solid var(--line);
 }
 
 .passkeyList li > div,
@@ -102,7 +67,9 @@
 .passkeyList strong,
 .sessionList strong {
   overflow-wrap: anywhere;
-  font-size: 0.82rem;
+  color: var(--ink);
+  font-size: 0.9375rem;
+  font-weight: 580;
 }
 
 .passkeyList span,
@@ -110,8 +77,8 @@
 .sessionList span,
 .sessionList small {
   overflow-wrap: anywhere;
-  color: #84908e;
-  font-size: 0.7rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
 }
 
 .passkeyList button,
@@ -120,88 +87,109 @@
 .enroll button,
 .securityForm button,
 .codeReceipt button {
-  min-height: 42px;
-  border: 1px solid #637074;
+  min-height: 44px;
+  padding: 9px 16px;
+  border: 1px solid var(--line-strong);
   border-radius: 0;
   background: transparent;
-  padding: 8px 13px;
-  color: #c1c7c5;
+  color: var(--ink);
   cursor: pointer;
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.875rem;
+  font-weight: 580;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.passkeyList button:hover:not(:disabled),
+.sessionList button:hover:not(:disabled),
+.section > button:hover:not(:disabled),
+.codeReceipt button:hover:not(:disabled) {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
 }
 
 .passkeyList button[data-confirming='true'],
 .sessionList button[data-confirming='true'],
 .section > button[data-confirming='true'] {
-  border-color: #c87878;
-  color: #e4a3a3;
+  border-color: var(--c4);
+  color: var(--c4);
 }
 
 .section > button {
-  margin-top: 21px;
-  border-color: #73acd2;
-  color: #a9d8f6;
+  margin-top: 20px;
 }
 
 .securityForm {
   display: grid;
-  max-width: 680px;
-  gap: 15px;
-  margin-top: 25px;
+  max-width: 46ch;
+  gap: 16px;
+  margin-top: 22px;
 }
 
 .securityForm label {
   display: grid;
-  gap: 7px;
-  color: #a5afad;
-  font-size: 0.72rem;
+  gap: 8px;
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.875rem;
 }
 
-.securityForm input {
-  min-height: 46px;
-  border: 1px solid #4d595b;
+.securityForm input,
+.enroll input {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 13px;
+  border: 1px solid var(--line-strong);
   border-radius: 0;
   outline: none;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 9px 12px;
+  background: color-mix(in srgb, var(--surface) 68%, transparent);
+  font-size: 1rem;
 }
 
-.securityForm input:focus {
-  border-color: #73acd2;
-  box-shadow: 0 0 0 1px #73acd2;
+.securityForm input:focus,
+.enroll input:focus {
+  border-color: var(--accent);
+  outline: 1px solid var(--accent);
 }
 
 .securityForm small {
-  color: #75817f;
+  color: var(--muted-2);
+  font-size: 0.8125rem;
 }
 
-.securityForm button {
+.securityForm button,
+.enroll button {
   justify-self: start;
-  border-color: #0b5d94;
-  background: #0b5d94;
-  color: #f7f3e9;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--button-ink);
 }
 
-.sessionList {
-  list-style: none;
+.securityForm button:hover:not(:disabled),
+.enroll button:hover:not(:disabled) {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
 }
 
 .currentBadge {
-  color: #8fc8a2 !important;
-  font-family: var(--font-mono), ui-monospace, monospace;
+  color: var(--accent) !important;
+  font-family: var(--font-mono), monospace;
 }
 
 .codeReceipt {
-  margin-top: 22px;
+  margin-top: 20px;
   padding: 18px;
-  border: 1px solid rgba(115, 172, 210, 0.45);
-  background: rgba(11, 93, 148, 0.08);
+  border: 1px solid var(--accent);
+  background: var(--accent-dim);
 }
 
 .codeReceipt > strong {
-  color: #c5e3f5;
-  font-size: 0.76rem;
+  color: var(--ink);
+  font-size: 0.9375rem;
 }
 
 .codeReceipt ol {
@@ -210,64 +198,49 @@
   gap: 8px 28px;
   margin: 16px 0 18px;
   padding-left: 26px;
-  color: #eef5f7;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
+  color: var(--ink);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.875rem;
+  letter-spacing: 0.06em;
 }
 
 .success {
-  margin-top: 17px;
+  margin-top: 16px;
   padding: 10px 12px;
-  border-left: 3px solid #65a97c;
-  background: rgba(101, 169, 124, 0.08);
-  color: #aee0bc;
-  font-size: 0.7rem;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-dim);
+  color: var(--ink);
+  font-size: 0.875rem;
 }
 
 .inlineLink {
   display: inline-block;
   margin-top: 14px;
-  color: #a9d8f6;
+  color: var(--accent);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 .enroll {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
-  margin-top: 24px;
+  gap: 12px;
+  max-width: 56ch;
+  margin-top: 22px;
 }
 
 .enroll label {
   display: grid;
   min-width: 0;
-  gap: 7px;
-  color: #a5afad;
-  font-size: 0.72rem;
-}
-
-.enroll input {
-  min-height: 46px;
-  border: 1px solid #4d595b;
-  border-radius: 0;
-  outline: none;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 9px 12px;
-}
-
-.enroll input:focus {
-  border-color: #73acd2;
-  box-shadow: 0 0 0 1px #73acd2;
+  gap: 8px;
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.875rem;
 }
 
 .enroll button {
-  min-height: 46px;
-  border-color: #0b5d94;
-  background: #0b5d94;
-  color: #f7f3e9;
+  min-height: 48px;
 }
 
 .passkeyList button:disabled,
@@ -280,48 +253,47 @@
 }
 
 .empty {
-  margin-top: 24px;
-  padding: 20px;
-  border: 1px dashed #495557;
-  color: #899492;
-  font-size: 0.72rem;
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px dashed var(--line-strong);
+  color: var(--muted);
+  font-size: 0.9375rem;
 }
 
 .error {
-  margin-top: 17px;
+  margin-top: 16px;
   padding: 10px 12px;
-  border-left: 3px solid #c76666;
-  background: rgba(199, 102, 102, 0.08);
-  color: #efb3b3;
-  font-size: 0.7rem;
+  border-left: 3px solid var(--c4);
+  background: var(--danger-dim);
+  color: var(--c4);
+  font-size: 0.875rem;
 }
 
 @media (max-width: 620px) {
-  .shell {
-    width: min(100% - 32px, 980px);
-  }
-
   .section > header,
   .passkeyList li,
   .sessionList li,
   .enroll {
-    grid-template-columns: 1fr;
-  }
-
-  .section > header,
-  .passkeyList li {
     display: grid;
-  }
-
-  .sessionList li {
-    display: grid;
-  }
-
-  .codeReceipt ol {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .section header > span {
     width: fit-content;
+  }
+
+  .codeReceipt ol {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .passkeyList button,
+  .sessionList button,
+  .section > button,
+  .enroll button,
+  .securityForm button,
+  .codeReceipt button {
+    transition: none;
   }
 }

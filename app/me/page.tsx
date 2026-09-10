@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { AccountSignOut } from '@/app/account/AccountSignOut'
+import type { ReactNode } from 'react'
+import { AccountShell } from '@/components/account/AccountShell'
+import { PageMasthead } from '@/components/domain/Sections'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { currentTimeMillis } from '@/lib/current-time'
+import { accountHasWorkAccess } from '@/lib/identity/account-security-state'
 import { getAuthContext, type AuthenticatedAuthContext } from '@/lib/identity/kernel'
 import {
   listAccountTournamentRegistrations,
@@ -49,6 +51,16 @@ export const metadata: Metadata = {
 
 const STAFF_PAGE_SIZE = 12
 
+function EmptyEntries({ hint }: { hint: ReactNode }) {
+  return (
+    <section className={styles.empty} aria-labelledby="empty-title">
+      <h2 id="empty-title">还没有赛事报名</h2>
+      <p>{hint}</p>
+      <Link href="/tournaments">浏览公开赛事</Link>
+    </section>
+  )
+}
+
 async function UnifiedAccountEvents({
   context,
   staffPage,
@@ -64,7 +76,7 @@ async function UnifiedAccountEvents({
       return undefined
     },
   )
-  const [entries, invitations, rosterClaimRequests, drafts, workspacePage, nextMatch] =
+  const [entries, invitations, rosterClaimRequests, drafts, workspacePage, nextMatch, workAccess] =
     await Promise.all([
       listAccountTournamentRegistrations(database, context, now),
       listIncomingRegistrationInvitations(database, context, now),
@@ -76,6 +88,7 @@ async function UnifiedAccountEvents({
         offset: (staffPage - 1) * STAFF_PAGE_SIZE,
       }),
       nextMatchRequest,
+      accountHasWorkAccess(database, context.account.id, now),
     ])
   const staffPages = Math.max(1, Math.ceil(workspacePage.total / STAFF_PAGE_SIZE))
   if (staffPage > staffPages) redirect(staffPages === 1 ? '/me' : `/me?staffPage=${staffPages}`)
@@ -83,92 +96,65 @@ async function UnifiedAccountEvents({
   const hasPendingEntry = entries.some(entry => entry.team.status === 'pending')
 
   return (
-    <div className={styles.page}>
-      <header className={styles.topbar}>
-        <Link href="/" className={styles.brand}>
-          <span aria-hidden="true">
-            <Image src="/brand/club-mark.svg" alt="" width={28} height={28} priority />
-          </span>
-          宁波理工电竞社
-        </Link>
-        <nav aria-label="账号导航" className={styles.accountNav}>
-          <Link href="/account">我的账号</Link>
-          <Link href="/account/security">账号与安全</Link>
-          <AccountSignOut />
-        </nav>
-      </header>
+    <AccountShell
+      access={{ hasWorkAccess: workAccess, recoveryRestricted: false }}
+      identity={context.account.displayName}
+    >
+      <PageMasthead
+        title="我的赛事"
+        lede="报名、审核状态和协作权限都保存在这个账号下，不需要另外保管管理链接。"
+      />
 
-      <main id="main">
-        <div className={styles.intro}>
-          <div>
-            <p className={styles.eyebrow}>ACCOUNT / 我的赛事</p>
-            <h1>我的赛事</h1>
-          </div>
-          <aside aria-label="账号赛事说明">
-            <strong>{context.account.displayName}</strong>
-            <p>报名、审核状态和协作权限都随当前账号保存，不需要另外保管管理链接。</p>
-          </aside>
-        </div>
+      <RegistrationInvitations items={invitations} />
+      <RosterClaimRequests items={rosterClaimRequests} />
 
-        <RegistrationInvitations items={invitations} />
-        <RosterClaimRequests items={rosterClaimRequests} />
+      <StaffWorkspaces
+        workspaces={workspacePage.workspaces}
+        total={workspacePage.total}
+        page={staffPage}
+        pages={staffPages}
+      />
 
-        <StaffWorkspaces
-          workspaces={workspacePage.workspaces}
-          total={workspacePage.total}
-          page={staffPage}
-          pages={staffPages}
+      {nextMatch !== undefined && (hasApprovedEntry || hasPendingEntry) ? (
+        <NextMatchBrief
+          nextMatch={nextMatch}
+          emptyReason={hasApprovedEntry ? 'standby' : 'review'}
+          initialNow={now}
         />
+      ) : null}
 
-        {nextMatch !== undefined && (hasApprovedEntry || hasPendingEntry) ? (
-          <NextMatchBrief
-            nextMatch={nextMatch}
-            emptyReason={hasApprovedEntry ? 'standby' : 'review'}
-            initialNow={now}
-          />
-        ) : null}
-
-        {drafts.length ? (
-          <section className={styles.drafts} aria-labelledby="drafts-title">
-            <header>
-              <p>DRAFTS / 草稿</p>
-              <h2 id="drafts-title">待完成的报名</h2>
-            </header>
-            <div>
-              {drafts.map(draft => (
-                <article key={draft.tournament.id}>
-                  <span>{draft.tournament.title}</span>
-                  <strong>{draft.values.name || '尚未填写战队名称'}</strong>
-                  <Link href={`/tournaments/${encodeURIComponent(draft.tournament.slug)}/register`}>
-                    继续填写 →
-                  </Link>
-                </article>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        {entries.length ? (
-          <section className={styles.files} aria-label="我的赛事报名">
-            {entries.map(entry => (
-              <EntryDossier
-                key={entry.team.id}
-                entry={entry}
-                relationship={entry.relationship}
-                managementHref={`/me/registrations/${entry.team.id}`}
-              />
+      {drafts.length ? (
+        <section className={styles.drafts} aria-labelledby="drafts-title">
+          <h2 id="drafts-title">待完成的报名</h2>
+          <div>
+            {drafts.map(draft => (
+              <article key={draft.tournament.id}>
+                <span>{draft.tournament.title}</span>
+                <strong>{draft.values.name || '尚未填写战队名称'}</strong>
+                <Link href={`/tournaments/${encodeURIComponent(draft.tournament.slug)}/register`}>
+                  继续填写
+                </Link>
+              </article>
             ))}
-          </section>
-        ) : (
-          <section className={styles.empty} aria-labelledby="empty-title">
-            <p>REGISTRATION / EMPTY</p>
-            <h2 id="empty-title">还没有赛事报名</h2>
-            <span>从开放报名的赛事开始组队；保存过的草稿也会显示在这里。</span>
-            <Link href="/tournaments">浏览公开赛事</Link>
-          </section>
-        )}
-      </main>
-    </div>
+          </div>
+        </section>
+      ) : null}
+
+      {entries.length ? (
+        <section className={styles.files} aria-label="我的赛事报名">
+          {entries.map(entry => (
+            <EntryDossier
+              key={entry.team.id}
+              entry={entry}
+              relationship={entry.relationship}
+              managementHref={`/me/registrations/${entry.team.id}`}
+            />
+          ))}
+        </section>
+      ) : (
+        <EmptyEntries hint="从开放报名的赛事开始组队；保存过的草稿也会显示在这里。" />
+      )}
+    </AccountShell>
   )
 }
 
@@ -219,73 +205,52 @@ export default async function ParticipantAccountPage({
 
   return (
     <ParticipantSessionBoundary sessionRemainingMs={sessionRemainingMs}>
-      <div className={styles.page}>
-        <header className={styles.topbar}>
-          <a href="/" className={styles.brand}>
-            <span aria-hidden="true">
-              <Image src="/brand/club-mark.svg" alt="" width={28} height={28} priority />
-            </span>
-            宁波理工电竞社
-          </a>
-          <ParticipantSignOut />
-        </header>
+      <AccountShell
+        access={null}
+        identity="旧登录方式"
+        sections={[]}
+        signOut={<ParticipantSignOut />}
+      >
+        <PageMasthead
+          title="我的赛事"
+          lede="这里显示通过旧登录方式关联的报名。修改仍请使用报名回执中的报名管理链接；本页不会显示链接中的私密凭据。"
+        />
 
-        <main id="main">
-          <div className={styles.intro}>
-            <div>
-              <p className={styles.eyebrow}>LEGACY ACCESS / 旧登录方式</p>
-              <h1>我的赛事</h1>
-            </div>
-            <aside
-              aria-label={addedEntry ? '报名关联结果' : '旧登录方式说明'}
-              role={addedEntry ? 'status' : undefined}
-              aria-live={addedEntry ? 'polite' : undefined}
-              aria-atomic={addedEntry ? true : undefined}
-            >
-              <strong>{addedEntry ? '报名已成功关联' : '只读报名记录'}</strong>
-              <p>
-                {addedEntry
-                  ? `[${addedEntry.team.tag}] ${addedEntry.team.name} 已关联到当前旧登录方式，可在下方查看。修改仍请使用报名回执中的报名管理链接。`
-                  : '这里显示通过旧登录方式关联的报名。修改仍请使用报名回执中的报名管理链接；本页不会恢复、推导或显示链接中的私密凭据。'}
-              </p>
-            </aside>
-          </div>
+        {addedEntry ? (
+          <p className={styles.notice} role="status" aria-live="polite" aria-atomic="true">
+            [{addedEntry.team.tag}] {addedEntry.team.name} 已关联到当前旧登录方式，可在下方查看。
+          </p>
+        ) : null}
 
-          <PassReference participantReference={maskParticipantPrincipal(participant.principalId)} />
+        <PassReference participantReference={maskParticipantPrincipal(participant.principalId)} />
 
-          <StaffWorkspaces
-            workspaces={workspacePage.workspaces}
-            total={workspacePage.total}
-            page={staffPage}
-            pages={staffPages}
+        <StaffWorkspaces
+          workspaces={workspacePage.workspaces}
+          total={workspacePage.total}
+          page={staffPage}
+          pages={staffPages}
+        />
+
+        {nextMatch !== undefined && (hasApprovedEntry || hasPendingEntry) ? (
+          <NextMatchBrief
+            nextMatch={nextMatch}
+            emptyReason={hasApprovedEntry ? 'standby' : 'review'}
+            initialNow={briefNow}
           />
+        ) : null}
 
-          {nextMatch !== undefined && (hasApprovedEntry || hasPendingEntry) ? (
-            <NextMatchBrief
-              nextMatch={nextMatch}
-              emptyReason={hasApprovedEntry ? 'standby' : 'review'}
-              initialNow={briefNow}
-            />
-          ) : null}
+        {entries.length ? (
+          <section className={styles.files} aria-label="已绑定的赛事报名">
+            {entries.map(entry => (
+              <EntryDossier key={entry.team.id} entry={entry} />
+            ))}
+          </section>
+        ) : (
+          <EmptyEntries hint="请从报名回执中的报名管理链接完成关联，之后记录会出现在这里。" />
+        )}
 
-          {entries.length ? (
-            <section className={styles.files} aria-label="已绑定的赛事报名">
-              {entries.map(entry => (
-                <EntryDossier key={entry.team.id} entry={entry} />
-              ))}
-            </section>
-          ) : (
-            <section className={styles.empty} aria-labelledby="empty-title">
-              <p>REGISTRATION / EMPTY</p>
-              <h2 id="empty-title">尚无已绑定的赛事报名</h2>
-              <span>请从报名回执中的报名管理链接完成关联，之后记录会出现在这里。</span>
-              <a href="/tournaments">浏览公开赛事</a>
-            </section>
-          )}
-
-          <AccessReceipt receipt={receipt} sessionExpiresAt={participant.sessionExpiresAt} />
-        </main>
-      </div>
+        <AccessReceipt receipt={receipt} sessionExpiresAt={participant.sessionExpiresAt} />
+      </AccountShell>
     </ParticipantSessionBoundary>
   )
 }

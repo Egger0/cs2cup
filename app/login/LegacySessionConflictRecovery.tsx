@@ -39,9 +39,6 @@ export default function LegacySessionConflictRecovery({ destination }: { destina
         aria-describedby="legacy-session-reset-status"
         onClick={() => void resetSessions()}
       >
-        <span className={styles.buttonCode} aria-hidden="true">
-          CLR
-        </span>
         <span>{state === 'working' ? '正在安全清除旧会话…' : '清除全部旧会话'}</span>
         <span className={styles.buttonArrow} aria-hidden="true">
           ↗

@@ -1,13 +1,13 @@
 .index {
   --paper: #f1efe8;
-  --ink: #171817;
+  --cover-ink: #171817;
   --blue: #0b4d87;
   --signal: #6da5d3;
   min-height: calc(100svh - 76px);
   overflow: hidden;
   padding-block: clamp(80px, 10vh, 112px) 96px;
   color: var(--paper);
-  background: var(--ink);
+  background: var(--cover-ink);
 }
 
 .inner {

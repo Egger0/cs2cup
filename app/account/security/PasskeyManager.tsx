@@ -47,11 +47,11 @@ export function PasskeyManager() {
         credentials: 'same-origin',
         headers: { Accept: 'application/json' },
       })
-      if (!response.ok) throw new Error(await responseMessage(response, '暂时无法读取 Passkey。'))
+      if (!response.ok) throw new Error(await responseMessage(response, '暂时无法读取通行密钥。'))
       const payload = (await response.json()) as { passkeys: PasskeySummary[] }
       setPasskeys(payload.passkeys)
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : '暂时无法读取 Passkey。')
+      setError(caught instanceof Error ? caught.message : '暂时无法读取通行密钥。')
     } finally {
       setLoading(false)
     }
@@ -98,10 +98,10 @@ export function PasskeyManager() {
     } catch (caught) {
       setError(
         caught instanceof Error && caught.name === 'NotAllowedError'
-          ? '设备确认已取消；账号和现有 Passkey 没有改变。'
+          ? '设备确认已取消；账号和现有通行密钥没有改变。'
           : caught instanceof Error
             ? caught.message
-            : '暂时无法添加 Passkey。',
+            : '暂时无法添加通行密钥。',
       )
     } finally {
       setWorking(false)
@@ -126,12 +126,12 @@ export function PasskeyManager() {
       })
       if (!response.ok) {
         if (response.status === 428) setReauthenticate(true)
-        throw new Error(await responseMessage(response, '暂时无法移除 Passkey。'))
+        throw new Error(await responseMessage(response, '暂时无法移除通行密钥。'))
       }
       router.replace('/login?redirectKey=account_security')
       router.refresh()
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : '暂时无法移除 Passkey。')
+      setError(caught instanceof Error ? caught.message : '暂时无法移除通行密钥。')
       setWorking(false)
       setConfirming(null)
     }
@@ -144,26 +144,23 @@ export function PasskeyManager() {
       aria-busy={working || loading}
     >
       <header>
-        <div>
-          <p>PASSKEYS / 可选快捷登录</p>
-          <h2 id="passkeys-title">你的设备密钥</h2>
-        </div>
+        <h2 id="passkeys-title">通行密钥</h2>
         <span>
           {passkeys === null ? (loading ? '读取中…' : '状态不可用') : `${passkeys.length} 个`}
         </span>
       </header>
       <p className={styles.explanation}>
-        Passkey 是密码之外的快捷登录方式。它绑定当前账号，不会创建第二个身份，也不会影响成员资格。
+        通行密钥（Passkey）用指纹、面容或设备解锁登录，不用输入密码。它绑定当前账号，不会创建第二个身份，也不会影响成员资格。
       </p>
 
       {passkeys === null ? (
         <>
           <p className={error ? styles.error : styles.empty} role={error ? 'alert' : 'status'}>
-            {error || '正在读取 Passkey 状态…'}
+            {error || '正在读取通行密钥状态…'}
           </p>
           {error ? (
             <button type="button" disabled={loading} onClick={() => void load()}>
-              {loading ? '正在重新读取…' : '重新读取 Passkey'}
+              {loading ? '正在重新读取…' : '重新读取通行密钥'}
             </button>
           ) : null}
         </>
@@ -195,7 +192,7 @@ export function PasskeyManager() {
               ))}
             </ul>
           ) : (
-            <p className={styles.empty}>尚未添加 Passkey；账号密码仍可正常登录。</p>
+            <p className={styles.empty}>尚未添加通行密钥；账号密码仍可正常登录。</p>
           )}
 
           <div className={styles.enroll}>
@@ -218,7 +215,7 @@ export function PasskeyManager() {
                 : supported
                   ? working
                     ? '等待设备确认…'
-                    : '添加 Passkey'
+                    : '添加通行密钥'
                   : '当前浏览器不支持'}
             </button>
           </div>

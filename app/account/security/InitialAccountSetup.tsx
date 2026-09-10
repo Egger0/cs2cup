@@ -70,11 +70,8 @@ export function InitialAccountSetup() {
   return (
     <section className={styles.section} aria-labelledby="initial-setup-title">
       <header>
-        <div>
-          <p>ONE-TIME SETUP / 一次性设置</p>
-          <h2 id="initial-setup-title">补上用户名与密码</h2>
-        </div>
-        <span>Passkey 已确认</span>
+        <h2 id="initial-setup-title">设置用户名与密码</h2>
+        <span>通行密钥已确认</span>
       </header>
       <p className={styles.explanation}>
         旧报名已经安全接入当前账号。现在设置默认登录方式，之后即可使用用户名登录、接收协作邀请并启用恢复码。
@@ -138,7 +135,7 @@ export function InitialAccountSetup() {
       ) : null}
       {reauthenticate ? (
         <Link className={styles.inlineLink} href="/login?redirectKey=account_security&reauth=1">
-          使用 Passkey 重新登录后继续
+          使用通行密钥重新登录后继续
         </Link>
       ) : null}
     </section>

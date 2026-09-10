@@ -22,13 +22,6 @@
   background: var(--ct-dim);
 }
 .dialog {
-  --ink: #171817;
-  --muted: #5f605a;
-  --line-strong: #aaa69b;
-  --accent: #0b4d87;
-  --ct: #0b4d87;
-  --void: #f7f5ee;
-  color-scheme: light;
   width: min(820px, calc(100% - 32px));
   max-height: calc(100dvh - 32px);
   margin: auto;

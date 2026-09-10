@@ -2,7 +2,6 @@
 
 import { useState, type FormEvent } from 'react'
 import formStyles from '../login/credential-form.module.css'
-import loginStyles from '../login/login.module.css'
 
 function encodedForm(form: HTMLFormElement) {
   const encoded = new URLSearchParams()
@@ -90,9 +89,6 @@ export function RecoverForm() {
         />
       </label>
       <button className={formStyles.passwordButton} type="submit" disabled={working}>
-        <span className={loginStyles.buttonCode} aria-hidden="true">
-          RC
-        </span>
         <span>{working ? '正在验证…' : '继续重设密码'}</span>
         <span aria-hidden="true">↗</span>
       </button>

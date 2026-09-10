@@ -45,7 +45,6 @@ export function RosterSeatPanel({ teamId, seats }: { teamId: number; seats: Rost
 
   return (
     <section className={styles.panel}>
-      <div className={styles.eyebrow}>ROSTER / 席位</div>
       <h2>队员席位</h2>
       <p className={styles.lede}>
         填写用户名后会向该账号发送席位邀请；只有对方登录确认，赛事记录才会计入他的个人页。
