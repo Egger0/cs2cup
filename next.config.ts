@@ -10,6 +10,7 @@ const PRIVATE_ROUTE_SOURCES = [
   '/api/participant/:path*',
   '/invitations/:path*',
   '/login',
+  '/lottery',
   '/me',
   '/photos/:path*',
   '/registrations/:path*',
