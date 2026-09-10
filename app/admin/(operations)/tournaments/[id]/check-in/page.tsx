@@ -14,6 +14,7 @@ import { getTournamentCheckInDesk } from '@/lib/queries/staff-check-in'
 import type { TournamentStatus } from '@/lib/types'
 import { CheckInDesk } from './CheckInDesk'
 import styles from './check-in.module.css'
+import theme from '@/app/site-theme.module.css'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,7 +75,7 @@ export default async function TournamentCheckInPage({
   const isParticipant = desk.actor.kind === 'participant'
   const isUnified = desk.actor.kind === 'unified'
   const page = (
-    <div className={styles.page}>
+    <div className={`${theme.dark} ${styles.page}`}>
       <header className={styles.topbar}>
         <a href="/" className={styles.brand}>
           <Image src="/brand/club-mark.svg" alt="" width={34} height={34} priority />

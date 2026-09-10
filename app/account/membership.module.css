@@ -121,6 +121,11 @@
   font-size: 0.875rem;
 }
 
+.form label small {
+  color: var(--muted-2);
+  font-size: 0.8125rem;
+}
+
 .form input,
 .form textarea {
   width: 100%;

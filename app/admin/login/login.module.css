@@ -1,9 +1,4 @@
 .page {
-  --accent: #6da5d3;
-  --button-ink: #171817;
-  --bg-2: #141514;
-  --surface: #1d1f1e;
-  --ink: #f1efe8;
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.7fr);
   min-height: 100svh;

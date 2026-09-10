@@ -208,6 +208,7 @@ export function MembershipPanel({
               placeholder="例如：学号、院系或与社团的关系"
               required
             />
+            <small>3—160 个字符</small>
           </label>
           <label>
             <span>联系信息</span>
@@ -218,6 +219,7 @@ export function MembershipPanel({
               placeholder="便于审核联系；不会自动成为账号恢复方式"
               required
             />
+            <small>3—160 个字符，便于审核联系</small>
           </label>
           <label>
             <span>补充说明（可选）</span>
@@ -227,6 +229,7 @@ export function MembershipPanel({
               maxLength={500}
               rows={3}
             />
+            <small>最多 500 个字符</small>
           </label>
           {error ? (
             <p className={styles.error} role="alert">

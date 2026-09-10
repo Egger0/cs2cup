@@ -5,14 +5,6 @@
   --ops-line-strong: rgba(102, 181, 223, 0.42);
   --ops-panel: #151a1c;
   --ops-floor: #0c1012;
-  --accent: var(--ops-blue);
-  --surface: var(--ops-panel);
-  --bg-2: #101517;
-  --line: var(--ops-line);
-  --line-strong: var(--ops-line-strong);
-  --ink: #eef3f2;
-  --muted: #91a0a5;
-  --muted-2: #718086;
   min-height: 100svh;
   color: var(--ink);
   background:

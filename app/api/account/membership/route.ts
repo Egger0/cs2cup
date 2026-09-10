@@ -15,6 +15,7 @@ import {
   withdrawMembershipApplication,
   type MembershipMutationResult,
 } from '@/lib/identity/membership-service'
+import type { MembershipFieldIssue } from '@/lib/identity/internal/membership-policy'
 
 const FIELDS = [
   'operation',
@@ -33,9 +34,30 @@ function revision(value: string) {
   return /^\d{1,10}$/.test(value) ? Number(value) : null
 }
 
+const FIELD_LABEL = {
+  identityClaim: '身份与参与依据',
+  contact: '联系信息',
+  applicationReason: '补充说明',
+} as const
+
+const FIELD_RANGE = {
+  identityClaim: '3—160',
+  contact: '3—160',
+  applicationReason: '1—500',
+} as const
+
+function fieldFailure(issue: MembershipFieldIssue) {
+  const label = FIELD_LABEL[issue.field]
+  if (issue.reason === 'invalid_characters') {
+    return `${label}含有不支持的字符，请删除后重试。`
+  }
+  return `${label}请填写 ${FIELD_RANGE[issue.field]} 个字符。`
+}
+
 function mutationFailure(result: Extract<MembershipMutationResult, { ok: false }>) {
-  if (result.reason === 'invalid_input' || result.reason === 'incomplete') {
-    return response(400, '请完整填写身份与联系信息，并检查字数。')
+  if (result.reason === 'invalid_input') return response(400, fieldFailure(result.issue))
+  if (result.reason === 'incomplete') {
+    return response(400, '请填写身份与参与依据和联系信息后再提交。')
   }
   if (result.reason === 'session_invalid') return response(401, '登录已失效，请重新登录。')
   if (result.reason === 'conflict') return response(409, '申请已在其他页面更新，请刷新后重试。')

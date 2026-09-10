@@ -59,7 +59,9 @@ for (const path of [
   assert.match(source, /catch \{/)
   assert.match(source, /role=["']alert["']/)
 }
-assert.match(await read('app/admin/(console)/AdminSignOut.tsx'), /退出失败，请重试/)
+const adminLayout = await read('app/admin/(console)/layout.tsx')
+assert.match(adminLayout, /AccountSignOut/)
+assert.match(await read('components/account/AccountSignOut.tsx'), /role=["']alert["']/)
 
 const identityStyles = await read('app/admin/(console)/identity/identity.module.css')
 const identityOperations = await read('app/admin/(console)/identity/operations.module.css')

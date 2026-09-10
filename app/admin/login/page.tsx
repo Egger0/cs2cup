@@ -11,6 +11,8 @@ import {
 import { getAuthContext } from '@/lib/identity/kernel'
 import { getCurrentLegacyParticipantSession } from '@/lib/participant-auth'
 import styles from './login.module.css'
+import theme from '@/app/site-theme.module.css'
+import { CLUB_BRAND } from '@/lib/brand'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,12 +46,12 @@ export default async function LoginPage({
   const rateLimited = errorCode === 'rate'
   const unavailable = errorCode === 'setup'
   return (
-    <main id="main" className={styles.page}>
+    <main id="main" className={`${theme.dark} ${styles.page}`}>
       <section className={styles.intro} aria-labelledby="admin-login-title">
         <div className={styles.brand} aria-hidden="true">
           N
         </div>
-        <p className={styles.eyebrow}>NINGBOTECH ESPORTS / CONTROL ROOM</p>
+        <p className={styles.eyebrow}>{CLUB_BRAND.name}</p>
         <h1 id="admin-login-title">把比赛留在场上，秩序留在这里。</h1>
         <p className={styles.lede}>赛事、成员与内容的内部工作台。</p>
         <Link href="/" className={styles.back}>
