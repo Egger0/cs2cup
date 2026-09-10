@@ -82,7 +82,9 @@ async function approveMember(context, reviewer, at) {
 
 try {
   const campaign = database
-    .prepare('SELECT starts_at, ends_at FROM recruitment_lottery_campaign WHERE id = ?')
+    .prepare(
+      'SELECT starts_at, ends_at, manual_state FROM recruitment_lottery_campaign WHERE id = ?',
+    )
     .get(RECRUITMENT_LOTTERY_CAMPAIGN_ID)
   assert.ok(campaign, 'the recruitment campaign must be seeded by its migration')
   assert.equal(
@@ -123,6 +125,23 @@ try {
     (await recruitmentLotteryState(db, accountIds.owner, campaign.starts_at - 1)).phase,
     'upcoming',
   )
+  database
+    .prepare("UPDATE recruitment_lottery_campaign SET manual_state = 'open' WHERE id = ?")
+    .run(RECRUITMENT_LOTTERY_CAMPAIGN_ID)
+  assert.equal(
+    (await recruitmentLotteryState(db, accountIds.owner, campaign.starts_at - 1)).phase,
+    'open',
+  )
+  database
+    .prepare("UPDATE recruitment_lottery_campaign SET manual_state = 'closed' WHERE id = ?")
+    .run(RECRUITMENT_LOTTERY_CAMPAIGN_ID)
+  assert.equal(
+    (await recruitmentLotteryState(db, accountIds.owner, campaign.starts_at + 1)).phase,
+    'closed',
+  )
+  database
+    .prepare('UPDATE recruitment_lottery_campaign SET manual_state = NULL WHERE id = ?')
+    .run(RECRUITMENT_LOTTERY_CAMPAIGN_ID)
   assert.deepEqual(await drawRecruitmentLottery(db, accountIds.manager, campaign.starts_at + 1), {
     ok: false,
     error: '仅限已审核通过的社团成员参与。',

@@ -10,6 +10,7 @@ type CampaignRow = {
   title: string
   startsAt: number
   endsAt: number
+  manualState: 'open' | 'closed' | null
 }
 
 type DrawRow = {
@@ -34,6 +35,8 @@ export type RecruitmentLotteryDrawResult = { ok: true } | { ok: false; error: st
 
 function phaseOf(campaign: CampaignRow | null, now: number): RecruitmentLotteryState['phase'] {
   if (!campaign) return 'unavailable'
+  if (campaign.manualState === 'open') return 'open'
+  if (campaign.manualState === 'closed') return 'closed'
   if (now < campaign.startsAt) return 'upcoming'
   if (now >= campaign.endsAt) return 'closed'
   return 'open'
@@ -54,7 +57,7 @@ function normalizeReceiptCode(value: string) {
 async function campaign(database: IdentityDatabase) {
   return database
     .prepare(
-      `SELECT id, title, starts_at AS startsAt, ends_at AS endsAt
+      `SELECT id, title, starts_at AS startsAt, ends_at AS endsAt, manual_state AS manualState
        FROM recruitment_lottery_campaign WHERE id = ?`,
     )
     .bind(RECRUITMENT_LOTTERY_CAMPAIGN_ID)
