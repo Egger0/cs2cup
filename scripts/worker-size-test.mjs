@@ -3,7 +3,7 @@ import { access } from 'node:fs/promises'
 import { promisify } from 'node:util'
 
 const LIMIT_KIB = 65536
-const MAX_UPLOAD_KIB = 8192
+const MAX_UPLOAD_KIB = LIMIT_KIB
 const run = promisify(execFile)
 const wrangler = 'node_modules/wrangler/bin/wrangler.js'
 
