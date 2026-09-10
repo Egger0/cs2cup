@@ -89,7 +89,7 @@ export async function SiteFooter({ setting }: { setting: SiteSetting }) {
                   <span className={styles.chipIcon} aria-hidden="true">
                     <Image src="/brand/qq.svg" alt="" width={20} height={20} />
                   </span>
-                  <span>QQ 群</span>
+                  <span>加入 QQ 群</span>
                   {qqGroup.number ? <small>{qqGroup.number}</small> : null}
                 </a>
               ) : qqGroup?.kind === 'number' ? (

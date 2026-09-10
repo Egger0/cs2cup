@@ -30,4 +30,19 @@ assert.equal(
 )
 assert.equal(qqGroupContact('javascript:alert(1)'), null)
 
+const both = qqGroupContact('661543515 https://qm.qq.com/q/hSolmJ1LXi')
+assert.equal(both?.kind, 'invite')
+assert.equal(both?.href, 'https://qm.qq.com/q/hSolmJ1LXi')
+assert.equal(both?.number, '661543515', 'a number beside the link is kept for display')
+
+const reversed = qqGroupContact('https://qm.qq.com/q/hSolmJ1LXi\n661543515')
+assert.equal(reversed?.kind, 'invite')
+assert.equal(reversed?.number, '661543515')
+
+assert.equal(
+  qqGroupContact('661543515 https://evil.example/q/x')?.kind,
+  'number',
+  'a rejected link falls back to the number',
+)
+
 console.log('QQ group contact tests passed')
