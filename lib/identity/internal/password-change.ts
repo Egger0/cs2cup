@@ -11,12 +11,7 @@ import {
   verifyPassword,
 } from './password-kdf.ts'
 import { evaluatePasswordPolicy } from './password-policy.ts'
-import {
-  checkPwnedPassword,
-  containsPasswordContext,
-  PasswordScreeningUnavailableError,
-  type PwnedPasswordOptions,
-} from './password-screening.ts'
+import { accountPasswordContextTerms, containsPasswordContext } from './password-context.ts'
 import { createSessionDraft, prepareSessionInsert } from './session-draft.ts'
 import { securityEventStatement } from './security-event.ts'
 import { privateSessionContext } from './session-context.ts'
@@ -30,7 +25,6 @@ export type PasswordChangeFailure =
   | 'password_reused'
   | 'password_context'
   | 'password_compromised'
-  | 'screening_unavailable'
   | 'not_authenticated'
   | 'unsupported_recovery'
   | 'configuration_unavailable'
@@ -49,7 +43,7 @@ export async function changeAccountPassword(
   context: AuthenticatedAuthContext,
   input: { currentPassword?: unknown; password: unknown; passwordConfirmation: unknown },
   peppers: PasswordPepperSet,
-  options: PwnedPasswordOptions & { now?: number } = {},
+  options: { now?: number } = {},
 ): Promise<PasswordChangeResult> {
   const now = options.now ?? Date.now()
   if (!Number.isSafeInteger(now) || now < 0 || now > Number.MAX_SAFE_INTEGER - INTENT_TTL_MS) {
@@ -79,7 +73,10 @@ export async function changeAccountPassword(
     return { ok: false, reason: 'invalid_input' }
   }
   if (
-    containsPasswordContext(policy.normalizedPassword, [row.username, row.display_name, 'cs2cup'])
+    containsPasswordContext(
+      policy.normalizedPassword,
+      accountPasswordContextTerms(row.username, row.display_name),
+    )
   ) {
     return { ok: false, reason: 'password_context' }
   }
@@ -88,16 +85,6 @@ export async function changeAccountPassword(
   if (!oldRecord || !oldPepper) return { ok: false, reason: 'configuration_unavailable' }
   if (await verifyPassword(policy.normalizedPassword, oldRecord, oldPepper)) {
     return { ok: false, reason: 'password_reused' }
-  }
-  try {
-    if ((await checkPwnedPassword(policy.normalizedPassword, options)).compromised) {
-      return { ok: false, reason: 'password_compromised' }
-    }
-  } catch (error) {
-    if (error instanceof PasswordScreeningUnavailableError) {
-      return { ok: false, reason: 'screening_unavailable' }
-    }
-    throw error
   }
 
   const verifier = passwordVerifierForStorage(

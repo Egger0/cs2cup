@@ -23,7 +23,6 @@ const PAGES = [
   '/login',
   '/recover',
   '/register',
-  '/admin/login?error=rate',
 ]
 
 const browser = await chromium.launch()

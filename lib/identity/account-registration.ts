@@ -8,11 +8,6 @@ import {
   passwordVerifierForStorage,
 } from './internal/password-kdf.ts'
 import type { PasswordPepperSet } from './internal/password-config.ts'
-import {
-  checkPwnedPassword,
-  PasswordScreeningUnavailableError,
-  type PwnedPasswordOptions,
-} from './internal/password-screening.ts'
 import { securityEventStatement } from './internal/security-event.ts'
 import {
   evaluateSelfRegistration,
@@ -38,9 +33,8 @@ export type AccountRegistrationResult =
     }
   | { readonly ok: false; readonly reason: 'username_unavailable' }
   | { readonly ok: false; readonly reason: 'password_compromised' }
-  | { readonly ok: false; readonly reason: 'screening_unavailable' }
 
-export interface RegisterAccountOptions extends PwnedPasswordOptions {
+export interface RegisterAccountOptions {
   readonly now?: number
   readonly clientLabel?: string
 }
@@ -78,17 +72,6 @@ export async function registerAccount(
   if (!(await usernameAvailable(database, policy.value.username))) {
     return { ok: false, reason: 'username_unavailable' }
   }
-
-  let screening
-  try {
-    screening = await checkPwnedPassword(policy.value.normalizedPassword, options)
-  } catch (error) {
-    if (error instanceof PasswordScreeningUnavailableError) {
-      return { ok: false, reason: 'screening_unavailable' }
-    }
-    throw error
-  }
-  if (screening.compromised) return { ok: false, reason: 'password_compromised' }
 
   const now = options.now ?? Date.now()
   if (!Number.isSafeInteger(now) || now < 0) throw new TypeError('Invalid registration time')

@@ -8,11 +8,6 @@ import {
   passwordVerifierForStorage,
 } from './internal/password-kdf.ts'
 import type { PasswordPepperSet } from './internal/password-config.ts'
-import {
-  checkPwnedPassword,
-  PasswordScreeningUnavailableError,
-  type PwnedPasswordOptions,
-} from './internal/password-screening.ts'
 import { securityEventStatement } from './internal/security-event.ts'
 import { legacyCutoverStatements } from './internal/legacy-cutover.ts'
 import {
@@ -44,16 +39,10 @@ export type LegacyOwnerBootstrapResult =
     }
   | {
       readonly ok: false
-      readonly reason:
-        | 'unauthorized'
-        | 'already_completed'
-        | 'username_unavailable'
-        | 'password_compromised'
-        | 'screening_unavailable'
-        | 'conflict'
+      readonly reason: 'unauthorized' | 'already_completed' | 'username_unavailable' | 'conflict'
     }
 
-export interface LegacyOwnerBootstrapOptions extends PwnedPasswordOptions {
+export interface LegacyOwnerBootstrapOptions {
   readonly now?: number
   readonly legacyParticipantTokenHash?: string | null
 }
@@ -147,17 +136,6 @@ export async function bootstrapLegacyPlatformOwner(
   if (state.opposingSession) return { ok: false, reason: 'conflict' }
   if (state.owner || state.bootstrap) return { ok: false, reason: 'already_completed' }
   if (state.usernameTaken) return { ok: false, reason: 'username_unavailable' }
-
-  let screening
-  try {
-    screening = await checkPwnedPassword(policy.value.normalizedPassword, options)
-  } catch (error) {
-    if (error instanceof PasswordScreeningUnavailableError) {
-      return { ok: false, reason: 'screening_unavailable' }
-    }
-    throw error
-  }
-  if (screening.compromised) return { ok: false, reason: 'password_compromised' }
 
   const accountId = createOpaqueToken()
   const passwordCredentialId = createOpaqueToken()

@@ -5,7 +5,6 @@ import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { assertCsrfRequest, CsrfError } from '@/lib/csrf'
 import { withPrivateNoStore } from '@/lib/http-cache'
 import { registerAccount } from '@/lib/identity/account-registration'
-import { COMPROMISED_PASSWORD_MESSAGE } from '@/lib/identity/registration-feedback'
 import { activeAuthFingerprintKey } from '@/lib/identity/internal/auth-fingerprint-config'
 import { createAuthAttemptFingerprint } from '@/lib/identity/internal/auth-fingerprint'
 import {
@@ -59,7 +58,9 @@ function policyMessage(field: string, reason: string) {
   if (field === 'displayName') return '请填写 1–80 个字符的显示名称。'
   if (field === 'passwordConfirmation') return '两次输入的密码不一致。'
   if (reason === 'too_short') return '密码至少需要 6 个字符。'
-  if (reason === 'contains_account_context') return '密码不应包含用户名或显示名称。'
+  if (reason === 'contains_account_context') {
+    return '密码不能包含用户名、显示名称或社团名称，请换一个。'
+  }
   return '密码不符合要求，请换一个易记的长密码。'
 }
 
@@ -114,17 +115,9 @@ export async function POST(request: NextRequest) {
           error: '这个用户名不可用，请换一个再试。',
         })
       }
-      if (result.reason === 'password_compromised') {
-        return failureResponse(request, {
-          status: 400,
-          code: result.reason,
-          field: 'password',
-          error: COMPROMISED_PASSWORD_MESSAGE,
-        })
-      }
       return failureResponse(request, {
         status: 503,
-        code: result.reason,
+        code: 'unavailable',
         error: '注册暂时不可用，请稍后重试。',
       })
     }

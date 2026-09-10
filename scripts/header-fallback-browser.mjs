@@ -4,7 +4,8 @@ import { blockClientChunkContaining } from './client-chunk-blocker.mjs'
 import { installLoopbackRequestGuard, resolveE2EBaseUrl } from './loopback-url.mjs'
 
 const base = resolveE2EBaseUrl()
-const publicHrefs = '/tournaments,/news,/archive,/games,/about,/guestbook,/search,/login,/register'
+const { PUBLIC_LINKS } = await import('../lib/site-navigation.ts')
+const publicHrefs = [...PUBLIC_LINKS.map(link => link.href), '/login', '/register'].join(',')
 const browser = await chromium.launch()
 
 try {

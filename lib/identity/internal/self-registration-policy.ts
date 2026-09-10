@@ -1,5 +1,5 @@
 import { evaluatePasswordPolicy } from './password-policy.ts'
-import { containsPasswordContext } from './password-screening.ts'
+import { accountPasswordContextTerms, containsPasswordContext } from './password-context.ts'
 import { evaluateUsernamePolicy } from './username-policy.ts'
 
 const FORBIDDEN_DISPLAY_CHARACTERS = /[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/u
@@ -79,12 +79,10 @@ export function evaluateSelfRegistration(
     return { ok: false, issue: { field: 'passwordConfirmation', reason: 'mismatch' } }
   }
   if (
-    containsPasswordContext(password.normalizedPassword, [
-      username.username,
-      displayName.displayName,
-      'cs2cup',
-      '宁波理工电竞社',
-    ])
+    containsPasswordContext(
+      password.normalizedPassword,
+      accountPasswordContextTerms(username.username, displayName.displayName),
+    )
   ) {
     return {
       ok: false,

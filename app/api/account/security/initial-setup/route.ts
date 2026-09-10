@@ -56,12 +56,6 @@ function failure(
   if (result.reason === 'password_context') {
     return response(400, '密码不应包含用户名、显示名称或本站名称。', result.reason, 'password')
   }
-  if (result.reason === 'password_compromised') {
-    return response(400, '这个密码曾出现在泄露记录中，请换一个。', result.reason, 'password')
-  }
-  if (result.reason === 'screening_unavailable') {
-    return response(503, '暂时无法安全检查新密码，本次没有保存。', result.reason, 'password')
-  }
   if (result.reason === 'conflict') {
     return response(409, '安全状态已经变化，请刷新后重试。', result.reason)
   }

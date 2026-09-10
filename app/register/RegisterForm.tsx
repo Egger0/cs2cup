@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { PasswordInput } from '@/components/ui/PasswordInput'
-import { COMPROMISED_PASSWORD_MESSAGE } from '@/lib/identity/registration-feedback'
 import { registrationAuthHref } from '@/lib/registration-navigation'
 import formStyles from '../login/credential-form.module.css'
 import styles from './register.module.css'
@@ -19,7 +18,6 @@ const FAILURE_COPY: Record<string, string> = {
   username_unavailable: '这个用户名不可用，请换一个再试。',
   invalid_format: '用户名需为 3–32 位小写字母、数字、点、短横线或下划线。',
   reserved: '这个用户名不可用，请换一个再试。',
-  password_compromised: COMPROMISED_PASSWORD_MESSAGE,
 }
 
 function encodedForm(form: HTMLFormElement) {
@@ -48,9 +46,7 @@ export function RegisterForm({
       ? (FAILURE_COPY[initialError] ?? '请检查用户名、显示名称和密码后重试。本次未创建账号。')
       : '',
   )
-  const [errorField, setErrorField] = useState(
-    initialError === 'password_compromised' ? 'password' : '',
-  )
+  const [errorField, setErrorField] = useState('')
 
   useEffect(() => {
     if (working || !errorField) return

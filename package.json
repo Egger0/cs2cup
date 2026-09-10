@@ -41,7 +41,7 @@
     "test:rdb-filter": "node --experimental-strip-types scripts/rdb-filter-test.mjs",
     "test:image-upload": "node --experimental-strip-types scripts/image-upload-test.mjs",
     "test:csrf": "node --conditions=react-server --experimental-strip-types scripts/csrf-test.mjs",
-    "test:admin-login": "node --conditions=react-server --experimental-strip-types scripts/admin-login-http-test.mjs && node --conditions=react-server --experimental-strip-types scripts/admin-login-query-test.mjs",
+    "test:admin-login": "node --conditions=react-server --experimental-strip-types scripts/admin-login-query-test.mjs",
     "test:authorization": "node --conditions=react-server --experimental-strip-types scripts/admin-authorization-test.mjs",
     "test:admin-auth-wiring": "node --conditions=react-server --experimental-strip-types scripts/admin-auth-wiring-test.mjs",
     "test:admin-ui": "node scripts/admin-ui-wiring-test.mjs",

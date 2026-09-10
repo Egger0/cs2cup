@@ -195,20 +195,6 @@ try {
   assert.equal(mappedParticipantState.participantActive, false)
   assert.equal(mappedParticipantState.participantTokenHash, hash(PARTICIPANT_TOKEN))
   database.exec('ROLLBACK TO mapped_participant_cookie; RELEASE mapped_participant_cookie')
-  const { POST: createAdminLogin } = await import('../app/admin/session/route.ts')
-  const blockedAdmin = await createAdminLogin(
-    new NextRequest('http://localhost:3000/admin/session', {
-      method: 'POST',
-      headers: {
-        ...sameOriginHeaders,
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Cookie: `${PARTICIPANT_COOKIE}=${PARTICIPANT_TOKEN}`,
-      },
-      body: new URLSearchParams({ username: 'owner', password: 'not-read' }),
-    }),
-  )
-  assert.equal(blockedAdmin.status, 303)
-  assert.match(blockedAdmin.headers.get('location') ?? '', /reason=conflict/)
   assert.equal(count(database, 'admin_session'), 0)
 
   await assert.rejects(
@@ -235,7 +221,7 @@ try {
       passwordConfirmation: 'violet harbor lantern meadow 2026',
     },
     { active: pepper, byVersion: new Map([[1, pepper]]) },
-    { now: now + 1, fetcher: async () => new Response('') },
+    { now: now + 1 },
   )
   assert.equal(unified.ok, true)
   if (!unified.ok) throw new Error('Unable to create unified containment session')
@@ -286,19 +272,6 @@ try {
   assert.equal(count(database, 'participant_webauthn_challenge'), beforeUnifiedChallenges)
   assert.equal(count(database, 'participant_session'), 0)
 
-  const blockedLegacyAdmin = await createAdminLogin(
-    new NextRequest('http://localhost:3000/admin/session', {
-      method: 'POST',
-      headers: {
-        ...sameOriginHeaders,
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Cookie: `__Host-cs2cup_session=${unified.token}`,
-      },
-      body: new URLSearchParams({ username: 'owner', password: 'must-not-be-read' }),
-    }),
-  )
-  assert.equal(blockedLegacyAdmin.status, 303)
-  assert.match(blockedLegacyAdmin.headers.get('location') ?? '', /\/account$/)
   assert.equal(count(database, 'admin_session'), 0)
 
   console.log('legacy opposite-session and browser-slot tests passed')

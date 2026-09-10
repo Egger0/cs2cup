@@ -83,7 +83,6 @@ const fields = {
 }
 const pepper = { version: 1, key: Uint8Array.from({ length: 32 }, (_, index) => index + 1) }
 const peppers = { active: pepper, byVersion: new Map([[pepper.version, pepper]]) }
-const cleanRange = async () => new Response(`${'A'.repeat(35)}:1\r\n`, { status: 200 })
 
 const database = await createMigratedDatabase()
 const db = d1Adapter(database)
@@ -154,38 +153,16 @@ try {
   const blocked = await bootstrapLegacyPlatformOwner(db, currentLegacyHash, fields, peppers, {
     now,
     legacyParticipantTokenHash: participantHash,
-    fetcher: async () => {
-      throw new Error('Password screening must not run for conflicting sessions')
-    },
   })
   assert.deepEqual(blocked, { ok: false, reason: 'conflict' })
   assert.equal(count(database, 'identity_legacy_admin_bootstrap'), 0)
   database.prepare('DELETE FROM participant_session WHERE token_hash = ?').run(participantHash)
 
-  const raced = await bootstrapLegacyPlatformOwner(db, currentLegacyHash, fields, peppers, {
-    now,
-    legacyParticipantTokenHash: participantHash,
-    fetcher: async () => {
-      database
-        .prepare(
-          `INSERT INTO participant_session
-            (token_hash, principal_id, credential_id, created_at, expires_at)
-           VALUES (?, ?, ?, ?, ?)`,
-        )
-        .run(participantHash, principalId, participantCredentialId, now, now + 60_000)
-      return cleanRange()
-    },
-  })
-  assert.deepEqual(raced, { ok: false, reason: 'conflict' })
-  assert.equal(count(database, 'identity_legacy_admin_bootstrap'), 0)
-  assert.equal(count(database, 'identity_account'), 0)
-  assert.equal(count(database, 'admin_session'), 2)
   database.prepare('DELETE FROM participant_session WHERE token_hash = ?').run(participantHash)
 
   const result = await bootstrapLegacyPlatformOwner(db, currentLegacyHash, fields, peppers, {
     now,
     legacyParticipantTokenHash: participantHash,
-    fetcher: cleanRange,
   })
   assert.equal(result.ok, true)
   assert.equal(count(database, 'admin_session'), 0)
@@ -294,7 +271,6 @@ try {
   }
   const replay = await bootstrapLegacyPlatformOwner(db, currentLegacyHash, fields, peppers, {
     now: now + 2,
-    fetcher: cleanRange,
   })
   assert.deepEqual(replay, { ok: false, reason: 'unauthorized' })
   assert.deepEqual(

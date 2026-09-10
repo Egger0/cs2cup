@@ -86,13 +86,7 @@ export async function POST(request: NextRequest) {
         return response(400, '新密码不能与当前密码相同。', result.reason)
       }
       if (result.reason === 'password_context') {
-        return response(400, '新密码不能包含用户名、显示名称或本站名称。', result.reason)
-      }
-      if (result.reason === 'password_compromised') {
-        return response(400, '这个密码曾出现在泄露数据中，请换一个。', result.reason)
-      }
-      if (result.reason === 'screening_unavailable') {
-        return response(503, '暂时无法安全检查新密码，本次没有修改。', result.reason)
+        return response(400, '新密码不能包含用户名、显示名称或社团名称，请换一个。', result.reason)
       }
       if (result.reason === 'unsupported_recovery') {
         return response(403, '这个恢复会话不能修改密码。', result.reason)
