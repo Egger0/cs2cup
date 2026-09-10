@@ -65,7 +65,7 @@ export function PrivateSessionBoundary({
   const returnPath = safeParticipantReturnPath(returnTo)
   const expiredLogin = `/login?reason=expired&returnTo=${encodeURIComponent(returnPath)}`
   const safeSessionEndDestination =
-    sessionEndDestination === '/admin/login'
+    sessionEndDestination === '/login?redirectKey=workspaces'
       ? sessionEndDestination
       : safeParticipantReturnPath(sessionEndDestination) === sessionEndDestination
         ? sessionEndDestination

@@ -9,12 +9,7 @@ import {
   passwordVerifierForStorage,
 } from './internal/password-kdf.ts'
 import { evaluatePasswordPolicy } from './internal/password-policy.ts'
-import {
-  checkPwnedPassword,
-  containsPasswordContext,
-  PasswordScreeningUnavailableError,
-  type PwnedPasswordOptions,
-} from './internal/password-screening.ts'
+import { containsPasswordContext } from './internal/password-context.ts'
 import {
   hasRecentAuthentication,
   RECENT_AUTHENTICATION_MS,
@@ -29,8 +24,6 @@ export type PasskeyAccountSetupFailure =
   | 'invalid_input'
   | 'username_unavailable'
   | 'password_context'
-  | 'password_compromised'
-  | 'screening_unavailable'
   | 'not_authenticated'
   | 'recovery_restricted'
   | 'passkey_required'
@@ -158,7 +151,7 @@ export async function completePasskeyAccountSetup(
   context: AuthenticatedAuthContext,
   input: { username: unknown; password: unknown; passwordConfirmation: unknown },
   peppers: PasswordPepperSet,
-  options: PwnedPasswordOptions & { now?: number } = {},
+  options: { now?: number } = {},
 ): Promise<PasskeyAccountSetupResult> {
   const now = options.now ?? Date.now()
   if (!Number.isSafeInteger(now) || now < 0 || now > Number.MAX_SAFE_INTEGER - SETUP_TTL_MS) {
@@ -186,16 +179,6 @@ export async function completePasskeyAccountSetup(
   if (!policy.ok) return policy
   if (!(await usernameAvailable(database, policy.username))) {
     return { ok: false, reason: 'username_unavailable', field: 'username' }
-  }
-  try {
-    if ((await checkPwnedPassword(policy.password, options)).compromised) {
-      return { ok: false, reason: 'password_compromised', field: 'password' }
-    }
-  } catch (error) {
-    if (error instanceof PasswordScreeningUnavailableError) {
-      return { ok: false, reason: 'screening_unavailable', field: 'password' }
-    }
-    throw error
   }
 
   const verifier = passwordVerifierForStorage(

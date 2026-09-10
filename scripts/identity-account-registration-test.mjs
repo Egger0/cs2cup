@@ -58,12 +58,10 @@ const fields = {
   password: '一段不会重复使用的安全长密码 2026',
   passwordConfirmation: '一段不会重复使用的安全长密码 2026',
 }
-const cleanRange = async () => new Response(`${'A'.repeat(35)}:1\r\n`, { status: 200 })
 
 try {
   const created = await registerAccount(db, fields, peppers, {
     now: Date.now(),
-    fetcher: cleanRange,
   })
   assert.equal(created.ok, true)
   assert.match(created.ok && created.token, /^[A-Za-z0-9_-]{43}$/)
@@ -93,21 +91,25 @@ try {
 
   const duplicate = await registerAccount(db, fields, peppers, {
     now: Date.now() + 1,
-    fetcher: cleanRange,
   })
   assert.deepEqual(duplicate, { ok: false, reason: 'username_unavailable' })
 
-  const compromised = await registerAccount(db, { ...fields, username: 'other.player' }, peppers, {
-    now: Date.now() + 2,
-    fetcher: async url => {
-      const prefix = url.toString().slice(-5)
-      const digest = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(fields.password))
-      const hex = Buffer.from(digest).toString('hex').toUpperCase()
-      assert.equal(hex.slice(0, 5), prefix)
-      return new Response(`${hex.slice(5)}:42\r\n`, { status: 200 })
+  const contextual = await registerAccount(
+    db,
+    {
+      ...fields,
+      username: 'other.player',
+      password: 'other.player-2026',
+      passwordConfirmation: 'other.player-2026',
     },
+    peppers,
+    { now: Date.now() + 2 },
+  )
+  assert.deepEqual(contextual, {
+    ok: false,
+    reason: 'invalid_input',
+    issue: { field: 'password', reason: 'contains_account_context' },
   })
-  assert.deepEqual(compromised, { ok: false, reason: 'password_compromised' })
 
   console.log('identity account self-registration command passed')
 } finally {

@@ -73,7 +73,7 @@ export default async function ParticipantLoginPage({
 
   const notice = participantLoginNotice(requiresLegacyReset ? 'conflict' : params.reason)
   const conflictDestination = adminReauthentication
-    ? '/admin/login'
+    ? '/login?redirectKey=workspaces'
     : `/login?reason=signed-out${
         unifiedReturnTo ? `&returnTo=${encodeURIComponent(unifiedReturnTo)}` : ''
       }`

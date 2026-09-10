@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process'
 const tests = [
   'identity-account-security-test.mjs',
   'identity-account-registration-test.mjs',
+  'identity-legacy-owner-bootstrap-test.mjs',
   'identity-account-profile-test.mjs',
   'identity-auth-fingerprint-test.mjs',
   'identity-auth-network-test.mjs',
@@ -14,7 +15,6 @@ const tests = [
   'identity-enrollment-policy-test.mjs',
   'identity-http-test.mjs',
   'identity-key-test.mjs',
-  'identity-legacy-owner-bootstrap-test.mjs',
   'identity-legacy-passkey-authentication-test.mjs',
   'identity-legacy-participant-budget-test.mjs',
   'identity-legacy-participant-migration-test.mjs',
@@ -31,7 +31,6 @@ const tests = [
   'identity-passkey-service-test.mjs',
   'identity-password-authentication-test.mjs',
   'identity-password-config-test.mjs',
-  'identity-password-screening-test.mjs',
   'identity-password-session-kernel-test.mjs',
   'identity-password-test.mjs',
   'identity-redirect-test.mjs',

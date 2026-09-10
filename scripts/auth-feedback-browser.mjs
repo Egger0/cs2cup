@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict'
 import AxeBuilder from '@axe-core/playwright'
 import { chromium } from 'playwright'
-import { COMPROMISED_PASSWORD_MESSAGE } from '../lib/identity/registration-feedback.ts'
 import { installLoopbackRequestGuard, resolveE2EBaseUrl } from './loopback-url.mjs'
 
 const base = resolveE2EBaseUrl()
+const CONTEXT_PASSWORD_MESSAGE = '密码不能包含用户名、显示名称或社团名称，请换一个。'
 const browser = await chromium.launch()
 const context = await browser.newContext({
   viewport: { width: 1440, height: 900 },
@@ -26,8 +26,8 @@ try {
   const probeName = 'feedback.' + Date.now()
   await username.fill(probeName)
   assert.equal(await page.getByLabel('显示名称', { exact: true }).getAttribute('required'), null)
-  await password.fill('password')
-  await confirmation.fill('password')
+  await password.fill(`${probeName}-2026`)
+  await confirmation.fill(`${probeName}-2026`)
   await page.evaluate(() => document.fonts.ready)
   const before = await submit.boundingBox()
   const responsePromise = page.waitForResponse(
@@ -40,11 +40,11 @@ try {
   const result = await response.json()
   assert.equal(
     result.code,
-    'password_compromised',
+    'contains_account_context',
     'An omitted display name defaults on the server',
   )
   assert.equal(result.field, 'password')
-  await page.locator('#signup-error').getByText(COMPROMISED_PASSWORD_MESSAGE).waitFor()
+  await page.locator('#signup-error').getByText(CONTEXT_PASSWORD_MESSAGE).waitFor()
   await page.waitForFunction(() => document.activeElement?.getAttribute('name') === 'password')
   assert.equal(await username.inputValue(), probeName, 'Failed signup preserves other inputs')
   const after = await submit.boundingBox()

@@ -60,7 +60,7 @@ export default async function TournamentCheckInPage({
       error.access.hadAdminCookie &&
       !error.access.hadParticipantCookie
     ) {
-      redirect('/admin/login')
+      redirect('/login?redirectKey=workspaces')
     }
     const reason =
       error.access.reason === 'expired'
@@ -126,7 +126,7 @@ export default async function TournamentCheckInPage({
 
         <CheckInDesk
           authorizationRecoveryPath={
-            isParticipant ? returnTo : isUnified ? '/account' : '/admin/login'
+            isParticipant ? returnTo : isUnified ? '/account' : '/login?redirectKey=workspaces'
           }
           initialTeams={desk.teams}
           tournamentId={desk.tournament.id}
@@ -144,7 +144,9 @@ export default async function TournamentCheckInPage({
     <PrivateSessionBoundary
       observeParticipantSession={isParticipant}
       returnTo={returnTo}
-      sessionEndDestination={isParticipant || isUnified ? returnTo : '/admin/login'}
+      sessionEndDestination={
+        isParticipant || isUnified ? returnTo : '/login?redirectKey=workspaces'
+      }
       sessionRemainingMs={staffSessionRemainingMs(desk.actor.sessionExpiresAt)}
     >
       {page}

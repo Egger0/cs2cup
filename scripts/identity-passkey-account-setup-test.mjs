@@ -80,7 +80,6 @@ const base = Date.now()
 const pepper = { version: 1, key: Uint8Array.from({ length: 32 }, (_, index) => index + 1) }
 const peppers = { active: pepper, byVersion: new Map([[1, pepper]]) }
 const password = 'amber glacier quiet harbor 2028'
-const cleanRange = async () => new Response(`${'A'.repeat(35)}:1\r\n`, { status: 200 })
 
 async function passkeyContext(accountId, credentialId) {
   const intentId = opaque()
@@ -124,7 +123,7 @@ try {
       passwordConfirmation: 'cobalt meadow winter lantern 2027',
     },
     peppers,
-    { now: base - 100, fetcher: cleanRange },
+    { now: base - 100 },
   )
 
   const principalId = `p_${opaque()}`
@@ -204,35 +203,23 @@ try {
       context,
       { ...fields, username: 'occupied.user' },
       peppers,
-      { now: base + 2, fetcher: cleanRange },
+      { now: base + 2 },
     ),
     { ok: false, reason: 'username_unavailable', field: 'username' },
   )
   assert.deepEqual(
-    await completePasskeyAccountSetup(db, context, fields, peppers, {
-      now: base + 3,
-      fetcher: async () => new Response('', { status: 503 }),
-    }),
-    { ok: false, reason: 'screening_unavailable', field: 'password' },
+    await completePasskeyAccountSetup(
+      db,
+      context,
+      { ...fields, password: 'legacy.player-2026', passwordConfirmation: 'legacy.player-2026' },
+      peppers,
+      { now: base + 3 },
+    ),
+    { ok: false, reason: 'password_context', field: 'password' },
   )
-  const compromised = await completePasskeyAccountSetup(db, context, fields, peppers, {
-    now: base + 4,
-    fetcher: async url => {
-      const digest = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(password))
-      const encoded = Buffer.from(digest).toString('hex').toUpperCase()
-      assert.equal(url.toString().slice(-5), encoded.slice(0, 5))
-      return new Response(`${encoded.slice(5)}:9\r\n`, { status: 200 })
-    },
-  })
-  assert.deepEqual(compromised, {
-    ok: false,
-    reason: 'password_compromised',
-    field: 'password',
-  })
   assert.deepEqual(
     await completePasskeyAccountSetup(db, context, fields, peppers, {
       now: base + 900_001,
-      fetcher: cleanRange,
     }),
     { ok: false, reason: 'reauth_required' },
   )
@@ -240,14 +227,12 @@ try {
   assert.deepEqual(
     await completePasskeyAccountSetup(db, context, fields, peppers, {
       now: base + 5,
-      fetcher: cleanRange,
     }),
     { ok: true, username: fields.username },
   )
   assert.deepEqual(
     await completePasskeyAccountSetup(db, context, fields, peppers, {
       now: base + 6,
-      fetcher: cleanRange,
     }),
     { ok: false, reason: 'already_configured' },
   )
