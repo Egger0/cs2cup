@@ -3,7 +3,7 @@ import type { FaqItem, RuleItem } from '@/lib/types'
 import styles from './Sections.module.css'
 
 interface HeadingCopy {
-  eyebrow?: string
+  eyebrow: string
   title: ReactNode
   lede?: string
 }
@@ -16,7 +16,7 @@ export function PageMasthead({
 }: HeadingCopy & { density?: 'spacious' | 'compact' }) {
   return (
     <header className={`${styles.pageHead} ${density === 'compact' ? styles.pageHeadCompact : ''}`}>
-      {eyebrow ? <span className={styles.eyebrow}>{eyebrow}</span> : null}
+      <span className={styles.eyebrow}>{eyebrow}</span>
       <h1 className={styles.pageTitle}>{title}</h1>
       {lede ? <p className={styles.pageLede}>{lede}</p> : null}
     </header>
@@ -26,7 +26,7 @@ export function PageMasthead({
 export function SectionHead({ eyebrow, title, lede }: HeadingCopy) {
   return (
     <div className={styles.head}>
-      {eyebrow ? <span className={styles.eyebrow}>{eyebrow}</span> : null}
+      <span className={styles.eyebrow}>{eyebrow}</span>
       <h2 className={styles.title}>{title}</h2>
       {lede ? <p className={styles.lede}>{lede}</p> : null}
     </div>

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { SectionTabs } from '@/components/layout/SectionTabs'
+import { TournamentTabs } from '@/components/layout/TournamentTabs'
 
 const TABS = [
   { href: '/archive', label: '往届存档', exact: true },
@@ -9,7 +9,7 @@ const TABS = [
 export default function ArchiveLayout({ children }: { children: ReactNode }) {
   return (
     <>
-      <SectionTabs tabs={TABS} label="往届导航" />
+      <TournamentTabs tabs={TABS} label="往届导航" />
       {children}
     </>
   )

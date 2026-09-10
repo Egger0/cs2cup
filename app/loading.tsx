@@ -2,7 +2,7 @@ import styles from './loading.module.css'
 
 export default function Loading() {
   return (
-    <div className={`wrap ${styles.shell}`} role="status" aria-busy="true" aria-label="加载中">
+    <div className={`wrap ${styles.shell}`} aria-busy="true" aria-label="加载中">
       <div className={`${styles.bar} ${styles.title}`} />
       <div className={`${styles.bar} ${styles.line}`} />
       <div className={`${styles.bar} ${styles.line} ${styles.short}`} />

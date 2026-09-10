@@ -1,9 +1,12 @@
 .footer {
+  --ink: #f1efe8;
+  --line-strong: #72746e;
+  --ct-dim: #ffffff0d;
   padding-block: var(--space-8) var(--space-4);
-  color: var(--muted);
+  color: rgba(241, 239, 232, 0.58);
   font-size: 0.82rem;
-  background: var(--bg-2);
-  border-top: 1px solid var(--line);
+  background: #111210;
+  border-top: 1px solid rgba(241, 239, 232, 0.14);
 }
 
 .inner {

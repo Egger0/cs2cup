@@ -1,11 +1,11 @@
 .routeStage {
   --paper: #f1efe8;
-  --cover-ink: #171817;
+  --ink: #171817;
   --blue: #0b4d87;
   --rule: #ccc8bd;
   overflow: hidden;
   scroll-margin-top: 76px;
-  color: var(--cover-ink);
+  color: var(--ink);
   background: var(--paper);
 }
 
@@ -50,7 +50,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  color: var(--cover-ink);
+  color: var(--ink);
   font-size: clamp(3.2rem, 6vw, 6.4rem);
   font-weight: 460;
   letter-spacing: -0.07em;
@@ -104,7 +104,7 @@
   display: grid;
   min-width: 0;
   padding: 20px clamp(16px, 2.5vw, 36px) 24px 0;
-  border-top: 1px solid var(--cover-ink);
+  border-top: 1px solid var(--ink);
 }
 
 .stages li:last-child {
@@ -140,7 +140,7 @@
   right: 0;
   width: 7px;
   height: 7px;
-  background: var(--cover-ink);
+  background: var(--ink);
   box-shadow: 0 0 0 3px var(--paper);
   transform: translateX(50%);
 }

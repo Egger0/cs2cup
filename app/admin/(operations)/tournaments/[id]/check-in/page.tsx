@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound, redirect } from 'next/navigation'
 import { signOut } from '@/app/admin/(console)/actions/auth'
-import { AccountSignOut } from '@/components/account/AccountSignOut'
+import { AccountSignOut } from '@/app/account/AccountSignOut'
 import {
   ParticipantSignOut,
   PrivateSessionActionForm,

@@ -84,6 +84,7 @@ export function RegistrationAccessPanel({
   if (relationship === 'manager') {
     return (
       <section className={styles.panel} aria-labelledby="access-title">
+        <p className={styles.eyebrow}>ACCESS / 协作权限</p>
         <h2 id="access-title">你是协作者</h2>
         <p>可以查看和修改报名；邀请成员、转让所有权及取消报名由所有者处理。</p>
       </section>
@@ -92,6 +93,7 @@ export function RegistrationAccessPanel({
 
   return (
     <section className={styles.panel} aria-labelledby="access-title" aria-busy={pending}>
+      <p className={styles.eyebrow}>ACCESS / 协作权限</p>
       <h2 id="access-title">协作者与所有权</h2>
       <p className={styles.lede}>使用对方的账号用户名邀请；权限只有在对方接受后才会生效。</p>
 

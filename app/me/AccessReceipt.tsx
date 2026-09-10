@@ -39,15 +39,20 @@ export function AccessReceipt({
   return (
     <section className={styles.receipt} aria-labelledby="access-receipt-title">
       <header className={styles.header}>
-        <h2 id="access-receipt-title">本次访问凭条</h2>
+        <p>ACCESS RECEIPT / 本次访问凭条</p>
         <span className={styles.verified}>
           <i aria-hidden="true" /> 已验证
         </span>
       </header>
 
       <div className={styles.identity}>
+        <div className={styles.keyMark} aria-hidden="true">
+          <span>PK</span>
+          <i />
+        </div>
         <div>
-          <strong className={styles.overline}>本次登录由通行密钥确认</strong>
+          <p className={styles.overline}>CURRENT CREDENTIAL</p>
+          <h2 id="access-receipt-title">由通行密钥确认</h2>
           <p className={styles.summary}>
             这张凭条只描述本次登录所使用的通行密钥，不包含凭据编号或设备生物识别信息。
           </p>
@@ -80,7 +85,7 @@ export function AccessReceipt({
       </dl>
 
       <footer className={styles.device}>
-        <span>{receipt.deviceType === 'multiDevice' ? '多设备通行密钥' : '单设备通行密钥'}</span>
+        <span>{receipt.deviceType === 'multiDevice' ? 'MULTI DEVICE' : 'SINGLE DEVICE'}</span>
         <div>
           <strong>设备报告状态</strong>
           <DeviceReport receipt={receipt} />
@@ -88,7 +93,7 @@ export function AccessReceipt({
       </footer>
 
       <div className={styles.recoveryBoundary}>
-        <span>恢复准备</span>
+        <span>RECOVERY / 恢复准备</span>
         <p>
           <strong>把报名管理链接和旧登录方式分开保管。</strong>
           通行密钥的备份与跨设备可用性由你的设备或平台管理，本站不会接触或代为找回。请妥善保留原报名管理链接；它是独立的报名管理入口，不是通行密钥备份。

@@ -28,7 +28,7 @@ function TeamSlot({
   const owned = team?.id === ownedTeamId
   return (
     <div className={styles.team} data-owned={owned || undefined}>
-      <span>{owned ? '我方' : team ? '对手' : '对手待定'}</span>
+      <span>{owned ? 'MY ENTRY / 我方' : team ? 'OPPONENT / 对手' : 'OPPONENT / PENDING'}</span>
       <strong>
         <small>[{team?.tag ?? 'TBD'}]</small>
         {team?.name ?? '等待席位确认'}
@@ -41,15 +41,15 @@ function EmptyBrief({ reason }: { reason: EmptyReason }) {
   return (
     <section className={`${styles.brief} ${styles.empty}`} aria-labelledby="next-brief-title">
       <header className={styles.header}>
-        <h2 id="next-brief-title">下一场比赛</h2>
-        <span>待命中</span>
+        <p>NEXT DISPATCH / 作战简报 01</p>
+        <span>STANDBY / 待命</span>
       </header>
       <div className={styles.emptyBody}>
         <span className={styles.emptyCode} aria-hidden="true">
           — —
         </span>
         <div>
-          <strong>{reason === 'review' ? '等待报名审核' : '暂无待进行的对局'}</strong>
+          <h2 id="next-brief-title">{reason === 'review' ? '等待报名审核' : '简报尚未签发'}</h2>
           <p>
             {reason === 'review'
               ? '审核通过且公开对阵发布后，下一场比赛会自动出现在这里。'
@@ -126,7 +126,7 @@ export function NextMatchBrief({
   return (
     <section className={styles.brief} aria-labelledby="next-brief-title">
       <header className={styles.header}>
-        <h2 id="next-brief-title">下一场比赛</h2>
+        <h2 id="next-brief-title">NEXT DISPATCH / 作战简报 01</h2>
         <span data-state={nextMatch.match.status}>
           <i aria-hidden="true" /> {stateLabel}
         </span>
@@ -146,7 +146,7 @@ export function NextMatchBrief({
             </time>
           ) : (
             <strong className={styles.pending}>
-              {waiting ? '等待对阵确定' : hasStarted ? '等待赛果' : '等待排期'}
+              {waiting ? 'SEAT PENDING' : hasStarted ? 'RESULT PENDING' : 'TIME PENDING'}
             </strong>
           )}
           <small>
@@ -172,7 +172,9 @@ export function NextMatchBrief({
             {nextMatch.match.roundLabel} · BO{nextMatch.match.bestOf}
           </span>
         </p>
-        <a href={matchHref}>查看对局详情</a>
+        <a href={matchHref}>
+          查看对局详情 <span aria-hidden="true">↗</span>
+        </a>
       </footer>
     </section>
   )

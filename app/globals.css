@@ -15,9 +15,6 @@
   --t-dim: rgba(227, 166, 58, 0.14);
   --c4: #e5484d;
   --accent: var(--t);
-  --accent-dim: var(--t-dim);
-  --button-ink: #06121f;
-  --danger-dim: rgba(229, 72, 77, 0.12);
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }

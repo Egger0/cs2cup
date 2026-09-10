@@ -6,11 +6,10 @@ import { ShareButton } from '@/components/share/ShareButton'
 import { CopyTextButton } from '@/components/ui/CopyTextButton'
 import type { SiteSetting } from '@/lib/types'
 import styles from './SiteFooter.module.css'
-import theme from '@/app/site-theme.module.css'
 
 export function SiteFooter({ setting }: { setting: SiteSetting }) {
   return (
-    <footer className={`${theme.dark} ${styles.footer}`}>
+    <footer className={styles.footer}>
       <div className={styles.inner} data-layout-container>
         <div className={styles.invitation}>
           <div>

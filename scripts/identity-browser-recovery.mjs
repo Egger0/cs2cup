@@ -46,14 +46,14 @@ export async function verifyRecoveryPasswordCycle({
     await page.getByLabel('恢复码', { exact: true }).fill(recoveryCode)
     await page.getByRole('button', { name: '继续重设密码' }).click()
     await page.waitForURL(url => url.pathname === '/account/security')
-    await page.getByText('设置一个新密码，之后就能正常使用这个账号。').waitFor()
-    assert.equal(await page.getByRole('heading', { name: '已登录的设备' }).count(), 0)
+    await page.getByRole('heading', { name: '最后一步：设置新密码。' }).waitFor()
+    assert.equal(await page.getByRole('heading', { name: '设备与会话' }).count(), 0)
     for (const path of ['/account', '/me', '/tournaments/2026-nlc/register']) {
       await page.goto(`${base}${path}`)
       await page.waitForURL(url => url.pathname === '/account/security')
     }
     await stalePage.reload()
-    await stalePage.getByRole('heading', { name: '我的账号', level: 1 }).waitFor()
+    await stalePage.getByRole('heading', { name: user.displayName }).waitFor()
 
     await page.locator('input[name="password"]').fill(NEW_PASSWORD)
     await page.locator('input[name="passwordConfirmation"]').fill(`Different ${NEW_PASSWORD}`)
@@ -66,8 +66,8 @@ export async function verifyRecoveryPasswordCycle({
       page.waitForURL(url => url.searchParams.get('password') === 'changed'),
       page.getByRole('button', { name: '完成恢复并登录' }).click(),
     ])
-    await page.getByText('管理密码、通行密钥、恢复码和已登录的设备。').waitFor()
-    await page.getByRole('heading', { name: '已登录的设备' }).waitFor()
+    await page.getByRole('heading', { name: '登录方式保持简单，也留有退路。' }).waitFor()
+    await page.getByRole('heading', { name: '设备与会话' }).waitFor()
 
     await stalePage.goto(`${base}/account`)
     await stalePage.waitForURL(url => url.pathname === '/login')
@@ -83,7 +83,7 @@ export async function verifyRecoveryPasswordCycle({
       page.waitForURL(url => url.pathname === '/account'),
       page.getByRole('button', { name: '使用账号密码登录' }).click(),
     ])
-    await page.getByRole('heading', { name: '我的账号', level: 1 }).waitFor()
+    await page.getByRole('heading', { name: user.displayName }).waitFor()
     staleRuntimeErrors.assertClean('stale recovery session')
   } finally {
     staleGuard.assertSafe()

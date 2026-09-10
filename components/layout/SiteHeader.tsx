@@ -29,14 +29,14 @@ const NAV_ENGLISH: Record<string, string> = {
   '/guestbook': 'GUESTBOOK',
   '/search': 'SEARCH',
   '/me': 'MY EVENTS',
-  '/account': 'MY ACCOUNT',
-  '/account/security': 'SIGN-IN & SECURITY',
+  '/account#membership': 'QUALIFICATION',
+  '/account/security': 'ACCOUNT & SECURITY',
   '/admin': 'WORKBENCH',
   '/login': 'LOGIN',
   '/register': 'CREATE ACCOUNT',
 }
 
-const DOCUMENT_LINKS = new Set(['/me', '/account', '/account/security', '/admin'])
+const DOCUMENT_LINKS = new Set(['/me', '/account#membership', '/account/security', '/admin'])
 
 export function SiteHeader({ setting, links, accountLink, status }: SiteHeaderProps) {
   const pathname = usePathname()

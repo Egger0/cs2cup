@@ -26,6 +26,7 @@ export function RegistrationInvitations({ items }: { items: RegistrationInvitati
       aria-busy={pending}
     >
       <header>
+        <p>INVITATIONS / 待处理</p>
         <h2 id="registration-invitations">报名协作邀请</h2>
       </header>
       {feedback ? (

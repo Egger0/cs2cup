@@ -17,6 +17,7 @@ export function RosterClaimRequests({ items }: { items: RosterClaimRequest[] }) 
   return (
     <section className={styles.panel} aria-labelledby="roster-claim-requests" aria-busy={pending}>
       <header>
+        <p>ROSTER / 待确认</p>
         <h2 id="roster-claim-requests">队员席位邀请</h2>
       </header>
       {feedback ? (

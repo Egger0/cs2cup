@@ -153,9 +153,12 @@ export function MembershipPanel({
   return (
     <section id="membership" className={styles.panel} aria-labelledby="membership-title">
       <header className={styles.header}>
-        <h2 id="membership-title">成员资格</h2>
+        <div>
+          <p>MEMBERSHIP / 资格状态</p>
+          <h2 id="membership-title">{state ? STATUS_COPY[state][0] : '尚未申请'}</h2>
+        </div>
         <span className={styles.state} data-state={state ?? 'none'}>
-          {state ? STATUS_COPY[state][0] : '尚未申请'}
+          {state ? STATUS_COPY[state][0] : 'NEXT STEP'}
         </span>
       </header>
 

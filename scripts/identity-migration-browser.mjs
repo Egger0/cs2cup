@@ -140,13 +140,13 @@ try {
   await page.goto(`${BASE}/login`, { waitUntil: 'domcontentloaded' })
   await page.getByRole('button', { name: '使用通行密钥登录' }).click()
   await page.waitForURL(url => url.pathname === '/account')
-  await page.getByRole('heading', { name: '我的账号', level: 1 }).waitFor()
+  await page.getByRole('heading', { name: BROWSER_LEGACY.displayName }).waitFor()
   await page.goto(`${BASE}/account/security`)
-  await page.getByRole('heading', { name: '设置用户名与密码' }).waitFor()
-  assert.equal(await page.getByRole('heading', { name: '密码', exact: true }).count(), 0)
-  assert.equal(await page.getByRole('heading', { name: '通行密钥' }).count(), 0)
-  assert.equal(await page.getByRole('heading', { name: '恢复码' }).count(), 0)
-  assert.equal(await page.getByRole('heading', { name: '已登录的设备' }).count(), 0)
+  await page.getByRole('heading', { name: '补上用户名与密码' }).waitFor()
+  assert.equal(await page.getByRole('heading', { name: '修改密码' }).count(), 0)
+  assert.equal(await page.getByRole('heading', { name: '你的设备密钥' }).count(), 0)
+  assert.equal(await page.getByRole('heading', { name: '账号的离线退路' }).count(), 0)
+  assert.equal(await page.getByRole('heading', { name: '设备与会话' }).count(), 0)
 
   const recoveryGuard = await context.request.post(`${BASE}/api/account/security/recovery-codes`, {
     headers: { Accept: 'application/json', Origin: BASE },
@@ -182,10 +182,10 @@ try {
   )
   await page.getByRole('button', { name: '完成账号设置' }).click()
   assert.equal((await setupResponse).status(), 200)
-  await page.getByRole('heading', { name: '密码', exact: true }).waitFor()
+  await page.getByRole('heading', { name: '修改密码' }).waitFor()
   const recovery = page
     .locator('section')
-    .filter({ has: page.getByRole('heading', { name: '恢复码' }) })
+    .filter({ has: page.getByRole('heading', { name: '账号的离线退路' }) })
   await recovery.getByRole('button', { name: '生成恢复码' }).click()
   const recoveryCode = (await recovery.locator('ol li').first().textContent())?.trim() ?? ''
   assert.match(recoveryCode, /^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/)

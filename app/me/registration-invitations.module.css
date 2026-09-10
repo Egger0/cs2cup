@@ -1,17 +1,24 @@
 .panel {
   display: grid;
-  gap: 16px;
-  margin-bottom: clamp(20px, 3vw, 32px);
-  padding: clamp(20px, 3vw, 34px);
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
+  max-width: 1180px;
+  gap: 18px;
+  margin: 0 auto clamp(36px, 6vw, 70px);
+  padding: clamp(20px, 4vw, 34px);
+  border: 1px solid #37576a;
+  background: #11191d;
+}
+
+.panel header p {
+  color: #75a9c5;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
 }
 
 .panel header h2 {
-  color: var(--ink);
-  font-size: 1.25rem;
-  font-weight: 620;
-  letter-spacing: -0.02em;
+  margin-top: 6px;
+  font-family: 'NLC Serif', 'Songti SC', serif;
+  font-size: clamp(1.7rem, 4vw, 2.8rem);
 }
 
 .panel ul {
@@ -20,29 +27,16 @@
 
 .panel li {
   display: flex;
+  min-height: 78px;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  padding-block: 14px;
-  border-top: 1px solid var(--line);
+  padding-block: 13px;
+  border-top: 1px solid rgba(117, 169, 197, 0.2);
 }
 
 .panel li > button {
   flex: none;
-  min-height: 44px;
-  padding: 9px 18px;
-  border: 1px solid var(--accent);
-  border-radius: 0;
-  background: var(--accent);
-  color: var(--button-ink);
-  cursor: pointer;
-  font-size: 0.9375rem;
-  font-weight: 580;
-}
-
-.panel li > button:disabled {
-  opacity: 0.55;
-  cursor: wait;
 }
 
 .panel li div {
@@ -54,15 +48,14 @@
 .panel li small,
 .panel li span {
   overflow-wrap: anywhere;
-  color: var(--muted);
-  font-size: 0.875rem;
+  color: #8f9da2;
+  font-size: 0.7rem;
 }
 
 .panel li strong {
   overflow-wrap: anywhere;
-  color: var(--ink);
-  font-size: 0.9375rem;
-  font-weight: 580;
+  color: #e9ece8;
+  font-size: 0.82rem;
 }
 
 .success,
@@ -71,22 +64,19 @@
   justify-content: space-between;
   gap: 12px;
   padding: 11px 13px;
-  border-left: 3px solid var(--accent);
-  background: var(--accent-dim);
-  color: var(--ink);
-  font-size: 0.875rem;
+  border-left: 3px solid #75a9c5;
+  background: rgba(117, 169, 197, 0.1);
+  font-size: 0.7rem;
 }
 
 .error {
-  border-left-color: var(--c4);
-  background: var(--danger-dim);
-  color: var(--c4);
+  border-left-color: #ee756a;
+  background: rgba(238, 117, 106, 0.1);
 }
 
 .success a,
 .error a {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  border-bottom: 1px solid currentColor;
 }
 
 @media (max-width: 560px) {

@@ -8,7 +8,6 @@ import { captureBrowserRuntimeErrors } from './browser-runtime-errors.mjs'
 import { installLoopbackRequestGuard, resolveE2EBaseUrl } from './loopback-url.mjs'
 import { verifyRecoveryPasswordCycle } from './identity-browser-recovery.mjs'
 import { BROWSER_USERS } from './identity-browser-users.mjs'
-import { membershipState } from './ui-regression-assertions.mjs'
 
 const BASE = resolveE2EBaseUrl()
 const TEAM = Object.freeze({ name: '浏览器验收战队', tag: 'BRWSR' })
@@ -104,7 +103,7 @@ let secondary = null
 
 try {
   await passwordLogin(applicant.page, BROWSER_USERS.applicant)
-  await membershipState(applicant.page, '等待审核').waitFor()
+  await applicant.page.getByRole('heading', { name: '等待审核', exact: true }).waitFor()
   await assertAccessible(applicant.page, 'pending account')
 
   await applicant.page.goto(`${BASE}/tournaments/2026-nlc/register`)
@@ -139,14 +138,14 @@ try {
     '当前资料无法确认参与资格。',
   )
   await passwordLogin(rejectee.page, BROWSER_USERS.rejectee)
-  await membershipState(rejectee.page, '未通过').waitFor()
+  await rejectee.page.getByRole('heading', { name: '未通过', exact: true }).waitFor()
   await signOut(rejectee.page)
 
   await passwordLogin(applicant.page, BROWSER_USERS.applicant)
-  await membershipState(applicant.page, '需要补充资料').waitFor()
+  await applicant.page.getByRole('heading', { name: '需要补充资料', exact: true }).waitFor()
   await applicant.page.getByLabel('补充说明（可选）').fill('已补充院系与参与信息。')
   await applicant.page.getByRole('button', { name: '更新并重新提交' }).click()
-  await membershipState(applicant.page, '等待审核').waitFor()
+  await applicant.page.getByRole('heading', { name: '等待审核', exact: true }).waitFor()
 
   await reviewer.page.goto(`${BASE}/admin/identity`)
   const returningCard = reviewCard(reviewer.page, BROWSER_USERS.applicant.displayName)
@@ -170,7 +169,7 @@ try {
   await transferredCard.getByRole('button', { name: '确认审核决定' }).click()
   await transferredCard.waitFor({ state: 'detached' })
   await applicant.page.reload()
-  await membershipState(applicant.page, '已通过').waitFor()
+  await applicant.page.getByRole('heading', { name: '已通过', exact: true }).waitFor()
   console.log('PASS  reviewer decisions, history, resubmission and accepted transfer')
 
   await applicant.page.goto(`${BASE}/tournaments/2026-nlc/register`)
@@ -221,7 +220,7 @@ try {
   await membershipRow.getByRole('button', { name: '确认暂停' }).click()
   await membershipRow.getByText('资格已暂停').waitFor()
   await applicant.page.goto(`${BASE}/account`)
-  await membershipState(applicant.page, '资格已暂停').waitFor()
+  await applicant.page.getByRole('heading', { name: '资格已暂停', exact: true }).waitFor()
   await membershipRow.getByRole('button', { name: '恢复资格' }).click()
   await membershipRow
     .getByLabel(`变更 ${BROWSER_USERS.applicant.displayName} 成员资格的原因`)
@@ -229,7 +228,7 @@ try {
   await membershipRow.getByRole('button', { name: '确认恢复' }).click()
   await membershipRow.getByText('资格有效').waitFor()
   await applicant.page.reload()
-  await membershipState(applicant.page, '已通过').waitFor()
+  await applicant.page.getByRole('heading', { name: '已通过', exact: true }).waitFor()
 
   const access = owner.page
     .locator('section')
@@ -272,10 +271,10 @@ try {
   })
   await applicant.page.goto(`${BASE}/account/security`)
   await applicant.page.getByLabel('设备名称（可选）').fill('浏览器虚拟设备')
-  await applicant.page.getByRole('button', { name: '添加通行密钥' }).click()
+  await applicant.page.getByRole('button', { name: '添加 Passkey' }).click()
   await applicant.page.getByText('浏览器虚拟设备').waitFor()
   const recovery = applicant.page.locator('section').filter({
-    has: applicant.page.getByRole('heading', { name: '恢复码', exact: true }),
+    has: applicant.page.getByRole('heading', { name: '账号的离线退路', exact: true }),
   })
   await recovery.getByRole('button', { name: '生成恢复码' }).click()
   const recoveryCode = (await recovery.locator('ol li').first().textContent())?.trim() ?? ''
@@ -287,7 +286,7 @@ try {
   await applicant.page.reload()
   const sessions = applicant.page
     .locator('section')
-    .filter({ has: applicant.page.getByRole('heading', { name: '已登录的设备', exact: true }) })
+    .filter({ has: applicant.page.getByRole('heading', { name: '设备与会话', exact: true }) })
   await sessions.getByText(/2 个有效状态/).waitFor()
   await sessions.getByRole('button', { name: '退出所有其他设备' }).click()
   await sessions.getByRole('button', { name: /确认退出其他/ }).click()
@@ -301,7 +300,7 @@ try {
   await applicant.page.goto(`${BASE}/login`)
   await applicant.page.getByRole('button', { name: '使用通行密钥登录' }).click()
   await applicant.page.waitForURL(url => url.pathname === '/account')
-  await applicant.page.getByRole('heading', { name: '我的账号', level: 1 }).waitFor()
+  await applicant.page.getByRole('heading', { name: BROWSER_USERS.applicant.displayName }).waitFor()
   await signOut(applicant.page)
 
   await verifyRecoveryPasswordCycle({

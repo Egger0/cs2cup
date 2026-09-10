@@ -6,6 +6,7 @@ import { PasswordInput } from '@/components/ui/PasswordInput'
 import { COMPROMISED_PASSWORD_MESSAGE } from '@/lib/identity/registration-feedback'
 import { registrationAuthHref } from '@/lib/registration-navigation'
 import formStyles from '../login/credential-form.module.css'
+import loginStyles from '../login/login.module.css'
 import styles from './register.module.css'
 
 const SETUP_FAILURE = '注册暂时不可用，请稍后重试。'
@@ -204,6 +205,9 @@ export function RegisterForm({
         />
       </label>
       <button className={formStyles.passwordButton} type="submit" disabled={working}>
+        <span className={loginStyles.buttonCode} aria-hidden="true">
+          01
+        </span>
         <span>{working ? '正在创建…' : '创建账号'}</span>
         <span aria-hidden="true">↗</span>
       </button>

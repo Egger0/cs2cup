@@ -18,7 +18,7 @@ interface SessionSummary {
 
 const METHODS: Record<string, string> = {
   password: '密码',
-  passkey: '通行密钥',
+  passkey: 'Passkey',
   recovery_code: '恢复码',
 }
 
@@ -109,7 +109,10 @@ export function SessionManager() {
       aria-busy={working || loading}
     >
       <header>
-        <h2 id="sessions-title">已登录的设备</h2>
+        <div>
+          <p>SESSIONS / 已登录设备</p>
+          <h2 id="sessions-title">设备与会话</h2>
+        </div>
         <span>
           {sessions === null
             ? loading

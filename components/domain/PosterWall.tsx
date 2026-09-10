@@ -6,7 +6,6 @@ import { photoUrl } from '@/lib/media'
 import { variantStorageKey } from '@/lib/photo-variants'
 import type { Photo } from '@/lib/types'
 import styles from './PosterWall.module.css'
-import theme from '@/app/site-theme.module.css'
 
 function displayKey(poster: Photo) {
   const widest = poster.variantWidths.at(-1)
@@ -95,7 +94,7 @@ export function PosterWall({
 
       <dialog
         ref={dialogRef}
-        className={`${theme.dark} ${styles.lightbox}`}
+        className={styles.lightbox}
         aria-label={active ? `赛事影像预览：${active.caption || '未命名影像'}` : '赛事影像预览'}
         onClose={() => setActive(null)}
         onClick={event => {

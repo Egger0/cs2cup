@@ -1,4 +1,11 @@
 .shell {
+  --bg: #171817;
+  --line: rgba(241, 239, 232, 0.16);
+  --line-strong: rgba(241, 239, 232, 0.3);
+  --ink: #f1efe8;
+  --muted: #c0c1ba;
+  --muted-2: #b0b2ac;
+  --ct: #8fc8ef;
   position: relative;
   isolation: isolate;
   overflow: hidden;

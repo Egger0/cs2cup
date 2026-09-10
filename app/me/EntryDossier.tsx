@@ -31,12 +31,14 @@ export function EntryDossier({
     <article className={styles.dossier} aria-labelledby={titleId}>
       <header className={styles.fileHeader}>
         <div>
+          <p className={styles.slug}>TOURNAMENT / {entry.tournament.slug}</p>
           <h2 id={titleId}>{entry.tournament.title}</h2>
           <p className={styles.teamName}>
             <span>[{entry.team.tag}]</span> {entry.team.name}
           </p>
         </div>
         <span className={styles.status} data-status={entry.team.status}>
+          <small>REVIEW</small>
           {STATUS_LABEL[entry.team.status]}
         </span>
       </header>
@@ -115,15 +117,19 @@ export function EntryDossier({
 
       <footer className={styles.fileFooter}>
         <span className={styles.footerLinks}>
-          {managementHref ? <a href={managementHref}>管理报名</a> : null}
-          <a href={`/tournaments/${encodeURIComponent(entry.tournament.slug)}`}>查看赛事</a>
+          {managementHref ? (
+            <a href={managementHref}>
+              管理报名 <span aria-hidden="true">↗</span>
+            </a>
+          ) : null}
+          <a href={`/tournaments/${encodeURIComponent(entry.tournament.slug)}`}>
+            查看赛事 <span aria-hidden="true">↗</span>
+          </a>
         </span>
         <span>
           {relationship
-            ? relationship === 'owner'
-              ? '你是这支战队的所有者'
-              : '你是这支战队的协作者'
-            : '旧报名资料，可通过原回执迁移到账号'}
+            ? `账号权限 / ${relationship === 'owner' ? '所有者' : '协作者'}`
+            : '旧报名资料 / 可通过原回执迁移到账号'}
         </span>
       </footer>
     </article>

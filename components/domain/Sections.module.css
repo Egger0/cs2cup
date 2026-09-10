@@ -41,11 +41,6 @@
   content: '';
 }
 
-.pageTitle:first-child,
-.title:first-child {
-  margin-top: 0;
-}
-
 .pageTitle,
 .title {
   grid-column: 1;

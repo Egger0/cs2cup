@@ -213,6 +213,9 @@ export default function PasskeyLogin({
         aria-describedby="passkey-login-status"
         onClick={handlePrimaryAction}
       >
+        <span className={styles.buttonCode} aria-hidden="true">
+          PK
+        </span>
         <span>{buttonLabel}</span>
         <span className={styles.buttonArrow} aria-hidden="true">
           ↗

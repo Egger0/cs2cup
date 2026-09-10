@@ -36,7 +36,7 @@
 .primary {
   border-color: var(--accent);
   background: var(--accent);
-  color: var(--button-ink);
+  color: var(--button-ink, #06121f);
 }
 
 .primary:hover:not(:disabled) {
