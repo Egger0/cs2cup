@@ -34,6 +34,7 @@ async function getKookWidget() {
 
 export async function SiteFooter({ setting }: { setting: SiteSetting }) {
   const kook = await getKookWidget()
+  const kookLabel = kook ? `加入 KOOK 社群，${kook.onlineCount} 人在线` : '加入 KOOK 社群'
 
   return (
     <footer className={`${theme.dark} ${styles.footer}`}>
@@ -88,9 +89,14 @@ export async function SiteFooter({ setting }: { setting: SiteSetting }) {
               href={kook?.inviteUrl ?? KOOK_INVITE_URL}
               target="_blank"
               rel="noreferrer"
+              aria-label={kookLabel}
+              title={kookLabel}
             >
-              <strong>KOOK 社群</strong>
-              <span>{kook ? `${kook.onlineCount} 人在线` : '加入语音社群'} ↗</span>
+              <span className={styles.kookIcon} aria-hidden="true">
+                K
+              </span>
+              <span>KOOK</span>
+              {kook ? <small>{kook.onlineCount}</small> : null}
             </a>
           </div>
           <figure className={styles.douyin}>

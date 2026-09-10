@@ -44,13 +44,19 @@
 }
 
 .kook {
-  display: grid;
+  display: inline-flex;
+  align-items: center;
   width: fit-content;
-  gap: 4px;
+  gap: 7px;
   margin-top: 18px;
-  padding: 10px 12px;
+  min-height: 40px;
+  padding: 7px 10px;
   border: 1px solid rgba(241, 239, 232, 0.24);
   color: #b2b5ac;
+  font:
+    700 0.73rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.08em;
   text-decoration: none;
 }
 
@@ -64,14 +70,25 @@
   outline-offset: 3px;
 }
 
-.kook strong {
-  color: #f1efe8;
-  font-size: 0.8rem;
-  font-weight: 600;
+.kookIcon {
+  display: grid;
+  width: 21px;
+  height: 21px;
+  place-items: center;
+  color: #071421;
+  background: #2a8cff;
+  border-radius: 5px;
+  font-weight: 900;
+  letter-spacing: -0.1em;
 }
 
-.kook span {
-  font-size: 0.72rem;
+.kook small {
+  padding-left: 6px;
+  border-left: 1px solid rgba(241, 239, 232, 0.2);
+  color: #f1efe8;
+  font:
+    600 0.7rem var(--font-mono),
+    monospace;
 }
 
 .douyin {
