@@ -148,7 +148,13 @@ export async function drawRecruitmentLottery(
          JOIN recruitment_lottery_ticket AS ticket ON ticket.campaign_id = campaign.id
          JOIN recruitment_lottery_prize AS prize ON prize.id = ticket.prize_id
          WHERE campaign.id = ?
-           AND campaign.starts_at <= ? AND campaign.ends_at > ?
+           AND (
+             campaign.manual_state = 'open'
+             OR (
+               campaign.manual_state IS NULL
+               AND campaign.starts_at <= ? AND campaign.ends_at > ?
+             )
+           )
            AND EXISTS (
              SELECT 1 FROM identity_membership
              WHERE account_id = ? AND status = 'approved'

@@ -132,6 +132,9 @@ try {
     (await recruitmentLotteryState(db, accountIds.owner, campaign.starts_at - 1)).phase,
     'open',
   )
+  assert.deepEqual(await drawRecruitmentLottery(db, accountIds.owner, campaign.starts_at - 1), {
+    ok: true,
+  })
   database
     .prepare("UPDATE recruitment_lottery_campaign SET manual_state = 'closed' WHERE id = ?")
     .run(RECRUITMENT_LOTTERY_CAMPAIGN_ID)
@@ -139,6 +142,10 @@ try {
     (await recruitmentLotteryState(db, accountIds.owner, campaign.starts_at + 1)).phase,
     'closed',
   )
+  assert.deepEqual(await drawRecruitmentLottery(db, accountIds.platformOwner, campaign.starts_at), {
+    ok: false,
+    error: '本次抽奖已经结束。',
+  })
   database
     .prepare('UPDATE recruitment_lottery_campaign SET manual_state = NULL WHERE id = ?')
     .run(RECRUITMENT_LOTTERY_CAMPAIGN_ID)
