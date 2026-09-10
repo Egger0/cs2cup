@@ -35,6 +35,11 @@ async function getKookWidget() {
 export async function SiteFooter({ setting }: { setting: SiteSetting }) {
   const kook = await getKookWidget()
   const kookLabel = kook ? `加入 KOOK 社群，${kook.onlineCount} 人在线` : '加入 KOOK 社群'
+  const qqGroupNumber = setting.contactQq?.replace(/\s/g, '')
+  const qqGroupUrl =
+    qqGroupNumber && /^\d{5,20}$/.test(qqGroupNumber)
+      ? `mqqapi://card/show_pslcard?src_type=internal&version=1&uin=${qqGroupNumber}&card_type=group&source=qrcode`
+      : null
 
   return (
     <footer className={`${theme.dark} ${styles.footer}`}>
@@ -72,7 +77,20 @@ export async function SiteFooter({ setting }: { setting: SiteSetting }) {
             </nav>
           </div>
           <div className={styles.contact}>
-            {setting.contactQq ? (
+            {qqGroupUrl ? (
+              <a
+                className={styles.qq}
+                href={qqGroupUrl}
+                aria-label={`在 QQ 中申请加入群 ${qqGroupNumber}`}
+                title="在 QQ 中申请加入群"
+              >
+                <span className={styles.kookIcon} aria-hidden="true">
+                  <Image src="/brand/qq.svg" alt="" width={21} height={21} />
+                </span>
+                <span>QQ 群</span>
+                <small>{qqGroupNumber}</small>
+              </a>
+            ) : setting.contactQq ? (
               <p>
                 QQ 群：<b>{setting.contactQq}</b>
                 <CopyTextButton value={setting.contactQq} label="复制群号" />

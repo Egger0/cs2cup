@@ -43,7 +43,8 @@
   margin-top: 12px;
 }
 
-.kook {
+.kook,
+.qq {
   display: inline-flex;
   align-items: center;
   width: fit-content;
@@ -60,12 +61,14 @@
   text-decoration: none;
 }
 
-.kook:hover {
+.kook:hover,
+.qq:hover {
   border-color: var(--ct);
   color: #f1efe8;
 }
 
-.kook:focus-visible {
+.kook:focus-visible,
+.qq:focus-visible {
   outline: 2px solid var(--ct);
   outline-offset: 3px;
 }
@@ -76,7 +79,8 @@
   height: 21px;
 }
 
-.kook small {
+.kook small,
+.qq small {
   padding-left: 6px;
   border-left: 1px solid rgba(241, 239, 232, 0.2);
   color: #f1efe8;
