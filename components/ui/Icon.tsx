@@ -12,6 +12,7 @@ const PATHS = {
     'M8 2v4m8-4v4M3 10h18M4 4h16a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z',
   download: 'M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4',
   copy: 'M8 8h12v13H8ZM4 16H2V2h13v2',
+  qr: 'M4 4h6v6H4Zm10 0h6v6h-6ZM4 14h6v6H4Zm10 0h2v2h-2Zm4 0h2v2h-2Zm-4 4h2v2h-2Zm4 0h2v2h-2Z',
 } as const
 
 export function Icon({

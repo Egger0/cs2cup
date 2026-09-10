@@ -9,6 +9,7 @@ import styles from './SiteFooter.module.css'
 import theme from '@/app/site-theme.module.css'
 import { qqGroupContact } from '@/lib/qq-group'
 import { QqGroupJoin } from './QqGroupJoin'
+import { Icon } from '@/components/ui/Icon'
 
 const KOOK_WIDGET_URL = 'https://kookapp.cn/api/guilds/3715592670073195/widget.json'
 const KOOK_INVITE_URL = 'https://kook.vip/f5xEe8'
@@ -112,7 +113,7 @@ export async function SiteFooter({ setting }: { setting: SiteSetting }) {
               <details className={styles.douyin}>
                 <summary className={styles.chip} aria-label="展开抖音关注码">
                   <span className={styles.chipIcon} aria-hidden="true">
-                    <Image src="/brand/douyin.svg" alt="" width={20} height={20} />
+                    <Icon name="qr" size={20} />
                   </span>
                   <span>抖音</span>
                   <small>扫码</small>
