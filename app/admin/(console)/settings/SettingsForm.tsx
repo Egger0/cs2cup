@@ -59,7 +59,7 @@ export function SettingsForm({ setting }: { setting: SiteSetting }) {
           id="st-qq"
           name="contactQq"
           label="QQ 群"
-          hint="填加群链接可一键加入；只填群号则页脚显示群号供复制"
+          hint="可填群号、加群链接，或两者用空格分开（链接一键加入，群号用于展示）"
           defaultValue={setting.contactQq ?? ''}
         />
         <Field
