@@ -51,35 +51,17 @@ export const metadata: Metadata = {
 
 const STAFF_PAGE_SIZE = 12
 
-type Probe<T> = { label: string; value: T } | { label: string; failure: string }
-
-async function probe<T>(label: string, work: () => Promise<T>): Promise<Probe<T>> {
-  try {
-    return { label, value: await work() }
-  } catch (error) {
-    const detail =
-      error instanceof Error
-        ? `${error.name}: ${error.message}\n${error.stack ?? ''}\ncause: ${String((error as { cause?: unknown }).cause ?? '')}`
-        : String(error)
-    console.error(`[diag] ${label} failed`, error)
-    return { label, failure: detail }
-  }
+const EMPTY_WORKSPACES = {
+  workspaces: [],
+  total: 0,
+  pagination: { offset: 0, limit: STAFF_PAGE_SIZE, hasPrevious: false, hasNext: false },
 }
 
-function Diagnostics({ failures }: { failures: { label: string; failure?: string }[] }) {
-  return (
-    <div style={{ padding: '32px', fontFamily: 'monospace', fontSize: '13px' }}>
-      <h1 style={{ fontSize: '20px', marginBottom: '16px' }}>/me diagnostics</h1>
-      {failures.map(item => (
-        <section key={item.label} style={{ marginBottom: '24px' }}>
-          <strong>{item.label}</strong>
-          <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', marginTop: '8px' }}>
-            {item.failure}
-          </pre>
-        </section>
-      ))}
-    </div>
-  )
+function optional<T>(label: string, work: Promise<T>, fallback: T): Promise<T> {
+  return work.catch(error => {
+    console.error(`[account] ${label} unavailable`, error)
+    return fallback
+  })
 }
 
 function EmptyEntries({ hint }: { hint: ReactNode }) {
@@ -101,39 +83,28 @@ async function UnifiedAccountEvents({
 }) {
   const database = cloudflareBindings().db
   const now = currentTimeMillis()
-  const nextMatchRequest = accountNextMatchFromDatabase(database, context.account.id, now).catch(
-    error => {
-      console.error('[account] next-match brief unavailable', error)
-      return undefined
-    },
-  )
-  const probes = await Promise.all([
-    probe('registrations', () => listAccountTournamentRegistrations(database, context, now)),
-    probe('invitations', () => listIncomingRegistrationInvitations(database, context, now)),
-    probe('rosterClaims', () => listIncomingRosterClaimRequests(database, context, now)),
-    probe('drafts', () => listRegistrationDrafts(database, context, now)),
-    probe('workspaces', () =>
-      listCurrentUnifiedTournamentWorkspaces({
-        checkInOnly: true,
-        limit: STAFF_PAGE_SIZE,
-        offset: (staffPage - 1) * STAFF_PAGE_SIZE,
-      }),
-    ),
-    probe('nextMatch', () => nextMatchRequest),
-    probe('workAccess', () => accountHasWorkAccess(database, context.account.id, now)),
-  ])
-  const failures = probes.filter(result => 'failure' in result)
-  if (failures.length) return <Diagnostics failures={failures} />
   const [entries, invitations, rosterClaimRequests, drafts, workspacePage, nextMatch, workAccess] =
-    probes.map(result => ('value' in result ? result.value : undefined)) as [
-      Awaited<ReturnType<typeof listAccountTournamentRegistrations>>,
-      Awaited<ReturnType<typeof listIncomingRegistrationInvitations>>,
-      Awaited<ReturnType<typeof listIncomingRosterClaimRequests>>,
-      Awaited<ReturnType<typeof listRegistrationDrafts>>,
-      Awaited<ReturnType<typeof listCurrentUnifiedTournamentWorkspaces>>,
-      Awaited<typeof nextMatchRequest>,
-      boolean,
-    ]
+    await Promise.all([
+      listAccountTournamentRegistrations(database, context, now),
+      optional('invitations', listIncomingRegistrationInvitations(database, context, now), []),
+      optional('roster claims', listIncomingRosterClaimRequests(database, context, now), []),
+      optional('drafts', listRegistrationDrafts(database, context, now), []),
+      optional(
+        'staff workspaces',
+        listCurrentUnifiedTournamentWorkspaces({
+          checkInOnly: true,
+          limit: STAFF_PAGE_SIZE,
+          offset: (staffPage - 1) * STAFF_PAGE_SIZE,
+        }),
+        EMPTY_WORKSPACES,
+      ),
+      optional(
+        'next match brief',
+        accountNextMatchFromDatabase(database, context.account.id, now),
+        undefined,
+      ),
+      optional('work access', accountHasWorkAccess(database, context.account.id, now), false),
+    ])
   const staffPages = Math.max(1, Math.ceil(workspacePage.total / STAFF_PAGE_SIZE))
   if (staffPage > staffPages) redirect(staffPages === 1 ? '/me' : `/me?staffPage=${staffPages}`)
   const hasApprovedEntry = entries.some(entry => entry.team.status === 'approved')
