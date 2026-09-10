@@ -4,15 +4,7 @@ import { promisify } from 'node:util'
 
 const run = promisify(execFile)
 
-const THEMES = new Set([
-  'app/globals.css',
-  'app/layout-tokens.css',
-  'app/site-theme.module.css',
-  'app/not-found.module.css',
-  'app/admin/(console)/shell.module.css',
-  'app/admin/(operations)/tournaments/[id]/check-in/check-in.module.css',
-  'app/admin/login/login.module.css',
-])
+const THEMES = new Set(['app/globals.css', 'app/layout-tokens.css', 'app/site-theme.module.css'])
 
 const PALETTE = new Set([
   '--void',

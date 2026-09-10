@@ -1,25 +1,28 @@
 :root {
-  --void: #05070c;
-  --bg: #0a0e16;
-  --bg-2: #0d131f;
-  --surface: #121a28;
-  --surface-2: #17212f;
-  --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(255, 255, 255, 0.16);
-  --ink: #eaf0f7;
-  --muted: #8593a6;
-  --muted-2: #7c8a9c;
-  --ct: #3d9be9;
-  --ct-dim: rgba(61, 155, 233, 0.14);
-  --t: #e3a63a;
-  --t-dim: rgba(227, 166, 58, 0.14);
-  --c4: #e5484d;
-  --accent: var(--t);
-  --accent-dim: var(--t-dim);
-  --button-ink: #06121f;
-  --danger-dim: rgba(229, 72, 77, 0.12);
+  --void: #111210;
+  --bg: #f1efe8;
+  --bg-2: #e9e6dc;
+  --surface: #f7f5ee;
+  --surface-2: #dfdcd2;
+  --line: rgba(23, 24, 23, 0.15);
+  --line-strong: #aaa69b;
+  --ink: #171817;
+  --muted: #5f605a;
+  --muted-2: #62645d;
+  --ct: #0b4d87;
+  --ct-dim: rgba(11, 77, 135, 0.1);
+  --t: var(--ct);
+  --t-dim: var(--ct-dim);
+  --c4: #b52b3b;
+  --honour: #8d661f;
+  --accent: var(--ct);
+  --accent-dim: var(--ct-dim);
+  --button-ink: #f1efe8;
+  --danger-dim: rgba(181, 43, 59, 0.12);
+  --toast-ink: var(--ink);
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  color-scheme: light;
 }
 
 @font-face {
@@ -49,6 +52,7 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 148px;
+  background: var(--bg);
 }
 
 @property --progress {
@@ -76,32 +80,6 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(1200px 680px at 8% -10%, rgba(61, 155, 233, 0.13), transparent 62%),
-    radial-gradient(1000px 640px at 96% 2%, rgba(227, 166, 58, 0.08), transparent 60%),
-    linear-gradient(180deg, transparent, var(--void) 88%);
-}
-
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.35;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: radial-gradient(1000px 700px at 50% 0%, #000 20%, transparent 78%);
 }
 
 a {

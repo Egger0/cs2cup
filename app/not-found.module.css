@@ -1,15 +1,4 @@
 .shell {
-  --bg: #171817;
-  --surface: #1c1d1a;
-  --surface-2: #242521;
-  --line: rgba(241, 239, 232, 0.16);
-  --line-strong: rgba(241, 239, 232, 0.34);
-  --ink: #f1efe8;
-  --muted: rgba(241, 239, 232, 0.62);
-  --muted-2: rgba(241, 239, 232, 0.46);
-  --ct: #6da5d3;
-  --accent: var(--ct);
-  --button-ink: #171817;
   min-height: 100dvh;
   display: grid;
   place-content: center;

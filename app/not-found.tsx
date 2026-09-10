@@ -1,11 +1,12 @@
 import { ButtonLink } from '@/components/ui'
 import styles from './not-found.module.css'
+import theme from '@/app/site-theme.module.css'
 
 export const metadata = { title: '页面不存在' }
 
 export default function NotFound() {
   return (
-    <main id="main" className={styles.shell}>
+    <main id="main" className={`${theme.dark} ${styles.shell}`}>
       <span className={styles.glow} aria-hidden />
       <div className={styles.code}>404</div>
       <h1 className={styles.line}>这一枪打空了</h1>

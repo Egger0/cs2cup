@@ -6,21 +6,6 @@
   --admin-line: rgba(109, 165, 211, 0.17);
   --admin-line-strong: rgba(109, 165, 211, 0.34);
   --admin-muted: #949792;
-  --ink: #f1efe8;
-  --accent: var(--admin-blue);
-  --ct: var(--admin-blue);
-  --ct-dim: rgba(109, 165, 211, 0.12);
-  --t: var(--admin-blue);
-  --t-dim: rgba(109, 165, 211, 0.12);
-  --surface: var(--admin-paper);
-  --bg: var(--admin-paper);
-  --bg-2: var(--admin-paper-deep);
-  --void: #05070c;
-  --line: var(--admin-line);
-  --line-strong: var(--admin-line-strong);
-  --muted: var(--admin-muted);
-  --muted-2: var(--admin-muted);
-  --c4: #e5484d;
   min-height: 100svh;
   padding-bottom: 72px;
   color: var(--ink);
@@ -99,20 +84,6 @@
   flex: none;
   align-items: center;
   gap: 8px;
-}
-
-.signOut {
-  display: grid;
-  gap: 4px;
-  justify-items: end;
-}
-
-.signOutError {
-  max-width: 180px;
-  color: #ef8b8e;
-  font-size: 0.72rem;
-  line-height: 1.35;
-  text-align: right;
 }
 
 .barActions a,
