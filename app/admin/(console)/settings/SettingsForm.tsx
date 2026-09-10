@@ -55,7 +55,13 @@ export function SettingsForm({ setting }: { setting: SiteSetting }) {
       </div>
       <Field id="st-school" name="school" label="学校" defaultValue={setting.school} required />
       <div className={styles.pair}>
-        <Field id="st-qq" name="contactQq" label="QQ 群" defaultValue={setting.contactQq ?? ''} />
+        <Field
+          id="st-qq"
+          name="contactQq"
+          label="QQ 群"
+          hint="填加群链接可一键加入；只填群号则页脚显示群号供复制"
+          defaultValue={setting.contactQq ?? ''}
+        />
         <Field
           id="st-wechat"
           name="contactWechat"

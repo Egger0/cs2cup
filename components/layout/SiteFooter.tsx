@@ -7,6 +7,7 @@ import { CopyTextButton } from '@/components/ui/CopyTextButton'
 import type { SiteSetting } from '@/lib/types'
 import styles from './SiteFooter.module.css'
 import theme from '@/app/site-theme.module.css'
+import { qqGroupContact } from '@/lib/qq-group'
 
 const KOOK_WIDGET_URL = 'https://kookapp.cn/api/guilds/3715592670073195/widget.json'
 const KOOK_INVITE_URL = 'https://kook.vip/f5xEe8'
@@ -35,11 +36,7 @@ async function getKookWidget() {
 export async function SiteFooter({ setting }: { setting: SiteSetting }) {
   const kook = await getKookWidget()
   const kookLabel = kook ? `加入 KOOK 社群，${kook.onlineCount} 人在线` : '加入 KOOK 社群'
-  const qqGroupNumber = setting.contactQq?.replace(/\s/g, '')
-  const qqGroupUrl =
-    qqGroupNumber && /^\d{5,20}$/.test(qqGroupNumber)
-      ? `mqqapi://card/show_pslcard?src_type=internal&version=1&uin=${qqGroupNumber}&card_type=group&source=qrcode`
-      : null
+  const qqGroup = qqGroupContact(setting.contactQq)
 
   return (
     <footer className={`${theme.dark} ${styles.footer}`}>
@@ -77,23 +74,28 @@ export async function SiteFooter({ setting }: { setting: SiteSetting }) {
             </nav>
           </div>
           <div className={styles.contact}>
-            {qqGroupUrl ? (
+            {qqGroup?.kind === 'invite' ? (
               <a
                 className={styles.qq}
-                href={qqGroupUrl}
-                aria-label={`在 QQ 中申请加入群 ${qqGroupNumber}`}
-                title="在 QQ 中申请加入群"
+                href={qqGroup.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={qqGroup.number ? `加入 QQ 群 ${qqGroup.number}` : '加入官方 QQ 群'}
               >
                 <span className={styles.kookIcon} aria-hidden="true">
                   <Image src="/brand/qq.svg" alt="" width={21} height={21} />
                 </span>
-                <span>QQ 群</span>
-                <small>{qqGroupNumber}</small>
+                <span>加入 QQ 群</span>
+                {qqGroup.number ? <small>{qqGroup.number}</small> : null}
               </a>
-            ) : setting.contactQq ? (
-              <p>
-                QQ 群：<b>{setting.contactQq}</b>
-                <CopyTextButton value={setting.contactQq} label="复制群号" />
+            ) : qqGroup?.kind === 'number' ? (
+              <p className={styles.qqNumber}>
+                <span className={styles.kookIcon} aria-hidden="true">
+                  <Image src="/brand/qq.svg" alt="" width={21} height={21} />
+                </span>
+                QQ 群：<b>{qqGroup.number}</b>
+                <CopyTextButton value={qqGroup.number} label="复制群号" />
+                <small>在 QQ 中搜索这个群号加入</small>
               </p>
             ) : null}
             {setting.contactWechat && setting.contactWechat !== '无' ? (
