@@ -132,13 +132,13 @@ try {
     limit: 2,
     offset: 2,
   })
-  assert.equal(roles.ok && roles.total, 4)
+  assert.equal(roles.ok && roles.total, 5)
   assert.equal(roles.ok && roles.assignments.length, 2)
   assert.deepEqual(roles.ok && roles.pagination, {
     offset: 2,
     limit: 2,
     hasPrevious: true,
-    hasNext: false,
+    hasNext: true,
   })
   assert.equal(
     (

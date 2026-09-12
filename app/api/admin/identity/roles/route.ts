@@ -44,6 +44,7 @@ function failure(reason: string) {
   if (reason === 'forbidden') return response(403, '当前账号没有人员权限管理能力。')
   if (reason === 'not_found') return response(404, '没有找到对应账号或权限记录。')
   if (reason === 'conflict') return response(409, '权限已经变化，请刷新后重试。')
+  if (reason === 'last_owner') return response(409, '这是最后一位平台所有者，先授予另一位再撤销。')
   return response(400, '请检查账号和操作说明。')
 }
 

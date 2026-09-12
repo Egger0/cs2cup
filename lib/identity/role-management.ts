@@ -17,7 +17,11 @@ import {
   type RoleOperationOptions,
 } from './internal/role-operator.ts'
 import { isCanonicalStoredUsername, normalizeUsername } from './internal/username-policy.ts'
-import { GRANTABLE_IDENTITY_ROLES, type ManagedIdentityRole } from './role-contract.ts'
+import {
+  GRANTABLE_IDENTITY_ROLES,
+  isPlatformRole,
+  type ManagedIdentityRole,
+} from './role-contract.ts'
 
 export { GRANTABLE_IDENTITY_ROLES, MANAGED_IDENTITY_ROLES } from './role-contract.ts'
 export type { ManagedIdentityRole, ManagedRoleAssignment } from './role-contract.ts'
@@ -37,7 +41,7 @@ export async function grantManagedRole(
   const current = roleOperation(options)
   const username = normalizeUsername(input.username)
   const reason = input.reason.trim()
-  const platformRole = input.role === 'identity_reviewer'
+  const platformRole = isPlatformRole(input.role)
   if (
     !isCanonicalStoredUsername(username) ||
     !GRANTABLE_IDENTITY_ROLES.some(role => role === input.role) ||
@@ -153,7 +157,7 @@ export async function revokeManagedRole(
     .prepare(
       `SELECT id, account_id, role, scope_tournament_id, revision
        FROM identity_role_assignment WHERE id = ?
-         AND role IN ('identity_reviewer','organizer','referee','check_in_operator')
+         AND role IN ('platform_owner','identity_reviewer','organizer','referee','check_in_operator')
          AND revoked_at IS NULL LIMIT 1`,
     )
     .bind(input.assignmentId)
@@ -166,6 +170,17 @@ export async function revokeManagedRole(
     }>()
   if (!role) return { ok: false, reason: 'not_found' } as const
   if (role.revision !== input.revision) return { ok: false, reason: 'conflict' } as const
+  if (role.role === 'platform_owner') {
+    const successor = await database
+      .prepare(
+        `SELECT 1 AS present FROM identity_role_assignment
+         WHERE role = 'platform_owner' AND scope_type = 'platform'
+           AND revoked_at IS NULL AND id != ? LIMIT 1`,
+      )
+      .bind(role.id)
+      .first<{ present: number }>()
+    if (!successor) return { ok: false, reason: 'last_owner' } as const
+  }
   const writeNonce = createOpaqueToken()
   const mutation = {
     action: 'revoked' as const,
@@ -187,7 +202,7 @@ export async function revokeManagedRole(
           `UPDATE identity_role_assignment SET revoked_by_account_id = ?, revoke_reason = ?,
                 revoked_at = ?, revision = ?, write_nonce = ?
            WHERE id = ? AND revision = ? AND revoked_at IS NULL
-             AND role IN ('identity_reviewer','organizer','referee','check_in_operator')
+             AND role IN ('platform_owner','identity_reviewer','organizer','referee','check_in_operator')
              AND ${ACTIVE_ROLE_OPERATOR}`,
         )
         .bind(

@@ -9,7 +9,7 @@ import {
 import type { ManagedIdentityRole, ManagedRoleAssignment } from './role-contract.ts'
 
 const ACTIVE_MANAGED_ROLES = `assignment.role IN
-  ('identity_reviewer','organizer','referee','check_in_operator')
+  ('platform_owner','identity_reviewer','organizer','referee','check_in_operator')
   AND assignment.revoked_at IS NULL AND assignment.granted_at <= ?
   AND (assignment.expires_at IS NULL OR assignment.expires_at > ?)`
 
@@ -52,7 +52,7 @@ export async function listManagedRoleAssignments(
            ON password.account_id = account.id AND password.status = 'active'
          LEFT JOIN tournament ON tournament.id = assignment.scope_tournament_id
          WHERE ${ACTIVE_MANAGED_ROLES}
-         ORDER BY CASE assignment.role WHEN 'identity_reviewer' THEN 0 ELSE 1 END,
+         ORDER BY CASE assignment.role WHEN 'platform_owner' THEN 0 WHEN 'identity_reviewer' THEN 1 ELSE 2 END,
                   account.display_name, assignment.id LIMIT ? OFFSET ?`,
       )
       .bind(current.now, current.now, limit, offset)

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import {
   GRANTABLE_IDENTITY_ROLES,
+  isPlatformRole,
   type ManagedIdentityRole,
   type ManagedRoleAssignment,
 } from '@/lib/identity/role-contract'
@@ -22,6 +23,7 @@ const emptyFields = {
 }
 
 const ROLE_LABEL: Record<ManagedIdentityRole, string> = {
+  platform_owner: '平台所有者',
   identity_reviewer: '资格审核员',
   organizer: '赛事组织者',
   referee: '裁判',
@@ -92,7 +94,7 @@ export function ReviewerAccess({
             operation: 'grant',
             username,
             role,
-            tournamentId: role === 'identity_reviewer' ? '' : tournamentId,
+            tournamentId: isPlatformRole(role) ? '' : tournamentId,
             reason: grantReason,
           })
         }}
@@ -122,7 +124,7 @@ export function ReviewerAccess({
             ))}
           </select>
         </label>
-        {role !== 'identity_reviewer' ? (
+        {isPlatformRole(role) ? null : (
           <label>
             <span>赛事</span>
             <select
@@ -138,7 +140,7 @@ export function ReviewerAccess({
               ))}
             </select>
           </label>
-        ) : null}
+        )}
         <label>
           <span>授权原因</span>
           <input
