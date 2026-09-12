@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Button } from './Button'
 import styles from './ConfirmButton.module.css'
 
@@ -19,17 +19,29 @@ export function ConfirmButton({
   onConfirm: () => void
   disabled?: boolean
   'aria-label'?: string
-  children: React.ReactNode
+  children: ReactNode
 }) {
   const [armed, setArmed] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const confirmRef = useRef<HTMLButtonElement>(null)
+  const restore = useRef(false)
+
+  const dismiss = () => {
+    restore.current = true
+    setArmed(false)
+  }
 
   useEffect(() => {
-    if (!armed) return
+    if (!armed) {
+      if (!restore.current) return
+      restore.current = false
+      triggerRef.current?.focus()
+      return
+    }
     confirmRef.current?.focus()
     const timer = window.setTimeout(() => setArmed(false), ARMED_MS)
     const escape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setArmed(false)
+      if (event.key === 'Escape') dismiss()
     }
     document.addEventListener('keydown', escape)
     return () => {
@@ -41,6 +53,7 @@ export function ConfirmButton({
   if (!armed)
     return (
       <Button
+        ref={triggerRef}
         variant="danger"
         size="mini"
         disabled={disabled}
@@ -68,7 +81,7 @@ export function ConfirmButton({
       >
         {confirmLabel}
       </Button>
-      <button type="button" className={styles.cancel} onClick={() => setArmed(false)}>
+      <button type="button" className={styles.cancel} onClick={dismiss}>
         取消
       </button>
     </span>

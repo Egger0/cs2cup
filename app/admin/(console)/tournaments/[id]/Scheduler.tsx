@@ -18,7 +18,7 @@ import {
   MAX_ROUND_GAP_DAYS,
 } from './scheduler-model'
 import { ScheduleRounds } from './ScheduleRounds'
-import { useUnsavedScheduleWarning } from './useUnsavedScheduleWarning'
+import { useUnsavedChangesWarning } from '@/components/admin/useUnsavedChangesWarning'
 
 type Feedback = { tone: 'ok' | 'error' | 'info'; message: string }
 
@@ -40,7 +40,7 @@ export function Scheduler({
   const original = initialScheduleDraft(schedulable)
   const dirty = isScheduleDraftDirty(schedulable, draft, original)
 
-  useUnsavedScheduleWarning(dirty)
+  useUnsavedChangesWarning(dirty, '尚有未发布的赛程更改，离开将丢失这些内容。')
 
   function preview(form: HTMLFormElement) {
     const data = new FormData(form)
