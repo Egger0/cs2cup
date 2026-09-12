@@ -127,18 +127,17 @@
 .hint {
   position: absolute;
   bottom: 28px;
-  left: 50%;
+  left: var(--pad);
   color: rgb(241 239 232 / 72%);
   font-size: 0.75rem;
   letter-spacing: 0.16em;
   opacity: 0;
   pointer-events: none;
-  transform: translateX(-50%);
   transition: opacity 800ms ease;
   white-space: nowrap;
 }
 .hint[data-visible='true'] {
-  opacity: 1;
+  opacity: calc(1 - var(--solar-exit, 0));
 }
 :global(html[data-solar-chapter='far']) .hint {
   opacity: 0;

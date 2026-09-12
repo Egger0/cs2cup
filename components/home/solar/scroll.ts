@@ -27,6 +27,9 @@ export function bindChapters(
     const fade = Math.min(1, value).toFixed(3)
     if (sections[0]!.style.getPropertyValue('--solar-progress') !== fade)
       sections[0]!.style.setProperty('--solar-progress', fade)
+    const exit = Math.min(1, Math.max(0, value - (keys.length - 2))).toFixed(3)
+    if (root.style.getPropertyValue('--solar-exit') !== exit)
+      root.style.setProperty('--solar-exit', exit)
     progress(value, keys)
     if (current >= 0 && Math.abs(value - current) < 0.58) return
     if (performance.now() - Number(overlay.dataset.focusAt ?? -Infinity) < 250) return
@@ -50,5 +53,6 @@ export function bindChapters(
     window.removeEventListener('resize', schedule)
     cancelAnimationFrame(frame)
     delete root.dataset.solarChapter
+    root.style.removeProperty('--solar-exit')
   }
 }
