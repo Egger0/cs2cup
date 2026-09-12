@@ -35,14 +35,19 @@ const LINKS = [
 export function AdminNav({
   capabilities,
   hasTournamentWork,
+  holdsReviewRole,
   trailing,
 }: {
   capabilities: readonly PlatformConsoleCapability[]
   hasTournamentWork: boolean
+  holdsReviewRole: boolean
   trailing?: ReactNode
 }) {
   const tabs = LINKS.filter(
-    link => capabilities.includes(link.capability) || (link.href === '/admin' && hasTournamentWork),
+    link =>
+      capabilities.includes(link.capability) ||
+      (link.href === '/admin' && hasTournamentWork) ||
+      (link.capability === 'platform.identity.review' && holdsReviewRole),
   ).map(link => ({
     href: link.href,
     exact: link.exact,

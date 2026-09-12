@@ -34,6 +34,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <AdminNav
           capabilities={admin.capabilities}
           hasTournamentWork={admin.hasTournamentWork}
+          holdsReviewRole={admin.holdsReviewRole}
           trailing={
             <>
               <span className={styles.uid}>SESSION / {admin.uid}</span>

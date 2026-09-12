@@ -43,7 +43,7 @@ try {
   )
   assert.deepEqual(await resolveUnifiedConsolePermissions(db, recentReviewer.context, now), {
     ok: true,
-    permissions: { capabilities: [], hasTournamentWork: true },
+    permissions: { capabilities: [], hasTournamentWork: true, holdsReviewRole: true },
   })
 
   const staleStaff = await fixture.session(
@@ -63,7 +63,7 @@ try {
   )
   assert.deepEqual(await resolveUnifiedConsolePermissions(db, boundaryStaff.context, now), {
     ok: true,
-    permissions: { capabilities: [], hasTournamentWork: true },
+    permissions: { capabilities: [], hasTournamentWork: true, holdsReviewRole: false },
   })
 
   const reviewer = await fixture.session(accountIds.reviewer, {
@@ -72,7 +72,11 @@ try {
   })
   assert.deepEqual(await resolveUnifiedConsolePermissions(db, reviewer.context, now), {
     ok: true,
-    permissions: { capabilities: ['platform.identity.review'], hasTournamentWork: true },
+    permissions: {
+      capabilities: ['platform.identity.review'],
+      hasTournamentWork: true,
+      holdsReviewRole: true,
+    },
   })
 
   const platformOwner = await fixture.session(accountIds.platformOwner, {

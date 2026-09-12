@@ -48,12 +48,13 @@ export default async function ParticipantLoginPage({
   const params = await searchParams
   const returnTo = safeParticipantReturnPath(params.returnTo)
   const unifiedReturnTo = isParticipantReturnPath(params.returnTo) ? params.returnTo : ''
-  const isStaffReturn = isParticipantStaffReturnPath(returnTo)
+  const staffReturnPath = isParticipantStaffReturnPath(returnTo)
   const redirectKey = isIdentityRedirectKey(params.redirectKey)
     ? params.redirectKey
-    : isStaffReturn
+    : staffReturnPath
       ? 'workspaces'
       : 'account'
+  const isStaffReturn = staffReturnPath || redirectKey === 'workspaces'
   const tournamentSlug = typeof params.tournamentSlug === 'string' ? params.tournamentSlug : ''
   const entrySlug = redirectKey === 'registration' ? registrationSlug(tournamentSlug) : null
   const unifiedTarget = unifiedReturnTo || resolveIdentityRedirect(redirectKey, { tournamentSlug })
@@ -94,9 +95,11 @@ export default async function ParticipantLoginPage({
           </p>
           <h1 id="participant-login-title">{isStaffReturn ? '回到社团工作台' : '回到你的账号'}</h1>
           <p className={styles.lede}>
-            {isStaffReturn
-              ? '由设备确认身份后，系统会重新检查本届赛事工作权限。'
-              : '查看资格进度、赛事报名与账号安全状态。'}
+            {params.reauth === '1'
+              ? '资格审核这类敏感板块只认最近一次身份确认，重新登录即可继续。'
+              : isStaffReturn
+                ? '由设备确认身份后，系统会重新检查本届赛事工作权限。'
+                : '查看资格进度、赛事报名与账号安全状态。'}
           </p>
         </div>
 
