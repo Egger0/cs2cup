@@ -20,10 +20,10 @@ export function transitionTo(
   event: MouseEvent<HTMLAnchorElement>,
   href: string,
   push: (href: string) => void,
-) {
-  if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
+): ViewTransition | null {
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return null
   const start = startViewTransition()
-  if (!start) return
+  if (!start) return null
   event.preventDefault()
   const target = new URL(href, location.href).pathname
   const transition = start(
@@ -40,4 +40,5 @@ export function transitionTo(
   )
   for (const step of [transition.ready, transition.updateCallbackDone, transition.finished])
     step.catch(() => {})
+  return transition
 }

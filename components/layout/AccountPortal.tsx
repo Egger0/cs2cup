@@ -1,7 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
-import { createPortal } from 'react-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import type { MouseEvent } from 'react'
+import { transitionTo } from './view-transition'
+import './account-portal.css'
 import styles from './AccountPortal.module.css'
 
 export function TrophyGlyph() {
@@ -34,63 +37,37 @@ export function AccountPortal({
   label: string
   hidden?: boolean
 }) {
-  const anchor = useRef<HTMLAnchorElement>(null)
-  const [travel, setTravel] = useState<CSSProperties | null>(null)
-
-  useEffect(() => {
-    const clear = () => setTravel(null)
-    window.addEventListener('pageshow', clear)
-    window.addEventListener('popstate', clear)
-    return () => {
-      window.removeEventListener('pageshow', clear)
-      window.removeEventListener('popstate', clear)
-    }
-  }, [])
+  const router = useRouter()
 
   const enter = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
-      return
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const box = anchor.current?.getBoundingClientRect()
-    if (!box) return
-
-    event.preventDefault()
+    const box = event.currentTarget.getBoundingClientRect()
     const x = box.left + box.width / 2
     const y = box.top + box.height / 2
-    const reach = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))
-    setTravel({
-      '--portal-x': `${x}px`,
-      '--portal-y': `${y}px`,
-      '--portal-scale': String((reach / 23) * 1.08),
-    } as CSSProperties)
-    window.setTimeout(() => location.assign(href), 430)
+    const root = document.documentElement
+    root.style.setProperty('--portal-x', `${Math.round(x)}px`)
+    root.style.setProperty('--portal-y', `${Math.round(y)}px`)
+    root.style.setProperty(
+      '--portal-reach',
+      `${Math.ceil(Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y)))}px`,
+    )
+    root.dataset.portal = ''
+    const release = () => delete root.dataset.portal
+    const transition = transitionTo(event, href, router.push)
+    if (transition) void transition.finished.then(release, release)
+    else release()
   }
 
   return (
-    <>
-      <a
-        ref={anchor}
-        href={href}
-        aria-label={label}
-        title={label}
-        className={hidden ? `${styles.portal} ${styles.hidden}` : styles.portal}
-        aria-hidden={hidden || undefined}
-        tabIndex={hidden ? -1 : undefined}
-        onClick={enter}
-      >
-        <TrophyGlyph />
-      </a>
-      {travel
-        ? createPortal(
-            <div className={styles.veil} style={travel} aria-hidden="true">
-              <span className={styles.disc} />
-              <span className={styles.rising}>
-                <TrophyGlyph />
-              </span>
-            </div>,
-            document.body,
-          )
-        : null}
-    </>
+    <Link
+      href={href}
+      aria-label={label}
+      title={label}
+      className={hidden ? `${styles.portal} ${styles.hidden}` : styles.portal}
+      aria-hidden={hidden || undefined}
+      tabIndex={hidden ? -1 : undefined}
+      onClick={enter}
+    >
+      <TrophyGlyph />
+    </Link>
   )
 }
