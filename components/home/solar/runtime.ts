@@ -204,11 +204,11 @@ export async function startSolar(
     width = host.clientWidth
     height = host.clientHeight
     camera.aspect = width / height
-    const halfWidth =
-      Math.max(15, 7 + data.games.length * 3.2) *
-      (camera.aspect < 1 ? Math.max(0.87, camera.aspect) : 1)
+    const halfWidth = Math.max(15, 7 + data.games.length * 3.2) * (camera.aspect < 1 ? 1.18 : 1)
     state.base = halfWidth / (camera.aspect * Math.tan(T.MathUtils.degToRad(camera.fov / 2)))
     camera.far = state.base * 12
+    if (camera.aspect < 0.8) camera.setViewOffset(width, height, 0, height * 0.06, width, height)
+    else camera.clearViewOffset()
     camera.updateProjectionMatrix()
     system.dust.scale.setScalar(state.base)
     applyRatio()
