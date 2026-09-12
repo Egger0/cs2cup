@@ -7,7 +7,6 @@ import { FollowTournament } from '@/components/discovery/FollowTournament'
 import { ShareButton } from '@/components/share/ShareButton'
 import { Icon } from '@/components/ui/Icon'
 import type { PublicShare } from '@/lib/share-poster'
-import { SectionTabs, type SectionTab } from './SectionTabs'
 import styles from './TournamentHeader.module.css'
 import matchStyles from './TournamentMatchCard.module.css'
 import theme from '@/app/site-theme.module.css'
@@ -38,7 +37,6 @@ interface TournamentHeaderProps {
   deadline: string | null
   primaryAction: { href: string; label: string }
   next: NextMatchSummary | null
-  tabs: SectionTab[]
   tournamentId: number
   share: PublicShare
 }
@@ -57,7 +55,6 @@ export function TournamentHeader({
   deadline,
   primaryAction,
   next,
-  tabs,
   tournamentId,
   share,
 }: TournamentHeaderProps) {
@@ -186,7 +183,6 @@ export function TournamentHeader({
         </div>
         <span className={styles.horizon} aria-hidden />
       </header>
-      <SectionTabs tabs={tabs} />
     </>
   )
 }

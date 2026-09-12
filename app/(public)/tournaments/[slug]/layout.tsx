@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { TournamentHeader } from '@/components/layout/TournamentHeader'
+import { SectionTabs } from '@/components/layout/SectionTabs'
 import { isByeMatch, isCompletedMatch } from '@/lib/bracket'
 import {
   getMatches,
@@ -12,6 +13,7 @@ import {
 import { buildScheduleEntries, selectNextScheduleEntry } from '@/lib/schedule'
 import type { TournamentStatus } from '@/lib/types'
 import { resolveSiteOrigin } from '@/lib/site-config'
+import styles from './page.module.css'
 import { CLUB_BRAND } from '@/lib/brand'
 import { formatSiteDateTime } from '@/lib/datetime'
 
@@ -128,17 +130,21 @@ export default async function TournamentLayout({
               }
             : null
         }
-        tabs={[
-          { href: base, label: '总览', exact: true },
-          { href: `${base}/schedule`, label: '赛程' },
-          { href: `${base}/teams`, label: '参赛战队', count: teams.length },
-          { href: `${base}/bracket`, label: '对阵表' },
-          { href: `${base}/results`, label: '战报', count: played },
-          { href: `${base}/rules`, label: '赛制与须知' },
-          { href: `${base}/register`, label: '报名' },
-        ]}
       />
-      {children}
+      <div className={styles.sheet}>
+        <SectionTabs
+          tabs={[
+            { href: base, label: '总览', exact: true },
+            { href: `${base}/schedule`, label: '赛程' },
+            { href: `${base}/teams`, label: '参赛战队', count: teams.length },
+            { href: `${base}/bracket`, label: '对阵表' },
+            { href: `${base}/results`, label: '战报', count: played },
+            { href: `${base}/rules`, label: '赛制与须知' },
+            { href: `${base}/register`, label: '报名' },
+          ]}
+        />
+        {children}
+      </div>
     </>
   )
 }

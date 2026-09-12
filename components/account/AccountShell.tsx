@@ -42,19 +42,21 @@ export async function AccountShell({
         accountLink={{ href: '/me', label: '我的赛事', code: 'MY / EVENTS' }}
       />
       {masthead}
-      <SectionTabs
-        tabs={sections ?? (access ? accountSections(access) : [])}
-        label="账号导航"
-        trailing={
-          <>
-            <span className={styles.identity}>{identity}</span>
-            {signOut ?? <AccountSignOut />}
-          </>
-        }
-      />
-      <main id="main" className={styles.main}>
-        {children}
-      </main>
+      <div className={styles.sheet}>
+        <SectionTabs
+          tabs={sections ?? (access ? accountSections(access) : [])}
+          label="账号导航"
+          trailing={
+            <>
+              <span className={styles.identity}>{identity}</span>
+              {signOut ?? <AccountSignOut />}
+            </>
+          }
+        />
+        <main id="main" className={styles.main}>
+          {children}
+        </main>
+      </div>
       <SiteFooter setting={site} />
     </div>
   )
