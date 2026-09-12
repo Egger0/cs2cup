@@ -2,6 +2,8 @@
   --section-space: var(--space-8);
   position: relative;
   z-index: 1;
+  --paper: var(--bg);
+  display: flow-root;
   min-height: 100dvh;
   color: var(--ink);
   color-scheme: light;
@@ -58,8 +60,25 @@
   color-scheme: light;
 }
 
+.theme > header + *:not(:global([data-arrival])) {
+  margin-top: var(--header-height);
+}
+
 .theme > main {
-  min-height: calc(100svh - 76px);
+  min-height: calc(100svh - var(--header-height));
+}
+
+.theme > header + main:has(:global([data-arrival]), :global([data-solar-home])) {
+  margin-top: 0;
+}
+
+.theme:has(:global([data-solar-home])) {
+  background: #06070a;
+}
+
+.theme:has(:global([data-solar-home])) > footer {
+  background: transparent;
+  border-top-color: rgb(155 202 235 / 10%);
 }
 
 .theme :global([data-rise]) {
@@ -69,9 +88,6 @@
 @media (max-width: 900px) {
   .theme {
     --section-space: var(--space-6);
-  }
-  .theme > main {
-    min-height: calc(100svh - 68px);
   }
 }
 @media (max-width: 640px) {

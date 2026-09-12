@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { getAuthContext } from '@/lib/identity/kernel'
+import bandStyles from '../login/pass-band.module.css'
 import loginStyles from '../login/login.module.css'
 import { RecoverForm } from './RecoverForm'
 import { registrationAuthHref, registrationSlug } from '@/lib/registration-navigation'
@@ -28,9 +29,6 @@ export default async function RecoverPage({
   return (
     <main id="main" className={loginStyles.page}>
       <section className={loginStyles.vestibule} aria-labelledby="recovery-title">
-        <div className={loginStyles.seal} aria-hidden="true">
-          <Image src="/brand/club-mark.svg" alt="" width={440} height={440} loading="eager" />
-        </div>
         <header className={loginStyles.brandline}>
           <Image src="/brand/club-mark.svg" alt="" width={38} height={38} loading="eager" />
           <strong>宁波理工电竞社</strong>
@@ -49,23 +47,23 @@ export default async function RecoverPage({
           <span>01 / ONE TIME</span>每枚恢复码只能使用一次
         </p>
       </section>
-      <section className={loginStyles.passBand} aria-labelledby="recovery-form-title">
-        <header className={loginStyles.passHeader}>
-          <p className={loginStyles.serial}>OFFLINE RECOVERY / NLC—01</p>
+      <section className={bandStyles.passBand} aria-labelledby="recovery-form-title">
+        <header className={bandStyles.passHeader}>
+          <p className={bandStyles.serial}>OFFLINE RECOVERY / NLC—01</p>
           <h2 id="recovery-form-title">验证恢复码</h2>
           <p>输入用户名，以及之前在「账号安全」中保存的一个备用恢复码。</p>
         </header>
         {entrySlug ? <RegistrationJourney slug={entrySlug} /> : null}
-        <div className={loginStyles.loginControl}>
+        <div className={bandStyles.loginControl}>
           <RecoverForm />
         </div>
-        <footer className={loginStyles.passFooter}>
-          <details className={loginStyles.recoveryHelp}>
+        <footer className={bandStyles.passFooter}>
+          <details className={bandStyles.recoveryHelp}>
             <summary>没有保存恢复码？</summary>
             <p>如果设置过通行密钥，可以返回登录，使用指纹、面容或设备解锁。</p>
             <Link href="/about#join">仍无法登录？联系社团咨询 →</Link>
           </details>
-          <Link href={registrationAuthHref('login', entrySlug)} className={loginStyles.backLink}>
+          <Link href={registrationAuthHref('login', entrySlug)} className={bandStyles.backLink}>
             <span aria-hidden="true">←</span> 返回登录
           </Link>
         </footer>

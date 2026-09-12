@@ -1,0 +1,308 @@
+@property --arrival-p {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+.arrival {
+  --tone: #4aa3df;
+  --glide: cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: clamp(560px, 86svh, 940px);
+  align-items: flex-end;
+  overflow: clip;
+  padding-block: calc(var(--header-height) + clamp(40px, 8vh, 96px)) clamp(104px, 15vh, 168px);
+  color: #f1efe8;
+  background: #06070a;
+  view-timeline-name: --arrival;
+  view-timeline-inset: 0;
+}
+
+.arrival[data-density='compact'] {
+  min-height: clamp(460px, 64svh, 680px);
+}
+
+.sky,
+.sky::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sky {
+  z-index: -3;
+  background:
+    radial-gradient(
+      ellipse 55% 70% at 80% 22%,
+      color-mix(in srgb, var(--tone) 20%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(ellipse 45% 50% at 8% 100%, rgb(18 48 58 / 38%), transparent 70%), var(--stars);
+  transform: translateY(calc(var(--arrival-p) * 32%));
+}
+
+.sky::before {
+  background: var(--stars);
+  content: '';
+  opacity: 0.6;
+  transform: scale(1.8) rotate(74deg);
+}
+
+.limb,
+.art {
+  position: absolute;
+  z-index: -2;
+  pointer-events: none;
+  transform: translateY(calc(var(--arrival-p) * -22%)) rotate(calc(var(--arrival-p) * -10deg));
+}
+
+.limb {
+  top: 16%;
+  right: max(-36vw, -560px);
+  width: min(92vw, 1240px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 26% 24%,
+    color-mix(in srgb, var(--tone) 34%, #11161c),
+    #0a0d11 44%,
+    #06070a 68%
+  );
+  box-shadow:
+    inset 16px 12px 42px -14px color-mix(in srgb, var(--tone) 85%, #fff),
+    inset 3px 3px 5px -3px rgb(255 255 255 / 60%),
+    0 0 110px 4px color-mix(in srgb, var(--tone) 24%, transparent);
+}
+
+.art {
+  inset: 0 0 0 auto;
+  width: min(100%, 1180px);
+  mask-image: linear-gradient(90deg, transparent, #000 34%);
+}
+
+.art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 34% 50%;
+}
+
+.code {
+  position: absolute;
+  z-index: -1;
+  right: 0;
+  bottom: clamp(70px, 11vh, 128px);
+  left: 0;
+  overflow: hidden;
+  padding-inline: var(--pad);
+  color: transparent;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(5rem, 19vw, 21rem);
+  font-weight: 800;
+  line-height: 0.8;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--tone) 42%, transparent);
+  transform: translateX(calc(var(--arrival-p) * -24%));
+  pointer-events: none;
+  user-select: none;
+}
+
+.copy {
+  width: 100%;
+  opacity: calc(1 - var(--arrival-p) * 0.7);
+  transform: translateY(calc(var(--arrival-p) * 38%));
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: color-mix(in srgb, var(--tone) 50%, #fff);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before {
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+  content: '';
+}
+
+.title {
+  max-width: 15ch;
+  margin-top: 18px;
+  font-family:
+    'NLC Serif', 'Songti SC', 'STSong', 'Noto Serif CJK SC', 'Source Han Serif SC', serif;
+  font-size: clamp(3rem, 8.2vw, 8rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.04;
+  text-shadow: 0 12px 60px rgb(0 0 0 / 55%);
+  text-wrap: balance;
+}
+
+.arrival[data-density='compact'] .title {
+  font-size: clamp(2.6rem, 6.2vw, 6rem);
+}
+
+.lede {
+  max-width: 46ch;
+  margin-top: 22px;
+  color: #c3cbcf;
+  font-size: clamp(1rem, 1.25vw, 1.125rem);
+  line-height: 1.8;
+}
+
+.aside {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: 28px;
+}
+
+.horizon {
+  position: absolute;
+  z-index: 1;
+  right: -30%;
+  bottom: -1px;
+  left: -30%;
+  height: clamp(56px, 8vw, 128px);
+  background: var(--paper, var(--bg));
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  box-shadow:
+    0 -1.5px 0 color-mix(in srgb, var(--tone) 60%, #fff),
+    0 -22px 70px -8px color-mix(in srgb, var(--tone) 50%, transparent);
+  transform: scale(calc(1 + var(--arrival-p) * 0.6), calc(1 + var(--arrival-p) * 1.4));
+  transform-origin: 50% 100%;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .title {
+    animation: lift 1100ms var(--glide) both;
+  }
+
+  .eyebrow,
+  .lede,
+  .aside {
+    animation: surface 900ms var(--glide) both;
+  }
+
+  .lede,
+  .aside {
+    animation-delay: 260ms;
+  }
+
+  .limb,
+  .art {
+    animation: approach 1800ms var(--glide) both;
+  }
+
+  .code {
+    animation: slide 1600ms var(--glide) both;
+  }
+
+  .horizon {
+    animation: rise 1300ms 120ms var(--glide) both;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .arrival {
+      animation: travel linear both;
+      animation-timeline: --arrival;
+      animation-range: exit 0% exit 100%;
+    }
+  }
+}
+
+@keyframes travel {
+  to {
+    --arrival-p: 1;
+  }
+}
+
+@keyframes lift {
+  from {
+    translate: 0 0.4em;
+  }
+}
+
+@keyframes surface {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+}
+
+@keyframes approach {
+  from {
+    scale: 0.86;
+    translate: 6% 8%;
+  }
+}
+
+@keyframes slide {
+  from {
+    translate: 10% 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    translate: 0 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .arrival {
+    min-height: clamp(520px, 80svh, 760px);
+    padding-bottom: 96px;
+  }
+
+  .arrival[data-density='compact'] {
+    min-height: clamp(420px, 60svh, 560px);
+  }
+
+  .limb {
+    top: 10%;
+    right: -70vw;
+    width: 140vw;
+  }
+
+  .art {
+    width: 100%;
+    mask-image: linear-gradient(180deg, #000 30%, transparent 88%);
+  }
+
+  .art img {
+    object-position: 38% 30%;
+  }
+
+  .code {
+    bottom: 84px;
+    font-size: 26vw;
+  }
+
+  .title {
+    font-size: clamp(2.5rem, 11vw, 3.75rem);
+  }
+
+  .arrival[data-density='compact'] .title {
+    font-size: clamp(2.25rem, 10vw, 3.25rem);
+  }
+
+  .horizon {
+    right: -50%;
+    left: -50%;
+    height: 48px;
+  }
+}

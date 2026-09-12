@@ -1,4 +1,5 @@
 import { PageMasthead } from '@/components/domain/Sections'
+import { ArchiveTabs } from '../tabs'
 import styles from './page.module.css'
 
 export const metadata = {
@@ -27,54 +28,59 @@ const cashTotal = DONATIONS.reduce(
 
 export default function MeritPage() {
   return (
-    <section className="section">
-      <div className="wrap">
-        <PageMasthead
-          eyebrow="致谢"
-          title="功德榜"
-          lede="记录为宁理杯和社团活动提供支持的朋友。感谢每一份付出，让比赛继续。"
-          density="compact"
-        />
-        <section aria-labelledby="edition-title" className={styles.edition}>
-          <div className={styles.heading}>
-            <div>
-              <p className={styles.year}>2025 · 捐赠鸣谢</p>
-              <h2 id="edition-title">第三届宁理杯</h2>
+    <>
+      <PageMasthead
+        code="MERIT"
+        tone="#d8b169"
+        eyebrow="致谢"
+        title="功德榜"
+        lede="记录为宁理杯和社团活动提供支持的朋友。感谢每一份付出，让比赛继续。"
+        density="compact"
+      />
+      <ArchiveTabs />
+      <section className="section">
+        <div className="wrap">
+          <section aria-labelledby="edition-title" className={styles.edition}>
+            <div className={styles.heading}>
+              <div>
+                <p className={styles.year}>2025 · 捐赠鸣谢</p>
+                <h2 id="edition-title">第三届宁理杯</h2>
+              </div>
+              <p className={styles.summary}>
+                {DONATIONS.length} 位捐赠者 · 现金 <strong>{cashTotal} 元</strong> · 贴纸 5 张
+              </p>
             </div>
-            <p className={styles.summary}>
-              {DONATIONS.length} 位捐赠者 · 现金 <strong>{cashTotal} 元</strong> · 贴纸 5 张
-            </p>
-          </div>
-          <table className={styles.table}>
-            <caption>按原始明细顺序展示，物品捐赠不计入现金合计。</caption>
-            <thead>
-              <tr>
-                <th scope="col">捐赠者</th>
-                <th scope="col">捐赠内容</th>
-                <th scope="col">日期</th>
-              </tr>
-            </thead>
-            <tbody>
-              {DONATIONS.map(donation => (
-                <tr key={donation.name}>
-                  <th scope="row">{donation.name}</th>
-                  <td>
-                    <span className={styles.contribution}>
-                      {typeof donation.amount === 'number'
-                        ? `${donation.amount} 元`
-                        : donation.amount}
-                    </span>
-                    {donation.note ? <p className={styles.note}>{donation.note}</p> : null}
-                  </td>
-                  <td className={styles.date}>
-                    <time dateTime={donation.date}>{donation.date}</time>
-                  </td>
+            <table className={styles.table}>
+              <caption>按原始明细顺序展示，物品捐赠不计入现金合计。</caption>
+              <thead>
+                <tr>
+                  <th scope="col">捐赠者</th>
+                  <th scope="col">捐赠内容</th>
+                  <th scope="col">日期</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-      </div>
-    </section>
+              </thead>
+              <tbody>
+                {DONATIONS.map(donation => (
+                  <tr key={donation.name}>
+                    <th scope="row">{donation.name}</th>
+                    <td>
+                      <span className={styles.contribution}>
+                        {typeof donation.amount === 'number'
+                          ? `${donation.amount} 元`
+                          : donation.amount}
+                      </span>
+                      {donation.note ? <p className={styles.note}>{donation.note}</p> : null}
+                    </td>
+                    <td className={styles.date}>
+                      <time dateTime={donation.date}>{donation.date}</time>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        </div>
+      </section>
+    </>
   )
 }

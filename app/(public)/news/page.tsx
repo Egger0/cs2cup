@@ -11,18 +11,19 @@ export default async function NewsPage() {
   const posts = await safely(() => listPosts(), [])
 
   return (
-    <section className="section">
-      <div className="wrap">
-        <div data-rise>
-          <PageMasthead
-            eyebrow="社团动态"
-            title="公告与记录"
-            lede="赛事通知、纳新、服务器变更都在这里。"
-            density="compact"
-          />
+    <>
+      <PageMasthead
+        code="JOURNAL"
+        eyebrow="社团动态"
+        title="公告与记录"
+        lede="赛事通知、纳新、服务器变更都在这里。"
+        density="compact"
+      />
+      <section className="section">
+        <div className="wrap">
+          {posts.length > 0 ? <PostList posts={posts} /> : <Empty>还没有发布动态</Empty>}
         </div>
-        {posts.length > 0 ? <PostList posts={posts} /> : <Empty>还没有发布动态</Empty>}
-      </div>
-    </section>
+      </section>
+    </>
   )
 }

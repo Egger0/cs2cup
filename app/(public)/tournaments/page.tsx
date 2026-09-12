@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { SectionHead } from '@/components/domain/Sections'
+import { PageMasthead, SectionHead } from '@/components/domain/Sections'
 import { Honours } from '@/components/domain/Honours'
 import { TournamentExplorer } from '@/components/discovery/TournamentExplorer'
 import { ShareButton } from '@/components/share/ShareButton'
@@ -29,48 +29,51 @@ export default async function TournamentsPage({
   const filters = readTournamentFilters(query)
 
   return (
-    <section className={styles.page}>
-      <div className="wrap">
-        <header className={styles.masthead}>
-          <div>
-            <p className={styles.eyebrow}>NINGLI ESPORTS / TOURNAMENTS</p>
-            <h1>
-              赛事大厅<span>。</span>
-            </h1>
-            <p className={styles.lede}>找到下一场比赛，和队友一起为热爱上场。</p>
-          </div>
-          <div className={styles.aside}>
-            <span className={styles.number}>{String(tournaments.length).padStart(2, '0')}</span>
-            <span className={styles.caption}>场赛事 · 每一场都算数</span>
-            <ShareButton
-              share={{
-                title: '和我一起，为宁理上场',
-                text: '发现校园赛事、组队报名、关注赛程。宁理电竞社，等你加入。',
-                url: `${resolveSiteOrigin()}/tournaments`,
-                label: '校园电竞 / 赛事大厅',
-              }}
-            >
-              分享赛事大厅
-            </ShareButton>
-          </div>
-        </header>
-        <TournamentExplorer
-          key={JSON.stringify(filters)}
-          tournaments={tournaments}
-          initial={filters}
-        />
+    <>
+      <PageMasthead
+        code="TOURNAMENTS"
+        eyebrow="NINGLI ESPORTS / TOURNAMENTS"
+        title={
+          <>
+            赛事大厅<span className={styles.stop}>。</span>
+          </>
+        }
+        lede="找到下一场比赛，和队友一起为热爱上场。"
+        density="compact"
+      >
+        <span className={styles.number}>{String(tournaments.length).padStart(2, '0')}</span>
+        <span className={styles.caption}>场赛事 · 每一场都算数</span>
+        <ShareButton
+          share={{
+            title: '和我一起，为宁理上场',
+            text: '发现校园赛事、组队报名、关注赛程。宁理电竞社，等你加入。',
+            url: `${resolveSiteOrigin()}/tournaments`,
+            label: '校园电竞 / 赛事大厅',
+          }}
+        >
+          分享赛事大厅
+        </ShareButton>
+      </PageMasthead>
+      <section className={styles.page}>
+        <div className="wrap">
+          <TournamentExplorer
+            key={JSON.stringify(filters)}
+            tournaments={tournaments}
+            initial={filters}
+          />
 
-        {honours.length > 0 ? (
-          <div data-rise="2" style={{ marginTop: 72 }}>
-            <SectionHead
-              eyebrow="荣誉墙"
-              title="历届冠军"
-              lede="记住每一支走到最后的战队，也记住一起上场的日子。"
-            />
-            <Honours honours={honours} />
-          </div>
-        ) : null}
-      </div>
-    </section>
+          {honours.length > 0 ? (
+            <div data-rise="2" style={{ marginTop: 72 }}>
+              <SectionHead
+                eyebrow="荣誉墙"
+                title="历届冠军"
+                lede="记住每一支走到最后的战队，也记住一起上场的日子。"
+              />
+              <Honours honours={honours} />
+            </div>
+          ) : null}
+        </div>
+      </section>
+    </>
   )
 }

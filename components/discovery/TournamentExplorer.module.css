@@ -75,6 +75,7 @@
 }
 .submit {
   min-height: 44px;
+  border-radius: 999px;
   min-width: 76px;
   margin: 7px;
   border: 0;
@@ -120,6 +121,7 @@
 }
 .followed {
   display: inline-flex;
+  border-radius: 999px;
   flex: none;
   align-items: center;
   gap: 8px;

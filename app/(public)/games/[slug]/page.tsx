@@ -1,7 +1,9 @@
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { ButtonLink, Empty } from '@/components/ui'
+import { PLANET_COLORS } from '@/lib/planets'
 import { PostList } from '@/components/domain/PostList'
-import { SectionHead } from '@/components/domain/Sections'
+import { PageMasthead, SectionHead } from '@/components/domain/Sections'
 import { TournamentList } from '@/components/domain/TournamentList'
 import { getGame, listPosts, listTournaments, safely } from '@/lib/queries/public'
 import styles from './game.module.css'
@@ -28,30 +30,40 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
   const news = posts.filter(post => post.gameId === game.id)
   return (
     <>
-      <header className={styles.head}>
-        <div className={`wrap ${styles.heroGrid}`}>
-          <div className={styles.titleBlock}>
-            <div className={styles.en}>{game.nameEn ?? game.slug}</div>
-            <h1 className={styles.name}>{game.name}</h1>
-            {game.tagline ? <p className={styles.tagline}>{game.tagline}</p> : null}
-            <div style={{ marginTop: 20 }}>
-              <ButtonLink href="#game-tournaments" variant="primary">
-                查看本项目赛事
-              </ButtonLink>
-            </div>
-          </div>
-          <div className={styles.stats}>
-            <span className={styles.stat}>
-              <b>{String(mine.length).padStart(2, '0')}</b>
-              <span>届赛事</span>
-            </span>
-            <span className={styles.stat}>
-              <b>{String(news.length).padStart(2, '0')}</b>
-              <span>条动态</span>
-            </span>
-          </div>
-        </div>
-      </header>
+      <PageMasthead
+        code={game.slug.toUpperCase()}
+        tone={PLANET_COLORS.get(game.slug)}
+        eyebrow={game.nameEn ?? game.slug}
+        title={<span className={styles.name}>{game.name}</span>}
+        lede={game.tagline ?? undefined}
+        art={
+          PLANET_COLORS.has(game.slug) ? (
+            <Image
+              className={styles.planet}
+              src={`/models/planet-${game.slug}.webp`}
+              alt=""
+              width={1600}
+              height={924}
+              priority
+              unoptimized
+            />
+          ) : undefined
+        }
+      >
+        <ButtonLink href="#game-tournaments" variant="primary">
+          查看本项目赛事
+        </ButtonLink>
+        <span className={styles.stats}>
+          <span className={styles.stat}>
+            <b>{String(mine.length).padStart(2, '0')}</b>
+            <span>届赛事</span>
+          </span>
+          <span className={styles.stat}>
+            <b>{String(news.length).padStart(2, '0')}</b>
+            <span>条动态</span>
+          </span>
+        </span>
+      </PageMasthead>
 
       {game.description ? (
         <section className={`section ${styles.overviewSection}`}>

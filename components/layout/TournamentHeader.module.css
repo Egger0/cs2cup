@@ -2,22 +2,76 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  padding-top: var(--header-height);
+  padding-bottom: clamp(44px, 6vw, 92px);
   color: var(--ink);
-  background: var(--bg);
+  background: #06070a;
 }
-.glow {
+.sky,
+.moon,
+.horizon {
   position: absolute;
-  z-index: -1;
-  right: 3%;
-  top: -40px;
-  width: 360px;
-  aspect-ratio: 1;
-  background: url('/brand/club-mark.svg') center / contain no-repeat;
-  opacity: 0.1;
   pointer-events: none;
 }
+.sky {
+  z-index: -3;
+  inset: 0;
+  background:
+    var(--stars), radial-gradient(ellipse 55% 80% at 82% 8%, rgb(36 119 185 / 26%), transparent 70%);
+}
+.moon {
+  z-index: -2;
+  top: calc(var(--header-height) - 40px);
+  right: max(-8vw, -120px);
+  width: clamp(260px, 34vw, 540px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 28%, #3a4d5c, #121a22 46%, #06070a 72%);
+  box-shadow:
+    inset 12px 8px 30px -10px #9bcaeb,
+    0 0 80px 2px rgb(74 163 223 / 22%);
+}
+.horizon {
+  z-index: 0;
+  right: -30%;
+  bottom: -1px;
+  left: -30%;
+  height: clamp(36px, 5vw, 84px);
+  background: var(--paper);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  box-shadow:
+    0 -1.5px 0 #b8dbf4,
+    0 -18px 60px -8px rgb(74 163 223 / 45%);
+}
 .inner {
-  padding-block: 36px;
+  position: relative;
+  z-index: 1;
+  padding-block: clamp(28px, 5vw, 64px) 36px;
+}
+.compact {
+  padding-bottom: clamp(56px, 6vw, 92px);
+}
+.compact .moon {
+  width: clamp(180px, 20vw, 300px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .moon {
+    animation: approach 1800ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .horizon {
+    animation: rise 1200ms 120ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+@keyframes approach {
+  from {
+    scale: 0.86;
+    translate: 6% 8%;
+  }
+}
+@keyframes rise {
+  from {
+    translate: 0 100%;
+  }
 }
 .split {
   display: grid;
@@ -54,10 +108,11 @@
   width: fit-content;
   max-width: 100%;
   font-family: var(--font-body);
-  font-size: clamp(2rem, 3.6vw, 3.25rem);
-  font-weight: 750;
-  letter-spacing: -0.025em;
-  line-height: 1.22;
+  font-size: clamp(2.2rem, 5vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  text-shadow: 0 10px 50px rgb(0 0 0 / 50%);
   overflow-wrap: anywhere;
 }
 .latin {
@@ -89,6 +144,7 @@
   justify-content: center;
   gap: 10px;
   min-height: 44px;
+  border-radius: 999px;
   padding: 10px 14px;
   font-size: 0.875rem;
   color: var(--ct);
@@ -149,8 +205,9 @@
 .tools summary {
   min-height: 44px;
   align-content: center;
-  padding: 8px 14px;
+  padding: 8px 18px;
   border: 1px solid var(--line-strong);
+  border-radius: 999px;
   color: var(--ct);
   font-size: 0.875rem;
   cursor: pointer;
@@ -180,7 +237,7 @@
     padding-block: 26px;
   }
   .cjk {
-    font-size: 1.875rem;
+    font-size: 2.125rem;
   }
   .status {
     font-size: 0.75rem;

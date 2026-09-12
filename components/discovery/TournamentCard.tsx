@@ -15,7 +15,11 @@ export function TournamentCard({ tournament }: { tournament: Tournament }) {
         <span>
           {tournament.gameName ?? '校园电竞'} / {tournament.season}
         </span>
-        <span className={styles.status} data-status={tournament.status}>
+        <span
+          className={styles.status}
+          data-status={tournament.status}
+          data-champion={tournament.championName ? '' : undefined}
+        >
           <i aria-hidden="true" />
           {TOURNAMENT_STATES[tournament.status]}
         </span>

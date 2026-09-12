@@ -11,6 +11,7 @@
     linear-gradient(90deg, rgba(102, 181, 223, 0.035) 1px, transparent 1px) 0 0 / 72px 72px,
     linear-gradient(rgba(102, 181, 223, 0.025) 1px, transparent 1px) 0 0 / 72px 72px,
     radial-gradient(circle at 78% 0%, rgba(37, 123, 166, 0.2), transparent 34rem),
+    var(--stars),
     var(--ops-floor);
 }
 
@@ -47,6 +48,9 @@
   height: 42px;
   padding: 5px;
   border: 1px solid var(--ops-line-strong);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(102, 181, 223, 0.26), transparent 70%);
+  box-shadow: 0 0 18px rgba(102, 181, 223, 0.28);
   filter: brightness(1.55) saturate(0.72);
 }
 

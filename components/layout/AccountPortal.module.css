@@ -1,0 +1,103 @@
+.portal {
+  display: inline-grid;
+  width: 46px;
+  height: 46px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  color: inherit;
+  transition:
+    color 200ms ease,
+    background-color 200ms ease,
+    transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.portal svg {
+  width: 23px;
+  height: 23px;
+}
+
+.portal:hover,
+.portal:focus-visible {
+  color: var(--header-accent);
+  background: rgb(155 202 235 / 14%);
+  transform: translateY(-1px) scale(1.04);
+}
+
+.portal:active {
+  transform: scale(0.94);
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.veil {
+  position: fixed;
+  z-index: 120;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.disc {
+  position: fixed;
+  top: var(--portal-y);
+  left: var(--portal-x);
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #16222c 0 38%, #06070a 72%);
+  box-shadow: 0 0 46px 12px rgb(74 163 223 / 34%);
+  transform: scale(0);
+  animation: portal-open 460ms cubic-bezier(0.65, 0, 0.32, 1) forwards;
+}
+
+.rising {
+  position: fixed;
+  top: var(--portal-y);
+  left: var(--portal-x);
+  display: grid;
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  place-items: center;
+  color: #cfe8f8;
+  animation: portal-rise 460ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.rising svg {
+  width: 23px;
+  height: 23px;
+}
+
+@keyframes portal-open {
+  to {
+    transform: scale(var(--portal-scale));
+  }
+}
+
+@keyframes portal-rise {
+  40% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(4.2) rotate(-8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portal {
+    transition: none;
+  }
+
+  .disc,
+  .rising {
+    animation: none;
+  }
+}

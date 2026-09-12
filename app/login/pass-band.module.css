@@ -1,0 +1,139 @@
+.passBand {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: clamp(72px, 13vh, 150px) var(--pad) clamp(44px, 7vh, 96px);
+  color: var(--paper-ink);
+  background: var(--paper);
+}
+
+.passHeader,
+.loginControl,
+.passFooter,
+.passBand > aside {
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+.serial {
+  color: var(--pass-blue);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+}
+
+.passHeader h2 {
+  margin-top: 12px;
+  font-family: var(--font-body);
+  font-size: clamp(1.75rem, 2.1vw, 2.25rem);
+  font-weight: 740;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+}
+
+.passHeader > p:last-of-type {
+  margin-top: 12px;
+  color: #59615f;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+.loginControl {
+  margin-top: 28px;
+}
+
+.passkeyButton {
+  display: grid;
+  width: 100%;
+  min-height: 52px;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  border: 1px solid #8a9699;
+  border-radius: 999px;
+  background: #f7f5ee;
+  color: #324f5d;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-align: left;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.passkeyButton:hover:not(:disabled) {
+  border-color: var(--pass-blue);
+  background: #fff;
+}
+
+.passkeyButton:disabled {
+  background: #e0e1db;
+  color: #4f595d;
+  cursor: not-allowed;
+}
+
+.buttonArrow {
+  font-size: 1rem;
+}
+
+.passFooter {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  margin-top: 32px;
+  padding-top: 22px;
+  border-top: 1px solid #d5d2c8;
+  color: #59615f;
+  font-size: 0.875rem;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--pass-blue);
+  font-size: 0.875rem;
+}
+
+.recoveryHelp {
+  width: 100%;
+  padding-block: var(--space-2);
+  border-block: 1px solid #c5c2b9;
+}
+
+.recoveryHelp summary {
+  min-height: 44px;
+  align-content: center;
+  color: var(--paper-ink);
+  cursor: pointer;
+}
+
+.recoveryHelp p {
+  margin-block: var(--space-1);
+}
+
+.recoveryHelp a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  color: var(--pass-blue);
+}
+
+@media (max-width: 820px) {
+  .passBand {
+    padding: var(--space-4) var(--pad) var(--space-6);
+  }
+
+  .passHeader h2 {
+    font-size: 1.5rem;
+  }
+
+  .loginControl {
+    margin-top: 22px;
+  }
+}

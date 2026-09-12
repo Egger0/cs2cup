@@ -86,7 +86,7 @@
   border: 1px solid var(--line-strong);
   border-radius: 2px;
   outline: none;
-  background: var(--surface);
+  background: var(--admin-paper-deep, var(--surface));
   color: var(--ink);
 }
 

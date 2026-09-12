@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import motionStyles from './HomeMotion.module.css'
+import type { CSSProperties } from 'react'
 import styles from './HomeEvidence.module.css'
 
 const STAGES = [
@@ -8,47 +8,61 @@ const STAGES = [
   { number: '02', label: '决赛', round: 'ROUND 03' },
   { number: '01', label: '冠军', round: 'FINAL' },
 ]
+const TICKS = Array.from({ length: 96 }, (_, index) => index)
 
 export function HomeEvidence({ slug }: { slug?: string }) {
   return (
     <section
       id="route"
-      className={`${styles.routeStage} ${motionStyles.routeMotion}`}
+      className={styles.route}
+      data-scene
+      data-zone="route"
       aria-labelledby="route-title"
-      data-header-tone="light"
     >
-      <div className={styles.routeCanvas} data-layout-container>
-        <div className={styles.gridLines} aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </div>
-
-        <header className={styles.routeHeader} data-home-reveal="item">
+      <div className={styles.stage}>
+        <header className={styles.head}>
           <p>NINGLI CUP / 08—01</p>
           <h2 id="route-title">
-            <span>从</span>
-            <strong>08</strong>
-            <span>，到</span>
-            <strong>01</strong>
-            <span>。</span>
+            从 <strong>08</strong>，到 <strong>01</strong>。
           </h2>
         </header>
-
-        <ol className={styles.stages} data-home-reveal="group" data-home-path>
+        <div className={styles.dial} aria-hidden="true">
+          <svg viewBox="-100 -100 200 200">
+            <circle className={styles.track} r="92" />
+            <circle className={styles.sweep} r="92" pathLength="1" />
+            {TICKS.map(index => (
+              <line
+                key={index}
+                className={index % 8 === 0 ? styles.major : undefined}
+                x1="0"
+                y1="-97"
+                x2="0"
+                y2={index % 8 === 0 ? -86 : -91}
+                transform={`rotate(${index * 3.75})`}
+              />
+            ))}
+          </svg>
+          <span className={styles.hand}>
+            <i />
+          </span>
+          <span className={styles.window}>
+            <span className={styles.reel}>
+              {STAGES.map(stage => (
+                <span key={stage.number}>{stage.number}</span>
+              ))}
+            </span>
+          </span>
+        </div>
+        <ol className={styles.stages}>
           {STAGES.map((stage, index) => (
-            <li key={stage.number}>
-              <span className={styles.round}>{stage.round}</span>
+            <li key={stage.number} style={{ '--i': index } as CSSProperties}>
+              <span>{stage.round}</span>
               <strong>{stage.number}</strong>
-              <span className={styles.label}>{stage.label}</span>
-              {index < STAGES.length - 1 ? (
-                <span className={styles.connector} aria-hidden="true" />
-              ) : null}
+              <em>{stage.label}</em>
             </li>
           ))}
         </ol>
-
-        <div className={styles.routeFooter} data-home-reveal="item">
+        <div className={styles.foot}>
           <p>每一条线，都要有人把它组织好。</p>
           <Link href={slug ? `/tournaments/${slug}/bracket` : '/tournaments'}>
             <span>{slug ? '查看完整对阵' : '浏览赛事大厅'}</span>

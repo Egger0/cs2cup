@@ -20,12 +20,14 @@ export async function AccountShell({
   identity,
   sections,
   signOut,
+  masthead,
   children,
 }: {
   access: AccountAccess | null
   identity: string
   sections?: AccountNavLink[]
   signOut?: ReactNode
+  masthead?: ReactNode
   children: ReactNode
 }) {
   const setting = await safely(getSiteSetting, FALLBACK_SITE_SETTING)
@@ -39,6 +41,7 @@ export async function AccountShell({
         links={[...PUBLIC_LINKS, ...accountHeaderLinks(access)]}
         accountLink={{ href: '/me', label: '我的赛事', code: 'MY / EVENTS' }}
       />
+      {masthead}
       <SectionTabs
         tabs={sections ?? (access ? accountSections(access) : [])}
         label="账号导航"

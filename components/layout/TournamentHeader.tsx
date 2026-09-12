@@ -82,8 +82,10 @@ export function TournamentHeader({
             ? `${theme.dark} ${styles.shell} ${styles.compact}`
             : `${theme.dark} ${styles.shell}`
         }
+        data-arrival
       >
-        <span className={styles.glow} aria-hidden />
+        <span className={styles.sky} aria-hidden />
+        <span className={styles.moon} aria-hidden />
 
         <div className={`wrap ${styles.inner}`}>
           <div className={styles.split}>
@@ -182,6 +184,7 @@ export function TournamentHeader({
             ) : null}
           </div>
         </div>
+        <span className={styles.horizon} aria-hidden />
       </header>
       <SectionTabs tabs={tabs} />
     </>

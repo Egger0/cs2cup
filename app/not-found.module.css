@@ -8,8 +8,9 @@
   isolation: isolate;
   overflow: hidden;
   color: var(--ink);
-  background: var(--bg);
-  border: 1px solid var(--line);
+  background:
+    radial-gradient(ellipse 55% 60% at 76% 16%, rgb(36 119 185 / 22%), transparent 70%),
+    var(--stars), #06070a;
 }
 
 .shell::after {
@@ -18,19 +19,22 @@
   z-index: -2;
   content: '';
   pointer-events: none;
-  background: linear-gradient(rgba(241, 239, 232, 0.055) 1px, transparent 1px);
+  background: linear-gradient(rgba(241, 239, 232, 0.035) 1px, transparent 1px);
   background-size: 100% 164px;
 }
 
 .glow {
   position: absolute;
-  right: -8vw;
-  bottom: -16vw;
-  width: min(62vw, 760px);
+  right: -18vw;
+  bottom: -28vw;
+  width: min(76vw, 900px);
   aspect-ratio: 1;
   z-index: -1;
-  background: url('/brand/club-mark.svg') center / contain no-repeat;
-  opacity: 0.08;
+  border-radius: 50%;
+  background: radial-gradient(circle at 28% 26%, #1d2b36, #0c1116 46%, #06070a 70%);
+  box-shadow:
+    inset 16px 12px 44px -14px #9bcaeb,
+    0 0 110px 6px rgb(74 163 223 / 20%);
 }
 
 .code {
@@ -38,9 +42,10 @@
   font-weight: 620;
   font-size: clamp(8rem, 24vw, 19rem);
   line-height: 0.72;
-  color: var(--ink);
+  color: transparent;
   letter-spacing: -0.07em;
   font-variant-numeric: tabular-nums;
+  -webkit-text-stroke: 1px rgb(155 202 235 / 55%);
 }
 
 .line {

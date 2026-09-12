@@ -1,0 +1,176 @@
+.stage {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+}
+.stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  view-transition-name: planet-art;
+  animation: surface 900ms ease both;
+}
+@keyframes surface {
+  from {
+    opacity: 0;
+  }
+}
+.veil {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 42%, rgb(6 7 10 / 62%), rgb(6 7 10 / 92%));
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+:global(html[data-solar-chapter='far']) .veil {
+  opacity: 1;
+}
+.front {
+  position: fixed;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+}
+.front canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.overlay {
+  position: fixed;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+}
+.anchors {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition:
+    opacity 500ms ease,
+    visibility 0s;
+}
+:global(html[data-solar-chapter='far']) .anchors {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 500ms ease,
+    visibility 0s linear 500ms;
+}
+:global(html[data-home-entry='intro']:not([data-solar-arrived]))
+  .overlay:not([data-solar-fallback='true'])
+  .anchors {
+  opacity: 0;
+  visibility: hidden;
+}
+.anchor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  min-height: 44px;
+  max-width: 240px;
+  padding: 6px 6px 6px 2px;
+  color: #f1efe8;
+  background: none;
+  border: 0;
+  opacity: calc(0.35 + var(--depth, 1) * 0.65);
+  text-align: left;
+  text-shadow: 0 1px 14px rgb(0 0 0 / 80%);
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  transform: translate(var(--sx, 50vw), var(--sy, 45vh));
+  will-change: transform;
+  transition:
+    opacity 240ms ease,
+    color 180ms ease;
+}
+.anchor > span:first-child {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.anchor small {
+  color: #9bcaeb;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.anchor[data-visible='false'] {
+  opacity: 0;
+  pointer-events: none;
+}
+.anchor:focus-visible,
+.anchor[data-hovered='true'] {
+  z-index: 5;
+  color: #fff;
+  opacity: 1;
+}
+.anchor[data-satellite='true'] > span:first-child {
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.anchor[data-side='left'] {
+  justify-items: end;
+  padding: 6px 2px 6px 6px;
+  text-align: right;
+}
+.hint {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  color: rgb(241 239 232 / 72%);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition: opacity 800ms ease;
+  white-space: nowrap;
+}
+.hint[data-visible='true'] {
+  opacity: 1;
+}
+:global(html[data-solar-chapter='far']) .hint {
+  opacity: 0;
+}
+@media (max-width: 700px) {
+  .anchor > span:first-child {
+    font-size: 0.8rem;
+  }
+  .anchor small {
+    font-size: 0.5rem;
+  }
+  .hint {
+    bottom: 10px;
+    font-size: 0.6875rem;
+  }
+  .overlay:not([data-solar-focus='overview']) .hint,
+  .overlay[data-solar-fallback='true'] :is(.anchors, .hint) {
+    display: none;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .hint {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage canvas {
+    animation: none;
+  }
+  .veil,
+  .anchor,
+  .hint {
+    transition: none;
+  }
+}

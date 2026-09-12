@@ -1,7 +1,7 @@
 .hub {
   padding-block: var(--space-8);
-  background: var(--bg);
-  scroll-margin-top: 76px;
+  color: #f1efe8;
+  scroll-margin-top: var(--header-height);
 }
 .heading {
   display: flex;
@@ -11,15 +11,15 @@
   margin-bottom: 32px;
 }
 .heading > div > span {
-  color: var(--ct);
+  color: #9bcaeb;
   font:
     0.65rem var(--font-mono),
     monospace;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.2em;
 }
 .heading h2 {
   margin-top: 14px;
-  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-size: clamp(1.7rem, 2.8vw, 2.4rem);
   font-weight: 680;
   letter-spacing: -0.02em;
 }
@@ -29,38 +29,39 @@
   flex: none;
   gap: 18px;
   min-height: 44px;
-  color: var(--ct);
+  color: #9bcaeb;
   font-size: 0.82rem;
+  letter-spacing: 0.08em;
 }
 .pathways {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  column-gap: var(--grid-gap);
-  border-block: 1px solid var(--line-strong);
   margin-top: 24px;
+  background: linear-gradient(160deg, rgb(16 21 25 / 88%), rgb(9 11 13 / 82%));
+  border: 1px solid rgb(155 202 235 / 16%);
+  box-shadow:
+    0 30px 80px rgb(0 0 0 / 35%),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
 }
 .pathways a {
   position: relative;
   display: grid;
   grid-template-rows: auto auto 1fr;
-  padding: var(--space-4) 0;
-  transition: background 160ms ease;
+  padding: var(--space-4) clamp(20px, 2.2vw, 32px);
+  transition: background-color 180ms ease;
 }
-.pathways a:not(:last-child)::before {
-  position: absolute;
-  inset: 0 calc(var(--grid-gap) / -2) 0 auto;
-  width: 1px;
-  background: var(--line);
-  content: '';
+.pathways a:not(:last-child) {
+  border-right: 1px solid rgb(155 202 235 / 12%);
 }
 .pathways a:is(:hover, :focus-visible) {
-  background: var(--surface);
+  background: rgb(155 202 235 / 7%);
 }
 .pathways a::after {
   position: absolute;
   inset: auto 0 -1px;
-  height: 3px;
-  background: var(--ct);
+  height: 2px;
+  background: #9bcaeb;
+  box-shadow: 0 0 14px rgb(155 202 235 / 70%);
   content: '';
   transform: scaleX(0);
   transform-origin: left;
@@ -71,28 +72,34 @@
 }
 .number {
   position: absolute;
-  right: 0;
   top: var(--space-4);
-  color: var(--muted-2);
+  right: clamp(20px, 2.2vw, 32px);
+  color: transparent;
   font:
-    500 2.5rem/1 var(--font-display),
+    500 2.6rem/1 var(--font-display),
     sans-serif;
+  -webkit-text-stroke: 1px rgb(155 202 235 / 48%);
+  transition: -webkit-text-stroke-color 200ms ease;
+}
+.pathways a:is(:hover, :focus-visible) .number {
+  -webkit-text-stroke-color: #9bcaeb;
 }
 .role {
-  color: var(--ct);
+  color: #9bcaeb;
   font-size: 0.7rem;
-  padding-right: 44px;
+  letter-spacing: 0.08em;
+  padding-right: 52px;
 }
 .pathways h3 {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-top: 20px;
-  font-size: 1.15rem;
-  letter-spacing: -0.03em;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
 }
 .pathways h3 svg {
-  color: var(--ct);
+  color: #9bcaeb;
   transition: transform 260ms var(--ease-out);
 }
 .pathways a:is(:hover, :focus-visible) h3 svg {
@@ -101,52 +108,50 @@
 .pathways p {
   margin-top: 12px;
   max-width: 29ch;
-  color: var(--muted);
-  font-size: 0.83rem;
+  color: #a9bac1;
+  font-size: 0.85rem;
+  line-height: 1.75;
 }
 .journal {
   display: flex;
   align-items: center;
-  gap: 16px 28px;
+  gap: 16px 32px;
   flex-wrap: wrap;
-  padding-block: 26px 0;
-  color: var(--muted);
-  font-size: 0.8rem;
+  padding-block: 28px 0;
+  color: #c9d4d8;
+  font-size: 0.82rem;
 }
 .journalLabel {
-  color: var(--ct);
+  color: #9bcaeb;
   font:
     0.6rem var(--font-mono),
     monospace;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.16em;
 }
 .journal a {
   display: inline-flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
   min-height: 44px;
+  transition: color 180ms ease;
 }
-.journal a:hover {
-  color: var(--ct);
+.journal a:not(.allNews)::before {
+  width: 22px;
+  height: 1px;
+  background: linear-gradient(90deg, rgb(155 202 235 / 0%), #9bcaeb);
+  box-shadow: 1px 0 6px rgb(155 202 235 / 80%);
+  content: '';
+  transition: width 260ms var(--ease-out);
+}
+.journal a:is(:hover, :focus-visible) {
+  color: #fff;
+}
+.journal a:not(.allNews):is(:hover, :focus-visible)::before {
+  width: 34px;
 }
 .allNews {
   margin-left: auto;
-}
-.waiting {
-  padding: 40px;
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
-}
-.waiting p {
-  font-size: 1.5rem;
-}
-.waiting a {
-  display: inline-flex;
-  align-items: center;
-  gap: 20px;
-  min-height: 44px;
-  margin-top: 20px;
-  color: var(--ct);
+  color: #9bcaeb;
 }
 @media (max-width: 640px) {
   .heading {
@@ -160,15 +165,9 @@
   .pathways {
     grid-template-columns: 1fr;
   }
-  .pathways a::before {
-    display: none;
-  }
-  .pathways a {
+  .pathways a:not(:last-child) {
     border-right: 0;
-    border-bottom: 1px solid var(--line-strong);
-  }
-  .pathways a:last-child {
-    border-bottom: 0;
+    border-bottom: 1px solid rgb(155 202 235 / 12%);
   }
   .pathways p {
     max-width: none;
@@ -177,16 +176,17 @@
     display: grid;
     gap: 8px;
   }
-  .journal a {
-    justify-content: space-between;
-  }
   .allNews {
     margin-left: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .pathways a,
   .pathways a::after,
-  .pathways h3 svg {
+  .pathways h3 svg,
+  .number,
+  .journal a,
+  .journal a::before {
     transition: none;
   }
   .pathways a:is(:hover, :focus-visible) h3 svg {

@@ -44,7 +44,7 @@
   min-height: 48px;
   padding: 11px 13px;
   border: 1px solid var(--admin-line-strong, var(--line-strong));
-  border-radius: 2px;
+  border-radius: 10px;
   background: var(--admin-paper-deep, var(--bg-2));
   color: var(--ink);
   font-family: var(--font-body), sans-serif;

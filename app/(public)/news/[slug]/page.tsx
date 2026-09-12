@@ -49,52 +49,53 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   if (!post) notFound()
 
   return (
-    <article className="section">
-      <div className="wrap">
-        <div data-rise>
-          <PageMasthead
-            eyebrow={new Date(post.publishedAt).toLocaleDateString('zh-CN', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-            title={post.title}
-            lede={post.summary}
-            density="compact"
-          />
-        </div>
-        <div className={styles.articleGrid}>
-          <div className={styles.rail} aria-hidden="true">
-            <span>ARTICLE</span>
-            <span>{post.pinned ? 'PINNED' : 'PUBLIC'}</span>
-          </div>
-          <div className={styles.articleColumn}>
-            <div className={styles.shareBar}>
-              <span>{CLUB_BRAND.shortName} · 社团动态</span>
-              <ShareButton
-                share={{
-                  title: post.title,
-                  text: post.summary,
-                  url: `${resolveSiteOrigin()}/news/${encodeURIComponent(slug)}`,
-                  label: '社团动态 / JOURNAL',
-                }}
-              >
-                分享这篇动态
-              </ShareButton>
+    <article>
+      <PageMasthead
+        code="JOURNAL"
+        eyebrow={new Date(post.publishedAt).toLocaleDateString('zh-CN', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })}
+        title={post.title}
+        lede={post.summary}
+        density="compact"
+      />
+      <div className="section">
+        <div className="wrap">
+          <div className={styles.articleGrid}>
+            <div className={styles.rail} aria-hidden="true">
+              <span>ARTICLE</span>
+              <span>{post.pinned ? 'PINNED' : 'PUBLIC'}</span>
             </div>
-            <div className={styles.body}>
-              {post.body
-                .split('\n')
-                .filter(Boolean)
-                .map((paragraph, index) => (
-                  <p key={index}>{paragraph}</p>
-                ))}
+            <div className={styles.articleColumn}>
+              <div className={styles.shareBar}>
+                <span>{CLUB_BRAND.shortName} · 社团动态</span>
+                <ShareButton
+                  share={{
+                    title: post.title,
+                    text: post.summary,
+                    url: `${resolveSiteOrigin()}/news/${encodeURIComponent(slug)}`,
+                    label: '社团动态 / JOURNAL',
+                  }}
+                >
+                  分享这篇动态
+                </ShareButton>
+              </div>
+              <div className={styles.body}>
+                {post.body
+                  .split('\n')
+                  .filter(Boolean)
+                  .map((paragraph, index) => (
+                    <p key={index}>{paragraph}</p>
+                  ))}
+              </div>
+              <p className={styles.back}>
+                <Link href="/news" className="readout">
+                  ← 全部动态
+                </Link>
+              </p>
             </div>
-            <p className={styles.back}>
-              <Link href="/news" className="readout">
-                ← 全部动态
-              </Link>
-            </p>
           </div>
         </div>
       </div>

@@ -1,39 +1,41 @@
 .control {
-  display: inline-flex;
+  display: inline-grid;
   flex: none;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-width: 120px;
-  min-height: 44px;
-  padding: 8px 10px;
-  border: 1px solid #526968;
-  color: #bfd1d8;
-  background: #172120;
-  font-size: 0.6875rem;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  color: var(--header-ink);
+  background: transparent;
+  border: 0;
   cursor: pointer;
+  transition: color 180ms ease;
 }
 .control:is(:hover, :focus-visible) {
-  border-color: var(--signal);
-  color: white;
-}
-.symbol {
-  color: var(--signal);
-  font-size: 1rem;
-  line-height: 1;
-}
-.state {
-  font-family: var(--font-mono);
-  font-size: 0.5625rem;
+  color: var(--header-accent);
 }
 .control:disabled {
-  color: #a8b8bd;
+  opacity: 0.45;
   cursor: default;
 }
-@media (max-width: 700px) {
+.pause {
+  width: 8px;
+  height: 10px;
+  border-inline: 2px solid currentColor;
+}
+.play {
+  width: 0;
+  height: 0;
+  margin-left: 3px;
+  border-block: 5px solid transparent;
+  border-left: 8px solid currentColor;
+}
+@media (max-width: 360px) {
   .control {
-    gap: 6px;
-    min-width: 106px;
-    padding: 8px;
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .control {
+    transition: none;
   }
 }

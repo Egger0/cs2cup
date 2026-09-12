@@ -1,6 +1,6 @@
 .tabsWrap {
   position: sticky;
-  top: 76px;
+  top: var(--header-height);
   z-index: 20;
   background: var(--bg);
   border-bottom: 1px solid var(--line-strong);
@@ -91,12 +91,6 @@
 
 .index {
   display: none;
-}
-
-@media (max-width: 900px) {
-  .tabsWrap {
-    top: 68px;
-  }
 }
 
 @media (max-width: 640px) {

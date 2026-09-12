@@ -32,15 +32,13 @@ export default async function ClubPage() {
 
   return (
     <>
+      <PageMasthead
+        code="ABOUT"
+        eyebrow="关于我们"
+        title={<span className={styles.clubTitle}>{setting.clubName}</span>}
+      />
       <section className="section">
         <div className="wrap">
-          <div data-rise>
-            <PageMasthead
-              eyebrow="关于我们"
-              title={<span className={styles.clubTitle}>{setting.clubName}</span>}
-            />
-          </div>
-
           <div data-rise="2">
             <div className={styles.intro}>
               <div>

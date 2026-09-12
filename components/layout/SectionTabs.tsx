@@ -2,25 +2,15 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import styles from './SectionTabs.module.css'
+import { transitionTo } from './view-transition'
 
 export interface SectionTab {
   href: string
   label: string
   count?: number
   exact?: boolean
-}
-
-type StartViewTransition = (callback: () => void) => { finished: Promise<void> }
-
-function supportsViewTransition(): StartViewTransition | null {
-  if (typeof document === 'undefined') return null
-  const start = (document as Document & { startViewTransition?: StartViewTransition })
-    .startViewTransition
-  if (typeof start !== 'function') return null
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return null
-  return start.bind(document)
 }
 
 export function SectionTabs({
@@ -69,17 +59,6 @@ export function SectionTabs({
     }
   }, [pathname])
 
-  function navigate(event: MouseEvent<HTMLAnchorElement>, href: string) {
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
-    const start = supportsViewTransition()
-    if (!start) return
-
-    event.preventDefault()
-    start(() => {
-      router.push(href)
-    })
-  }
-
   return (
     <div className={styles.tabsWrap}>
       {scrollable ? (
@@ -98,7 +77,7 @@ export function SectionTabs({
               <Link
                 key={tab.href}
                 href={tab.href}
-                onClick={event => navigate(event, tab.href)}
+                onClick={event => transitionTo(event, tab.href, href => router.push(href))}
                 className={active ? `${styles.tab} ${styles.active}` : styles.tab}
                 aria-current={active ? 'page' : undefined}
               >

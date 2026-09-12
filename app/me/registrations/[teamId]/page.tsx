@@ -68,12 +68,16 @@ export default async function AccountRegistrationPage({
     <AccountShell
       access={{ hasWorkAccess, recoveryRestricted: false }}
       identity={context.account.displayName}
+      masthead={
+        <PageMasthead
+          code="ENTRY"
+          eyebrow="报名详情"
+          title={registration.tournament.title}
+          lede={`[${registration.team.tag}] ${registration.team.name}`}
+          density="compact"
+        />
+      }
     >
-      <PageMasthead
-        title={registration.tournament.title}
-        lede={`[${registration.team.tag}] ${registration.team.name}`}
-      />
-
       <dl className={styles.status}>
         <div>
           <dt>你的权限</dt>
