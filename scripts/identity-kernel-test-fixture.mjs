@@ -136,7 +136,7 @@ export async function createIdentityKernelFixture() {
     )
   assignment(opaque('R'), accountIds.owner, 'organizer', 'tournament', 71)
   assignment(opaque('S'), accountIds.manager, 'check_in_operator', 'tournament', 71)
-  database.exec('DROP TRIGGER identity_initial_platform_owner_provenance_guard')
+  database.exec('DROP TRIGGER IF EXISTS identity_initial_platform_owner_provenance_guard')
   assignment(opaque('T'), accountIds.platformOwner, 'platform_owner', 'platform')
   assignment(opaque('U'), accountIds.weakStaff, 'organizer', 'tournament', 71)
   assignment(opaque('G'), accountIds.reviewer, 'identity_reviewer', 'platform')
