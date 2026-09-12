@@ -34,7 +34,6 @@ export function TournamentDeleteButton({ id, title }: { id: number; title: strin
                 tone: result.warning ? 'warning' : 'success',
                 message: result.warning ?? '赛事已删除',
               })
-              if (result.warning) window.alert(result.warning)
               router.refresh()
             } catch {
               setFeedback({ tone: 'error', message: '删除失败，请检查网络后重试。' })
@@ -46,8 +45,8 @@ export function TournamentDeleteButton({ id, title }: { id: number; title: strin
       </ConfirmButton>
       {feedback ? (
         <span
-          className={feedback.tone === 'success' ? styles.ok : styles.error}
-          role={feedback.tone === 'success' ? 'status' : 'alert'}
+          className={styles[feedback.tone === 'success' ? 'ok' : feedback.tone]}
+          role={feedback.tone === 'error' ? 'alert' : 'status'}
         >
           {feedback.message}
         </span>

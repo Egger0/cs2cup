@@ -84,8 +84,8 @@ const deleteButton = await readFile(
 )
 for (const signal of ['ConfirmButton', 'question=', 'catch {', '删除中…'])
   assert.ok(deleteButton.includes(signal))
-assert.match(deleteButton, /window\.alert\(result\.warning\)/)
-assert.match(deleteButton, /role=\{feedback\.tone === 'success' \? 'status' : 'alert'\}/)
+assert.doesNotMatch(deleteButton, /window\.alert\(/)
+assert.match(deleteButton, /role=\{feedback\.tone === 'error' \? 'alert' : 'status'\}/)
 
 function validCreateForm(overrides = {}) {
   const values = {
