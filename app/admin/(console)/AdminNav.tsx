@@ -1,10 +1,6 @@
-'use client'
-
-import { useEffect, useRef } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import type { ReactNode } from 'react'
+import { SectionTabs } from '@/components/layout/SectionTabs'
 import type { PlatformConsoleCapability } from '@/lib/auth'
-import styles from './shell.module.css'
 
 const LINKS = [
   {
@@ -39,45 +35,22 @@ const LINKS = [
 export function AdminNav({
   capabilities,
   hasTournamentWork,
+  trailing,
 }: {
   capabilities: readonly PlatformConsoleCapability[]
   hasTournamentWork: boolean
+  trailing?: ReactNode
 }) {
-  const pathname = usePathname()
-  const railRef = useRef<HTMLElement>(null)
-  const links = LINKS.filter(
+  const tabs = LINKS.filter(
     link => capabilities.includes(link.capability) || (link.href === '/admin' && hasTournamentWork),
-  )
+  ).map(link => ({
+    href: link.href,
+    exact: link.exact,
+    label:
+      link.href === '/admin' && !capabilities.includes('platform.configure')
+        ? '我的工作区'
+        : link.label,
+  }))
 
-  useEffect(() => {
-    const active = railRef.current?.querySelector<HTMLElement>('[aria-current="page"]')
-    active?.scrollIntoView({ block: 'nearest', inline: 'center' })
-  }, [pathname])
-
-  return (
-    <div className={styles.navViewport}>
-      <nav ref={railRef} className={styles.nav} aria-label="后台导航">
-        {links.map(link => {
-          const active = link.exact ? pathname === link.href : pathname.startsWith(link.href)
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={active ? `${styles.navLink} ${styles.navActive}` : styles.navLink}
-              aria-current={active ? 'page' : undefined}
-            >
-              <span className={styles.navIndex} aria-hidden="true">
-                {link.index}
-              </span>
-              <span>
-                {link.href === '/admin' && !capabilities.includes('platform.configure')
-                  ? '我的工作区'
-                  : link.label}
-              </span>
-            </Link>
-          )
-        })}
-      </nav>
-    </div>
-  )
+  return <SectionTabs tabs={tabs} label="后台导航" trailing={trailing} />
 }
