@@ -118,6 +118,11 @@ export async function startSolar(
   let scale = 1
   let ratio = 0
   let samples: number[] = []
+  let steady = 0
+  const settle = () => {
+    steady = performance.now() + 520
+    samples = []
+  }
   const wake = () => {
     activeUntil = performance.now() + 1600
   }
@@ -128,6 +133,7 @@ export async function startSolar(
     renderer.setPixelRatio(ratio)
   }
   const adapt = (elapsed: number) => {
+    if (performance.now() < steady) return
     samples.push(elapsed)
     if (samples.length < 24) return
     const sorted = [...samples].sort((a, b) => a - b)
@@ -255,6 +261,7 @@ export async function startSolar(
   resize()
   return {
     focus(key: string | null) {
+      settle()
       state.selected = key
       state.spin.set(0, 0)
       state.velocity.set(0, 0)
@@ -267,6 +274,7 @@ export async function startSolar(
       poke()
     },
     zoom(level: number) {
+      settle()
       state.level = level
       upgrade(state.selected, level)
       poke()
