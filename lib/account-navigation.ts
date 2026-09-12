@@ -25,11 +25,10 @@ const ANONYMOUS: AccountNavLink[] = [
 const WORKBENCH: AccountNavLink = { href: '/admin', label: '工作台' }
 
 export function accountSections(access: AccountAccess): AccountNavLink[] {
-  return access.recoveryRestricted ? RECOVERY : SECTIONS
+  if (access.recoveryRestricted) return RECOVERY
+  return access.hasWorkAccess ? [...SECTIONS, WORKBENCH] : SECTIONS
 }
 
 export function accountHeaderLinks(access: AccountAccess | null): AccountNavLink[] {
-  if (!access) return ANONYMOUS
-  const sections = accountSections(access)
-  return access.hasWorkAccess && !access.recoveryRestricted ? [...sections, WORKBENCH] : sections
+  return access ? accountSections(access) : ANONYMOUS
 }
