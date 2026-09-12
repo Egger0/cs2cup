@@ -55,6 +55,11 @@ html {
   background: var(--bg);
 }
 
+html:has([data-solar-home]),
+body:has([data-solar-home]) {
+  background: #06070a;
+}
+
 @property --progress {
   syntax: '<number>';
   initial-value: 0;
@@ -248,7 +253,9 @@ button {
   }
 }
 
-::view-transition-group(tournament-title) {
+::view-transition-group(tournament-title),
+::view-transition-group(game-title),
+::view-transition-group(planet-art) {
   animation-duration: 0.4s;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -271,13 +278,21 @@ button {
   pointer-events: none;
 }
 
-body:has([data-home-cover]) .scrollbar {
+body:has([data-solar-home]) .scrollbar {
   display: none;
 }
 
-body:has([data-home-cover]) header :focus-visible,
-body:has([data-home-cover]) main :focus-visible {
-  outline-color: #6da5d3;
+body:has([data-solar-overlay]:not([data-solar-focus='overview'])) {
+  touch-action: pan-y;
+}
+
+body:has([data-solar-ready='true']) [data-solar-home] {
+  visibility: hidden;
+}
+
+body:has([data-solar-home]) header :focus-visible,
+body:has([data-solar-home]) main :focus-visible {
+  outline-color: #9bcaeb;
 }
 
 @supports (animation-timeline: scroll()) {

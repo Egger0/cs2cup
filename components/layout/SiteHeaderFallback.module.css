@@ -1,6 +1,5 @@
 .fallback {
   position: relative;
-  min-width: 108px;
 }
 
 .fallback summary {
@@ -13,16 +12,6 @@
 
 .fallback summary:focus-visible {
   outline-color: #8fc8fa;
-}
-
-.fallback[open] [data-fallback-menu-icon] i:first-child {
-  top: 6px;
-  transform: rotate(45deg);
-}
-
-.fallback[open] [data-fallback-menu-icon] i:last-child {
-  top: 6px;
-  transform: rotate(-45deg);
 }
 
 .panel {

@@ -93,7 +93,10 @@
     "test:roster-claim": "node --conditions=react-server --experimental-strip-types scripts/roster-claim-test.mjs && node --conditions=react-server --experimental-strip-types scripts/roster-claim-acceptance-test.mjs",
     "test:public-handle-schema": "node scripts/public-handle-schema-test.mjs",
     "test:public-handle": "node --conditions=react-server --experimental-strip-types scripts/public-handle-test.mjs",
-    "test:player-profile": "node --experimental-strip-types scripts/player-profile-test.mjs"
+    "test:player-profile": "node --experimental-strip-types scripts/player-profile-test.mjs",
+    "solar:panorama": "node --experimental-strip-types scripts/solar-panorama.mjs",
+    "solar:browser": "node scripts/solar-browser.mjs",
+    "solar:textures": "node --experimental-strip-types scripts/generate-solar-textures.mjs"
   },
   "dependencies": {
     "@fontsource-variable/big-shoulders": "5.3.0",
@@ -104,7 +107,8 @@
     "qrcode": "1.5.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "server-only": "0.0.1"
+    "server-only": "0.0.1",
+    "three": "0.186.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
@@ -113,6 +117,7 @@
     "@types/qrcode": "1.5.6",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
+    "@types/three": "0.185.4",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.3.3",
     "playwright": "^1.62.1",

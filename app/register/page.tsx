@@ -5,6 +5,8 @@ import { redirect } from 'next/navigation'
 
 import { getAuthContext } from '@/lib/identity/kernel'
 import { getCurrentParticipant } from '@/lib/participant-auth'
+import formStyles from '../login/credential-form.module.css'
+import bandStyles from '../login/pass-band.module.css'
 import loginStyles from '../login/login.module.css'
 import { RegisterForm } from './RegisterForm'
 import styles from './register.module.css'
@@ -47,9 +49,6 @@ export default async function RegisterPage({
   return (
     <main id="main" className={loginStyles.page}>
       <section className={loginStyles.vestibule} aria-labelledby="registration-title">
-        <div className={loginStyles.seal} aria-hidden="true">
-          <Image src="/brand/club-mark.svg" alt="" width={440} height={440} loading="eager" />
-        </div>
         <header className={loginStyles.brandline}>
           <Image src="/brand/club-mark.svg" alt="" width={38} height={38} loading="eager" />
           <strong>宁波理工电竞社</strong>
@@ -68,26 +67,26 @@ export default async function RegisterPage({
         </p>
       </section>
 
-      <section className={loginStyles.passBand} aria-labelledby="create-account-title">
-        <header className={loginStyles.passHeader}>
-          <p className={loginStyles.serial}>SELF REGISTRATION / NLC—01</p>
+      <section className={bandStyles.passBand} aria-labelledby="create-account-title">
+        <header className={bandStyles.passHeader}>
+          <p className={bandStyles.serial}>SELF REGISTRATION / NLC—01</p>
           <h2 id="create-account-title">创建你的账号</h2>
           <p>创建后即可登录并保存报名资料。</p>
-          <Link href={registrationAuthHref('login', entrySlug)} className={loginStyles.backLink}>
-            已有账号？直接登录 →
-          </Link>
         </header>
         {entrySlug ? <RegistrationJourney slug={entrySlug} /> : null}
-        <div className={loginStyles.loginControl}>
+        <div className={bandStyles.loginControl}>
           <RegisterForm
             tournamentSlug={entrySlug}
             initialError={typeof params.error === 'string' ? params.error : undefined}
           />
         </div>
-        <footer className={`${loginStyles.passFooter} ${styles.footer}`}>
+        <footer className={`${bandStyles.passFooter} ${styles.footer}`}>
+          <Link href={registrationAuthHref('login', entrySlug)} className={formStyles.createLink}>
+            已有账号？直接登录 →
+          </Link>
           <Link
             href={entrySlug ? `/tournaments/${entrySlug}` : '/tournaments'}
-            className={loginStyles.backLink}
+            className={bandStyles.backLink}
           >
             <span aria-hidden="true">←</span> 先看看赛事
           </Link>

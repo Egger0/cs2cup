@@ -35,18 +35,22 @@ export default async function AccountSecurityPage() {
     <AccountShell
       access={{ hasWorkAccess, recoveryRestricted: recovery }}
       identity={account.displayName}
+      masthead={
+        <PageMasthead
+          code="SECURITY"
+          eyebrow="账号安全"
+          title="登录与安全"
+          lede={
+            recovery
+              ? '设置一个新密码，之后就能正常使用这个账号。'
+              : needsSetup
+                ? '设置用户名和密码，之后随时用它登录。'
+                : '管理密码、通行密钥、恢复码和已登录的设备。'
+          }
+          density="compact"
+        />
+      }
     >
-      <PageMasthead
-        title="登录与安全"
-        lede={
-          recovery
-            ? '设置一个新密码，之后就能正常使用这个账号。'
-            : needsSetup
-              ? '设置用户名和密码，之后随时用它登录。'
-              : '管理密码、通行密钥、恢复码和已登录的设备。'
-        }
-      />
-
       <div className={styles.shell}>
         {needsSetup ? (
           <InitialAccountSetup />

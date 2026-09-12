@@ -114,12 +114,16 @@ async function UnifiedAccountEvents({
     <AccountShell
       access={{ hasWorkAccess: workAccess, recoveryRestricted: false }}
       identity={context.account.displayName}
+      masthead={
+        <PageMasthead
+          code="MY EVENTS"
+          eyebrow="参赛记录"
+          title="我的赛事"
+          lede="报名、审核状态和协作权限都保存在这个账号下，不需要另外保管管理链接。"
+          density="compact"
+        />
+      }
     >
-      <PageMasthead
-        title="我的赛事"
-        lede="报名、审核状态和协作权限都保存在这个账号下，不需要另外保管管理链接。"
-      />
-
       <RegistrationInvitations items={invitations} />
       <RosterClaimRequests items={rosterClaimRequests} />
 
@@ -225,12 +229,16 @@ export default async function ParticipantAccountPage({
         identity="旧登录方式"
         sections={[]}
         signOut={<ParticipantSignOut />}
+        masthead={
+          <PageMasthead
+            code="MY EVENTS"
+            eyebrow="参赛记录"
+            title="我的赛事"
+            lede="这里显示通过旧登录方式关联的报名。修改仍请使用报名回执中的报名管理链接；本页不会显示链接中的私密凭据。"
+            density="compact"
+          />
+        }
       >
-        <PageMasthead
-          title="我的赛事"
-          lede="这里显示通过旧登录方式关联的报名。修改仍请使用报名回执中的报名管理链接；本页不会显示链接中的私密凭据。"
-        />
-
         {addedEntry ? (
           <p className={styles.notice} role="status" aria-live="polite" aria-atomic="true">
             [{addedEntry.team.tag}] {addedEntry.team.name} 已关联到当前旧登录方式，可在下方查看。

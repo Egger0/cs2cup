@@ -31,8 +31,8 @@ export function HomeHub({ tournament, posts }: { tournament: Tournament | null; 
   return (
     <section
       id="clubhouse"
+      data-zone="clubhouse"
       className={`${styles.hub} ${motionStyles.hubMotion}`}
-      data-header-tone="light"
       aria-labelledby="clubhouse-title"
     >
       <div className="wrap">

@@ -1,0 +1,134 @@
+.signal {
+  display: grid;
+  grid-area: signal;
+  justify-self: end;
+  gap: 8px;
+  width: min(380px, 100%);
+  padding: 16px 18px 18px;
+  color: #f1efe8;
+  background: linear-gradient(160deg, rgb(18 23 27 / 90%), rgb(9 11 13 / 84%));
+  border: 1px solid rgb(155 202 235 / 16%);
+  box-shadow:
+    0 24px 60px rgb(0 0 0 / 35%),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
+  opacity: calc(1 - var(--solar-progress, 0) * 1.8);
+  pointer-events: auto;
+  transition:
+    opacity 120ms linear,
+    visibility 0s,
+    border-color 220ms ease;
+}
+.signal:is(:hover, :focus-within) {
+  border-color: rgb(155 202 235 / 42%);
+}
+:global(body:has([data-solar-overlay]:not([data-solar-focus='overview']))) .signal {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 320ms ease,
+    visibility 0s linear 320ms;
+}
+:global(html[data-home-entry='intro']) .signal {
+  animation: rise 900ms 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+.signalMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #9fb3bb;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+}
+.beacon {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  background: #9bcaeb;
+  box-shadow: 0 0 10px rgb(155 202 235 / 80%);
+}
+.signal[data-status='postponed'] .beacon {
+  background: #d4ab5c;
+  box-shadow: 0 0 10px rgb(212 171 92 / 80%);
+}
+.signal[data-status='running'] .beacon {
+  background: #f0757b;
+  box-shadow: 0 0 10px rgb(240 117 123 / 80%);
+}
+.signal[data-status='registration'] .beacon {
+  animation: beacon 1.6s steps(2, jump-none) infinite;
+}
+.state {
+  margin-left: auto;
+  padding: 2px 7px;
+  color: #c6e7fa;
+  border: 1px solid rgb(155 202 235 / 30%);
+}
+.signal[data-status='postponed'] .state {
+  color: #e8c887;
+  border-color: rgb(212 171 92 / 40%);
+}
+.signalTitle {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.15rem;
+  font-weight: 620;
+  line-height: 1.4;
+}
+.signalTitle svg {
+  flex: none;
+  color: #9bcaeb;
+}
+.signalAction {
+  display: flex;
+  min-height: 46px;
+  border-radius: 999px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  color: #0b0d0f;
+  background: #9bcaeb;
+  font-size: 0.85rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  transition: background-color 180ms ease;
+}
+.signalAction:is(:hover, :focus-visible) {
+  background: #c4e5f8;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+@keyframes beacon {
+  50% {
+    opacity: 0.25;
+  }
+}
+@media (max-width: 860px) {
+  .signal {
+    justify-self: stretch;
+    width: auto;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .signal {
+    justify-self: end;
+    width: min(340px, 100%);
+    padding: 12px 14px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .signal,
+  .beacon {
+    animation: none !important;
+  }
+  .signal,
+  .signalAction {
+    transition: none;
+  }
+}

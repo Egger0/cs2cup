@@ -41,7 +41,11 @@ const config = [
     rules: { 'react-hooks/set-state-in-effect': 'off' },
   },
   {
-    files: ['components/domain/PosterWall.tsx'],
+    files: [
+      'components/domain/PosterWall.tsx',
+      'components/home/HomeStatement.tsx',
+      'components/home/HomeWall.tsx',
+    ],
     rules: { '@next/next/no-img-element': 'off' },
   },
 ]

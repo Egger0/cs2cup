@@ -12,7 +12,7 @@ import {
 } from '@/lib/passkey-login-recovery'
 import { usePasskeyRetryCooldown } from '@/lib/passkey-retry-cooldown'
 
-import styles from './login.module.css'
+import styles from './pass-band.module.css'
 import recoveryStyles from './passkey-recovery.module.css'
 
 type SupportState = 'checking' | 'supported' | 'unsupported'

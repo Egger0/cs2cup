@@ -3,9 +3,12 @@ import { selectPublicRow, selectPublicRows } from '../../rdb'
 import type { Post } from '../../types'
 import { type PostRow, toPost } from '../records'
 
-export async function listPosts(limit?: number): Promise<Post[]> {
+export async function listPosts(
+  limit?: number,
+  order: 'pinned' | 'latest' = 'pinned',
+): Promise<Post[]> {
   const rows = await selectPublicRows<PostRow>('post', {
-    order: 'pinned.desc,published_at.desc',
+    order: order === 'latest' ? 'published_at.desc' : 'pinned.desc,published_at.desc',
     limit,
   })
   return rows.map(toPost)

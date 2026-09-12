@@ -6,11 +6,15 @@
   width: 44px;
   height: 44px;
   color: var(--header-ink);
-  border: 1px solid var(--header-line);
+  border-radius: 50%;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease;
 }
-.search:hover {
+.search:hover,
+.search:focus-visible {
   color: var(--header-accent);
-  border-color: var(--header-accent);
+  background: rgb(155 202 235 / 12%);
 }
 @media (max-width: 390px) {
   .search {

@@ -4,106 +4,52 @@ import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Badge } from '@/components/ui'
+import { HomeMotionControl } from '@/components/home/HomeMotionControl'
 import type { SiteSetting } from '@/lib/types'
-import menuStyles from './SiteMenu.module.css'
-import passStyles from './SitePassLink.module.css'
+import { AccountPortal } from './AccountPortal'
 import { SiteHeaderFallback, type SiteNavLink } from './SiteHeaderFallback'
 import styles from './SiteHeader.module.css'
 import { HeaderSearch } from './HeaderSearch'
+import { StarMap } from './StarMap'
 
 export interface SiteHeaderProps {
   setting: SiteSetting
   links: SiteNavLink[]
   accountLink: SiteNavLink & { code: string }
-  status?: { label: string; open: boolean }
 }
 
-const PRIMARY_LINKS = new Set(['/tournaments', '/news', '/archive'])
-const NAV_ENGLISH: Record<string, string> = {
-  '/tournaments': 'TOURNAMENTS',
-  '/news': 'JOURNAL',
-  '/archive': 'ARCHIVE',
-  '/games': 'GAMES',
-  '/about': 'ABOUT',
-  '/guestbook': 'GUESTBOOK',
-  '/search': 'SEARCH',
-  '/me': 'MY EVENTS',
-  '/account': 'MY ACCOUNT',
-  '/account/security': 'SIGN-IN & SECURITY',
-  '/admin': 'WORKBENCH',
-  '/login': 'LOGIN',
-  '/register': 'CREATE ACCOUNT',
-}
-
-const DOCUMENT_LINKS = new Set(['/me', '/account', '/account/security', '/admin'])
-
-export function SiteHeader({ setting, links, accountLink, status }: SiteHeaderProps) {
+export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
   const pathname = usePathname()
-  const isHome = pathname === '/'
   const [open, setOpen] = useState(false)
-  const [homeTone, setHomeTone] = useState<'dark' | 'light'>('dark')
+  const [origin, setOrigin] = useState('100% 0')
   const [clientReady, setClientReady] = useState(false)
   const brandRef = useRef<HTMLAnchorElement>(null)
-  const menuFocusRef = useRef<HTMLAnchorElement>(null)
   const menuRef = useRef<HTMLElement>(null)
   const toggleRef = useRef<HTMLButtonElement>(null)
-  const primaryLinks = links.filter(link => PRIMARY_LINKS.has(link.href))
   const brandName = setting.clubName === '宁波理工电竞社' ? '宁理电竞社' : setting.clubName
   const usesDefaultMark = !setting.logoUrl || setting.logoUrl === '/brand/club-logo.jpg'
-  const logoSrc = usesDefaultMark ? '/brand/club-mark.svg' : setting.logoUrl!
-  const [accountCodeLead, accountCodeTail] = accountLink.code.split(' / ', 2)
-
-  const isActive = (href: string) => {
-    const target = href.split('#', 1)[0]
-    return href.includes('#')
+  const active = links.reduce((best, link, index) => {
+    const target = link.href.split('#', 1)[0]!
+    const hit = link.href.includes('#')
       ? pathname === target
       : pathname === target || pathname.startsWith(`${target}/`)
-  }
-  const activeMenuIndex = links.findIndex(link => isActive(link.href))
-  const focusMenuIndex = activeMenuIndex >= 0 ? activeMenuIndex : 0
+    return hit && (best < 0 || link.href.length > links[best]!.href.length) ? index : best
+  }, -1)
 
   useEffect(() => {
-    let active = true
+    let alive = true
     Promise.resolve().then(() => {
-      if (active) setClientReady(true)
+      if (alive) setClientReady(true)
     })
     return () => {
-      active = false
+      alive = false
     }
   }, [])
 
   useEffect(() => {
-    if (!isHome) return
-
-    let frame = 0
-    const readTone = () => {
-      frame = 0
-      const headerHeight = window.innerWidth <= 900 ? 68 : 76
-      const element = document.elementFromPoint(window.innerWidth / 2, headerHeight + 2)
-      const section = element?.closest<HTMLElement>('[data-header-tone]')
-      const tone = section?.dataset.headerTone
-      if (tone === 'dark' || tone === 'light') setHomeTone(tone)
-    }
-    const scheduleRead = () => {
-      if (frame) return
-      frame = window.requestAnimationFrame(readTone)
-    }
-
-    frame = window.requestAnimationFrame(readTone)
-    window.addEventListener('scroll', scheduleRead, { passive: true })
-    window.addEventListener('resize', scheduleRead)
-    return () => {
-      window.cancelAnimationFrame(frame)
-      window.removeEventListener('scroll', scheduleRead)
-      window.removeEventListener('resize', scheduleRead)
-    }
-  }, [isHome])
-
-  useEffect(() => {
-    const closeOnHistoryNavigation = () => setOpen(false)
-    window.addEventListener('popstate', closeOnHistoryNavigation)
-    return () => window.removeEventListener('popstate', closeOnHistoryNavigation)
+    const close = () => setOpen(false)
+    window.addEventListener('popstate', close)
+    return () => window.removeEventListener('popstate', close)
   }, [])
 
   useEffect(() => {
@@ -116,7 +62,10 @@ export function SiteHeader({ setting, links, accountLink, status }: SiteHeaderPr
     })
     document.documentElement.style.overflow = 'hidden'
 
-    const focusTimer = window.setTimeout(() => menuFocusRef.current?.focus(), 80)
+    const focusTimer = window.setTimeout(
+      () => menuRef.current?.querySelectorAll('a')[Math.max(0, active)]?.focus(),
+      80,
+    )
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setOpen(false)
@@ -125,16 +74,13 @@ export function SiteHeader({ setting, links, accountLink, status }: SiteHeaderPr
       }
       if (event.key !== 'Tab') return
 
-      const menuLinks = Array.from(menuRef.current?.querySelectorAll<HTMLAnchorElement>('a') ?? [])
       const first = brandRef.current
-      const last = menuLinks.at(-1)
-      const active = document.activeElement
+      const last = [...(menuRef.current?.querySelectorAll('a') ?? [])].at(-1)
       if (!first || !last) return
-
-      if (event.shiftKey && active === first) {
+      if (event.shiftKey && document.activeElement === first) {
         event.preventDefault()
         last.focus()
-      } else if (!event.shiftKey && active === last) {
+      } else if (!event.shiftKey && document.activeElement === last) {
         event.preventDefault()
         first.focus()
       }
@@ -149,21 +95,21 @@ export function SiteHeader({ setting, links, accountLink, status }: SiteHeaderPr
         element.inert = false
       })
     }
-  }, [open])
+  }, [open, active])
 
-  const headerClassName = [
-    styles.header,
-    isHome ? styles.homeHeader : '',
-    isHome && homeTone === 'dark' ? styles.homeCoverHeader : '',
-    isHome && homeTone === 'light' ? styles.homePageHeader : '',
-    open ? styles.menuHeader : '',
-  ]
-    .filter(Boolean)
-    .join(' ')
+  const toggle = () => {
+    const box = toggleRef.current?.getBoundingClientRect()
+    if (box)
+      setOrigin(
+        `${Math.round(box.left + box.width / 2)}px ${Math.round(box.top + box.height / 2)}px`,
+      )
+    setOpen(value => !value)
+  }
 
   return (
     <header
-      className={headerClassName}
+      className={styles.dock}
+      data-open={open || undefined}
       role={open ? 'dialog' : undefined}
       aria-modal={open ? 'true' : undefined}
       aria-label={open ? '全站目录' : undefined}
@@ -172,7 +118,7 @@ export function SiteHeader({ setting, links, accountLink, status }: SiteHeaderPr
         <Link ref={brandRef} href="/" className={styles.brand} onClick={() => setOpen(false)}>
           <span className={styles.mark}>
             <Image
-              src={logoSrc}
+              src={usesDefaultMark ? '/brand/club-mark.svg' : setting.logoUrl!}
               alt=""
               width={72}
               height={72}
@@ -186,47 +132,10 @@ export function SiteHeader({ setting, links, accountLink, status }: SiteHeaderPr
           </span>
         </Link>
 
-        <nav
-          className={styles.primaryNav}
-          aria-label="主要导航"
-          aria-hidden={open ? 'true' : undefined}
-          inert={open ? true : undefined}
-        >
-          {primaryLinks.map((link, index) => {
-            const active = isActive(link.href)
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={active ? styles.active : undefined}
-                aria-current={active ? 'page' : undefined}
-              >
-                <span>{String(index + 1).padStart(2, '0')}</span>
-                {link.label}
-              </Link>
-            )
-          })}
-        </nav>
-
         <div className={styles.actions}>
+          {pathname === '/' && !open ? <HomeMotionControl /> : null}
           <HeaderSearch hidden={open} />
-          {status ? (
-            <Badge tone={status.open ? 'ct' : 'neutral'} dot>
-              {status.label}
-            </Badge>
-          ) : null}
-          <a
-            href={accountLink.href}
-            className={open ? `${passStyles.pass} ${passStyles.hidden}` : passStyles.pass}
-            aria-hidden={open ? 'true' : undefined}
-            tabIndex={open ? -1 : undefined}
-          >
-            <small className={passStyles.code} aria-hidden="true">
-              <span>{accountCodeLead} / </span>
-              {accountCodeTail}
-            </small>
-            <span className={passStyles.label}>{accountLink.label}</span>
-          </a>
+          <AccountPortal href={accountLink.href} label={accountLink.label} hidden={open} />
           {clientReady ? (
             <button
               ref={toggleRef}
@@ -235,14 +144,12 @@ export function SiteHeader({ setting, links, accountLink, status }: SiteHeaderPr
               aria-controls="site-menu"
               aria-expanded={open}
               aria-label={open ? '关闭全站目录' : '打开全站目录'}
-              onClick={() => setOpen(value => !value)}
+              onClick={toggle}
             >
-              <span className={styles.toggleLabel}>{open ? '关闭' : '目录'}</span>
-              <small>{String(links.length).padStart(2, '0')}</small>
-              <span className={styles.menuIcon} aria-hidden="true">
-                <i />
+              <span className={styles.orbitIcon} aria-hidden="true">
                 <i />
               </span>
+              <span className={styles.toggleLabel}>{open ? '关闭' : '星图'}</span>
             </button>
           ) : (
             <SiteHeaderFallback links={links} />
@@ -250,67 +157,15 @@ export function SiteHeader({ setting, links, accountLink, status }: SiteHeaderPr
         </div>
       </div>
 
-      <div
-        id="site-menu"
-        className={open ? `${menuStyles.menu} ${menuStyles.menuOpen}` : menuStyles.menu}
-        aria-hidden={!open}
-        inert={!open}
-      >
-        <nav ref={menuRef} className={menuStyles.menuInner} aria-label="全部页面">
-          <div className={menuStyles.menuMeta}>
-            <span>INDEX / {String(links.length).padStart(2, '0')}</span>
-            <span>{setting.school} · 2022—</span>
-          </div>
-
-          <ol className={menuStyles.menuList}>
-            {links.map((link, index) => {
-              const active = isActive(link.href)
-              const content = (
-                <>
-                  <span className={menuStyles.number}>{String(index + 1).padStart(2, '0')}</span>
-                  <span className={menuStyles.menuLabel}>
-                    <strong>{link.label}</strong>
-                    <small>{NAV_ENGLISH[link.href]}</small>
-                  </span>
-                  <span className={menuStyles.arrow} aria-hidden="true">
-                    ↗
-                  </span>
-                </>
-              )
-              return (
-                <li key={link.href}>
-                  {DOCUMENT_LINKS.has(link.href) ? (
-                    <a
-                      ref={index === focusMenuIndex ? menuFocusRef : undefined}
-                      href={link.href}
-                      className={active ? menuStyles.active : undefined}
-                      aria-current={active ? 'page' : undefined}
-                      onClick={() => setOpen(false)}
-                    >
-                      {content}
-                    </a>
-                  ) : (
-                    <Link
-                      ref={index === focusMenuIndex ? menuFocusRef : undefined}
-                      href={link.href}
-                      className={active ? menuStyles.active : undefined}
-                      aria-current={active ? 'page' : undefined}
-                      onClick={() => setOpen(false)}
-                    >
-                      {content}
-                    </Link>
-                  )}
-                </li>
-              )
-            })}
-          </ol>
-
-          <div className={menuStyles.menuFooter}>
-            <span>NINGLI ESPORTS CLUB</span>
-            <span>NB / CN</span>
-          </div>
-        </nav>
-      </div>
+      <StarMap
+        ref={menuRef}
+        open={open}
+        origin={origin}
+        links={links}
+        active={active}
+        school={setting.school}
+        onNavigate={() => setOpen(false)}
+      />
     </header>
   )
 }

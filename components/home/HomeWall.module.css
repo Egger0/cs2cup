@@ -1,0 +1,101 @@
+.wall {
+  position: relative;
+  padding-block: clamp(96px, 16vh, 180px);
+  overflow: hidden;
+  color: #f1efe8;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1800px;
+}
+.head {
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+  width: min(100%, var(--wrap));
+  margin: 0 auto clamp(56px, 10vh, 112px);
+  padding-inline: var(--pad);
+}
+.head p {
+  color: #9bcaeb;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+}
+.head h2 {
+  font-size: clamp(2.2rem, 4.6vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.head a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 14px;
+  color: #9bcaeb;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+}
+.columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: clamp(12px, 1.6vw, 24px);
+  width: min(100%, 1680px);
+  margin-inline: auto;
+  padding-inline: var(--pad);
+}
+.column {
+  display: grid;
+  gap: clamp(12px, 1.6vw, 24px);
+  transform: translate3d(0, calc((0.5 - var(--travel, 0.5)) * var(--rate)), 0);
+  will-change: transform;
+}
+.column:nth-child(2) {
+  margin-top: 14vh;
+}
+.column figure {
+  position: relative;
+  overflow: hidden;
+  background: rgb(20 26 30);
+  border: 1px solid rgb(155 202 235 / 12%);
+}
+.column img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(calc(1.14 - var(--travel, 0.5) * 0.14));
+}
+.column img:not([src]) {
+  visibility: hidden;
+}
+.column figcaption {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 28px 14px 12px;
+  color: #d6e1e6;
+  background: linear-gradient(rgb(6 7 10 / 0%), rgb(6 7 10 / 72%));
+  font-family: var(--font-mono), monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+}
+@media (max-width: 700px) {
+  .columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .column:nth-child(3) {
+    display: none;
+  }
+  .column:nth-child(2) {
+    margin-top: 8vh;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .column,
+  .column img {
+    transform: none;
+  }
+}

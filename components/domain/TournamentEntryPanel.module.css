@@ -82,6 +82,7 @@
 }
 .panel > a {
   min-height: 44px;
+  border-radius: 999px;
 }
 .mine {
   display: inline-flex;

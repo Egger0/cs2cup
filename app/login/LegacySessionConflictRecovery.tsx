@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { publishParticipantSessionEnded } from '@/lib/participant-session-events'
 
-import styles from './login.module.css'
+import styles from './pass-band.module.css'
 import recoveryStyles from './passkey-recovery.module.css'
 
 export default function LegacySessionConflictRecovery({ destination }: { destination: string }) {

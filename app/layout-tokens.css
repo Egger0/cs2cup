@@ -2,12 +2,43 @@
   --wrap: 1536px;
   --pad: max(clamp(20px, 4vw, 64px), env(safe-area-inset-left), env(safe-area-inset-right));
   --grid-gap: 24px;
+  --header-height: 64px;
   --space-1: 8px;
   --space-2: 16px;
   --space-3: 24px;
   --space-4: 32px;
   --space-6: 48px;
   --space-8: 64px;
+  --stars:
+    radial-gradient(1.2px 1.2px at 8% 14%, #e3ecf4, transparent),
+    radial-gradient(1px 1px at 17% 63%, #a8c6ea, transparent),
+    radial-gradient(1.4px 1.4px at 23% 31%, #fff, transparent),
+    radial-gradient(1px 1px at 29% 84%, #e3ecf4, transparent),
+    radial-gradient(1px 1px at 34% 9%, #ffd7a6, transparent),
+    radial-gradient(1.2px 1.2px at 41% 72%, #e3ecf4, transparent),
+    radial-gradient(1px 1px at 46% 22%, #a8c6ea, transparent),
+    radial-gradient(1px 1px at 53% 88%, #fff, transparent),
+    radial-gradient(1.3px 1.3px at 58% 36%, #e3ecf4, transparent),
+    radial-gradient(1px 1px at 63% 12%, #a8c6ea, transparent),
+    radial-gradient(1px 1px at 67% 67%, #e3ecf4, transparent),
+    radial-gradient(1.5px 1.5px at 72% 27%, #fff, transparent),
+    radial-gradient(1px 1px at 77% 79%, #ffd7a6, transparent),
+    radial-gradient(1px 1px at 81% 45%, #e3ecf4, transparent),
+    radial-gradient(1.2px 1.2px at 86% 8%, #a8c6ea, transparent),
+    radial-gradient(1px 1px at 90% 58%, #e3ecf4, transparent),
+    radial-gradient(1px 1px at 94% 91%, #fff, transparent),
+    radial-gradient(1px 1px at 4% 47%, #e3ecf4, transparent),
+    radial-gradient(1px 1px at 12% 93%, #a8c6ea, transparent),
+    radial-gradient(1.2px 1.2px at 38% 51%, #e3ecf4, transparent),
+    radial-gradient(1px 1px at 51% 4%, #e3ecf4, transparent),
+    radial-gradient(1px 1px at 69% 94%, #a8c6ea, transparent),
+    radial-gradient(1px 1px at 97% 24%, #e3ecf4, transparent);
+}
+
+@media (max-width: 900px) {
+  :root {
+    --header-height: 60px;
+  }
 }
 
 @media (max-width: 760px) {

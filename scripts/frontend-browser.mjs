@@ -50,7 +50,7 @@ try {
     await page.evaluate(() => window.scrollTo({ top: 1000, behavior: 'instant' }))
     const nav = await page.getByRole('navigation', { name: '赛事导航' }).boundingBox()
     assert.ok(
-      nav && nav.y >= 68 && nav.y <= 120,
+      nav && nav.y >= 56 && nav.y <= 120,
       `${width}px tournament navigation must stay below the site header`,
     )
   }

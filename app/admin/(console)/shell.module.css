@@ -1,8 +1,8 @@
 .shell {
   --admin-blue: #6da5d3;
   --admin-blue-strong: #a9c9e2;
-  --admin-paper: #1d1f1e;
-  --admin-paper-deep: #141514;
+  --admin-paper: #14181c;
+  --admin-paper-deep: #0e1114;
   --admin-line: rgba(109, 165, 211, 0.17);
   --admin-line-strong: rgba(109, 165, 211, 0.34);
   --admin-muted: #949792;
@@ -11,13 +11,35 @@
   color: var(--ink);
   background:
     linear-gradient(90deg, rgba(241, 239, 232, 0.018) 1px, transparent 1px) 0 0 / 80px 80px,
-    #171817;
+    radial-gradient(ellipse 60% 50% at 84% 0%, rgb(36 119 185 / 16%), transparent 70%),
+    var(--stars),
+    #06070a;
   isolation: isolate;
 }
 
 .barFrame {
+  position: relative;
+  overflow: hidden;
   border-bottom: 1px solid var(--admin-line);
-  background: rgba(23, 24, 23, 0.96);
+  background: rgb(8 10 12 / 72%);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+}
+
+.barFrame::after {
+  position: absolute;
+  z-index: -1;
+  right: -6vw;
+  bottom: -18vw;
+  width: min(46vw, 560px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 28% 26%, #1d2b36, #0c1116 46%, #06070a 70%);
+  box-shadow:
+    inset 12px 8px 30px -10px #9bcaeb,
+    0 0 80px 2px rgb(74 163 223 / 18%);
+  content: '';
+  pointer-events: none;
 }
 
 .bar {
@@ -43,11 +65,12 @@
   flex: none;
   place-items: center;
   border: 1px solid var(--admin-line-strong);
-  border-radius: 0;
+  border-radius: 50%;
   color: var(--admin-blue-strong);
   font-family: var(--font-display), sans-serif;
   font-size: 1.2rem;
-  background: rgba(109, 165, 211, 0.06);
+  background: radial-gradient(circle, rgb(74 163 223 / 30%), rgb(74 163 223 / 0%) 70%);
+  box-shadow: 0 0 18px rgb(74 163 223 / 30%);
 }
 
 .eyebrow,
@@ -96,7 +119,8 @@
   z-index: 20;
   top: 0;
   border-bottom: 1px solid var(--admin-line);
-  background: rgba(23, 24, 23, 0.94);
+  background: rgb(8 10 12 / 88%);
+  -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
 }
 
@@ -174,7 +198,8 @@
   }
 
   .monogram,
-  .eyebrow {
+  .eyebrow,
+  .barFrame::after {
     display: none;
   }
 
@@ -212,12 +237,12 @@
 
   .navViewport::before {
     left: 0;
-    background: linear-gradient(90deg, #171817, transparent);
+    background: linear-gradient(90deg, #06070a, transparent);
   }
 
   .navViewport::after {
     right: 0;
-    background: linear-gradient(-90deg, #171817, transparent);
+    background: linear-gradient(-90deg, #06070a, transparent);
   }
 
   .nav {

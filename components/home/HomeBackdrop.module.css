@@ -1,0 +1,54 @@
+.backdrop {
+  position: fixed;
+  z-index: -2;
+  inset: 0;
+  pointer-events: none;
+  background:
+    var(--stars), radial-gradient(ellipse 80% 55% at 62% 38%, rgb(28 51 66 / 42%), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 20% 80%, rgb(18 48 58 / 30%), transparent 70%), #06070a;
+}
+.star {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px;
+  border-radius: 50%;
+  background: #e4f3ff;
+  box-shadow:
+    0 0 10px 3px rgb(155 202 235 / 75%),
+    0 0 64px 20px rgb(36 119 185 / 32%);
+  animation: breathe 2.6s ease-in-out infinite;
+}
+@keyframes breathe {
+  50% {
+    opacity: 0.55;
+    transform: scale(0.8);
+  }
+}
+.still {
+  position: absolute;
+  inset: 0;
+  background: url('/models/solar-panorama.webp') center / cover;
+  opacity: 0;
+  transition: opacity 700ms ease;
+}
+@media (max-aspect-ratio: 4 / 5) {
+  .still {
+    background-image: url('/models/solar-portrait.webp');
+  }
+}
+:global(body:has([data-solar-fallback='true'])) .still {
+  opacity: 1;
+}
+@media (max-width: 700px) {
+  .star {
+    top: 56%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .star {
+    animation: none;
+  }
+}

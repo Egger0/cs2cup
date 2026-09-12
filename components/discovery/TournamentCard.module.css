@@ -41,6 +41,23 @@
 .status[data-status='postponed'] {
   color: #7f5b1e;
 }
+.status[data-status='registration'] i {
+  animation: beacon 1.6s steps(2, jump-none) infinite;
+}
+.status[data-champion] i {
+  background: transparent;
+  box-shadow: 0 0 0 1.5px var(--honour);
+}
+@keyframes beacon {
+  50% {
+    opacity: 0.25;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .status i {
+    animation: none;
+  }
+}
 .mainLink {
   display: block;
   padding: 22px 24px 18px;

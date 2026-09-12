@@ -23,6 +23,7 @@ import LegacySessionConflictRecovery from './LegacySessionConflictRecovery'
 import { PasswordLoginForm } from './PasswordLoginForm'
 import formStyles from './credential-form.module.css'
 import noticeStyles from './login-notice.module.css'
+import bandStyles from './pass-band.module.css'
 import styles from './login.module.css'
 
 export const metadata: Metadata = {
@@ -81,10 +82,6 @@ export default async function ParticipantLoginPage({
   return (
     <main id="main" className={styles.page}>
       <section className={styles.vestibule} aria-labelledby="participant-login-title">
-        <div className={styles.seal} aria-hidden="true">
-          <Image src="/brand/club-mark.svg" alt="" width={440} height={440} loading="eager" />
-        </div>
-
         <header className={styles.brandline}>
           <Image src="/brand/club-mark.svg" alt="" width={38} height={38} loading="eager" />
           <strong>宁波理工电竞社</strong>
@@ -109,19 +106,11 @@ export default async function ParticipantLoginPage({
         </p>
       </section>
 
-      <section className={styles.passBand} aria-labelledby="passkey-action-title">
-        <header className={styles.passHeader}>
-          <p className={styles.serial}>ACCOUNT ACCESS / NLC—01</p>
+      <section className={bandStyles.passBand} aria-labelledby="passkey-action-title">
+        <header className={bandStyles.passHeader}>
+          <p className={bandStyles.serial}>ACCOUNT ACCESS / NLC—01</p>
           <h2 id="passkey-action-title">登录</h2>
           <p>登录后，继续填写报名或查看已保存的资料。</p>
-          {!isStaffReturn ? (
-            <Link
-              href={registrationAuthHref('register', entrySlug)}
-              className={formStyles.createLink}
-            >
-              还没有账号？创建账号 →
-            </Link>
-          ) : null}
         </header>
 
         {entrySlug ? <RegistrationJourney slug={entrySlug} /> : null}
@@ -141,7 +130,7 @@ export default async function ParticipantLoginPage({
           </aside>
         ) : null}
 
-        <div className={styles.loginControl}>
+        <div className={bandStyles.loginControl}>
           <PasswordLoginForm
             redirectKey={redirectKey}
             tournamentSlug={tournamentSlug}
@@ -163,11 +152,19 @@ export default async function ParticipantLoginPage({
           )}
         </div>
 
-        <footer className={styles.passFooter}>
+        <footer className={bandStyles.passFooter}>
+          {!isStaffReturn ? (
+            <Link
+              href={registrationAuthHref('register', entrySlug)}
+              className={formStyles.createLink}
+            >
+              还没有账号？创建账号 →
+            </Link>
+          ) : null}
           {isStaffReturn ? <p>还没有工作权限？请联系本届赛事负责人确认授权。</p> : null}
           <Link
             href={entrySlug ? `/tournaments/${entrySlug}` : '/tournaments'}
-            className={styles.backLink}
+            className={bandStyles.backLink}
           >
             <span aria-hidden="true">←</span> 返回公开赛事
           </Link>
