@@ -42,8 +42,10 @@
 .tab {
   position: relative;
   display: inline-flex;
+  min-width: 44px;
   min-height: 54px;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 10px 0;
   color: var(--muted);

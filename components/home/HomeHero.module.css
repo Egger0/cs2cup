@@ -124,6 +124,7 @@
   display: grid;
   justify-items: center;
   gap: 10px;
+  min-width: 44px;
   min-height: 44px;
   color: rgb(241 239 232 / 62%);
   font-family: var(--font-mono);

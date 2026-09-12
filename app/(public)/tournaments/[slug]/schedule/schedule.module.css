@@ -15,7 +15,14 @@
 }
 
 .calendarLink {
+  position: relative;
   color: var(--ct);
+}
+
+.calendarLink::after {
+  position: absolute;
+  inset: -15px -10px;
+  content: '';
 }
 
 .calendarLink:hover {
