@@ -116,15 +116,6 @@ export function PasswordLoginForm({
           required
         />
       </label>
-      <button
-        className={formStyles.passwordButton}
-        type="submit"
-        disabled={working}
-        aria-label={working ? '正在登录' : '使用账号密码登录'}
-      >
-        <span>{working ? '正在登录…' : '登录'}</span>
-        <span aria-hidden="true">↗</span>
-      </button>
       {error ? (
         <p
           id="login-error"
@@ -134,6 +125,15 @@ export function PasswordLoginForm({
           {error}
         </p>
       ) : null}
+      <button
+        className={formStyles.passwordButton}
+        type="submit"
+        disabled={working}
+        aria-label={working ? '正在登录' : '使用账号密码登录'}
+      >
+        <span>{working ? '正在登录…' : '登录'}</span>
+        <span aria-hidden="true">↗</span>
+      </button>
       <Link
         className={formStyles.recoveryLink}
         href={registrationAuthHref('recover', tournamentSlug)}

@@ -199,10 +199,6 @@ export function RegisterForm({
           required
         />
       </label>
-      <button className={formStyles.passwordButton} type="submit" disabled={working}>
-        <span>{working ? '正在创建…' : '创建账号'}</span>
-        <span aria-hidden="true">↗</span>
-      </button>
       {error ? (
         <p
           id="signup-error"
@@ -217,6 +213,10 @@ export function RegisterForm({
           ) : null}
         </p>
       ) : null}
+      <button className={formStyles.passwordButton} type="submit" disabled={working}>
+        <span>{working ? '正在创建…' : '创建账号'}</span>
+        <span aria-hidden="true">↗</span>
+      </button>
       <p className={styles.after}>创建后会自动登录，报名资料可以稍后填写。</p>
     </form>
   )
