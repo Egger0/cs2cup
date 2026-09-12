@@ -1,5 +1,5 @@
 import Link, { type LinkProps } from 'next/link'
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes } from 'react'
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, Ref } from 'react'
 import styles from './Button.module.css'
 
 type ButtonVariant = 'primary' | 'ghost' | 'danger'
@@ -8,6 +8,7 @@ type ButtonSize = 'md' | 'mini'
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
   size?: ButtonSize
+  ref?: Ref<HTMLButtonElement>
 }
 
 type ButtonLinkProps = LinkProps &

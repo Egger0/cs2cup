@@ -1,0 +1,38 @@
+.armed {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  animation: arm 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes arm {
+  from {
+    opacity: 0;
+    transform: translateX(6px);
+  }
+}
+
+.question {
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.cancel {
+  min-height: 32px;
+  padding-inline: 8px;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  font-size: 0.78rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.cancel:hover,
+.cancel:focus-visible {
+  color: var(--ink);
+}

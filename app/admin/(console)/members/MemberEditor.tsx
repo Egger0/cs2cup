@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Button, Field, TextField } from '@/components/ui'
+import { Button, ConfirmButton, Field, TextField } from '@/components/ui'
 import { useUnsavedChangesWarning } from '@/components/admin/useUnsavedChangesWarning'
 import type { ClubMember } from '@/lib/types'
 import { removeMember, updateMember } from '../actions/content'
@@ -20,7 +20,6 @@ export function MemberEditor({ member }: { member: ClubMember }) {
   )
 
   const handleDelete = () => {
-    if (!confirm(`确定删除「${member.name}」?此操作不可撤销。`)) return
     startTransition(async () => {
       setError('')
       setSaved(false)
@@ -59,9 +58,14 @@ export function MemberEditor({ member }: { member: ClubMember }) {
           >
             编辑
           </Button>
-          <Button size="mini" variant="danger" disabled={pending} onClick={handleDelete}>
+          <ConfirmButton
+            question={`删除「${member.name}」？不可撤销。`}
+            confirmLabel="删除"
+            disabled={pending}
+            onConfirm={handleDelete}
+          >
             删除
-          </Button>
+          </ConfirmButton>
           {error ? (
             <span className={styles.error} role="alert">
               {error}

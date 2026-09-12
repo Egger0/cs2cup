@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { Badge, Button, Empty } from '@/components/ui'
+import { Badge, Button, ConfirmButton, Empty } from '@/components/ui'
 import type { Team, TeamStatus } from '@/lib/types'
 import { deleteTeam, updateTeamCheckIn, updateTeamSeed, updateTeamStatus } from './actions/teams'
 import sharedStyles from './admin.module.css'
@@ -225,18 +225,15 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
                   {team.players.map(player => player.nickname).join('、') || '—'}
                 </td>
                 <td>
-                  <Button
-                    variant="danger"
-                    size="mini"
+                  <ConfirmButton
+                    question={`删除「${team.name}」？不可撤销。`}
+                    confirmLabel="删除"
                     disabled={mutationPending}
                     aria-label={`删除 ${team.name}`}
-                    onClick={() => {
-                      if (!confirm(`确定删除「${team.name}」？此操作不可撤销。`)) return
-                      mutate(() => deleteTeam(team.id, tournamentId))
-                    }}
+                    onConfirm={() => mutate(() => deleteTeam(team.id, tournamentId))}
                   >
                     删除
-                  </Button>
+                  </ConfirmButton>
                 </td>
               </tr>
             ))}

@@ -1,5 +1,6 @@
 export { Badge } from './Badge'
 export { Button, ButtonLink } from './Button'
+export { ConfirmButton } from './ConfirmButton'
 export { Empty } from './Empty'
 export { Field, TextField } from './Field'
 export { Toast } from './Toast'

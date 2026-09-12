@@ -82,7 +82,8 @@ const deleteButton = await readFile(
   new URL('../app/admin/(console)/tournaments/TournamentDeleteButton.tsx', import.meta.url),
   'utf8',
 )
-for (const signal of ['confirm(', 'catch {', '删除中…']) assert.ok(deleteButton.includes(signal))
+for (const signal of ['ConfirmButton', 'question=', 'catch {', '删除中…'])
+  assert.ok(deleteButton.includes(signal))
 assert.match(deleteButton, /window\.alert\(result\.warning\)/)
 assert.match(deleteButton, /role=\{feedback\.tone === 'success' \? 'status' : 'alert'\}/)
 

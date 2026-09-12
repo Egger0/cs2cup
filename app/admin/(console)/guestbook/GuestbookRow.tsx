@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui'
+import { Button, ConfirmButton } from '@/components/ui'
 import { SITE_TIME_ZONE } from '@/lib/datetime'
 import type { GuestbookMessage, GuestbookMessageStatus } from '@/lib/types'
 import {
@@ -39,7 +39,6 @@ export function GuestbookRow({ message }: { message: GuestbookMessage }) {
   }
 
   function remove() {
-    if (!confirm(`确定删除「${message.name}」的留言?此操作不可撤销。`)) return
     startTransition(async () => {
       setError('')
       try {
@@ -143,9 +142,14 @@ export function GuestbookRow({ message }: { message: GuestbookMessage }) {
             隐藏
           </Button>
         ) : null}
-        <Button size="mini" variant="danger" disabled={pending} onClick={remove}>
+        <ConfirmButton
+          question={`删除「${message.name}」的留言？不可撤销。`}
+          confirmLabel="删除"
+          disabled={pending}
+          onConfirm={remove}
+        >
           删除
-        </Button>
+        </ConfirmButton>
         {error ? (
           <span className={styles.error} role="alert">
             {error}

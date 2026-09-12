@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui'
+import { ConfirmButton } from '@/components/ui'
 import { removeTournament } from '../actions/tournaments'
 import styles from '../admin.module.css'
 
@@ -16,13 +16,11 @@ export function TournamentDeleteButton({ id, title }: { id: number; title: strin
 
   return (
     <>
-      <Button
-        size="mini"
-        variant="danger"
+      <ConfirmButton
+        question={`删除「${title}」？报名、对阵和图片也会一并删除，不可撤销。`}
+        confirmLabel="删除"
         disabled={pending}
-        aria-busy={pending}
-        onClick={() => {
-          if (!confirm(`确定删除「${title}」?报名、对阵和图片也会一并删除。`)) return
+        onConfirm={() => {
           startTransition(async () => {
             setFeedback(null)
             try {
@@ -45,7 +43,7 @@ export function TournamentDeleteButton({ id, title }: { id: number; title: strin
         }}
       >
         {pending ? '删除中…' : '删除'}
-      </Button>
+      </ConfirmButton>
       {feedback ? (
         <span
           className={feedback.tone === 'success' ? styles.ok : styles.error}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Button, Field, TextField } from '@/components/ui'
+import { Button, ConfirmButton, Field, TextField } from '@/components/ui'
 import { useUnsavedChangesWarning } from '@/components/admin/useUnsavedChangesWarning'
 import type { Game, Post } from '@/lib/types'
 import { removePost, updatePost } from '../actions/content'
@@ -17,7 +17,6 @@ export function PostEditor({ post, games }: { post: Post; games: Game[] }) {
   useUnsavedChangesWarning(open && dirty, `「${post.title}」还有未保存的更改，离开将丢失这些内容。`)
 
   function handleDelete() {
-    if (!confirm(`删除「${post.title}」?`)) return
     startTransition(async () => {
       setError('')
       setSaved(false)
@@ -56,9 +55,14 @@ export function PostEditor({ post, games }: { post: Post; games: Game[] }) {
           >
             编辑
           </Button>
-          <Button size="mini" variant="danger" disabled={pending} onClick={handleDelete}>
+          <ConfirmButton
+            question={`删除「${post.title}」？不可撤销。`}
+            confirmLabel="删除"
+            disabled={pending}
+            onConfirm={handleDelete}
+          >
             删除
-          </Button>
+          </ConfirmButton>
           {error ? (
             <span className={styles.error} role="alert">
               {error}
