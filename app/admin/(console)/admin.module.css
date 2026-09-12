@@ -174,9 +174,9 @@
   position: relative;
   margin-bottom: 24px;
   padding: clamp(20px, 3vw, 32px);
-  border: 1px solid var(--admin-line, var(--line));
+  border: 1px solid var(--line);
   border-radius: 3px;
-  background: rgba(29, 31, 30, 0.94);
+  background: var(--surface);
 }
 
 .panel::before {
@@ -185,7 +185,7 @@
   left: -1px;
   width: clamp(72px, 10vw, 148px);
   height: 1px;
-  background: var(--admin-blue, var(--t));
+  background: var(--accent);
   content: '';
 }
 

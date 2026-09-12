@@ -1,4 +1,4 @@
-import styles from './AdminPageHeader.module.css'
+import { SectionHead } from '@/components/domain/Sections'
 
 export function AdminPageHeader({
   index,
@@ -9,13 +9,5 @@ export function AdminPageHeader({
   title: string
   description: string
 }) {
-  return (
-    <header className={styles.header}>
-      <p className={styles.index}>CONTROL / {index}</p>
-      <div className={styles.copy}>
-        <h1>{title}</h1>
-        <p>{description}</p>
-      </div>
-    </header>
-  )
+  return <SectionHead eyebrow={`CONTROL / ${index}`} title={title} lede={description} />
 }
