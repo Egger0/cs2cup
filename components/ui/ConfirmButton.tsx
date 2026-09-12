@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from './Button'
 import styles from './ConfirmButton.module.css'
 
-const ARMED_MS = 6000
+const ARMED_MS = 10_000
 
 export function ConfirmButton({
   question,
