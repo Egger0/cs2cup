@@ -4,7 +4,7 @@ import { Icon } from '@/components/ui/Icon'
 import { HomeSignalChip } from './HomeSignalChip'
 import styles from './HomeHero.module.css'
 
-const ENTRY = `try{var d=document.documentElement,s=sessionStorage,r=matchMedia('(prefers-reduced-motion: reduce)').matches;d.dataset.homeEntry=s.getItem('solar-entry')||r?'instant':'intro';s.setItem('solar-entry','1')}catch(e){document.documentElement.dataset.homeEntry='instant'}`
+const ENTRY = `try{var d=document.documentElement,n=performance.getEntriesByType('navigation')[0],i=!matchMedia('(prefers-reduced-motion: reduce)').matches&&!(n&&n.type==='back_forward');d.dataset.homeEntry=i?'intro':'instant';history.scrollRestoration=i?'manual':'auto'}catch(e){document.documentElement.dataset.homeEntry='instant'}`
 
 export function HomeHero({
   signal,
