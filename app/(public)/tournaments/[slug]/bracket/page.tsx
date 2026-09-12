@@ -52,7 +52,7 @@ export default async function BracketPage({ params }: { params: Promise<{ slug: 
           />
         </div>
         <div data-rise="2">
-          <Bracket matches={matches} teams={teams} slug={slug} />
+          <Bracket matches={matches} teams={teams} slug={slug} cap={tournament.teamCap} />
         </div>
       </div>
     </section>
