@@ -9,10 +9,7 @@ import { createFlight, updateOrbits, type FlightState } from './flight'
 import { createLabels } from './labels'
 import { bindInteraction } from './interaction'
 import type { Backend } from './hardware'
-
-const PIXELS = 2.8e6
-const budget = (width: number, height: number) =>
-  Math.max(1, Math.min(devicePixelRatio, 2, Math.sqrt(PIXELS / Math.max(1, width * height))))
+import { createAdaptation } from './adapt'
 
 export async function startSolar(
   host: HTMLElement,
@@ -110,42 +107,13 @@ export async function startSolar(
   let activeUntil = 0
   let seconds = 0
   let renderCount = 0
-  let checks = 0
   let settled = false
   let promoted = false
   let width = 1
   let height = 1
-  let scale = 1
-  let ratio = 0
-  let samples: number[] = []
-  let steady = 0
-  const settle = () => {
-    steady = performance.now() + 520
-    samples = []
-  }
+  const adaptation = createAdaptation(next => renderer.setPixelRatio(next), fail)
   const wake = () => {
     activeUntil = performance.now() + 1600
-  }
-  const applyRatio = () => {
-    const next = Math.max(0.6, budget(width, height) * scale)
-    if (Math.abs(next - ratio) < 0.01) return
-    ratio = next
-    renderer.setPixelRatio(ratio)
-  }
-  const adapt = (elapsed: number) => {
-    if (performance.now() < steady) return
-    samples.push(elapsed)
-    if (samples.length < 24) return
-    const sorted = [...samples].sort((a, b) => a - b)
-    const floor = sorted[Math.floor(sorted.length * 0.1)]!
-    const middle = sorted[Math.floor(sorted.length * 0.5)]!
-    const misses = samples.filter(value => value > floor * 1.6).length / samples.length
-    samples = []
-    checks++
-    if ((misses > 0.15 || middle > 20) && scale > 0.5) {
-      scale = Math.max(0.5, scale - 0.15)
-      applyRatio()
-    } else if (middle > 50 && checks <= 3) fail()
   }
   const draw = (now: number) => {
     frame = 0
@@ -162,7 +130,8 @@ export async function startSolar(
     const elapsed = now - rendered
     const delta = Math.min(elapsed / 1000, 0.05)
     rendered = now
-    if (moving && looping && active && state.entry >= 1 && state.chapter === 'near') adapt(elapsed)
+    if (moving && looping && active && state.entry >= 1 && state.chapter === 'near')
+      adaptation.sample(elapsed, width, height)
     if (moving) seconds += delta
     if (state.entry < 1) state.entry = moving ? Math.min(1, state.entry + delta / entryDuration) : 1
     if (state.entry > 0.8) document.documentElement.dataset.solarArrived = ''
@@ -217,7 +186,7 @@ export async function startSolar(
     else camera.clearViewOffset()
     camera.updateProjectionMatrix()
     system.dust.scale.setScalar(state.base)
-    applyRatio()
+    adaptation.apply(width, height)
     renderer.setSize(width, height)
     poke()
   }
@@ -261,7 +230,7 @@ export async function startSolar(
   resize()
   return {
     focus(key: string | null) {
-      settle()
+      adaptation.settle()
       state.selected = key
       state.spin.set(0, 0)
       state.velocity.set(0, 0)
@@ -274,7 +243,7 @@ export async function startSolar(
       poke()
     },
     zoom(level: number) {
-      settle()
+      adaptation.settle()
       state.level = level
       upgrade(state.selected, level)
       poke()
