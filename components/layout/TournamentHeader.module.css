@@ -104,6 +104,7 @@
   margin-top: 12px;
 }
 .cjk {
+  position: relative;
   display: block;
   width: fit-content;
   max-width: 100%;
@@ -114,6 +115,12 @@
   line-height: 1.1;
   text-shadow: 0 10px 50px rgb(0 0 0 / 50%);
   overflow-wrap: anywhere;
+}
+
+.cjk::after {
+  position: absolute;
+  inset: -10px -8px;
+  content: '';
 }
 .latin {
   display: block;
