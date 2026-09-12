@@ -232,6 +232,18 @@ export async function startSolar(
   document.addEventListener('visibilitychange', synchronize)
   reduced.addEventListener('change', synchronize)
   const unbind = bindInteraction(canvas, camera, system, state, select, zoom, poke)
+  const surrender = () => {
+    if (!disposed) fail()
+  }
+  const contextLost = (event: Event) => {
+    event.preventDefault()
+    surrender()
+  }
+  canvas.addEventListener('webglcontextlost', contextLost)
+  void (renderer.backend as { device?: { lost?: Promise<unknown> } }).device?.lost?.then(
+    surrender,
+    () => {},
+  )
   const upgrade = (key: string | null, depth: number) => {
     const body = system.bodies.find(item => item.key === key)
     const planet = body?.parent ?? body
@@ -275,6 +287,7 @@ export async function startSolar(
       size.disconnect()
       document.removeEventListener('visibilitychange', synchronize)
       reduced.removeEventListener('change', synchronize)
+      canvas.removeEventListener('webglcontextlost', contextLost)
       unbind()
       labels.dispose()
       dispose()
