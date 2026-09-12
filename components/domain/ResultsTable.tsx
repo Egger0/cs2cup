@@ -1,5 +1,7 @@
 import Link from 'next/link'
-import { ButtonLink, Empty } from '@/components/ui'
+import { ButtonLink } from '@/components/ui'
+import { GhostStage } from './GhostStage'
+import { ScoreGhost } from './ScoreGhost'
 import { indexMatches, indexTeams, isCompletedMatch, resolveMatch } from '@/lib/bracket'
 import type { Match, MatchMap, PublicTeam } from '@/lib/types'
 import styles from './ResultsTable.module.css'
@@ -17,15 +19,16 @@ export function ResultsTable({ matches, teams, maps, slug, limit }: ResultsTable
   const decided = limit === undefined ? all : all.slice(-limit)
   if (decided.length === 0) {
     return (
-      <Empty
+      <GhostStage
+        figure={<ScoreGhost />}
         action={
           <ButtonLink href={`/tournaments/${slug}/bracket`} size="mini">
             看对阵表
           </ButtonLink>
         }
       >
-        还没有打完的比赛。每场结束后，比分和 Ban/Pick 会出现在这里。
-      </Empty>
+        还没有打完的比赛。每场结束后，比分和 Ban/Pick 会记在这里。
+      </GhostStage>
     )
   }
 
