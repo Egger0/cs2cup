@@ -23,3 +23,11 @@ export function resolveSiteOrigin(configured = process.env.NEXT_PUBLIC_SITE_URL)
 
   return url.origin
 }
+
+export function httpsRedirect(request: Request, configured?: string): Response | null {
+  const url = new URL(request.url)
+  if (url.protocol !== 'http:' || !resolveSiteOrigin(configured).startsWith('https:')) return null
+  url.protocol = 'https:'
+  url.port = ''
+  return Response.redirect(url.href, 301)
+}

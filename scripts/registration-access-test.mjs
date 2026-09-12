@@ -24,6 +24,7 @@ assert.deepEqual(
   Object.fromEntries(globalHeaders.headers.map(header => [header.key, header.value])),
   {
     'Content-Security-Policy': "frame-ancestors 'none'; base-uri 'self'; object-src 'none'",
+    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
   },

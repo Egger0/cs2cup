@@ -1,12 +1,14 @@
 import nextWorker from './.open-next/worker.js'
 import { sendQqMorning, type QqAutomationDatabase } from './lib/qq-automation'
 import type { QqBotApiConfig } from './lib/qq-bot-api'
+import { httpsRedirect } from './lib/site-config'
 
 interface WorkerExecutionContext {
   waitUntil(promise: Promise<unknown>): void
 }
 
 interface WorkerEnvironment {
+  NEXT_PUBLIC_SITE_URL?: string
   CS2CUP_DB?: QqAutomationDatabase
   QQ_BOT_APP_ID?: string
   QQ_BOT_APP_SECRET?: string
@@ -21,7 +23,10 @@ function botConfig(environment: WorkerEnvironment): QqBotApiConfig | null {
 
 const worker = {
   fetch(request: Request, environment: WorkerEnvironment, context: WorkerExecutionContext) {
-    return nextWorker.fetch(request, environment, context)
+    return (
+      httpsRedirect(request, environment.NEXT_PUBLIC_SITE_URL) ??
+      nextWorker.fetch(request, environment, context)
+    )
   },
 
   async scheduled(controller: { scheduledTime: number }, environment: WorkerEnvironment) {
