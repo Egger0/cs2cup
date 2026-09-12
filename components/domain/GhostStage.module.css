@@ -1,16 +1,3 @@
-.ghost {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  fill: none;
-  stroke: var(--line-strong);
-  stroke-width: 1;
-  opacity: 0.34;
-  pointer-events: none;
-  mask-image: radial-gradient(ellipse 62% 58% at 50% 50%, transparent 18%, #000 78%);
-}
-
 .stage {
   position: relative;
   display: grid;
@@ -22,6 +9,19 @@
   border-top: 1px solid var(--ink);
   border-bottom: 1px solid var(--line-strong);
   text-align: center;
+}
+
+.stage > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  opacity: 0.34;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 62% 58% at 50% 50%, transparent 18%, #000 78%);
 }
 
 .line {
@@ -41,7 +41,7 @@
 }
 
 @media (max-width: 700px) {
-  .ghost {
+  .stage > svg {
     display: none;
   }
 

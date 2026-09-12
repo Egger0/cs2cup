@@ -1,11 +1,11 @@
 import Link from 'next/link'
 import { ButtonLink } from '@/components/ui'
 import { BracketGhost } from './BracketGhost'
+import { GhostStage } from './GhostStage'
 import { groupByRound, indexMatches, indexTeams, isByeMatch, resolveMatch } from '@/lib/bracket'
 import { formatSiteCompactDateTime } from '@/lib/datetime'
 import type { Match, PublicTeam } from '@/lib/types'
 import styles from './Bracket.module.css'
-import ghost from './BracketGhost.module.css'
 
 interface BracketProps {
   matches: Match[]
@@ -17,15 +17,16 @@ interface BracketProps {
 export function Bracket({ matches, teams, slug, cap }: BracketProps) {
   if (matches.length === 0) {
     return (
-      <div className={ghost.stage}>
-        <BracketGhost cap={cap} />
-        <p className={ghost.line}>报名满员后统一抽签，这张对阵表会在这里展开。</p>
-        <div className={ghost.action}>
+      <GhostStage
+        figure={<BracketGhost cap={cap} />}
+        action={
           <ButtonLink href={`/tournaments/${slug}/teams`} size="mini">
             看参赛战队
           </ButtonLink>
-        </div>
-      </div>
+        }
+      >
+        报名满员后统一抽签，这张对阵表会在这里展开。
+      </GhostStage>
     )
   }
 

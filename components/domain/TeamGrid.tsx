@@ -1,12 +1,23 @@
 import Link from 'next/link'
-import { ButtonLink, Empty } from '@/components/ui'
+import { ButtonLink } from '@/components/ui'
+import { GhostStage } from './GhostStage'
+import { SeatGhost } from './SeatGhost'
 import type { PublicTeam } from '@/lib/types'
 import styles from './TeamGrid.module.css'
 
-export function TeamGrid({ teams, slug }: { teams: PublicTeam[]; slug?: string }) {
+export function TeamGrid({
+  teams,
+  slug,
+  cap,
+}: {
+  teams: PublicTeam[]
+  slug?: string
+  cap?: number
+}) {
   if (teams.length === 0) {
     return (
-      <Empty
+      <GhostStage
+        figure={cap ? <SeatGhost cap={cap} /> : null}
         action={
           slug ? (
             <ButtonLink href={`/tournaments/${slug}/register`} variant="primary">
@@ -15,8 +26,10 @@ export function TeamGrid({ teams, slug }: { teams: PublicTeam[]; slug?: string }
           ) : null
         }
       >
-        还没有战队通过审核。报名后由主办方确认，通过的队伍会出现在这里。
-      </Empty>
+        {cap
+          ? `${cap} 个席位还空着。报名后由主办方确认，通过的队伍会填进这里。`
+          : '还没有战队通过审核。报名后由主办方确认，通过的队伍会出现在这里。'}
+      </GhostStage>
     )
   }
 

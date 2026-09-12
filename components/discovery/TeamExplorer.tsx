@@ -6,7 +6,15 @@ import { Icon } from '@/components/ui/Icon'
 import type { PublicTeam } from '@/lib/types'
 import styles from './TeamExplorer.module.css'
 
-export function TeamExplorer({ teams, slug }: { teams: PublicTeam[]; slug: string }) {
+export function TeamExplorer({
+  teams,
+  slug,
+  cap,
+}: {
+  teams: PublicTeam[]
+  slug: string
+  cap: number
+}) {
   const [query, setQuery] = useState('')
   const needle = useDeferredValue(query).normalize('NFKC').toLocaleLowerCase().trim()
   const visible = teams.filter(team =>
@@ -16,7 +24,7 @@ export function TeamExplorer({ teams, slug }: { teams: PublicTeam[]; slug: strin
       .toLocaleLowerCase()
       .includes(needle),
   )
-  if (!teams.length) return <TeamGrid teams={teams} slug={slug} />
+  if (!teams.length) return <TeamGrid teams={teams} slug={slug} cap={cap} />
   return (
     <div>
       <div className={styles.toolbar}>

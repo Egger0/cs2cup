@@ -1,5 +1,3 @@
-import styles from './BracketGhost.module.css'
-
 const COLUMN = 120
 const SLOT = 80
 const ROW = 40
@@ -13,12 +11,7 @@ export function BracketGhost({ cap }: { cap: number }) {
     (height / 2 ** (rounds - 1 - round)) * (index + 0.5)
 
   return (
-    <svg
-      className={styles.ghost}
-      viewBox={`0 0 ${width} ${height}`}
-      preserveAspectRatio="xMidYMid meet"
-      aria-hidden="true"
-    >
+    <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet" aria-hidden="true">
       {Array.from({ length: rounds }, (_, round) =>
         Array.from({ length: 2 ** (rounds - 1 - round) }, (_, index) => {
           const x = round * COLUMN

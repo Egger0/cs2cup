@@ -25,7 +25,7 @@ export default async function TeamsPage({ params }: { params: Promise<{ slug: st
           />
         </div>
         <div data-rise="2">
-          <TeamExplorer teams={teams} slug={slug} />
+          <TeamExplorer teams={teams} slug={slug} cap={tournament.teamCap} />
         </div>
       </div>
     </section>
