@@ -99,12 +99,7 @@ export function RegisterForm({
   }
 
   return (
-    <form
-      action={submit}
-      className={styles.form}
-      aria-busy={pending}
-      aria-describedby="registration-privacy"
-    >
+    <form action={submit} aria-busy={pending} aria-describedby="registration-privacy">
       <p id="registration-privacy" className={styles.privacy}>
         联系方式仅供主办方审核、排期与紧急联络，不会展示在公开参赛名单中。提交前请确认队员已知悉本次报名。
       </p>

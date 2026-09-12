@@ -1,9 +1,8 @@
-.form {
-  max-width: 760px;
+.column {
+  max-width: 820px;
 }
 
 .privacy {
-  max-width: 64ch;
   margin-bottom: 24px;
   padding: 14px 16px;
   color: var(--muted);

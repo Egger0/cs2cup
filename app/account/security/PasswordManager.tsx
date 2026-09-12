@@ -9,7 +9,13 @@ async function responseMessage(response: Response) {
   return payload?.error ?? '密码服务暂时不可用，本次没有修改。'
 }
 
-export function PasswordManager({ recovery }: { recovery: boolean }) {
+export function PasswordManager({
+  recovery,
+  username,
+}: {
+  recovery: boolean
+  username: string | null
+}) {
   const router = useRouter()
   const [working, setWorking] = useState(false)
   const [error, setError] = useState('')
@@ -71,6 +77,9 @@ export function PasswordManager({ recovery }: { recovery: boolean }) {
           : '密码至少需要 6 个字符。修改后会保留当前设备，并退出其他设备。'}
       </p>
       <form className={styles.securityForm} onSubmit={submit}>
+        {username ? (
+          <input type="text" value={username} autoComplete="username" readOnly hidden />
+        ) : null}
         {!recovery ? (
           <label>
             <span>当前密码</span>

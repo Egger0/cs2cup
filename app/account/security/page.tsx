@@ -56,7 +56,7 @@ export default async function AccountSecurityPage() {
           <InitialAccountSetup />
         ) : (
           <>
-            <PasswordManager recovery={recovery} />
+            <PasswordManager recovery={recovery} username={account.username} />
             {!recovery ? (
               <>
                 <PasskeyManager />
