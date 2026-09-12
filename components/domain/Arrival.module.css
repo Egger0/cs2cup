@@ -104,7 +104,7 @@
   line-height: 0.8;
   letter-spacing: -0.01em;
   white-space: nowrap;
-  -webkit-text-stroke: 1px color-mix(in srgb, var(--tone) 42%, transparent);
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--tone) 26%, transparent);
   transform: translateX(calc(var(--arrival-p) * -24%));
   pointer-events: none;
   user-select: none;
@@ -288,8 +288,9 @@
   }
 
   .code {
-    bottom: 84px;
-    font-size: 26vw;
+    bottom: 60px;
+    font-size: 22vw;
+    -webkit-text-stroke-color: color-mix(in srgb, var(--tone) 18%, transparent);
   }
 
   .title {

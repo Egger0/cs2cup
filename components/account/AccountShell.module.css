@@ -1,7 +1,6 @@
 .main {
   width: 100%;
   max-width: var(--wrap);
-  min-height: calc(100svh - var(--header-height));
   margin-inline: auto;
   padding-block: clamp(28px, 4vw, 52px) clamp(48px, 7vw, 96px);
   padding-inline: var(--pad);
