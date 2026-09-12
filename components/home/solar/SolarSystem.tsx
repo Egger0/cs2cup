@@ -99,9 +99,7 @@ export function SolarSystem({ data }: { data: SolarData }) {
       }
       return (
         window.innerWidth < 700 &&
-        (Boolean(device.connection?.saveData) ||
-          (device.deviceMemory ?? 8) <= 4 ||
-          (navigator.hardwareConcurrency || 8) <= 4)
+        (Boolean(device.connection?.saveData) || (device.deviceMemory ?? 8) <= 4)
       )
     }
     void (thin() ? Promise.resolve(null) : hardwareBackend())
