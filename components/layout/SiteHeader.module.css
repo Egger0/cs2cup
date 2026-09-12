@@ -25,7 +25,8 @@
   content: '';
 }
 
-:global(body:has([data-solar-home])) .dock::before {
+:global(body:has([data-solar-home])) .dock::before,
+.dock[data-open]::before {
   display: none;
 }
 
