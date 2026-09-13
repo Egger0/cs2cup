@@ -1,6 +1,6 @@
 .scrim {
   position: absolute;
-  z-index: 3;
+  z-index: -1;
   inset: 0 0 0 auto;
   --column: calc(min(380px, 34vw) + var(--pad) + 32px);
   width: calc(var(--column) + 420px);
