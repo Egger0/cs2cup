@@ -1,13 +1,12 @@
 .pass {
+  composes: sheet from '@/components/ui/Surface.module.css';
   display: grid;
   min-width: 0;
   grid-template-columns: minmax(150px, 0.55fr) auto minmax(200px, 1fr) auto;
   align-items: center;
   gap: 12px clamp(16px, 3vw, 30px);
   margin-bottom: clamp(20px, 3vw, 32px);
-  padding: 14px clamp(16px, 2.4vw, 26px);
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
+  padding-block: 14px;
 }
 
 .heading {

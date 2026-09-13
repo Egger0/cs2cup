@@ -1,7 +1,6 @@
 .panel {
-  padding: clamp(20px, 3vw, 34px);
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
+  composes: sheet from '@/components/ui/Surface.module.css';
+  padding-top: clamp(20px, 3vw, 28px);
 }
 
 .header {
@@ -86,10 +85,8 @@
 }
 
 .reviewNote {
+  composes: dangerCallout from '@/components/ui/Surface.module.css';
   margin-top: 24px;
-  padding: 14px 18px;
-  border-left: 3px solid var(--c4);
-  background: var(--danger-dim);
 }
 
 .reviewNote strong {
@@ -188,9 +185,7 @@
 }
 
 .error {
-  padding: 10px 12px;
-  border-left: 3px solid var(--c4);
-  background: var(--danger-dim);
+  composes: dangerCallout from '@/components/ui/Surface.module.css';
   color: var(--c4);
   font-size: 0.875rem;
 }

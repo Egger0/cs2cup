@@ -13,10 +13,9 @@
 }
 
 .drafts {
+  composes: sheet from '@/components/ui/Surface.module.css';
   margin-bottom: clamp(20px, 3vw, 32px);
-  padding: clamp(20px, 3vw, 34px);
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
+  padding-top: clamp(20px, 3vw, 28px);
 }
 
 .drafts h2 {
@@ -64,9 +63,8 @@
 }
 
 .empty {
-  padding: clamp(24px, 4vw, 44px);
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
+  composes: sheet from '@/components/ui/Surface.module.css';
+  padding-block: clamp(24px, 4vw, 40px);
 }
 
 .empty h2 {

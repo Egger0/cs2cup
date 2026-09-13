@@ -1,10 +1,9 @@
 .panel {
+  composes: sheet from '@/components/ui/Surface.module.css';
   display: grid;
   gap: 16px;
   margin-bottom: clamp(20px, 3vw, 32px);
-  padding: clamp(20px, 3vw, 34px);
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
+  padding-top: clamp(20px, 3vw, 28px);
 }
 
 .panel header h2 {

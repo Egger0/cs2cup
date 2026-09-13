@@ -5,9 +5,8 @@
 }
 
 .section {
-  padding: clamp(20px, 3vw, 34px);
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
+  composes: sheet from '@/components/ui/Surface.module.css';
+  padding-top: clamp(20px, 3vw, 28px);
 }
 
 .section > header {
@@ -181,9 +180,9 @@
 }
 
 .codeReceipt {
+  composes: emphasisSheet from '@/components/ui/Surface.module.css';
   margin-top: 20px;
   padding: 18px;
-  border: 1px solid var(--accent);
   background: var(--accent-dim);
 }
 
@@ -205,10 +204,8 @@
 }
 
 .success {
+  composes: callout from '@/components/ui/Surface.module.css';
   margin-top: 16px;
-  padding: 10px 12px;
-  border-left: 3px solid var(--accent);
-  background: var(--accent-dim);
   color: var(--ink);
   font-size: 0.875rem;
 }
@@ -261,10 +258,8 @@
 }
 
 .error {
+  composes: dangerCallout from '@/components/ui/Surface.module.css';
   margin-top: 16px;
-  padding: 10px 12px;
-  border-left: 3px solid var(--c4);
-  background: var(--danger-dim);
   color: var(--c4);
   font-size: 0.875rem;
 }

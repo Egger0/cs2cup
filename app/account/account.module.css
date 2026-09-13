@@ -2,10 +2,8 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 8px 22px;
+  composes: callout from '@/components/ui/Surface.module.css';
   margin-bottom: 32px;
-  padding: 16px 20px;
-  border-left: 3px solid var(--accent);
-  background: var(--accent-dim);
 }
 
 .welcome strong {
@@ -32,11 +30,13 @@
   gap: clamp(20px, 3vw, 28px);
 }
 
-.profile,
+.profile {
+  composes: sheet from '@/components/ui/Surface.module.css';
+  padding-top: clamp(20px, 3vw, 28px);
+}
+
 .security {
-  padding: clamp(20px, 3vw, 34px);
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
+  composes: profile;
 }
 
 .profile h2,

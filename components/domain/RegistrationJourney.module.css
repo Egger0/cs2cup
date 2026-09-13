@@ -1,10 +1,7 @@
 .journey {
-  padding: 16px 18px;
+  composes: callout from '@/components/ui/Surface.module.css';
   margin-block: 16px;
-  border: 1px solid #b7c4ca;
-  border-left: 3px solid #0b4d87;
-  background: #e8eff1;
-  color: #283e4b;
+  color: var(--ink);
 }
 .journey p {
   font-size: 0.9375rem;
@@ -17,17 +14,17 @@
   margin-top: 8px;
   list-style: none;
   font-size: 0.8125rem;
-  color: #516570;
+  color: var(--muted);
 }
 .journey [aria-current] {
-  color: #0b4d87;
+  color: var(--ct);
   font-weight: 650;
 }
 .journey a {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  color: #0b4d87;
+  color: var(--ct);
   font-size: 0.875rem;
   text-decoration: underline;
   text-underline-offset: 4px;

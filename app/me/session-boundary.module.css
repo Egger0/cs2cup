@@ -8,9 +8,8 @@
   align-content: center;
   gap: 12px;
   margin: clamp(60px, 12vw, 130px) auto 0;
-  padding: clamp(24px, 5vw, 52px);
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
+  composes: emphasisSheet from '@/components/ui/Surface.module.css';
+  padding-top: clamp(24px, 4vw, 40px);
 }
 
 .code {
