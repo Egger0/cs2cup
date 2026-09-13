@@ -74,7 +74,11 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
               {teams.length ? (
                 <div className={styles.teamList}>
                   {teams.slice(0, 8).map(team => (
-                    <Link key={team.id} href={`${base}/teams/${encodeURIComponent(team.tag)}`}>
+                    <Link
+                      key={team.id}
+                      className={styles.team}
+                      href={`${base}/teams/${encodeURIComponent(team.tag)}`}
+                    >
                       <strong>{team.tag}</strong>
                       <span>{team.name}</span>
                       <span aria-hidden="true">↗</span>

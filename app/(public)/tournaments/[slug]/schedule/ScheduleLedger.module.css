@@ -1,7 +1,7 @@
 .ledger {
+  composes: sheet from '@/components/ui/Surface.module.css';
   margin-top: 12px;
-  border: 1px solid var(--line-strong);
-  background: var(--bg-2);
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .dayGroup + .dayGroup {
@@ -16,7 +16,6 @@
   gap: 16px;
   padding: 8px 16px;
   border-bottom: 1px solid var(--line);
-  background: var(--surface);
 }
 
 .dayTitle,
@@ -43,9 +42,9 @@
   display: grid;
   justify-items: start;
   gap: 12px;
+  composes: sheet from '@/components/ui/Surface.module.css';
   margin-top: 12px;
-  padding: 28px;
-  border: 1px solid var(--line-strong);
+  padding-block: 28px;
   color: var(--muted);
 }
 

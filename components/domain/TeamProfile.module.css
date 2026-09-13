@@ -72,16 +72,14 @@
 
 .roster {
   display: grid;
-  gap: 1px;
+  composes: sheet from '@/components/ui/Surface.module.css';
+  gap: 0 var(--space-3);
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  background: var(--line);
-  border: 1px solid var(--line);
 }
 
 .player {
-  padding: 18px 20px;
+  padding-block: 16px 18px;
   color: var(--ink);
-  background: var(--surface);
 }
 
 .playerRole {

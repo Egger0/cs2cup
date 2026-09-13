@@ -1,8 +1,7 @@
 .table {
+  composes: sheet from '@/components/ui/Surface.module.css';
   overflow: hidden;
   color: var(--ink);
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
 }
 
 .row {
@@ -10,7 +9,7 @@
   grid-template-columns: minmax(0, 1fr) 84px 84px 96px;
   align-items: center;
   gap: 12px;
-  padding: 13px 16px;
+  padding-block: 13px;
   border-bottom: 1px solid var(--line);
   position: relative;
   overflow: hidden;
@@ -21,7 +20,7 @@
 }
 
 .head {
-  background: var(--bg-2);
+  border-bottom-color: var(--line-strong);
   font-family: var(--font-mono), monospace;
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
@@ -81,7 +80,7 @@
   .row {
     grid-template-columns: minmax(0, 1fr) 56px 56px 64px;
     gap: 8px;
-    padding: 12px 12px;
+    padding-block: 12px;
   }
 }
 

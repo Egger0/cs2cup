@@ -49,18 +49,14 @@
 .teamList {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 0 var(--space-4);
 }
-.teamList a {
+.team {
+  composes: linkSheet from '@/components/ui/Surface.module.css';
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 4px 12px;
-  padding: var(--space-3);
-  border: 1px solid var(--line);
-  background: var(--surface);
-}
-.teamList a:hover {
-  border-color: var(--ct);
+  padding-block: var(--space-2) var(--space-3);
 }
 .teamList strong {
   color: var(--ct);
@@ -82,9 +78,10 @@
   font-size: 0.9375rem;
 }
 .pool {
+  composes: sheet from '@/components/ui/Surface.module.css';
   grid-column: 1 / -1;
-  border: 1px solid var(--line);
-  padding: 12px 20px;
+  margin-top: var(--space-3);
+  padding-block: 12px;
 }
 .pool summary {
   min-height: 44px;

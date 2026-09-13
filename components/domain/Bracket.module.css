@@ -47,19 +47,14 @@
   display: block;
   overflow: hidden;
   color: var(--ink);
-  border: 1px solid var(--line);
-  background: linear-gradient(180deg, var(--surface), var(--bg-2));
-  transition:
-    border-color 180ms ease,
-    box-shadow 220ms ease,
-    transform 220ms var(--ease);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  transition: border-color 180ms ease;
 }
 
 @media (hover: hover) {
   .match:hover {
     border-color: var(--ink);
-    box-shadow: 0 10px 24px rgba(23, 24, 23, 0.09);
-    transform: translateY(-2px);
   }
 }
 

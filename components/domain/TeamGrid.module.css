@@ -1,28 +1,21 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 16px;
+  gap: 40px 32px;
 }
 
 .card {
   position: relative;
   display: block;
-  min-height: 292px;
+  composes: linkSheet from '@/components/ui/Surface.module.css';
   overflow: hidden;
-  padding: 20px 22px 22px;
+  padding-block: 20px 22px;
   color: var(--ink);
-  border: 1px solid var(--line-strong);
-  border-top: 2px solid var(--ink);
-  background: linear-gradient(180deg, var(--surface), var(--bg-2));
-  transition:
-    transform 220ms var(--ease),
-    border-color 180ms ease,
-    box-shadow 220ms ease;
 }
 
 .card::after {
   position: absolute;
-  right: 20px;
+  right: 0;
   bottom: 18px;
   width: 7px;
   height: 7px;
@@ -36,13 +29,6 @@
 }
 
 @media (hover: hover) {
-  .card:hover {
-    z-index: 1;
-    border-color: var(--ink);
-    box-shadow: 0 16px 32px rgba(23, 24, 23, 0.1);
-    transform: translateY(-3px);
-  }
-
   .card:hover::after {
     opacity: 1;
     transform: translateX(0);
@@ -50,7 +36,6 @@
 }
 
 .card:focus-visible {
-  border-color: var(--ct);
   outline: 2px solid var(--ct);
   outline-offset: 3px;
 }
@@ -131,19 +116,13 @@
   .grid {
     grid-template-columns: 1fr;
   }
-
-  .card {
-    min-height: 0;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card,
   .card::after {
     transition: none;
   }
 
-  .card:hover,
   .card:hover::after {
     transform: none;
   }
