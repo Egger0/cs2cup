@@ -2,10 +2,10 @@
   display: grid;
   gap: 16px;
   max-width: 720px;
+  composes: emphasisSheet from '@/components/ui/Surface.module.css';
   margin-bottom: 56px;
   padding: clamp(24px, 4vw, 44px);
-  border: 1px solid var(--line-strong);
-  background: linear-gradient(135deg, rgba(61, 155, 233, 0.12), rgba(18, 26, 40, 0.92) 46%);
+  background: linear-gradient(135deg, var(--ct-dim), transparent 62%);
 }
 
 .label {
@@ -39,7 +39,7 @@
   margin-top: 8px;
   padding: 18px;
   border: 1px solid var(--line-strong);
-  background: rgba(5, 7, 12, 0.5);
+  background: var(--surface);
 }
 
 .receipt > span {
