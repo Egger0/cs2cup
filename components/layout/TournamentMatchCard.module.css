@@ -4,19 +4,21 @@
 }
 
 .card {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   gap: 16px;
-  padding: 20px;
   color: inherit;
-  background: rgba(23, 24, 23, 0.74);
-  border: 1px solid var(--line-strong);
-  transition: border-color 180ms ease;
 }
 
-.card:hover,
-.card:focus-visible {
-  border-color: var(--ct);
+.card::before {
+  position: absolute;
+  z-index: -1;
+  inset: -48px -64px;
+  background: radial-gradient(closest-side, rgb(6 7 10 / 70%), rgb(6 7 10 / 0%));
+  content: '';
+  pointer-events: none;
 }
 
 .cardHead,
@@ -29,11 +31,17 @@
   font-size: 0.8125rem;
   letter-spacing: 0.02em;
   grid-column: 1 / -1;
+  background: no-repeat linear-gradient(to right, var(--line-strong), rgb(241 239 232 / 0%));
 }
 
 .cardHead {
   padding-bottom: 14px;
-  border-bottom: 1px solid var(--line);
+  background-position: bottom;
+  background-size: 100% 1px;
+}
+
+.cardHead > :first-child {
+  color: var(--ct);
 }
 
 .cardSide {
@@ -46,8 +54,14 @@
 .cardTag {
   color: var(--ink);
   font-family: var(--font-display), sans-serif;
-  font-size: 1.8rem;
+  font-size: 2.4rem;
   font-weight: 650;
+  line-height: 1.1;
+  transition: color 180ms ease;
+}
+
+.card:is(:hover, :focus-visible) .cardTag {
+  color: var(--ct);
 }
 
 .cardName {
@@ -69,7 +83,8 @@
 
 .cardFoot {
   padding-top: 14px;
-  border-top: 1px solid var(--line);
+  background-position: top;
+  background-size: 100% 1px;
 }
 
 .cardFoot > :last-child {
@@ -106,8 +121,18 @@
   }
 }
 
+@media (max-width: 700px) {
+  .card::before {
+    inset: -32px calc(-1 * var(--pad));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .nextBlock {
     animation: none;
+  }
+
+  .cardTag {
+    transition: none;
   }
 }
