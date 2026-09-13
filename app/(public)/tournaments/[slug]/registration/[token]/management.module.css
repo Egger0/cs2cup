@@ -3,10 +3,9 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 24px;
   align-items: end;
+  composes: sheet from '@/components/ui/Surface.module.css';
   margin-bottom: 36px;
-  padding: 24px;
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
+  padding-top: 24px;
 }
 
 .status {
@@ -63,9 +62,7 @@
 }
 
 .locked {
-  padding: 20px;
-  border-left: 2px solid var(--t);
-  background: color-mix(in srgb, var(--t) 8%, transparent);
+  composes: callout from '@/components/ui/Surface.module.css';
   color: var(--muted);
 }
 
@@ -77,9 +74,8 @@
 }
 
 .summary {
-  padding: 22px;
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
+  composes: sheet from '@/components/ui/Surface.module.css';
+  padding-top: 22px;
 }
 
 .summaryGrid {
@@ -114,9 +110,8 @@
 .rosterSummary ul {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1px;
+  gap: 0 16px;
   list-style: none;
-  background: var(--line);
 }
 
 .rosterSummary li {
@@ -124,8 +119,8 @@
   min-width: 0;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px 12px;
-  background: var(--bg-2);
+  padding-block: 10px;
+  border-bottom: 1px solid var(--line);
 }
 
 .rosterSummary li span {
@@ -157,14 +152,16 @@
 }
 
 .roster {
+  composes: sheet from '@/components/ui/Surface.module.css';
   display: grid;
   gap: 16px;
-  padding: 20px;
-  border: 1px solid var(--line-strong);
+  padding-top: 20px;
+  border-inline: 0;
+  border-bottom: 0;
 }
 
 .roster legend {
-  padding-inline: 8px;
+  padding-inline: 0 12px;
 }
 
 .players {
@@ -212,10 +209,8 @@
   display: grid;
   gap: 14px;
   align-items: center;
+  composes: callout from '@/components/ui/Surface.module.css';
   margin-block: 26px;
-  padding: 18px 20px;
-  border: 1px solid color-mix(in srgb, var(--ct) 48%, var(--line));
-  background: var(--ct-dim);
 }
 
 .accountHandoff > span {

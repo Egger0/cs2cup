@@ -3,11 +3,9 @@
 }
 
 .privacy {
+  composes: callout from '@/components/ui/Surface.module.css';
   margin-bottom: 24px;
-  padding: 14px 16px;
   color: var(--muted);
-  border-left: 2px solid var(--ct);
-  background: var(--ct-dim);
   font-size: 0.82rem;
   line-height: 1.7;
 }
@@ -29,8 +27,8 @@
 }
 
 .roster {
-  border: 1px solid var(--line);
-  padding: 20px;
+  composes: sheet from '@/components/ui/Surface.module.css';
+  padding-top: 20px;
   display: grid;
   gap: 16px;
 }
@@ -42,11 +40,8 @@
 }
 
 .error {
-  padding: 12px 14px;
+  composes: dangerCallout from '@/components/ui/Surface.module.css';
   color: var(--c4);
-  border: 1px solid color-mix(in srgb, var(--c4) 45%, var(--line));
-  border-left: 3px solid var(--c4);
-  background: var(--danger-dim);
   font-size: 0.88rem;
   outline: none;
 }
@@ -64,9 +59,7 @@
 }
 
 .draftSaved {
-  padding: 11px 14px;
-  border-left: 3px solid var(--ct);
-  background: var(--ct-dim);
+  composes: callout from '@/components/ui/Surface.module.css';
   color: var(--ink);
   font-size: 0.82rem;
 }
@@ -81,9 +74,9 @@
   display: grid;
   gap: 16px;
   max-width: 680px;
+  composes: emphasisSheet from '@/components/ui/Surface.module.css';
   padding: clamp(24px, 5vw, 44px);
-  border: 1px solid var(--ct);
-  background: color-mix(in srgb, var(--ct) 8%, var(--surface));
+  background: var(--ct-dim);
 }
 
 .receipt h2 {
