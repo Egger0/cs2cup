@@ -17,6 +17,22 @@ const page = await context.newPage()
 const errors = []
 page.on('pageerror', error => errors.push(error.message))
 
+async function assertReasonBeforeAction(field, action, fieldBefore) {
+  const [fieldBox, alertBox, actionBox] = await Promise.all([
+    field.boundingBox(),
+    page.locator('form [role="alert"]').boundingBox(),
+    action.boundingBox(),
+  ])
+  assert.ok(
+    Math.abs(fieldBefore.y - fieldBox.y) <= 1,
+    'An error does not move the field in question',
+  )
+  assert.ok(
+    fieldBox.y + fieldBox.height <= alertBox.y && alertBox.y + alertBox.height <= actionBox.y,
+    'The reason sits between the field and the action',
+  )
+}
+
 try {
   await page.goto(base + '/register?tournamentSlug=2026-nlc')
   const username = page.getByLabel('用户名', { exact: true })
@@ -29,7 +45,7 @@ try {
   await password.fill(`${probeName}-2026`)
   await confirmation.fill(`${probeName}-2026`)
   await page.evaluate(() => document.fonts.ready)
-  const before = await submit.boundingBox()
+  const before = await password.boundingBox()
   const responsePromise = page.waitForResponse(
     response =>
       response.url().includes('/api/auth/register') && response.request().method() === 'POST',
@@ -47,8 +63,7 @@ try {
   await page.locator('#signup-error').getByText(CONTEXT_PASSWORD_MESSAGE).waitFor()
   await page.waitForFunction(() => document.activeElement?.getAttribute('name') === 'password')
   assert.equal(await username.inputValue(), probeName, 'Failed signup preserves other inputs')
-  const after = await submit.boundingBox()
-  assert.ok(Math.abs(before.y - after.y) <= 1, 'An error does not move the submit button')
+  await assertReasonBeforeAction(password, submit, before)
   assert.match(await password.getAttribute('aria-describedby'), /signup-error/)
   await password.fill('A different local test phrase')
   assert.equal(
@@ -68,7 +83,7 @@ try {
     await page.getByRole('link', { name: '尝试登录 →' }).getAttribute('href'),
     /tournamentSlug=2026-nlc/,
   )
-  assert.ok(Math.abs(before.y - (await submit.boundingBox()).y) <= 1)
+  await assertReasonBeforeAction(password, submit, before)
   await confirmation.fill('A mismatched local test phrase')
   await submit.click()
   await page.getByRole('alert').getByText('两次输入的密码不一致。').waitFor()
@@ -108,14 +123,14 @@ try {
       })
     })
     const button = page.getByRole('button', { name: flow.button, exact: true })
-    const position = await button.boundingBox()
+    const position = await page.locator(`[name="${flow.field}"]`).boundingBox()
     await button.click()
     assert.equal(await page.locator('form').getAttribute('aria-busy'), 'true')
     assert.equal(await page.locator(`[name="${flow.field}"]`).isDisabled(), true)
     release()
     await page.getByRole('alert').getByText(flow.error).waitFor()
     assert.equal(await page.getByLabel('用户名', { exact: true }).inputValue(), 'feedback.probe')
-    assert.ok(Math.abs(position.y - (await button.boundingBox()).y) <= 1)
+    await assertReasonBeforeAction(page.locator(`[name="${flow.field}"]`), button, position)
     await page.locator(`[name="${flow.field}"]`).fill('Edited-test-only')
     assert.equal(await page.locator('form [role="alert"]').count(), 0)
     await page.unroute(flow.endpoint)
@@ -132,7 +147,7 @@ try {
   assert.deepEqual(errors, [])
   guard.assertSafe()
   console.log(
-    'PASS  optional profile name, understandable errors, unchanged button position, preserved inputs, recovery paths',
+    'PASS  optional profile name, understandable errors, reasons placed before the action, preserved inputs, recovery paths',
   )
 } finally {
   await browser.close()

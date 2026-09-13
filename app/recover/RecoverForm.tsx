@@ -88,10 +88,6 @@ export function RecoverForm() {
           required
         />
       </label>
-      <button className={formStyles.passwordButton} type="submit" disabled={working}>
-        <span>{working ? '正在验证…' : '继续重设密码'}</span>
-        <span aria-hidden="true">↗</span>
-      </button>
       {error ? (
         <p
           id="recovery-error"
@@ -101,6 +97,10 @@ export function RecoverForm() {
           {error}
         </p>
       ) : null}
+      <button className={formStyles.passwordButton} type="submit" disabled={working}>
+        <span>{working ? '正在验证…' : '继续重设密码'}</span>
+        <span aria-hidden="true">↗</span>
+      </button>
     </form>
   )
 }
