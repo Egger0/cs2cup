@@ -1,6 +1,6 @@
 .hub {
   padding-block: var(--space-8);
-  color: #f1efe8;
+  color: var(--space-ink);
   scroll-margin-top: var(--header-height);
 }
 .heading {
@@ -11,7 +11,7 @@
   margin-bottom: 32px;
 }
 .heading > div > span {
-  color: #9bcaeb;
+  color: var(--space-accent);
   font:
     0.65rem var(--font-mono),
     monospace;
@@ -29,7 +29,7 @@
   flex: none;
   gap: 18px;
   min-height: 44px;
-  color: #9bcaeb;
+  color: var(--space-accent);
   font-size: 0.82rem;
   letter-spacing: 0.08em;
 }
@@ -37,35 +37,50 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-top: 24px;
-  background: linear-gradient(160deg, rgb(16 21 25 / 88%), rgb(9 11 13 / 82%));
-  border: 1px solid rgb(155 202 235 / 16%);
-  box-shadow:
-    0 30px 80px rgb(0 0 0 / 35%),
-    inset 0 1px 0 rgb(255 255 255 / 5%);
 }
 .pathways a {
   position: relative;
   display: grid;
   grid-template-rows: auto auto 1fr;
-  padding: var(--space-4) clamp(20px, 2.2vw, 32px);
+  padding: var(--space-4) clamp(20px, 2.2vw, 32px) var(--space-6);
   transition: background-color 180ms ease;
 }
-.pathways a:not(:last-child) {
-  border-right: 1px solid rgb(155 202 235 / 12%);
+.pathways a:first-child {
+  padding-left: 0;
+}
+.pathways a:not(:last-child)::before {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    rgb(155 202 235 / 0%),
+    rgb(155 202 235 / 26%) 30%,
+    rgb(155 202 235 / 26%) 70%,
+    rgb(155 202 235 / 0%)
+  );
+  content: '';
 }
 .pathways a:is(:hover, :focus-visible) {
-  background: rgb(155 202 235 / 7%);
+  background: radial-gradient(
+    120% 90% at 50% 100%,
+    rgb(155 202 235 / 10%),
+    rgb(155 202 235 / 0%) 70%
+  );
 }
 .pathways a::after {
   position: absolute;
-  inset: auto 0 -1px;
-  height: 2px;
-  background: #9bcaeb;
+  inset: auto clamp(20px, 2.2vw, 32px) 0;
+  height: 1px;
+  background: var(--space-accent);
   box-shadow: 0 0 14px rgb(155 202 235 / 70%);
   content: '';
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 260ms var(--ease-out);
+}
+.pathways a:first-child::after {
+  left: 0;
 }
 .pathways a:is(:hover, :focus-visible)::after {
   transform: scaleX(1);
@@ -82,10 +97,10 @@
   transition: -webkit-text-stroke-color 200ms ease;
 }
 .pathways a:is(:hover, :focus-visible) .number {
-  -webkit-text-stroke-color: #9bcaeb;
+  -webkit-text-stroke-color: var(--space-accent);
 }
 .role {
-  color: #9bcaeb;
+  color: var(--space-accent);
   font-size: 0.7rem;
   letter-spacing: 0.08em;
   padding-right: 52px;
@@ -99,7 +114,7 @@
   letter-spacing: -0.02em;
 }
 .pathways h3 svg {
-  color: #9bcaeb;
+  color: var(--space-accent);
   transition: transform 260ms var(--ease-out);
 }
 .pathways a:is(:hover, :focus-visible) h3 svg {
@@ -108,7 +123,7 @@
 .pathways p {
   margin-top: 12px;
   max-width: 29ch;
-  color: #a9bac1;
+  color: var(--space-muted);
   font-size: 0.85rem;
   line-height: 1.75;
 }
@@ -118,11 +133,11 @@
   gap: 16px 32px;
   flex-wrap: wrap;
   padding-block: 28px 0;
-  color: #c9d4d8;
+  color: var(--space-muted);
   font-size: 0.82rem;
 }
 .journalLabel {
-  color: #9bcaeb;
+  color: var(--space-accent);
   font:
     0.6rem var(--font-mono),
     monospace;
@@ -138,7 +153,7 @@
 .journal a:not(.allNews)::before {
   width: 22px;
   height: 1px;
-  background: linear-gradient(90deg, rgb(155 202 235 / 0%), #9bcaeb);
+  background: linear-gradient(90deg, rgb(155 202 235 / 0%), var(--space-accent));
   box-shadow: 1px 0 6px rgb(155 202 235 / 80%);
   content: '';
   transition: width 260ms var(--ease-out);
@@ -151,7 +166,7 @@
 }
 .allNews {
   margin-left: auto;
-  color: #9bcaeb;
+  color: var(--space-accent);
 }
 @media (max-width: 640px) {
   .heading {
@@ -165,9 +180,17 @@
   .pathways {
     grid-template-columns: 1fr;
   }
-  .pathways a:not(:last-child) {
-    border-right: 0;
-    border-bottom: 1px solid rgb(155 202 235 / 12%);
+  .pathways a {
+    padding: var(--space-3) 0 var(--space-4);
+  }
+  .pathways a:not(:last-child)::before {
+    inset: auto 0 0;
+    width: auto;
+    height: 1px;
+    background: linear-gradient(to right, rgb(155 202 235 / 26%), rgb(155 202 235 / 0%));
+  }
+  .pathways a::after {
+    inset-inline: 0;
   }
   .pathways p {
     max-width: none;
