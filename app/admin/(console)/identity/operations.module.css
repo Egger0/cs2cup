@@ -147,6 +147,20 @@
   font-size: 0.61rem;
 }
 
+.recoveryForm {
+  grid-template-columns: minmax(150px, 1fr) minmax(220px, 2fr) auto;
+}
+
+.recoveryLink {
+  display: flex;
+  gap: 8px;
+}
+
+.recoveryLink input {
+  flex: 1;
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
 .accessPanel button,
 .roster button {
   min-height: 44px;
@@ -257,7 +271,8 @@
   .rosterList article,
   .accessList form,
   .rosterList form,
-  .rowActions {
+  .rowActions,
+  .recoveryLink {
     align-items: stretch;
     flex-direction: column;
   }
