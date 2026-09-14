@@ -27,6 +27,7 @@ export interface PasswordChangeRow {
   display_name: string
   auth_method: string
   recovery_auth_intent_id: string | null
+  assisted_recovery_case_id: string | null
   client_label: string | null
 }
 
@@ -45,12 +46,16 @@ export function passwordChangeState(
               credential.locked_until, credential.last_authenticated_at,
               credential.revision AS credential_revision, account.security_version,
               account.display_name, session.auth_method, session.recovery_auth_intent_id,
+              assisted.case_id AS assisted_recovery_case_id,
               CASE WHEN json_type(session.display_metadata_json, '$.clientLabel') = 'text'
                 THEN substr(json_extract(session.display_metadata_json, '$.clientLabel'), 1, 100)
                 ELSE NULL END AS client_label
        FROM identity_session AS session
        JOIN identity_account AS account ON account.id = session.account_id
        JOIN identity_password_credential AS credential ON credential.account_id = account.id
+       LEFT JOIN identity_assisted_recovery_authorization AS assisted
+         ON session.auth_method = 'assisted_recovery'
+        AND assisted.consumed_auth_intent_id = session.recovery_auth_intent_id
        WHERE session.id = ? AND session.account_id = ? AND session.token_hash = ?
          AND session.revoked_at IS NULL AND session.security_version = account.security_version
          AND session.idle_expires_at > ? AND session.absolute_expires_at > ?

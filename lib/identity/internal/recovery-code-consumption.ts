@@ -33,7 +33,7 @@ export interface RecoverySessionReplacement {
 
 const TOKEN_HASH = /^[0-9a-f]{64}$/
 
-function replacementStatements(
+export function replacementStatements(
   database: IdentityDatabase,
   replacement: RecoverySessionReplacement,
   now: number,

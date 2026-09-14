@@ -12,6 +12,7 @@ import {
 import { listManagedRoleAssignments } from '@/lib/identity/role-management'
 import { parsePageNumber } from '@/lib/pagination'
 import { MembershipRoster } from './MembershipRoster'
+import { AccountRecovery } from './AccountRecovery'
 import { AuditLog } from './AuditLog'
 import { IdentityPagination } from './IdentityPagination'
 import { ReviewerAccess } from './ReviewerAccess'
@@ -197,6 +198,7 @@ export default async function IdentityReviewPage({
       />
       {access.ok ? (
         <>
+          <AccountRecovery />
           <ReviewerAccess
             assignments={access.assignments}
             tournaments={access.tournaments}

@@ -14,6 +14,8 @@ export interface PlatformAuditEvent {
 }
 
 const EVENT_LABELS: Readonly<Record<string, string>> = {
+  'account.assisted_recovery.issued': '签发账号找回',
+  'account.assisted_recovery.used': '使用账号找回',
   'identity.role.granted': '授予权限',
   'identity.role.revoked': '撤销权限',
   'membership.access.suspended': '暂停成员资格',
@@ -28,6 +30,12 @@ const EVENT_LABELS: Readonly<Record<string, string>> = {
   'registration.access.manager_accepted': '接受报名协作',
   'registration.access.ownership_transferred': '转让报名所有权',
 }
+
+const REASONED_EVENTS = new Set([
+  'identity.role.granted',
+  'identity.role.revoked',
+  'account.assisted_recovery.issued',
+])
 
 const ROLE_LABELS: Readonly<Record<string, string>> = {
   identity_reviewer: '资格审核员',
@@ -133,10 +141,7 @@ export async function listPlatformAuditEvents(
             row.actor === 'system' ? '系统' : row.actor === 'anonymous' ? '匿名访问' : row.actor,
           subject: row.target,
           resource: resourceLabel(row.resource_type, row.tournament_title),
-          reason:
-            row.event_type === 'identity.role.granted' || row.event_type === 'identity.role.revoked'
-              ? row.reason
-              : null,
+          reason: REASONED_EVENTS.has(row.event_type) ? row.reason : null,
           createdAt: row.created_at,
         }) satisfies PlatformAuditEvent,
     ),

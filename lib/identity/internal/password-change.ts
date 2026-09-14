@@ -54,7 +54,12 @@ export async function changeAccountPassword(
   const row = await passwordChangeState(database, context, privateContext.tokenHash, now)
   if (!row) return { ok: false, reason: 'not_authenticated' }
   const recovery = context.session.recoveryRestricted
-  if (recovery && row.auth_method !== 'recovery_code') {
+  const assisted = row.auth_method === 'assisted_recovery'
+  if (
+    recovery &&
+    row.auth_method !== 'recovery_code' &&
+    !(assisted && row.assisted_recovery_case_id)
+  ) {
     return { ok: false, reason: 'unsupported_recovery' }
   }
   if (!recovery) {
@@ -106,9 +111,11 @@ export async function changeAccountPassword(
     now: authenticatedAt,
   })
   const statements = []
-  let confirmationIntentId: string
+  let confirmationIntentId: string | null
   let credentialRevision = row.credential_revision
-  if (recovery) {
+  if (assisted) {
+    confirmationIntentId = null
+  } else if (recovery) {
     if (!row.recovery_auth_intent_id) return { ok: false, reason: 'conflict' }
     confirmationIntentId = row.recovery_auth_intent_id
   } else {
@@ -183,17 +190,18 @@ export async function changeAccountPassword(
       .prepare(
         `INSERT INTO identity_password_change
           (id, credential_id, account_id, change_kind, authorizing_session_id,
-           confirmation_auth_intent_id, from_secret_version, to_secret_version,
-           target_security_version, changed_at, request_correlation_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           confirmation_auth_intent_id, assisted_recovery_case_id, from_secret_version,
+           to_secret_version, target_security_version, changed_at, request_correlation_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .bind(
         changeId,
         row.credential_id,
         context.account.id,
-        recovery ? 'recovery_code' : 'authenticated_change',
+        recovery ? row.auth_method : 'authenticated_change',
         context.session.id,
         confirmationIntentId,
+        assisted ? row.assisted_recovery_case_id : null,
         row.secret_version,
         row.secret_version + 1,
         row.security_version + 1,
@@ -201,7 +209,7 @@ export async function changeAccountPassword(
         createOpaqueToken(),
       ),
   )
-  if (recovery) {
+  if (recovery && !assisted) {
     statements.push(
       database
         .prepare(
@@ -274,7 +282,7 @@ export async function changeAccountPassword(
       resource: { type: 'account', id: context.account.id },
       correlationId: changeId,
       deduplicationScope: `password-change:${changeId}`,
-      details: { sessionsRevoked: true, method: recovery ? 'recovery_code' : 'password' },
+      details: { sessionsRevoked: true, method: recovery ? row.auth_method : 'password' },
       createdAt: authenticatedAt,
     }),
   )
