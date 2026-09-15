@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { tournamentRosterSize } from '@/lib/queries/roster-size'
 import { notFound, redirect } from 'next/navigation'
 
 import { RegistrationManager } from '@/app/(public)/tournaments/[slug]/registration/[token]/RegistrationManager'
@@ -101,6 +102,7 @@ export default async function AccountRegistrationPage({
             teamId={teamId}
             team={registration.team}
             revision={registration.revision}
+            starterCount={await tournamentRosterSize(cloudflareBindings().db, { teamId })}
           />
         ) : (
           <div className={styles.locked}>

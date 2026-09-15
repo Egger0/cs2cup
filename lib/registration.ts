@@ -67,6 +67,7 @@ export function registrationAvailability(
 
 export function validateRegistrationRoster(
   input: readonly RegistrationRosterPlayer[],
+  starterCount = 5,
 ): RegistrationRosterResult {
   const players = input
     .map(player => ({ ...player, nickname: player.nickname.trim() }))
@@ -74,8 +75,8 @@ export function validateRegistrationRoster(
   const starters = players.filter(player => !player.substitute)
   const substitutes = players.filter(player => player.substitute)
 
-  if (starters.length !== 5) {
-    return { ok: false, code: 'STARTER_COUNT', error: '请填写正好 5 名首发队员' }
+  if (starters.length !== starterCount) {
+    return { ok: false, code: 'STARTER_COUNT', error: `请填写正好 ${starterCount} 名首发队员` }
   }
   if (substitutes.length > 1) {
     return { ok: false, code: 'SUBSTITUTE_COUNT', error: '最多只能填写 1 名替补队员' }
@@ -91,4 +92,8 @@ export function validateRegistrationRoster(
   }
 
   return { ok: true, players }
+}
+
+export function rosterLabel(starterCount: number) {
+  return `首发 ${starterCount} 人 + 替补 1 人`
 }

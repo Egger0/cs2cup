@@ -1,0 +1,293 @@
+.cards {
+  display: grid;
+  gap: clamp(24px, 4vw, 40px);
+}
+
+.eyebrow {
+  color: var(--accent);
+  font:
+    600 0.66rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.16em;
+}
+
+.inbox,
+.create,
+.card {
+  composes: sheet from '@/components/ui/Surface.module.css';
+  display: grid;
+  gap: 18px;
+  padding-top: clamp(20px, 3vw, 28px);
+}
+
+.inbox {
+  margin-bottom: clamp(24px, 4vw, 40px);
+  border-top: 3px solid var(--honour);
+}
+
+.inbox h2,
+.create h2 {
+  margin-top: 6px;
+  color: var(--ink);
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.create p {
+  max-width: 56ch;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.inbox ul,
+.pendingList,
+.entries ul {
+  list-style: none;
+}
+
+.inbox li,
+.pendingList li,
+.entries li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  padding-block: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.inbox li > div:first-child {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.inbox small,
+.inbox span,
+.pendingList span,
+.entries small,
+.hint {
+  color: var(--muted);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.inbox strong {
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.inboxActions {
+  display: flex;
+  gap: 8px;
+}
+
+.primaryButton,
+.quietButton {
+  min-height: 44px;
+  padding: 9px 18px;
+  border: 1px solid var(--ink);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primaryButton {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.quietButton {
+  border-color: var(--line-strong);
+  background: transparent;
+  color: var(--ink);
+}
+
+.quietButton:hover,
+.quietButton:focus-visible {
+  border-color: var(--ink);
+}
+
+.primaryButton:disabled,
+.quietButton:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.cardHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 6px 16px;
+}
+
+.cardHead .eyebrow {
+  grid-column: 1 / -1;
+}
+
+.cardHead h2 {
+  color: var(--ink);
+  font:
+    800 clamp(1.5rem, 4vw, 2.2rem) / 1.15 var(--font-heavy, var(--font-body)),
+    sans-serif;
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+}
+
+.tag {
+  color: var(--honour);
+  font-family: var(--font-display), sans-serif;
+}
+
+.full {
+  padding: 4px 10px;
+  border: 1px solid var(--ct);
+  color: var(--ct);
+  font:
+    700 0.75rem var(--font-mono),
+    monospace;
+}
+
+.seats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 10px;
+  list-style: none;
+}
+
+.seat {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 12px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
+.empty {
+  border-style: dashed;
+  background: transparent;
+  color: var(--muted-2);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 700;
+}
+
+.empty .avatar {
+  background: var(--line);
+  color: var(--muted);
+}
+
+.seatName {
+  display: grid;
+  min-width: 0;
+  color: var(--ink);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.seatName a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.seatName small {
+  color: var(--honour);
+  font-size: 0.75rem;
+}
+
+.invite,
+.createForm,
+.register {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.invite label,
+.createForm label {
+  display: grid;
+  flex: 1 1 200px;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.invite input,
+.createForm input,
+.createForm select,
+.register input {
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.register input {
+  flex: 1 1 160px;
+}
+
+.entries {
+  display: grid;
+  gap: 4px;
+}
+
+.entries h3 {
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.entryTitle {
+  display: grid;
+  gap: 2px;
+}
+
+.entryTitle a {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.status {
+  color: var(--ct);
+  font-weight: 600;
+}
+
+.cardFoot {
+  padding-block: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.create {
+  margin-top: clamp(24px, 4vw, 40px);
+}
+
+.success,
+.error {
+  font-size: 0.875rem;
+}
+
+.success {
+  color: var(--ct);
+}
+
+.error {
+  color: var(--c4);
+}

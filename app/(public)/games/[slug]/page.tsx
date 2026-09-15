@@ -62,6 +62,7 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
         <ButtonLink href="#game-tournaments" variant="primary">
           查看本项目赛事
         </ButtonLink>
+        <ButtonLink href="/squads">组队参赛</ButtonLink>
         <span className={styles.stats}>
           <span className={styles.stat}>
             <b>{String(mine.length).padStart(2, '0')}</b>

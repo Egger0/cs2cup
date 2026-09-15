@@ -5,21 +5,27 @@ import { useState, useTransition } from 'react'
 import { Button, Field, TextField } from '@/components/ui'
 import type { ManagedRegistrationTeam } from '@/lib/queries/registration-management'
 import { updateAccountRegistration } from '@/app/me/registrations/actions'
+import { rosterLabel } from '@/lib/registration'
 import { updateManagedRegistration } from './actions'
 import styles from './management.module.css'
 
-function playerValues(team: ManagedRegistrationTeam) {
+function playerFields(team: ManagedRegistrationTeam, starterCount: number) {
   const starters = team.players.filter(player => !player.isSubstitute)
   const substitute = team.players.find(player => player.isSubstitute)
   return [
-    ...Array.from({ length: 5 }, (_, index) => starters[index]?.nickname ?? ''),
-    substitute?.nickname ?? '',
+    ...Array.from({ length: starterCount }, (_, index) => ({
+      index: index + 1,
+      label: `首发 ${index + 1}`,
+      nickname: starters[index]?.nickname ?? '',
+    })),
+    { index: 6, label: '替补', nickname: substitute?.nickname ?? '' },
   ]
 }
 
 type RegistrationManagerProps = {
   team: ManagedRegistrationTeam
   revision: number
+  starterCount: number
 } & ({ access: 'account'; teamId: number } | { access: 'legacy'; slug: string; token: string })
 
 export function RegistrationManager(props: RegistrationManagerProps) {
@@ -28,7 +34,7 @@ export function RegistrationManager(props: RegistrationManagerProps) {
   const [pending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<{ ok: boolean; message: string } | null>(null)
   const [revision, setRevision] = useState(initialRevision)
-  const players = playerValues(team)
+  const players = playerFields(team, props.starterCount)
 
   return (
     <form
@@ -99,16 +105,16 @@ export function RegistrationManager(props: RegistrationManagerProps) {
         maxLength={30}
       />
       <fieldset className={styles.roster}>
-        <legend className="readout">首发五人 + 替补一人</legend>
+        <legend className="readout">{rosterLabel(props.starterCount)}</legend>
         <div className={styles.players}>
-          {players.map((nickname, index) => (
+          {players.map(player => (
             <Field
-              key={index}
-              id={`managed-player${index + 1}`}
-              name={`player${index + 1}`}
-              label={index === 5 ? '替补' : `首发 ${index + 1}`}
-              defaultValue={nickname}
-              required={index < 5}
+              key={player.index}
+              id={`managed-player${player.index}`}
+              name={`player${player.index}`}
+              label={player.label}
+              defaultValue={player.nickname}
+              required={player.index !== 6}
               maxLength={20}
             />
           ))}

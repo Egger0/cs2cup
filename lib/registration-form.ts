@@ -34,7 +34,7 @@ const FIELD_LIMITS = {
   player: 20,
 } as const
 
-const CONTROL_CHARACTER = /[\u0000-\u0009\u000b\u000c\u000e-\u001f\u007f-\u009f]/u
+export const CONTROL_CHARACTER = /[\u0000-\u0009\u000b\u000c\u000e-\u001f\u007f-\u009f]/u
 const LINE_BREAK = /[\r\n\u2028\u2029]/u
 
 function formText(form: FormData, name: string, maxLength: number, multiline = false) {
@@ -53,7 +53,7 @@ function formText(form: FormData, name: string, maxLength: number, multiline = f
   return value
 }
 
-export function parseRegistrationForm(form: FormData): RegistrationFormResult {
+export function parseRegistrationForm(form: FormData, starterCount = 5): RegistrationFormResult {
   let values: Omit<RegistrationFormValues, 'players'> & {
     players: RegistrationRosterPlayer[]
   }
@@ -65,7 +65,7 @@ export function parseRegistrationForm(form: FormData): RegistrationFormResult {
       contact: formText(form, 'contact', FIELD_LIMITS.contact),
       dept: formText(form, 'dept', FIELD_LIMITS.dept),
       note: formText(form, 'note', FIELD_LIMITS.note, true),
-      players: [1, 2, 3, 4, 5, 6].map(index => ({
+      players: [...Array.from({ length: starterCount }, (_, index) => index + 1), 6].map(index => ({
         nickname: formText(form, `player${index}`, FIELD_LIMITS.player),
         substitute: index === 6,
       })),
@@ -80,7 +80,7 @@ export function parseRegistrationForm(form: FormData): RegistrationFormResult {
   if (values.tag.length < 2 || values.tag.length > 5) {
     return { ok: false, error: '战队 TAG 需要 2 到 5 个字符' }
   }
-  const roster = validateRegistrationRoster(values.players)
+  const roster = validateRegistrationRoster(values.players, starterCount)
   if (!roster.ok) return { ok: false, error: roster.error }
   return { ok: true, values: { ...values, players: roster.players } }
 }

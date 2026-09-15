@@ -12,6 +12,7 @@ import { clientFingerprint } from '@/lib/ratelimit'
 import { createRegistrationAccess } from '@/lib/registration-access'
 import { parseRegistrationDraftForm, parseRegistrationForm } from '@/lib/registration-form'
 import { registrationAvailability } from '@/lib/registration'
+import { tournamentRosterSize } from '@/lib/queries/roster-size'
 
 export interface RegisterResult {
   ok: boolean
@@ -107,7 +108,10 @@ export async function registerTeam(slug: string, form: FormData): Promise<Regist
         redirectTo: '/account',
       }
     }
-    const parsed = parseRegistrationForm(form)
+    const parsed = parseRegistrationForm(
+      form,
+      await tournamentRosterSize(db, { tournamentSlug: slug }),
+    )
     if (!parsed.ok) return { ok: false, error: parsed.error }
     const team = parsed.values
     const tag = team.tag

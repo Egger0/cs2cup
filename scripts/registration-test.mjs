@@ -65,6 +65,8 @@ assert.equal(
   validateRegistrationRoster([...starters.slice(0, 4), player(' alpha ')]).code,
   'DUPLICATE_NICKNAME',
 )
+assert.equal(validateRegistrationRoster(starters.slice(0, 3), 3).ok, true)
+assert.equal(validateRegistrationRoster(starters, 3).error, '请填写正好 3 名首发队员')
 assert.deepEqual(
   validateRegistrationRoster([...starters, player(' ', true)]),
   { ok: true, players: starters },

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { tournamentRosterSize } from '@/lib/queries/roster-size'
 import { notFound, redirect } from 'next/navigation'
 import { SectionHead } from '@/components/domain/Sections'
 import { participantCheckInReceipt } from '@/lib/check-in-receipt'
@@ -131,6 +132,9 @@ export default async function RegistrationStatusPage({
             token={token}
             team={registration.team}
             revision={registration.revision}
+            starterCount={await tournamentRosterSize(cloudflareBindings().db, {
+              tournamentSlug: slug,
+            })}
           />
         ) : (
           <div className={styles.lockedState}>

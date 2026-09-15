@@ -17,7 +17,12 @@ registerHooks({
         shortCircuit: true,
       }
     }
-    return nextResolve(specifier, context)
+    try {
+      return nextResolve(specifier, context)
+    } catch (error) {
+      if (!specifier.startsWith('.') || /\.[a-z]+$/i.test(specifier)) throw error
+      return nextResolve(`${specifier}.ts`, context)
+    }
   },
 })
 

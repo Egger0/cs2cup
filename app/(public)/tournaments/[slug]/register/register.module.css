@@ -148,3 +148,15 @@
   color: var(--button-ink, #f1efe8);
   font-weight: 700;
 }
+
+.squadHint {
+  margin-bottom: 20px;
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.squadHint a {
+  color: var(--ct);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

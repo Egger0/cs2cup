@@ -1,11 +1,11 @@
 import 'server-only'
 
 import type { IdentityDatabase } from './identity/internal/contracts.ts'
+import { CONTROL_CHARACTER } from './registration-form.ts'
 
 export const LOADOUT_PENDING_LIMIT = 5
 
 const LIMITS = { weapon: [1, 30], title: [1, 40], code: [4, 200], note: [0, 200] } as const
-const CONTROL_CHARACTER = /[\u0000-\u001f\u007f-\u009f]/u
 
 export type LoadoutField = keyof typeof LIMITS
 export type LoadoutInput = Record<LoadoutField, string>

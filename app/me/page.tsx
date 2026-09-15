@@ -31,6 +31,8 @@ import {
 } from '@/lib/queries/staff-check-in'
 import { maskParticipantPrincipal } from '@/lib/tournament-staff-management'
 import { nbtWallet } from '@/lib/nbt'
+import { incomingSquadInvitations } from '@/lib/squads'
+import { SquadInvitationInbox } from '@/app/squads/SquadInvitationInbox'
 import { AccessReceipt } from './AccessReceipt'
 import { EntryDossier } from './EntryDossier'
 import styles from './me.module.css'
@@ -94,6 +96,7 @@ async function UnifiedAccountEvents({
     nextMatch,
     workAccess,
     wallet,
+    squadInvitations,
   ] = await Promise.all([
     listAccountTournamentRegistrations(database, context, now),
     optional('invitations', listIncomingRegistrationInvitations(database, context, now), []),
@@ -115,6 +118,7 @@ async function UnifiedAccountEvents({
     ),
     optional('work access', accountHasWorkAccess(database, context.account.id, now), false),
     optional('nbt wallet', nbtWallet(database, context.account.id, now), null),
+    optional('squad invitations', incomingSquadInvitations(database, context.account.id), []),
   ])
   const staffPages = Math.max(1, Math.ceil(workspacePage.total / STAFF_PAGE_SIZE))
   if (staffPage > staffPages) redirect(staffPages === 1 ? '/me' : `/me?staffPage=${staffPages}`)
@@ -137,6 +141,7 @@ async function UnifiedAccountEvents({
     >
       <RegistrationInvitations items={invitations} />
       <RosterClaimRequests items={rosterClaimRequests} />
+      <SquadInvitationInbox items={squadInvitations} />
       {wallet ? <NbtWallet wallet={wallet} /> : null}
 
       <StaffWorkspaces
