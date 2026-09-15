@@ -73,7 +73,16 @@ try {
     await page.getByRole('link', { name: '继续填写报名 →' }).getAttribute('href'),
     '/tournaments/2026-nlc/register',
   )
-  await page.getByRole('status').getByText('账号已创建').waitFor()
+  const welcome = page.getByRole('dialog', { name: /账号已创建/ })
+  await welcome.getByRole('link', { name: /KOOK/ }).waitFor()
+  await welcome.evaluate(element => Promise.all(element.getAnimations().map(item => item.finished)))
+  await assertAccessible(page, 'account welcome dialog')
+  await welcome.getByRole('button', { name: '稍后再说' }).click()
+  await welcome.waitFor({ state: 'hidden' })
+  await page.waitForURL(
+    url =>
+      !url.searchParams.has('welcome') && url.searchParams.get('tournamentSlug') === '2026-nlc',
+  )
   await page.getByRole('region', { name: '登录与安全' }).getByText('已设置').waitFor()
   await page.getByRole('definition').filter({ hasText: USER.displayName }).first().waitFor()
   await page.screenshot({ path: 'output/playwright/frontend-account-1280.png', fullPage: true })
