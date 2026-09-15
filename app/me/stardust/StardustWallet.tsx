@@ -1,44 +1,44 @@
 import Link from 'next/link'
-import type { NbtWallet as Wallet } from '@/lib/nbt'
-import { NBT_REWARDS } from '@/lib/nbt'
-import { NbtCheckInButton } from './NbtCheckInButton'
+import type { StardustWallet as Wallet } from '@/lib/stardust'
+import { STARDUST_REWARDS } from '@/lib/stardust'
+import { StardustCheckInButton } from './StardustCheckInButton'
 import styles from './wallet.module.css'
 
-const STATUS = { open: '待开奖', won: '猜中', lost: '未猜中', void: '已退回' } as const
+const STATUS = { open: '待赛果', won: '命中', lost: '未命中', void: '已退回' } as const
 
 function signed(value: number) {
   return value > 0 ? `+${value}` : String(value)
 }
 
-export function NbtWallet({ wallet }: { wallet: Wallet }) {
+export function StardustWallet({ wallet }: { wallet: Wallet }) {
   return (
-    <section id="nbt-wallet" className={styles.wallet} aria-labelledby="nbt-wallet-title">
+    <section id="stardust-wallet" className={styles.wallet} aria-labelledby="stardust-wallet-title">
       <header className={styles.head}>
-        <span className={styles.eyebrow}>NBT WALLET / 竞猜积分</span>
-        <h2 id="nbt-wallet-title">我的 nbt</h2>
+        <span className={styles.eyebrow}>STARDUST / 星尘</span>
+        <h2 id="stardust-wallet-title">我的星尘</h2>
       </header>
       <div className={styles.summary}>
         <p className={styles.balance}>
           <strong>{wallet.balance}</strong>
-          <span>nbt</span>
+          <span>星尘</span>
         </p>
         {wallet.eligible ? (
           <div className={styles.earn}>
-            <NbtCheckInButton checkedIn={wallet.checkedInToday} />
+            <StardustCheckInButton checkedIn={wallet.checkedInToday} />
             {wallet.matchdayToday ? (
               <p className={styles.matchday}>
-                赛事进行中，今日登录奖励 +{NBT_REWARDS.matchday} 已到账
+                赛事进行中，今日登录奖励 +{STARDUST_REWARDS.matchday} 已到账
               </p>
             ) : null}
           </div>
         ) : (
           <p className={styles.hint}>
-            <Link href="/account#membership">成员资格</Link>审核通过后开放签到与赛前竞猜。
+            <Link href="/account#membership">成员资格</Link>审核通过后开放签到与赛前预测。
           </p>
         )}
       </div>
       {wallet.predictions.length ? (
-        <ol className={styles.ledger} aria-label="最近的竞猜">
+        <ol className={styles.ledger} aria-label="最近的预测">
           {wallet.predictions.map(entry => (
             <li key={entry.matchId}>
               <Link
@@ -52,7 +52,7 @@ export function NbtWallet({ wallet }: { wallet: Wallet }) {
                   {STATUS[entry.status]}
                 </span>
                 <span className={styles.delta}>
-                  {entry.status === 'open' ? `投入 ${entry.stake}` : signed(entry.delta)}
+                  {entry.status === 'open' ? `应援 ${entry.stake}` : signed(entry.delta)}
                 </span>
               </Link>
             </li>
@@ -60,10 +60,12 @@ export function NbtWallet({ wallet }: { wallet: Wallet }) {
         </ol>
       ) : wallet.eligible ? (
         <p className={styles.hint}>
-          在比赛详情页的「赛前竞猜」里投入 nbt，开奖后按奖池比例自动结算。
+          在比赛详情页的「赛前预测」里为看好的战队应援，赛果出炉后按应援池比例自动结算。
         </p>
       ) : null}
-      <p className={styles.note}>nbt 是社团站内积分，只用于竞猜娱乐，不能充值、兑换或提现。</p>
+      <p className={styles.note}>
+        星尘是社团站内积分，只用于赛前预测这类娱乐玩法，不能充值、兑换或提现。
+      </p>
     </section>
   )
 }

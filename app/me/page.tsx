@@ -30,14 +30,14 @@ import {
   listCurrentUnifiedTournamentWorkspaces,
 } from '@/lib/queries/staff-check-in'
 import { maskParticipantPrincipal } from '@/lib/tournament-staff-management'
-import { nbtWallet } from '@/lib/nbt'
+import { stardustWallet } from '@/lib/stardust'
 import { incomingSquadInvitations } from '@/lib/squads'
 import { SquadInvitationInbox } from '@/app/squads/SquadInvitationInbox'
 import { AccessReceipt } from './AccessReceipt'
 import { EntryDossier } from './EntryDossier'
 import styles from './me.module.css'
 import { NextMatchBrief } from './NextMatchBrief'
-import { NbtWallet } from './nbt/NbtWallet'
+import { StardustWallet } from './stardust/StardustWallet'
 import { PassReference } from './PassReference'
 import { ParticipantSessionBoundary, ParticipantSignOut } from './ParticipantSessionBoundary'
 import { RegistrationInvitations } from './RegistrationInvitations'
@@ -117,7 +117,7 @@ async function UnifiedAccountEvents({
       undefined,
     ),
     optional('work access', accountHasWorkAccess(database, context.account.id, now), false),
-    optional('nbt wallet', nbtWallet(database, context.account.id, now), null),
+    optional('stardust wallet', stardustWallet(database, context.account.id, now), null),
     optional('squad invitations', incomingSquadInvitations(database, context.account.id), []),
   ])
   const staffPages = Math.max(1, Math.ceil(workspacePage.total / STAFF_PAGE_SIZE))
@@ -142,7 +142,7 @@ async function UnifiedAccountEvents({
       <RegistrationInvitations items={invitations} />
       <RosterClaimRequests items={rosterClaimRequests} />
       <SquadInvitationInbox items={squadInvitations} />
-      {wallet ? <NbtWallet wallet={wallet} /> : null}
+      {wallet ? <StardustWallet wallet={wallet} /> : null}
 
       <StaffWorkspaces
         workspaces={workspacePage.workspaces}

@@ -101,7 +101,7 @@ function badgesFor(
     wonPredictions >= 3 && {
       key: 'oracle',
       label: '预言家',
-      detail: `赛前竞猜猜中 ${wonPredictions} 场`,
+      detail: `赛前预测命中 ${wonPredictions} 场`,
     },
     checkIns >= 30 && { key: 'regular', label: '全勤', detail: `累计签到 ${checkIns} 天` },
   ]
@@ -168,7 +168,7 @@ export async function playerProfileByHandle(
       `SELECT
          (SELECT COUNT(*) FROM match_prediction_outcome
           WHERE account_id = ? AND status = 'won') AS won,
-         (SELECT COUNT(*) FROM nbt_grant WHERE account_id = ? AND kind = 'check_in') AS checkIns`,
+         (SELECT COUNT(*) FROM stardust_grant WHERE account_id = ? AND kind = 'check_in') AS checkIns`,
     )
     .bind(first.account_id, first.account_id)
     .first<{ won: number; checkIns: number }>()

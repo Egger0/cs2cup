@@ -9,11 +9,11 @@ import { IDENTITY_SESSION_COOKIE_NAME, getAuthContext } from '@/lib/identity/ker
 import { matchPredictionBoard, placeMatchPrediction } from '@/lib/match-prediction'
 
 const FAILURES = {
-  invalid_stake: '投入数量需为 1–1000 的整数。',
-  membership_required: '成员资格审核通过后才能参与竞猜。',
-  already_placed: '这场比赛你已经投过了，结果揭晓前不能更改。',
-  insufficient_balance: 'nbt 余额不足，先去签到领取吧。',
-  closed: '这场比赛的竞猜已经截止。',
+  invalid_stake: '应援数量需为 1–1000 的整数。',
+  membership_required: '成员资格审核通过后才能参与赛前预测。',
+  already_placed: '这场比赛你已经应援过了，赛果出炉前不能更改。',
+  insufficient_balance: '星尘不足，先去签到领取吧。',
+  closed: '这场比赛的预测已经截止。',
 } as const
 
 function json(body: object, status = 200) {
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return board ? json({ ok: true, board }) : json({ ok: false, error: '比赛不存在。' }, 404)
   } catch (error) {
     console.error('[prediction] board unavailable', error)
-    return json({ ok: false, error: '竞猜暂时无法读取。' }, 503)
+    return json({ ok: false, error: '预测暂时无法读取。' }, 503)
   }
 }
 
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     assertCsrfRequest(request)
     const fields = await readIdentityForm(request, ['teamId', 'stake'] as const)
     const accountId = await viewer(request)
-    if (!accountId) return json({ ok: false, error: '登录后才能参与竞猜。' }, 401)
+    if (!accountId) return json({ ok: false, error: '登录后才能参与赛前预测。' }, 401)
     const db = cloudflareBindings().db
     const now = currentTimeMillis()
     const result = await placeMatchPrediction(
@@ -75,6 +75,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return json({ ok: false, error: '请求无法确认，请刷新页面后重试。' }, 403)
     }
     console.error('[prediction] placement unavailable', error)
-    return json({ ok: false, error: '竞猜暂时不可用，请稍后重试。' }, 503)
+    return json({ ok: false, error: '预测暂时不可用，请稍后重试。' }, 503)
   }
 }

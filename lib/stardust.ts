@@ -3,13 +3,13 @@ import 'server-only'
 import type { IdentityDatabase } from './identity/internal/contracts.ts'
 import { shanghaiDate } from './qq-automation.ts'
 
-export const NBT_REWARDS = { check_in: 10, matchday: 20 } as const
-export const NBT_STAKE_LIMIT = 1000
+export const STARDUST_REWARDS = { check_in: 10, matchday: 20 } as const
+export const STARDUST_STAKE_LIMIT = 1000
 
-export type NbtGrantKind = keyof typeof NBT_REWARDS
+export type StardustGrantKind = keyof typeof STARDUST_REWARDS
 export type PredictionStatus = 'open' | 'won' | 'lost' | 'void'
 
-export interface NbtPrediction {
+export interface StardustPrediction {
   readonly matchId: number
   readonly tournamentSlug: string
   readonly tournamentTitle: string
@@ -21,12 +21,12 @@ export interface NbtPrediction {
   readonly placedAt: number
 }
 
-export interface NbtWallet {
+export interface StardustWallet {
   readonly eligible: boolean
   readonly balance: number
   readonly checkedInToday: boolean
   readonly matchdayToday: boolean
-  readonly predictions: NbtPrediction[]
+  readonly predictions: StardustPrediction[]
 }
 
 const APPROVED_MEMBER = `EXISTS (
@@ -36,30 +36,30 @@ const APPROVED_MEMBER = `EXISTS (
 
 const RUNNING_TOURNAMENT = `EXISTS (SELECT 1 FROM tournament WHERE status = 'running')`
 
-export function nbtGrantStatement(
+export function stardustGrantStatement(
   database: IdentityDatabase,
   accountId: string,
-  kind: NbtGrantKind,
+  kind: StardustGrantKind,
   now: number,
 ) {
   return database
     .prepare(
-      `INSERT OR IGNORE INTO nbt_grant (account_id, kind, grant_date, amount, granted_at)
+      `INSERT OR IGNORE INTO stardust_grant (account_id, kind, grant_date, amount, granted_at)
        SELECT ?, ?, ?, ?, ? WHERE ${APPROVED_MEMBER}
          ${kind === 'matchday' ? `AND ${RUNNING_TOURNAMENT}` : ''}`,
     )
-    .bind(accountId, kind, shanghaiDate(now), NBT_REWARDS[kind], now, accountId)
+    .bind(accountId, kind, shanghaiDate(now), STARDUST_REWARDS[kind], now, accountId)
 }
 
-export async function nbtGrantedAt(
+export async function stardustGrantedAt(
   database: IdentityDatabase,
   accountId: string,
-  kind: NbtGrantKind,
+  kind: StardustGrantKind,
   now: number,
 ) {
   const row = await database
     .prepare(
-      `SELECT granted_at AS grantedAt FROM nbt_grant
+      `SELECT granted_at AS grantedAt FROM stardust_grant
        WHERE account_id = ? AND kind = ? AND grant_date = ?`,
     )
     .bind(accountId, kind, shanghaiDate(now))
@@ -75,26 +75,26 @@ export async function approvedMember(database: IdentityDatabase, accountId: stri
   return row?.eligible === 1
 }
 
-export async function nbtBalance(database: IdentityDatabase, accountId: string) {
+export async function stardustBalance(database: IdentityDatabase, accountId: string) {
   const row = await database
-    .prepare('SELECT balance FROM nbt_balance WHERE account_id = ?')
+    .prepare('SELECT balance FROM stardust_balance WHERE account_id = ?')
     .bind(accountId)
     .first<{ balance: number }>()
   return Number(row?.balance ?? 0)
 }
 
-export type NbtCheckInResult =
+export type StardustCheckInResult =
   | { readonly ok: true; readonly reward: number }
   | { readonly ok: false; readonly reason: 'membership_required' | 'already_checked_in' }
 
-export async function checkInForNbt(
+export async function checkInForStardust(
   database: IdentityDatabase,
   accountId: string,
   now: number,
-): Promise<NbtCheckInResult> {
-  await nbtGrantStatement(database, accountId, 'check_in', now).run()
-  const at = await nbtGrantedAt(database, accountId, 'check_in', now)
-  if (at === now) return { ok: true, reward: NBT_REWARDS.check_in }
+): Promise<StardustCheckInResult> {
+  await stardustGrantStatement(database, accountId, 'check_in', now).run()
+  const at = await stardustGrantedAt(database, accountId, 'check_in', now)
+  if (at === now) return { ok: true, reward: STARDUST_REWARDS.check_in }
   if (at !== null) return { ok: false, reason: 'already_checked_in' }
   return { ok: false, reason: 'membership_required' }
 }
@@ -111,17 +111,17 @@ interface PredictionRow {
   placedAt: number
 }
 
-export async function nbtWallet(
+export async function stardustWallet(
   database: IdentityDatabase,
   accountId: string,
   now: number,
-): Promise<NbtWallet> {
-  await nbtGrantStatement(database, accountId, 'matchday', now).run()
+): Promise<StardustWallet> {
+  await stardustGrantStatement(database, accountId, 'matchday', now).run()
   const [eligible, balance, checkIn, matchday, predictions] = await Promise.all([
     approvedMember(database, accountId),
-    nbtBalance(database, accountId),
-    nbtGrantedAt(database, accountId, 'check_in', now),
-    nbtGrantedAt(database, accountId, 'matchday', now),
+    stardustBalance(database, accountId),
+    stardustGrantedAt(database, accountId, 'check_in', now),
+    stardustGrantedAt(database, accountId, 'matchday', now),
     database
       .prepare(
         `SELECT outcome.match_id AS matchId, tournament.slug AS tournamentSlug,

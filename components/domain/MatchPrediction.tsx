@@ -7,7 +7,7 @@ import { formatSiteDateTime } from '@/lib/datetime'
 import styles from './MatchPrediction.module.css'
 
 const PRESETS = [10, 50, 100]
-const STATUS_COPY = { open: '待开奖', won: '猜中', lost: '未猜中', void: '已退回' } as const
+const STATUS_COPY = { open: '待赛果', won: '命中', lost: '未命中', void: '已退回' } as const
 
 type Payload = { ok: boolean; error?: string; board?: MatchPredictionBoard }
 
@@ -63,8 +63,8 @@ export function MatchPrediction({ matchId }: { matchId: number }) {
       if (payload.board) setBoard(payload.board)
       setMessage(
         payload.ok
-          ? { ok: true, text: '投入成功，结果揭晓后自动结算。' }
-          : { ok: false, text: payload.error ?? '竞猜暂时不可用，请稍后重试。' },
+          ? { ok: true, text: '应援成功，赛果出炉后自动结算。' }
+          : { ok: false, text: payload.error ?? '预测暂时不可用，请稍后重试。' },
       )
     } catch {
       setMessage({ ok: false, text: '网络异常，请稍后重试。' })
@@ -76,15 +76,15 @@ export function MatchPrediction({ matchId }: { matchId: number }) {
   return (
     <section className={styles.panel} aria-labelledby={heading} aria-busy={working}>
       <header className={styles.head}>
-        <span className={styles.eyebrow}>PICK&apos;EM / 赛前竞猜</span>
+        <span className={styles.eyebrow}>PICK&apos;EM / 赛前预测</span>
         <h2 id={heading}>你看好谁？</h2>
         <p>
           {board.phase === 'open'
             ? `开赛前截止${board.closesAt ? ` · ${formatSiteDateTime(board.closesAt)}` : ''}`
             : board.phase === 'settled'
-              ? '已开奖'
-              : '竞猜已截止'}
-          {` · 奖池 ${total} nbt · ${a.backers + b.backers} 人参与`}
+              ? '赛果已出'
+              : '预测已截止'}
+          {` · 应援池 ${total} 星尘 · ${a.backers + b.backers} 人参与`}
         </p>
       </header>
 
@@ -98,7 +98,7 @@ export function MatchPrediction({ matchId }: { matchId: number }) {
             <strong>{side.tag}</strong>
             <span className={styles.sideName}>{side.name}</span>
             <span className={styles.figures}>
-              <b>{ratio(total, side.stake)}</b> {side.stake} nbt · {side.backers} 人
+              <b>{ratio(total, side.stake)}</b> {side.stake} 星尘 · {side.backers} 人
             </span>
           </div>
         ))}
@@ -110,12 +110,12 @@ export function MatchPrediction({ matchId }: { matchId: number }) {
       {board.mine && mineSide ? (
         <p className={styles.receipt} data-status={board.mine.status}>
           <span>{STATUS_COPY[board.mine.status]}</span>
-          你投入 {board.mine.stake} nbt 支持 {mineSide.tag}
+          你为 {mineSide.tag} 应援了 {board.mine.stake} 星尘
           {board.mine.status === 'open'
-            ? `，猜中预计返还 ${Math.floor((board.mine.stake * total) / mineSide.stake)} nbt`
+            ? `，命中预计返还 ${Math.floor((board.mine.stake * total) / mineSide.stake)} 星尘`
             : board.mine.status === 'void'
               ? '，已全额退回'
-              : `，结算 ${board.mine.delta > 0 ? '+' : ''}${board.mine.delta} nbt`}
+              : `，结算 ${board.mine.delta > 0 ? '+' : ''}${board.mine.delta} 星尘`}
         </p>
       ) : canPlace ? (
         <form className={styles.form} onSubmit={submit}>
@@ -137,7 +137,7 @@ export function MatchPrediction({ matchId }: { matchId: number }) {
           </fieldset>
           <div className={styles.stake}>
             <label>
-              <span>投入 nbt</span>
+              <span>应援星尘</span>
               <input
                 type="number"
                 inputMode="numeric"
@@ -162,22 +162,22 @@ export function MatchPrediction({ matchId }: { matchId: number }) {
             ))}
           </div>
           <button className={styles.submit} type="submit" disabled={working || board.balance < 1}>
-            {working ? '正在投入…' : `投入 ${stake || 0} nbt`}
+            {working ? '正在应援…' : `应援 ${stake || 0} 星尘`}
           </button>
           <small className={styles.balance}>
-            余额 {board.balance} nbt
-            {board.balance < 1 ? <Link href="/me#nbt-wallet">去签到领取 →</Link> : null}
+            余额 {board.balance} 星尘
+            {board.balance < 1 ? <Link href="/me#stardust-wallet">去签到领取 →</Link> : null}
           </small>
         </form>
       ) : board.phase === 'open' ? (
         <p className={styles.gate}>
           {board.viewer === 'anonymous' ? (
             <>
-              <Link href="/login">登录</Link>后参与竞猜。
+              <Link href="/login">登录</Link>后参与赛前预测。
             </>
           ) : (
             <>
-              <Link href="/account#membership">成员资格</Link>审核通过后可参与竞猜。
+              <Link href="/account#membership">成员资格</Link>审核通过后可参与赛前预测。
             </>
           )}
         </p>
@@ -191,7 +191,9 @@ export function MatchPrediction({ matchId }: { matchId: number }) {
           {message.text}
         </p>
       ) : null}
-      <p className={styles.note}>nbt 是社团站内积分，只用于竞猜娱乐，不能充值、兑换或提现。</p>
+      <p className={styles.note}>
+        星尘是社团站内积分，只用于赛前预测这类娱乐玩法，不能充值、兑换或提现。
+      </p>
     </section>
   )
 }

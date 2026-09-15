@@ -2,10 +2,10 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { checkInForNbtAction } from './actions'
+import { checkInForStardustAction } from './actions'
 import styles from './wallet.module.css'
 
-export function NbtCheckInButton({ checkedIn }: { checkedIn: boolean }) {
+export function StardustCheckInButton({ checkedIn }: { checkedIn: boolean }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null)
@@ -18,7 +18,7 @@ export function NbtCheckInButton({ checkedIn }: { checkedIn: boolean }) {
         disabled={checkedIn || pending}
         onClick={() =>
           startTransition(async () => {
-            const result = await checkInForNbtAction().catch(() => ({
+            const result = await checkInForStardustAction().catch(() => ({
               ok: false as const,
               error: '网络异常，请稍后重试。',
             }))
