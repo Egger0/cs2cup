@@ -28,6 +28,7 @@ export function adminSaveGame(id: number, values: Partial<Game>) {
   if (values.formatNote !== undefined) payload.format_note = values.formatNote
   if (values.sortOrder !== undefined) payload.sort_order = values.sortOrder
   if (values.active !== undefined) payload.active = values.active
+  if (values.loadoutCodes !== undefined) payload.loadout_codes = values.loadoutCodes
   return adminMutation(() => updatePrivateRows('game', payload, { filters: { id: `eq.${id}` } }))
 }
 

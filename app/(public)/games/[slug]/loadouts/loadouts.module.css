@@ -1,0 +1,55 @@
+.submit {
+  display: grid;
+  gap: 24px;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+  max-width: 760px;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 16px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+
+.success,
+.error {
+  font-size: 0.875rem;
+}
+
+.success {
+  color: var(--ct);
+}
+
+.error {
+  color: var(--c4);
+}
+
+.error a {
+  margin-inline-start: 8px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.own {
+  display: grid;
+  gap: 14px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.own h3 {
+  color: var(--ink);
+  font-size: 1.125rem;
+  font-weight: 620;
+}

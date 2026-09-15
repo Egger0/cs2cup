@@ -130,7 +130,14 @@ function normalize<Row>(row: Row): Row {
     }
   }
 
-  for (const key of ['active', 'is_official', 'is_substitute', 'played', 'pinned']) {
+  for (const key of [
+    'active',
+    'is_official',
+    'is_substitute',
+    'loadout_codes',
+    'played',
+    'pinned',
+  ]) {
     if (typeof record[key] === 'number') record[key] = record[key] === 1
   }
 

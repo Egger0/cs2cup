@@ -1,0 +1,101 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 16px;
+  list-style: none;
+}
+
+.card {
+  composes: linkSheet from '@/components/ui/Surface.module.css';
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding-block: 16px 4px;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.weapon {
+  color: var(--accent);
+  font:
+    700 0.8125rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.author,
+.status {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.author:is(a):hover {
+  color: var(--ink);
+}
+
+.status[data-status='approved'] {
+  color: var(--ct);
+}
+
+.status[data-status='rejected'] {
+  color: var(--c4);
+}
+
+.title {
+  color: var(--ink);
+  font-size: 1.0625rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.note {
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.codeRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-block: 10px;
+  border-top: 1px dashed var(--line-strong);
+}
+
+.code {
+  flex: 1;
+  min-width: 0;
+  color: var(--ink);
+  font:
+    0.8125rem / 1.6 var(--font-mono),
+    monospace;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.copy {
+  min-width: 56px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.copy:hover,
+.copy:focus-visible {
+  border-color: var(--ink);
+}

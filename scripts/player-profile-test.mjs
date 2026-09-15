@@ -51,10 +51,10 @@ const { playerProfileByHandle } = await import('../lib/queries/player-profile.ts
 
 try {
   database.exec(`
-    INSERT INTO game (id, slug, name) VALUES (1, 'cs2', 'CS2');
-    INSERT INTO tournament (id, slug, title, game_id, season, edition, status, team_cap, starts_at)
-    VALUES (1, 'cup-a', 'Cup A', 1, '2025', 1, 'finished', 8, '2025-05-01T10:00:00Z'),
-           (2, 'cup-b', 'Cup B', 1, '2026', 2, 'running', 8, '2026-05-01T10:00:00Z');
+    INSERT INTO game (id, slug, name, name_en, accent_color) VALUES (1, 'cs2', 'CS2', 'Counter-Strike 2', '#b28a51');
+    INSERT INTO tournament (id, slug, title, game_id, season, edition, status, team_cap, starts_at, champion_name)
+    VALUES (1, 'cup-a', 'Cup A', 1, '2025', 1, 'finished', 8, '2025-05-01T10:00:00Z', 'Falcons'),
+           (2, 'cup-b', 'Cup B', 1, '2026', 2, 'running', 8, '2026-05-01T10:00:00Z', NULL);
     INSERT INTO team (id, tournament_id, name, tag, captain, contact, status)
     VALUES (1, 1, 'Falcons', 'FLC', 'Cap', 'contact', 'approved'),
            (2, 2, 'Mirage', 'MRG', 'Cap', 'contact', 'approved'),
@@ -96,6 +96,27 @@ try {
   )
   assert.equal(profile.entries[0].isSubstitute, true)
   assert.equal(profile.entries[1].isSubstitute, false)
+  assert.deepEqual(
+    profile.entries.map(entry => entry.champion),
+    [false, true],
+    'the champion flag follows the recorded champion name of a finished tournament',
+  )
+  assert.deepEqual(profile.games, [
+    {
+      slug: 'cs2',
+      name: 'CS2',
+      nameEn: 'Counter-Strike 2',
+      accentColor: '#b28a51',
+      entries: 2,
+      titles: 1,
+      latestTeam: 'Mirage',
+      latestSeason: '2026',
+    },
+  ])
+  assert.deepEqual(
+    profile.badges.map(badge => badge.key),
+    ['debut', 'champion'],
+  )
 
   assert.equal(await playerProfileByHandle(db, 'nobody'), null, 'an unknown handle is not a page')
   assert.equal(await playerProfileByHandle(db, 'ADMIN'), null, 'a malformed handle is rejected')

@@ -1,0 +1,227 @@
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+  gap: clamp(14px, 2vw, 22px);
+  list-style: none;
+}
+
+.card {
+  --glow: calc(var(--level) * 7px);
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  min-height: 340px;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid color-mix(in srgb, var(--tone) calc(30% + var(--level) * 12%), transparent);
+  color: #f1efe8;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tone) 34%, #111210) 0%, #111210 72%);
+  box-shadow:
+    0 calc(var(--level) * 3px) calc(var(--glow) * 2)
+      color-mix(in srgb, var(--tone) calc(var(--level) * 16%), transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--tone) 60%, transparent),
+    inset 0 0 calc(var(--level) * 14px)
+      color-mix(in srgb, var(--tone) calc(var(--level) * 9%), transparent);
+  transition:
+    transform 240ms var(--ease-out),
+    box-shadow 240ms ease;
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    color-mix(in srgb, var(--tone) 38%, transparent) 50%,
+    transparent 65%
+  );
+  opacity: 0;
+  transform: translateX(-60%);
+  transition:
+    transform 700ms var(--ease-out),
+    opacity 300ms ease;
+}
+
+.card[data-level='4']::after,
+.card[data-level='5']::after {
+  opacity: 0.35;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 0 calc(var(--glow) + 14px)
+      color-mix(in srgb, var(--tone) calc(18% + var(--level) * 10%), transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--tone) 70%, transparent);
+}
+
+.card:hover::after {
+  opacity: 0.7;
+  transform: translateX(60%);
+}
+
+.art {
+  position: absolute;
+  inset: auto -30% -18% -30%;
+  z-index: -2;
+  width: 160%;
+  max-width: none;
+  height: auto;
+  opacity: calc(0.22 + var(--level) * 0.06);
+  mask-image: linear-gradient(180deg, transparent, #000 45%);
+}
+
+.cardHead {
+  display: grid;
+  gap: 2px;
+  padding: 18px 18px 0;
+}
+
+.code {
+  color: color-mix(in srgb, var(--tone) 70%, #f1efe8);
+  font:
+    700 0.7rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.cardHead h3 {
+  font:
+    800 clamp(1.4rem, 3vw, 1.75rem) / 1.15 var(--font-heavy, var(--font-body)),
+    sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.count {
+  display: flex;
+  align-items: baseline;
+  align-self: center;
+  gap: 8px;
+  padding-inline: 18px;
+}
+
+.count strong {
+  font:
+    700 clamp(3.6rem, 9vw, 4.6rem) / 1 var(--font-display, var(--font-body)),
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 calc(var(--level) * 4px) color-mix(in srgb, var(--tone) 70%, transparent);
+}
+
+.count span {
+  color: #c0c1ba;
+  font-size: 0.8125rem;
+}
+
+.emblems {
+  display: flex;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 18px 14px;
+}
+
+.emblem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #d8b169;
+}
+
+.emblem svg,
+.medal svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.emblem b {
+  font:
+    700 0.8125rem var(--font-mono),
+    monospace;
+}
+
+.plate {
+  display: grid;
+  gap: 2px;
+  padding: 12px 18px 14px;
+  border-top: 1px solid color-mix(in srgb, var(--tone) 40%, transparent);
+  background: #0b0c0bcc;
+}
+
+.plate strong {
+  overflow: hidden;
+  font-size: 0.9375rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plate span {
+  color: #b0b2ac;
+  font-size: 0.75rem;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  list-style: none;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 10px 16px 10px 10px;
+  border: 1px solid var(--line-strong);
+}
+
+.medal {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  color: var(--bg);
+  background: var(--ink);
+}
+
+.badge[data-badge='champion'] .medal {
+  background: var(--honour);
+}
+
+.badge[data-badge='oracle'] .medal,
+.badge[data-badge='regular'] .medal {
+  background: var(--ct);
+}
+
+.badgeCopy {
+  display: grid;
+  min-width: 0;
+}
+
+.badgeCopy strong {
+  color: var(--ink);
+  font-size: 0.9375rem;
+}
+
+.badgeCopy small {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card::after {
+    transition: none;
+  }
+}

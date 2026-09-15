@@ -2,6 +2,20 @@
   padding-block: var(--space-8) var(--space-8);
 }
 
+.showcase {
+  display: grid;
+  gap: 24px;
+}
+
+.crown {
+  margin-inline-end: 8px;
+  padding: 1px 6px;
+  border: 1px solid var(--honour);
+  color: var(--honour);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
 .entries {
   display: grid;
   list-style: none;
