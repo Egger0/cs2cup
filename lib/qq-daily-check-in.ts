@@ -2,8 +2,8 @@ import 'server-only'
 
 import { evaluateUsernamePolicy } from './identity/internal/username-policy.ts'
 import type { IdentityDatabase } from './identity/internal/contracts.ts'
-
-const SHANGHAI = 'Asia/Shanghai'
+import { NBT_REWARDS, nbtGrantedAt, nbtGrantStatement } from './nbt.ts'
+import { shanghaiDate } from './qq-automation.ts'
 
 export type QqLinkResult =
   | { ok: true }
@@ -17,7 +17,7 @@ export type QqUnlinkResult = { ok: true } | { ok: false; reason: 'not_bound' }
 export type QqCheckInResult =
   | { kind: 'unbound' }
   | { kind: 'already_checked_in'; streak: number }
-  | { kind: 'checked_in'; streak: number; rank: number }
+  | { kind: 'checked_in'; streak: number; rank: number; reward: number }
 
 export interface QqLeaderboardEntry {
   displayName: string
@@ -37,17 +37,6 @@ interface StreakRow {
 
 function validOpenId(value: string) {
   return value.length > 0 && value.length <= 256 && value === value.trim()
-}
-
-function shanghaiDate(now: number) {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: SHANGHAI,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(now)
-  const value = Object.fromEntries(parts.map(part => [part.type, part.value]))
-  return `${value.year}-${value.month}-${value.day}`
 }
 
 function previousDate(date: string) {
@@ -179,6 +168,7 @@ export async function checkInFromQq(
         link.account_id,
         today,
       ),
+    nbtGrantStatement(database, link.account_id, 'check_in', now),
   ])
   const streak = await database
     .prepare(
@@ -210,7 +200,13 @@ export async function checkInFromQq(
       streak.last_signed_at,
     )
     .first<{ count: number }>()
-  return { kind: 'checked_in', streak: streak.current_streak, rank: Number(ahead?.count ?? 0) + 1 }
+  const grantedAt = await nbtGrantedAt(database, link.account_id, 'check_in', now)
+  return {
+    kind: 'checked_in',
+    streak: streak.current_streak,
+    rank: Number(ahead?.count ?? 0) + 1,
+    reward: grantedAt === now ? NBT_REWARDS.check_in : 0,
+  }
 }
 
 export async function qqCheckInLeaderboard(

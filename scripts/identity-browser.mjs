@@ -236,7 +236,7 @@ try {
     .filter({ has: owner.page.getByRole('heading', { name: '人员与权限', exact: true }) })
   await access.getByLabel('账号用户名').fill(BROWSER_USERS.rejectee.username)
   await access.getByLabel('角色').selectOption('check_in_operator')
-  await access.getByLabel('赛事').selectOption({ index: 1 })
+  await access.getByLabel(/^赛事/).selectOption({ index: 1 })
   await access.getByLabel('授权原因').fill('浏览器权限闭环验收')
   await access.locator('form').first().getByRole('button').click()
   const roleRow = access.locator('article').filter({ hasText: BROWSER_USERS.rejectee.displayName })

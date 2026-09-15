@@ -1,0 +1,302 @@
+.panel {
+  composes: emphasisSheet from '@/components/ui/Surface.module.css';
+  display: grid;
+  gap: 20px;
+  margin-top: 28px;
+  padding-top: clamp(20px, 3vw, 28px);
+}
+
+.head {
+  display: grid;
+  gap: 6px;
+}
+
+.eyebrow {
+  color: var(--ct);
+  font:
+    600 0.66rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.16em;
+}
+
+.head h2 {
+  color: var(--ink);
+  font-size: clamp(1.35rem, 3vw, 1.9rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.head p {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.pool {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px 24px;
+}
+
+.side {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sideB {
+  text-align: end;
+}
+
+.side strong {
+  font:
+    700 clamp(1.6rem, 5vw, 2.6rem) / 1 var(--font-display, var(--font-body)),
+    sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.sideA strong {
+  color: var(--ct);
+}
+
+.sideB strong {
+  color: var(--honour);
+}
+
+.side[data-winner] strong::after {
+  content: ' 胜';
+  font-size: 0.9rem;
+  letter-spacing: 0;
+}
+
+.sideName {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 0.9375rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.figures {
+  color: var(--muted);
+  font:
+    0.8125rem var(--font-mono),
+    monospace;
+}
+
+.figures b {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.bar {
+  grid-column: 1 / -1;
+  display: flex;
+  height: 8px;
+  background: var(--honour);
+}
+
+.bar span {
+  background: var(--ct);
+  box-shadow: 3px 0 0 var(--surface);
+  transition: inline-size 480ms var(--ease-out);
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+}
+
+.pick {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.pick legend {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.pick label {
+  position: relative;
+  display: flex;
+}
+
+.pick input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+}
+
+.pick span {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.pick label:first-of-type input:checked + span {
+  border-color: var(--ct);
+  background: var(--ct);
+  color: var(--button-ink);
+}
+
+.pick label:last-of-type input:checked + span {
+  border-color: var(--honour);
+  background: var(--honour);
+  color: var(--button-ink);
+}
+
+.pick input:focus-visible + span {
+  outline: 2px solid var(--ct);
+  outline-offset: 3px;
+}
+
+.stake {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.stake label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.stake input {
+  inline-size: 120px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font:
+    1rem var(--font-mono),
+    monospace;
+}
+
+.preset {
+  min-width: 56px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font:
+    0.875rem var(--font-mono),
+    monospace;
+  cursor: pointer;
+}
+
+.preset[aria-pressed='true'] {
+  border-color: var(--ink);
+}
+
+.preset:disabled {
+  color: var(--muted-2);
+  cursor: not-allowed;
+}
+
+.submit {
+  justify-self: start;
+  min-height: 48px;
+  padding: 10px 22px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 0.9375rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.balance {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.balance a,
+.gate a {
+  color: var(--ct);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.receipt,
+.gate {
+  color: var(--ink);
+  font-size: 0.9375rem;
+}
+
+.receipt span {
+  margin-inline-end: 10px;
+  padding: 2px 8px;
+  border: 1px solid currentColor;
+  font:
+    600 0.75rem var(--font-mono),
+    monospace;
+}
+
+.receipt[data-status='won'] span {
+  color: var(--ct);
+}
+
+.receipt[data-status='lost'] span {
+  color: var(--c4);
+}
+
+.success,
+.error {
+  font-size: 0.875rem;
+}
+
+.success {
+  color: var(--ct);
+}
+
+.error {
+  color: var(--c4);
+}
+
+.note {
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted-2);
+  font-size: 0.75rem;
+}
+
+@media (max-width: 560px) {
+  .pool {
+    gap: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar span,
+  .pick span {
+    transition: none;
+  }
+}

@@ -30,10 +30,12 @@ import {
   listCurrentUnifiedTournamentWorkspaces,
 } from '@/lib/queries/staff-check-in'
 import { maskParticipantPrincipal } from '@/lib/tournament-staff-management'
+import { nbtWallet } from '@/lib/nbt'
 import { AccessReceipt } from './AccessReceipt'
 import { EntryDossier } from './EntryDossier'
 import styles from './me.module.css'
 import { NextMatchBrief } from './NextMatchBrief'
+import { NbtWallet } from './nbt/NbtWallet'
 import { PassReference } from './PassReference'
 import { ParticipantSessionBoundary, ParticipantSignOut } from './ParticipantSessionBoundary'
 import { RegistrationInvitations } from './RegistrationInvitations'
@@ -83,28 +85,37 @@ async function UnifiedAccountEvents({
 }) {
   const database = cloudflareBindings().db
   const now = currentTimeMillis()
-  const [entries, invitations, rosterClaimRequests, drafts, workspacePage, nextMatch, workAccess] =
-    await Promise.all([
-      listAccountTournamentRegistrations(database, context, now),
-      optional('invitations', listIncomingRegistrationInvitations(database, context, now), []),
-      optional('roster claims', listIncomingRosterClaimRequests(database, context, now), []),
-      optional('drafts', listRegistrationDrafts(database, context, now), []),
-      optional(
-        'staff workspaces',
-        listCurrentUnifiedTournamentWorkspaces({
-          checkInOnly: true,
-          limit: STAFF_PAGE_SIZE,
-          offset: (staffPage - 1) * STAFF_PAGE_SIZE,
-        }),
-        EMPTY_WORKSPACES,
-      ),
-      optional(
-        'next match brief',
-        accountNextMatchFromDatabase(database, context.account.id, now),
-        undefined,
-      ),
-      optional('work access', accountHasWorkAccess(database, context.account.id, now), false),
-    ])
+  const [
+    entries,
+    invitations,
+    rosterClaimRequests,
+    drafts,
+    workspacePage,
+    nextMatch,
+    workAccess,
+    wallet,
+  ] = await Promise.all([
+    listAccountTournamentRegistrations(database, context, now),
+    optional('invitations', listIncomingRegistrationInvitations(database, context, now), []),
+    optional('roster claims', listIncomingRosterClaimRequests(database, context, now), []),
+    optional('drafts', listRegistrationDrafts(database, context, now), []),
+    optional(
+      'staff workspaces',
+      listCurrentUnifiedTournamentWorkspaces({
+        checkInOnly: true,
+        limit: STAFF_PAGE_SIZE,
+        offset: (staffPage - 1) * STAFF_PAGE_SIZE,
+      }),
+      EMPTY_WORKSPACES,
+    ),
+    optional(
+      'next match brief',
+      accountNextMatchFromDatabase(database, context.account.id, now),
+      undefined,
+    ),
+    optional('work access', accountHasWorkAccess(database, context.account.id, now), false),
+    optional('nbt wallet', nbtWallet(database, context.account.id, now), null),
+  ])
   const staffPages = Math.max(1, Math.ceil(workspacePage.total / STAFF_PAGE_SIZE))
   if (staffPage > staffPages) redirect(staffPages === 1 ? '/me' : `/me?staffPage=${staffPages}`)
   const hasApprovedEntry = entries.some(entry => entry.team.status === 'approved')
@@ -126,6 +137,7 @@ async function UnifiedAccountEvents({
     >
       <RegistrationInvitations items={invitations} />
       <RosterClaimRequests items={rosterClaimRequests} />
+      {wallet ? <NbtWallet wallet={wallet} /> : null}
 
       <StaffWorkspaces
         workspaces={workspacePage.workspaces}

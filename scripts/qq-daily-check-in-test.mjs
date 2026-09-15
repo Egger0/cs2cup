@@ -102,7 +102,7 @@ try {
 
   assert.deepEqual(
     await checkInFromQq(fixture.db, { groupOpenId, memberOpenId: ownerOpenId }, at(4, 23, 59)),
-    { kind: 'checked_in', streak: 1, rank: 1 },
+    { kind: 'checked_in', streak: 1, rank: 1, reward: 0 },
   )
   assert.deepEqual(
     await checkInFromQq(fixture.db, { groupOpenId, memberOpenId: ownerOpenId }, at(4, 23, 59) + 1),
@@ -110,11 +110,11 @@ try {
   )
   assert.deepEqual(
     await checkInFromQq(fixture.db, { groupOpenId, memberOpenId: ownerOpenId }, at(5, 0, 0)),
-    { kind: 'checked_in', streak: 2, rank: 1 },
+    { kind: 'checked_in', streak: 2, rank: 1, reward: 0 },
   )
   assert.deepEqual(
     await checkInFromQq(fixture.db, { groupOpenId, memberOpenId: managerOpenId }, at(5, 8, 4)),
-    { kind: 'checked_in', streak: 1, rank: 2 },
+    { kind: 'checked_in', streak: 1, rank: 2, reward: 0 },
   )
   assert.deepEqual(await qqCheckInLeaderboard(fixture.db, groupOpenId, at(5, 9)), [
     { displayName: reviewerName, streak: 2, lastCheckInDate: '2026-09-05' },
@@ -122,7 +122,7 @@ try {
   ])
   assert.deepEqual(
     await checkInFromQq(fixture.db, { groupOpenId, memberOpenId: ownerOpenId }, at(7, 8)),
-    { kind: 'checked_in', streak: 1, rank: 1 },
+    { kind: 'checked_in', streak: 1, rank: 1, reward: 0 },
   )
   assert.deepEqual(await qqCheckInLeaderboard(fixture.db, groupOpenId, at(7, 9)), [
     { displayName: reviewerName, streak: 1, lastCheckInDate: '2026-09-07' },
