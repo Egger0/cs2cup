@@ -22,6 +22,7 @@ export interface GameRow {
   format_note: string | null
   sort_order: number
   active: boolean
+  loadout_codes: boolean
 }
 
 export function toPost(row: PostRow): Post {
@@ -49,5 +50,6 @@ export function toGame(row: GameRow): Game {
     formatNote: row.format_note,
     sortOrder: row.sort_order,
     active: row.active,
+    loadoutCodes: row.loadout_codes,
   }
 }

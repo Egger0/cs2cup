@@ -71,6 +71,7 @@ export async function updateGame(id: number, form: FormData) {
     description: String(form.get('description') ?? '').trim() || null,
     formatNote: String(form.get('formatNote') ?? '').trim() || null,
     active: form.get('active') === 'on',
+    loadoutCodes: form.get('loadoutCodes') === 'on',
   })
   updateTag('game')
 }

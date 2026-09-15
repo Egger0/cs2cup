@@ -110,6 +110,10 @@ export function GameEditor({ game }: { game: Game }) {
         <label className={styles.checkLabel}>
           <input type="checkbox" name="active" defaultChecked={game.active} /> 在网站上展示
         </label>
+        <label className={styles.checkLabel}>
+          <input type="checkbox" name="loadoutCodes" defaultChecked={game.loadoutCodes} />{' '}
+          开放改枪码投稿
+        </label>
       </div>
       <Field
         id={`gt${game.id}`}

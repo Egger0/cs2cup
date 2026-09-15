@@ -35,6 +35,7 @@ export interface Game {
   formatNote: string | null
   sortOrder: number
   active: boolean
+  loadoutCodes: boolean
 }
 
 export interface Tournament {

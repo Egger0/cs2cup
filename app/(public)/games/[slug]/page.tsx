@@ -5,7 +5,11 @@ import { PLANET_COLORS } from '@/lib/planets'
 import { PostList } from '@/components/domain/PostList'
 import { PageMasthead, SectionHead } from '@/components/domain/Sections'
 import { TournamentList } from '@/components/domain/TournamentList'
-import { getGame, listPosts, listTournaments, safely } from '@/lib/queries/public'
+import { Honours } from '@/components/domain/Honours'
+import { LoadoutCodeList } from '@/components/domain/LoadoutCodeList'
+import { cloudflareBindings } from '@/lib/cloudflare-bindings'
+import { listLoadoutCodes } from '@/lib/loadout-codes'
+import { getGame, listHonours, listPosts, listTournaments, safely } from '@/lib/queries/public'
 import styles from './game.module.css'
 
 export const revalidate = 300
@@ -21,12 +25,17 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
   const game = await getGame(slug)
   if (!game) notFound()
 
-  const [tournaments, posts] = await Promise.all([
+  const [tournaments, posts, honours, loadouts] = await Promise.all([
     safely(listTournaments, []),
     safely(() => listPosts(), []),
+    safely(listHonours, []),
+    game.loadoutCodes
+      ? safely(() => listLoadoutCodes(cloudflareBindings().db, game.id, 6), [])
+      : Promise.resolve([]),
   ])
 
   const mine = tournaments.filter(tournament => tournament.gameId === game.id)
+  const champions = honours.filter(honour => honour.tournament.gameId === game.id)
   const news = posts.filter(post => post.gameId === game.id)
   return (
     <>
@@ -106,6 +115,56 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
           )}
         </div>
       </section>
+
+      {champions.length > 0 ? (
+        <>
+          <div className="divider" />
+          <section className="section" id="game-honours">
+            <div className="wrap">
+              <div data-rise>
+                <SectionHead eyebrow="赛事档案" title="历届冠军" />
+              </div>
+              <Honours honours={champions} />
+            </div>
+          </section>
+        </>
+      ) : null}
+
+      {game.loadoutCodes ? (
+        <>
+          <div className="divider" />
+          <section className="section" id="game-loadouts">
+            <div className="wrap">
+              <div data-rise className={styles.sectionBar}>
+                <SectionHead
+                  eyebrow="改枪码"
+                  title="社员的改装方案"
+                  lede="复制改枪码，在游戏的改装界面粘贴即可使用。"
+                />
+                <ButtonLink href={`/games/${game.slug}/loadouts`}>
+                  全部改枪码 · 投稿 <span aria-hidden="true">→</span>
+                </ButtonLink>
+              </div>
+              {loadouts.length > 0 ? (
+                <LoadoutCodeList codes={loadouts} />
+              ) : (
+                <Empty
+                  action={
+                    <ButtonLink
+                      href={`/games/${game.slug}/loadouts#loadout-submit`}
+                      variant="primary"
+                    >
+                      投稿第一条改枪码
+                    </ButtonLink>
+                  }
+                >
+                  还没有通过审核的改枪码。
+                </Empty>
+              )}
+            </div>
+          </section>
+        </>
+      ) : null}
 
       {news.length > 0 ? (
         <>

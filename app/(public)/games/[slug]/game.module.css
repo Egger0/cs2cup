@@ -83,3 +83,12 @@
     border-left: 0;
   }
 }
+
+.sectionBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 32px;
+  margin-bottom: 24px;
+}

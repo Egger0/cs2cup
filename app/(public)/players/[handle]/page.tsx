@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PageMasthead, SectionHead } from '@/components/domain/Sections'
+import { PlayerBadges, PlayerGameCards } from '@/components/domain/PlayerGameCards'
 import { Empty } from '@/components/ui'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { publicMetadata } from '@/lib/public-metadata'
@@ -42,9 +43,18 @@ export default async function PlayerPage({ params }: { params: Promise<{ handle:
         code="PLAYER"
         eyebrow={`PLAYER / ${profile.handle.toUpperCase()}`}
         title={profile.displayName}
-        lede="这里记录参加过哪些赛事、代表哪支战队，不包含个人表现数据。"
+        lede="参加过哪些赛事、代表哪支战队、拿过哪些勋章，不包含个人表现数据。"
       />
       <div className="wrap">
+        {profile.games.length || profile.badges.length ? (
+          <section className={styles.section}>
+            <SectionHead eyebrow="名片" title="项目名片" lede="参赛次数越多，名片越亮。" />
+            <div className={styles.showcase}>
+              <PlayerBadges badges={profile.badges} />
+              <PlayerGameCards cards={profile.games} />
+            </div>
+          </section>
+        ) : null}
         <section className={styles.section}>
           <SectionHead eyebrow="履历" title="参赛记录" />
           {profile.entries.length > 0 ? (
@@ -65,7 +75,10 @@ export default async function PlayerPage({ params }: { params: Promise<{ handle:
                     {entry.teamName}
                     <span className={styles.tag}>{entry.teamTag}</span>
                   </Link>
-                  <span className={styles.nickname}>{entry.nickname}</span>
+                  <span className={styles.nickname}>
+                    {entry.champion ? <b className={styles.crown}>冠军</b> : null}
+                    {entry.nickname}
+                  </span>
                 </li>
               ))}
             </ul>
