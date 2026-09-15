@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { SectionHead } from '@/components/domain/Sections'
 import { MapVeto } from '@/components/domain/MapVeto'
+import { MatchPrediction } from '@/components/domain/MatchPrediction'
 import { Versus } from '@/components/domain/Versus'
 import { indexMatches, indexTeams, isByeMatch, resolveMatch } from '@/lib/bracket'
 import { formatSiteDateTime } from '@/lib/datetime'
@@ -122,6 +123,8 @@ export default async function MatchPage({
             label: 'MATCH DAY / 比赛日',
           }}
         />
+
+        {bye ? null : <MatchPrediction matchId={match.id} />}
 
         {bye ? null : (
           <div className={styles.veto}>

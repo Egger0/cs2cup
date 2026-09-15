@@ -1,0 +1,186 @@
+.wallet {
+  composes: sheet from '@/components/ui/Surface.module.css';
+  display: grid;
+  gap: 18px;
+  margin-bottom: clamp(20px, 3vw, 32px);
+  padding-top: clamp(20px, 3vw, 28px);
+}
+
+.head {
+  display: grid;
+  gap: 6px;
+}
+
+.eyebrow {
+  color: var(--honour);
+  font:
+    600 0.66rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.16em;
+}
+
+.head h2 {
+  color: var(--ink);
+  font-size: 1.25rem;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 32px;
+}
+
+.balance {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.balance strong {
+  color: var(--ink);
+  font:
+    700 clamp(2.8rem, 8vw, 4.4rem) / 0.9 var(--font-display, var(--font-body)),
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.balance span {
+  color: var(--honour);
+  font:
+    600 1rem var(--font-mono),
+    monospace;
+}
+
+.earn {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.checkIn {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.checkInButton {
+  min-height: 48px;
+  padding: 10px 22px;
+  border: 1px solid var(--honour);
+  background: var(--honour);
+  color: var(--button-ink);
+  font-size: 0.9375rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.checkInButton:disabled {
+  border-color: var(--line-strong);
+  background: transparent;
+  color: var(--muted);
+  cursor: default;
+}
+
+.hint,
+.matchday,
+.error {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.hint a {
+  color: var(--ct);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.matchday {
+  color: var(--honour);
+}
+
+.error {
+  color: var(--c4);
+}
+
+.ledger {
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.ledger a {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto 72px;
+  align-items: baseline;
+  gap: 4px 16px;
+  min-height: 52px;
+  padding-block: 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  transition: background 160ms ease;
+}
+
+.ledger a:hover {
+  background: var(--accent-dim);
+}
+
+.match {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ledger strong {
+  overflow-wrap: anywhere;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.status {
+  color: var(--muted);
+  font:
+    600 0.75rem var(--font-mono),
+    monospace;
+}
+
+.status[data-status='won'] {
+  color: var(--ct);
+}
+
+.status[data-status='lost'] {
+  color: var(--c4);
+}
+
+.delta {
+  font:
+    600 0.9375rem var(--font-mono),
+    monospace;
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.note {
+  color: var(--muted-2);
+  font-size: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .earn,
+  .checkIn {
+    justify-items: start;
+  }
+
+  .ledger a {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .match {
+    grid-column: 1 / -1;
+  }
+}

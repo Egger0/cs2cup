@@ -66,7 +66,8 @@ async function commandReply(
       return '请先发送“/绑定 你的用户名”。'
     }
     if (result.kind === 'already_checked_in') return `今天已经签到，当前连续 ${result.streak} 天。`
-    return `签到成功：连续 ${result.streak} 天，当前第 ${result.rank} 名。`
+    const reward = result.reward ? `，获得 ${result.reward} nbt` : ''
+    return `签到成功：连续 ${result.streak} 天，当前第 ${result.rank} 名${reward}。`
   }
   if (command.kind === 'leaderboard') {
     const ranking = await qqCheckInLeaderboard(database, groupOpenId)
