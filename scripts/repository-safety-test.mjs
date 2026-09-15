@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import { readdir, readFile } from 'node:fs/promises'
+import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8')
@@ -66,7 +68,7 @@ assert.match(localDatabase, /envFiles: \[ENV_PATH\]/)
 assert.match(localDatabase, /PERSIST_PATH = join\(STATE_ROOT, 'v3'\)/)
 assert.match(workersDeploy, /WORKERS_CI/)
 assert.match(workersDeploy, /WORKERS_CI_BRANCH/)
-assert.match(workersDeploy, /migrations.*apply.*CS2CUP_DB.*--remote/s)
+assert.doesNotMatch(workersDeploy, /migrations/)
 assert.match(workersDeploy, /opennextjs-cloudflare.*deploy/s)
 assert.match(workersDeploy, /opennextjs-cloudflare.*upload/s)
 
@@ -82,6 +84,33 @@ assert.doesNotMatch(localConfigSource, /IDENTITY_PASSWORD_SCREENING_LOCAL_SERVIC
 assert.deepEqual(localConfig.assets.run_worker_first, ['/photos', '/photos/*'])
 assert.deepEqual(parsedProductionConfig.config.assets.run_worker_first, ['/photos', '/photos/*'])
 assert.match(await read('public/.assetsignore'), /^\/photos\/$/m)
+assert.equal(parsedProductionConfig.config.build.command, 'node scripts/workers-migrate.mjs')
+assert.equal(localConfig.build, undefined)
+
+const workersMigrate = new URL('./workers-migrate.mjs', import.meta.url)
+const migrateCommand = ['d1', 'migrations', 'apply', 'CS2CUP_DB', '--remote'].join('.*')
+assert.match(await read('scripts/workers-migrate.mjs'), new RegExp(migrateCommand, 's'))
+const workersBuild = {
+  CI: 'true',
+  WORKERS_CI: '1',
+  WORKERS_CI_BRANCH: 'main',
+  WRANGLER_COMMAND: 'deploy',
+}
+for (const override of [
+  { WORKERS_CI: undefined },
+  { WORKERS_CI_BRANCH: 'feat/preview' },
+  { WRANGLER_COMMAND: 'versions upload' },
+  { WRANGLER_COMMAND: 'dev' },
+]) {
+  const env = { PATH: process.env.PATH, ...workersBuild, ...override }
+  for (const [key, value] of Object.entries(env)) if (value === undefined) delete env[key]
+  const skipped = spawnSync(process.execPath, [fileURLToPath(workersMigrate)], {
+    encoding: 'utf8',
+    env,
+  })
+  assert.equal(skipped.status, 0)
+  assert.match(skipped.stdout, /^Skipping remote D1 migrations/)
+}
 assert.deepEqual(localConfig.services, [
   {
     binding: 'IDENTITY_PASSWORD_RANGE',
