@@ -4,16 +4,19 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { Button, Field, TextField } from '@/components/ui'
 import type { RegistrationDraftValues } from '@/lib/registration-form'
+import { rosterLabel } from '@/lib/registration'
 import { registerTeam, saveTeamDraft } from './actions'
 import styles from './register.module.css'
 
 export function RegisterForm({
   slug,
   canSubmit,
+  starterCount,
   initialValues,
 }: {
   slug: string
   canSubmit: boolean
+  starterCount: number
   initialValues?: RegistrationDraftValues | null
 }) {
   const [error, setError] = useState('')
@@ -156,9 +159,9 @@ export function RegisterForm({
         />
 
         <div className={styles.roster}>
-          <div className="readout">首发五人 + 替补一人</div>
+          <div className="readout">{rosterLabel(starterCount)}</div>
           <div className={styles.players}>
-            {[1, 2, 3, 4, 5].map(index => (
+            {Array.from({ length: starterCount }, (_, offset) => offset + 1).map(index => (
               <Field
                 key={index}
                 id={`player${index}`}

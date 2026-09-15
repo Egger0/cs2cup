@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { ButtonLink, Empty } from '@/components/ui'
 import { SectionHead } from '@/components/domain/Sections'
@@ -8,6 +9,7 @@ import { getAuthContext } from '@/lib/identity/kernel'
 import { getMembershipState } from '@/lib/identity/membership-service'
 import { getRegistrationDraft } from '@/lib/identity/registration-workflow'
 import { RegisterForm } from './RegisterForm'
+import { tournamentRosterSize } from '@/lib/queries/roster-size'
 import { registrationAccountHref, registrationAuthHref } from '@/lib/registration-navigation'
 import styles from './register.module.css'
 
@@ -88,8 +90,17 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
                   你可以先填写并保存草稿；通过成员资格审核后，再完成最终提交。
                 </Empty>
               ) : null}
+              <p className={styles.squadHint}>
+                已经组好小队？在 <Link href="/squads">我的小队</Link>{' '}
+                满员后可由队长一键报名，队员的参赛记录会自动归到各自账号。
+              </p>
               <div data-rise="2">
-                <RegisterForm slug={slug} canSubmit={eligible} initialValues={draft?.values} />
+                <RegisterForm
+                  slug={slug}
+                  canSubmit={eligible}
+                  starterCount={await tournamentRosterSize(database, { tournamentSlug: slug })}
+                  initialValues={draft?.values}
+                />
               </div>
             </>
           ) : (

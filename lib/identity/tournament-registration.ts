@@ -14,6 +14,10 @@ export interface TournamentRegistrationInput {
   readonly managementTokenHash: string
   readonly fingerprint: string
   readonly now?: number
+  readonly squad?: {
+    readonly id: string
+    readonly playerAccountIds: readonly string[]
+  }
 }
 
 const TEAM_LOOKUP = `SELECT candidate.id FROM team AS candidate
@@ -92,6 +96,46 @@ export async function createApprovedTournamentRegistration(
   if (!validInput(input, now)) throw new TypeError('Invalid tournament registration command')
   const relationshipId = createOpaqueToken()
   const team = input.team
+  const squadStatements = input.squad
+    ? [
+        ...input.squad.playerAccountIds.map((accountId, index) =>
+          database
+            .prepare(
+              `INSERT INTO identity_registration_membership
+                (id, team_id, account_id, relationship, player_id, granted_by_account_id,
+                 grant_reason, granted_at)
+               SELECT ?, team.id, ?, 'player', player.id, ?, 'Squad tournament registration', ?
+               FROM team JOIN player ON player.team_id = team.id AND player.sort_order = ?
+               WHERE team.tournament_id = ? AND team.tag = ? AND team.management_token_hash = ?`,
+            )
+            .bind(
+              createOpaqueToken(),
+              accountId,
+              context.account.id,
+              now,
+              index + 1,
+              input.tournamentId,
+              team.tag,
+              input.managementTokenHash,
+            ),
+        ),
+        database
+          .prepare(
+            `INSERT INTO squad_registration (squad_id, tournament_id, team_id, registered_at)
+             SELECT squad.id, team.tournament_id, team.id, ? FROM squad, team
+             WHERE squad.id = ? AND squad.captain_account_id = ?
+               AND team.tournament_id = ? AND team.tag = ? AND team.management_token_hash = ?`,
+          )
+          .bind(
+            now,
+            input.squad.id,
+            context.account.id,
+            input.tournamentId,
+            team.tag,
+            input.managementTokenHash,
+          ),
+      ]
+    : []
   const locator = [input.tournamentId, team.tag, input.managementTokenHash] as const
   const statements = [
     database
@@ -177,6 +221,7 @@ export async function createApprovedTournamentRegistration(
       )
       .bind(input.tournamentId, input.managementTokenHash, relationshipId, context.account.id),
   ]
+  statements.splice(statements.length - 1, 0, ...squadStatements)
 
   try {
     await database.batch(statements)

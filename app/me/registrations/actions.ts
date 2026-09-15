@@ -18,6 +18,7 @@ import {
 } from '@/lib/queries/registration-management'
 import { acceptRosterClaimRequest, claimRosterSeat } from '@/lib/identity/roster-claim'
 import { parseRegistrationForm } from '@/lib/registration-form'
+import { tournamentRosterSize } from '@/lib/queries/roster-size'
 
 export interface RegistrationActionResult {
   ok: boolean
@@ -66,10 +67,13 @@ export async function updateAccountRegistration(
   expectedRevision: number,
   form: FormData,
 ): Promise<RegistrationActionResult> {
-  const parsed = parseRegistrationForm(form)
-  if (!parsed.ok) return { ok: false, error: parsed.error }
   const session = await authenticated()
   if (!session) return { ok: false, error: '登录已失效，请重新登录。' }
+  const parsed = parseRegistrationForm(
+    form,
+    await tournamentRosterSize(session.database, { teamId }),
+  )
+  if (!parsed.ok) return { ok: false, error: parsed.error }
   try {
     const saved = await saveAccountManagedRegistration(
       session.database,

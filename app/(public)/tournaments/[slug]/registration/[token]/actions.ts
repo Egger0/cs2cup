@@ -12,6 +12,7 @@ import {
   saveManagedRegistration,
 } from '@/lib/queries/registration-management'
 import { parseRegistrationForm } from '@/lib/registration-form'
+import { tournamentRosterSize } from '@/lib/queries/roster-size'
 
 export interface ManagedRegistrationResult {
   ok: boolean
@@ -60,7 +61,10 @@ export async function updateManagedRegistration(
   if (context.kind === 'authenticated' && context.session.recoveryRestricted) {
     return { ok: false, error: '请先完成账号恢复，再修改报名资料。' }
   }
-  const parsed = parseRegistrationForm(form)
+  const parsed = parseRegistrationForm(
+    form,
+    await tournamentRosterSize(database, { tournamentSlug: slug }),
+  )
   if (!parsed.ok) return { ok: false, error: parsed.error }
 
   try {
