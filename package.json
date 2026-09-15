@@ -16,7 +16,6 @@
     "cf:release": "npm run cf:build && npm run cf:size",
     "cf:build:local": "opennextjs-cloudflare build --config wrangler.local.jsonc",
     "cf:size": "node scripts/worker-size-test.mjs",
-    "deploy": "node scripts/workers-deploy.mjs",
     "db:local:migrate": "node scripts/local-database.mjs migrate",
     "db:local:seed": "node scripts/local-database.mjs seed",
     "db:local:reset": "node scripts/local-database.mjs reset",
