@@ -2,7 +2,7 @@ import 'server-only'
 
 import { evaluateUsernamePolicy } from './identity/internal/username-policy.ts'
 import type { IdentityDatabase } from './identity/internal/contracts.ts'
-import { NBT_REWARDS, nbtGrantedAt, nbtGrantStatement } from './nbt.ts'
+import { STARDUST_REWARDS, stardustGrantedAt, stardustGrantStatement } from './stardust.ts'
 import { shanghaiDate } from './qq-automation.ts'
 
 export type QqLinkResult =
@@ -168,7 +168,7 @@ export async function checkInFromQq(
         link.account_id,
         today,
       ),
-    nbtGrantStatement(database, link.account_id, 'check_in', now),
+    stardustGrantStatement(database, link.account_id, 'check_in', now),
   ])
   const streak = await database
     .prepare(
@@ -200,12 +200,12 @@ export async function checkInFromQq(
       streak.last_signed_at,
     )
     .first<{ count: number }>()
-  const grantedAt = await nbtGrantedAt(database, link.account_id, 'check_in', now)
+  const grantedAt = await stardustGrantedAt(database, link.account_id, 'check_in', now)
   return {
     kind: 'checked_in',
     streak: streak.current_streak,
     rank: Number(ahead?.count ?? 0) + 1,
-    reward: grantedAt === now ? NBT_REWARDS.check_in : 0,
+    reward: grantedAt === now ? STARDUST_REWARDS.check_in : 0,
   }
 }
 

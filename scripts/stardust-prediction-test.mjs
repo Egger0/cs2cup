@@ -21,7 +21,7 @@ registerHooks({
   },
 })
 
-const { checkInForNbt, nbtBalance, nbtWallet } = await import('../lib/nbt.ts')
+const { checkInForStardust, stardustBalance, stardustWallet } = await import('../lib/stardust.ts')
 const { matchPredictionBoard, placeMatchPrediction } = await import('../lib/match-prediction.ts')
 const { accountIds, createIdentityKernelFixture, credentialIds, passwordCredentialIds } =
   await import('./identity-kernel-test-fixture.mjs')
@@ -31,7 +31,10 @@ const fixture = await createIdentityKernelFixture()
 const { database, db, now } = fixture
 const later = new Date(now + 3 * 60 * 60 * 1000).toISOString()
 const balances = () =>
-  Promise.all([nbtBalance(db, accountIds.owner), nbtBalance(db, accountIds.platformOwner)])
+  Promise.all([
+    stardustBalance(db, accountIds.owner),
+    stardustBalance(db, accountIds.platformOwner),
+  ])
 
 try {
   const owner = await fixture.session(accountIds.owner, {
@@ -47,30 +50,33 @@ try {
     passwordCredentialId: passwordCredentialIds.reviewer,
   })
 
-  assert.deepEqual(await checkInForNbt(db, accountIds.owner, now), {
+  assert.deepEqual(await checkInForStardust(db, accountIds.owner, now), {
     ok: false,
     reason: 'membership_required',
   })
   await approveMembership(db, owner.context, reviewer.context, now + 1)
   await approveMembership(db, second.context, reviewer.context, now + 10)
 
-  assert.deepEqual(await checkInForNbt(db, accountIds.owner, now + 20), { ok: true, reward: 10 })
-  assert.deepEqual(await checkInForNbt(db, accountIds.owner, now + 21), {
+  assert.deepEqual(await checkInForStardust(db, accountIds.owner, now + 20), {
+    ok: true,
+    reward: 10,
+  })
+  assert.deepEqual(await checkInForStardust(db, accountIds.owner, now + 21), {
     ok: false,
     reason: 'already_checked_in',
   })
-  const wallet = await nbtWallet(db, accountIds.owner, now + 22)
+  const wallet = await stardustWallet(db, accountIds.owner, now + 22)
   assert.equal(wallet.eligible, true)
   assert.equal(wallet.checkedInToday, true)
   assert.equal(wallet.matchdayToday, true)
   assert.equal(wallet.balance, 30)
-  assert.equal((await nbtWallet(db, accountIds.owner, now + 23)).balance, 30)
-  await checkInForNbt(db, accountIds.platformOwner, now + 24)
-  await nbtWallet(db, accountIds.platformOwner, now + 25)
-  await nbtWallet(db, accountIds.manager, now + 25)
-  assert.equal(await nbtBalance(db, accountIds.manager), 0)
+  assert.equal((await stardustWallet(db, accountIds.owner, now + 23)).balance, 30)
+  await checkInForStardust(db, accountIds.platformOwner, now + 24)
+  await stardustWallet(db, accountIds.platformOwner, now + 25)
+  await stardustWallet(db, accountIds.manager, now + 25)
+  assert.equal(await stardustBalance(db, accountIds.manager), 0)
   assert.equal(
-    database.prepare('SELECT COUNT(*) AS count FROM nbt_grant').get().count,
+    database.prepare('SELECT COUNT(*) AS count FROM stardust_grant').get().count,
     4,
     'grants are idempotent per member, kind and Shanghai day',
   )
@@ -151,7 +157,7 @@ try {
   assert.deepEqual(await balances(), [30, 30])
   assert.equal(database.prepare('SELECT COUNT(*) AS count FROM match_prediction').get().count, 0)
 
-  console.log('nbt prediction tests passed')
+  console.log('stardust prediction tests passed')
 } finally {
   database.close()
 }

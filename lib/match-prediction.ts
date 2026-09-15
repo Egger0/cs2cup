@@ -1,7 +1,12 @@
 import 'server-only'
 
 import type { IdentityDatabase } from './identity/internal/contracts.ts'
-import { approvedMember, NBT_STAKE_LIMIT, nbtBalance, type PredictionStatus } from './nbt.ts'
+import {
+  approvedMember,
+  STARDUST_STAKE_LIMIT,
+  stardustBalance,
+  type PredictionStatus,
+} from './stardust.ts'
 
 export type PredictionPhase = 'open' | 'closed' | 'settled' | 'unavailable'
 
@@ -81,7 +86,7 @@ export async function matchPredictionBoard(
   const [member, balance, mine] = accountId
     ? await Promise.all([
         approvedMember(database, accountId),
-        nbtBalance(database, accountId),
+        stardustBalance(database, accountId),
         database
           .prepare(
             `SELECT team_id AS teamId, stake, status, delta FROM match_prediction_outcome
@@ -141,7 +146,7 @@ export async function placeMatchPrediction(
   now: number,
 ): Promise<PlacePredictionResult> {
   const { accountId, matchId, teamId, stake } = input
-  if (!Number.isSafeInteger(stake) || stake < 1 || stake > NBT_STAKE_LIMIT) {
+  if (!Number.isSafeInteger(stake) || stake < 1 || stake > STARDUST_STAKE_LIMIT) {
     return { ok: false, reason: 'invalid_stake' }
   }
   if (!Number.isSafeInteger(matchId) || !Number.isSafeInteger(teamId)) {
