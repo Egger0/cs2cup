@@ -41,17 +41,16 @@ Browser checks also reject non-loopback origins and outbound requests.
 
 [`wrangler.jsonc`](./wrangler.jsonc) is deployment configuration. `npm run cf:release` produces the
 same bundle as Workers Builds and enforces its size budget without deploying or accessing remote
-data. Use `npm run cf:build:local` to validate the local-only bindings. Pending D1 migrations are
-applied by the `build.command` in `wrangler.jsonc`, which Wrangler runs before every deploy; it only
-acts inside a Workers Builds `deploy` of `main`, so production cannot publish a Worker whose
-migrations failed, whichever deploy command the dashboard runs. Non-production Workers Builds
-upload an isolated preview version without migrations or traffic promotion.
+data. Use `npm run cf:build:local` to validate the local-only bindings.
 
-The Cloudflare owner must configure these external values under Workers **Settings > Build**;
-Workers Builds does not read them from `wrangler.jsonc`: production branch `main`, build command
-`npm run cf:release`, production deploy command `npm run deploy`, and a Workers Builds API token
-that includes D1 Edit plus Worker publication permissions. Contributors must not run remote
-migrations or deploy from local machines.
+Workers Builds reads its commands from the dashboard (Workers **Settings > Build**), not from this
+repository. Both triggers build with `npm run cf:release`; `main` deploys with
+`npx @opennextjs/cloudflare deploy`, every other branch uploads a preview version with
+`npx wrangler versions upload`. Pending D1 migrations are applied by `build.command` in
+`wrangler.jsonc`, which Wrangler runs before every deploy and which only acts inside a Workers
+Builds `deploy` of `main`, so production cannot publish a Worker whose migrations failed. The
+Workers Builds API token needs D1 Edit plus Worker publication permissions. Contributors must not
+run remote migrations or deploy from local machines.
 
 ## Configuration
 

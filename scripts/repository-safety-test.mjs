@@ -23,7 +23,7 @@ for (const [name, command] of Object.entries(scripts)) {
 }
 
 assert.match(scripts.dev, /^npm run db:local:migrate && next dev$/)
-assert.equal(scripts.deploy, 'node scripts/workers-deploy.mjs')
+assert.equal(scripts.deploy, undefined)
 assert.equal(scripts['cf:release'], 'npm run cf:build && npm run cf:size')
 assert.equal(scripts['postcf:build'], undefined)
 assert.doesNotMatch(scripts['cf:build'], /wrangler\.local\.jsonc/)
@@ -56,7 +56,6 @@ for (const binding of localConfig.r2_buckets ?? []) {
 const localDatabase = await read('scripts/local-database.mjs')
 const browserCheck = await read('scripts/browser-check.mjs')
 const passwordRangeConfig = await read('wrangler.browser-password-range.jsonc')
-const workersDeploy = await read('scripts/workers-deploy.mjs')
 const productionConfig = await read('wrangler.jsonc')
 const parsedProductionConfig = ts.parseConfigFileTextToJson('wrangler.jsonc', productionConfig)
 if (parsedProductionConfig.error) throw new Error('wrangler.jsonc is invalid')
@@ -66,11 +65,6 @@ assert.match(localDatabase, /configPath: CONFIG_PATH/)
 assert.match(localDatabase, /remoteBindings: false/)
 assert.match(localDatabase, /envFiles: \[ENV_PATH\]/)
 assert.match(localDatabase, /PERSIST_PATH = join\(STATE_ROOT, 'v3'\)/)
-assert.match(workersDeploy, /WORKERS_CI/)
-assert.match(workersDeploy, /WORKERS_CI_BRANCH/)
-assert.doesNotMatch(workersDeploy, /migrations/)
-assert.match(workersDeploy, /opennextjs-cloudflare.*deploy/s)
-assert.match(workersDeploy, /opennextjs-cloudflare.*upload/s)
 
 const nextConfig = await read('next.config.ts')
 assert.match(nextConfig, /configPath: ['"]\.\/wrangler\.local\.jsonc['"]/)
