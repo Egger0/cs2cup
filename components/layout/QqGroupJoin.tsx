@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useId, useRef, useState } from 'react'
-import styles from './SiteFooter.module.css'
+import styles from './CommunityChannels.module.css'
 
 const APP_WAIT_MS = 1200
 

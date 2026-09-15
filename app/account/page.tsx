@@ -5,14 +5,17 @@ import { redirect } from 'next/navigation'
 import { AccountShell } from '@/components/account/AccountShell'
 import { RegistrationJourney } from '@/components/domain/RegistrationJourney'
 import { PageMasthead } from '@/components/domain/Sections'
+import { CommunityChannels } from '@/components/layout/CommunityChannels'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { currentTimeMillis } from '@/lib/current-time'
 import { accountOverview } from '@/lib/identity/account-overview'
 import { getAuthContext } from '@/lib/identity/kernel'
+import { FALLBACK_SITE_SETTING, getSiteSetting, safely } from '@/lib/queries/public'
 import { registrationAuthHref, registrationSlug } from '@/lib/registration-navigation'
 import { MembershipPanel } from './MembershipPanel'
 import { ProfileNameForm } from './ProfileNameForm'
 import { PublicHandleForm } from './PublicHandleForm'
+import { WelcomeDialog } from './WelcomeDialog'
 import styles from './account.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -28,7 +31,11 @@ export default async function AccountPage({
 }: {
   searchParams: Promise<{ welcome?: string | string[]; tournamentSlug?: string | string[] }>
 }) {
-  const [params, context] = await Promise.all([searchParams, getAuthContext()])
+  const [params, context, setting] = await Promise.all([
+    searchParams,
+    getAuthContext(),
+    safely(getSiteSetting, FALLBACK_SITE_SETTING),
+  ])
   const entrySlug = registrationSlug(params.tournamentSlug)
   if (context.kind === 'anonymous')
     redirect(entrySlug ? registrationAuthHref('login', entrySlug) : '/login?redirectKey=account')
@@ -61,10 +68,9 @@ export default async function AccountPage({
       ) : null}
 
       {params.welcome === '1' ? (
-        <aside className={styles.welcome} role="status">
-          <strong>账号已创建</strong>
-          <p>你已经登录。接下来可以申请成员资格；等待期间账号会保持可用。</p>
-        </aside>
+        <WelcomeDialog>
+          <CommunityChannels contactQq={(setting ?? FALLBACK_SITE_SETTING).contactQq} />
+        </WelcomeDialog>
       ) : null}
 
       <div className={styles.grid}>

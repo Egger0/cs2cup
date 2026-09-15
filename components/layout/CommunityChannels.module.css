@@ -1,0 +1,81 @@
+.channels {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.chip {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid rgba(241, 239, 232, 0.2);
+  background: transparent;
+  color: #b2b5ac;
+  cursor: pointer;
+  font:
+    600 0.78rem var(--font-body),
+    sans-serif;
+  letter-spacing: 0.01em;
+  list-style: none;
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.chip::-webkit-details-marker {
+  display: none;
+}
+
+.chip:hover,
+.chip:focus-visible {
+  border-color: var(--ct);
+  color: #f1efe8;
+}
+
+.chipIcon {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.chip small {
+  padding-left: 8px;
+  border-left: 1px solid rgba(241, 239, 232, 0.2);
+  color: #f1efe8;
+  font:
+    600 0.72rem var(--font-mono),
+    monospace;
+}
+
+.qqControl {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.qqHint {
+  color: var(--muted-2);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.qqHint:empty {
+  display: none;
+}
+
+.douyin summary {
+  width: fit-content;
+}
+
+.douyin .qrImage {
+  width: 112px;
+  height: 112px;
+  margin-top: 10px;
+  border: 1px solid rgba(241, 239, 232, 0.2);
+}
