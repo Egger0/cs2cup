@@ -31,5 +31,4 @@ if (branch !== 'main') {
   process.exit(0)
 }
 
-run('wrangler', ['d1', 'migrations', 'apply', 'CS2CUP_DB', '--remote'])
 run('opennextjs-cloudflare', ['deploy'])

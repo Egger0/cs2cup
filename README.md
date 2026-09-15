@@ -41,10 +41,11 @@ Browser checks also reject non-loopback origins and outbound requests.
 
 [`wrangler.jsonc`](./wrangler.jsonc) is deployment configuration. `npm run cf:release` produces the
 same bundle as Workers Builds and enforces its size budget without deploying or accessing remote
-data. Use `npm run cf:build:local` to validate the local-only bindings. The protected
-production-branch Workers Builds deploy command is `npm run deploy`; it applies pending D1
-migrations and publishes the already-built Worker only after migration succeeds. Non-production
-Workers Builds upload an isolated preview version without migrations or traffic promotion.
+data. Use `npm run cf:build:local` to validate the local-only bindings. Pending D1 migrations are
+applied by the `build.command` in `wrangler.jsonc`, which Wrangler runs before every deploy; it only
+acts inside a Workers Builds `deploy` of `main`, so production cannot publish a Worker whose
+migrations failed, whichever deploy command the dashboard runs. Non-production Workers Builds
+upload an isolated preview version without migrations or traffic promotion.
 
 The Cloudflare owner must configure these external values under Workers **Settings > Build**;
 Workers Builds does not read them from `wrangler.jsonc`: production branch `main`, build command

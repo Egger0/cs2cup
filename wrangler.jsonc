@@ -2,6 +2,9 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "nbt",
   "main": "worker.ts",
+  "build": {
+    "command": "node scripts/workers-migrate.mjs",
+  },
   "minify": true,
   "upload_source_maps": true,
   "compatibility_date": "2026-08-28",
