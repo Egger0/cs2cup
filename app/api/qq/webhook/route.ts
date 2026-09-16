@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server'
 
 import { cloudflareBindings, cloudflareEnvironment } from '@/lib/cloudflare-bindings'
+import { formatSiteCompactDateTime } from '@/lib/datetime'
+import { buildScheduleEntries } from '@/lib/schedule'
+import { stardustBalance, stardustGrantedAt } from '@/lib/stardust'
 import { sendQqWelcome } from '@/lib/qq-automation'
 import {
   checkInFromQq,
   linkQqAccountByUsername,
+  qqAccountRegistrations,
   qqCheckInLeaderboard,
+  qqLinkedAccountId,
   unlinkQqAccount,
 } from '@/lib/qq-daily-check-in'
 import {
@@ -17,7 +22,9 @@ import {
   replyToQqGroup,
   verifyQqWebhookSignature,
 } from '@/lib/qq-bot'
+import { getMatches, getPublicTeams } from '@/lib/queries/public/matches'
 import { getCurrentTournament } from '@/lib/queries/public/tournaments'
+import { accountNextMatchFromDatabase } from '@/lib/queries/participant-next-match'
 import { resolveSiteOrigin } from '@/lib/site-config'
 
 export const dynamic = 'force-dynamic'
@@ -35,6 +42,18 @@ function tournamentTime(value: string | null) {
     minute: '2-digit',
     hour12: false,
   }).format(date)
+}
+
+function bindHint() {
+  return '请先发送“/绑定 你的用户名”。'
+}
+
+function registrationStatus(status: 'pending' | 'approved' | 'rejected') {
+  return status === 'approved' ? '已通过' : status === 'pending' ? '待审核' : '未通过'
+}
+
+function teamLabel(team: { name: string; tag: string } | null) {
+  return team ? `[${team.tag}] ${team.name}` : '待定'
 }
 
 async function commandReply(
@@ -69,6 +88,65 @@ async function commandReply(
     const reward = result.reward ? `，获得 ${result.reward} 星尘` : ''
     return `签到成功：连续 ${result.streak} 天，当前第 ${result.rank} 名${reward}。`
   }
+  const base = resolveSiteOrigin()
+  if (command.kind === 'my_schedule') {
+    const accountId = await qqLinkedAccountId(database, groupOpenId, memberOpenId)
+    if (!accountId) return bindHint()
+    const next = await accountNextMatchFromDatabase(database, accountId)
+    if (!next) return `当前没有已安排的下一场比赛。\n${base}/me`
+    const time = formatSiteCompactDateTime(next.match.scheduledAt ?? '') ?? '时间待定'
+    return [
+      '我的下一场',
+      `${next.tournament.title} · ${next.match.roundLabel} · BO${next.match.bestOf}`,
+      `${teamLabel(next.match.teamA)} vs ${teamLabel(next.match.teamB)}`,
+      `时间：${time}`,
+      `${base}/tournaments/${next.tournament.slug}/matches/${next.match.id}`,
+    ].join('\n')
+  }
+  if (command.kind === 'my_registrations') {
+    const accountId = await qqLinkedAccountId(database, groupOpenId, memberOpenId)
+    if (!accountId) return bindHint()
+    const registrations = await qqAccountRegistrations(database, accountId)
+    if (!registrations.length) return `当前没有可查看的赛事报名。\n${base}/me`
+    return [
+      '我的报名',
+      ...registrations.map(
+        registration =>
+          `[${registration.teamTag}] ${registration.teamName} · ${registration.tournamentTitle} · ${registrationStatus(registration.status)}${registration.checkedInAt ? ' · 已签到' : ''}`,
+      ),
+      `${base}/me`,
+    ].join('\n')
+  }
+  if (command.kind === 'stardust') {
+    const accountId = await qqLinkedAccountId(database, groupOpenId, memberOpenId)
+    if (!accountId) return bindHint()
+    const [balance, checkedInAt] = await Promise.all([
+      stardustBalance(database, accountId),
+      stardustGrantedAt(database, accountId, 'check_in', Date.now()),
+    ])
+    return `我的星尘：${balance}\n今日签到：${checkedInAt === null ? '未完成' : '已完成'}\n${base}/me#stardust-wallet`
+  }
+  if (command.kind === 'schedule') {
+    const tournament = await getCurrentTournament()
+    if (!tournament) return `当前没有报名中、进行中或延期赛事。\n${base}/tournaments`
+    const [matches, teams] = await Promise.all([
+      getMatches(tournament.id),
+      getPublicTeams(tournament.id),
+    ])
+    const schedule = buildScheduleEntries(matches, teams)
+      .filter(entry => entry.status === 'upcoming')
+      .slice(0, 3)
+    const href = `${base}/tournaments/${tournament.slug}/schedule`
+    if (!schedule.length) return `「${tournament.title}」暂时没有已排期的近期比赛。\n${href}`
+    return [
+      `近期赛程：${tournament.title}`,
+      ...schedule.map(
+        (entry, index) =>
+          `${index + 1}. ${formatSiteCompactDateTime(entry.match.scheduledAt ?? '') ?? '时间待定'} · ${teamLabel(entry.a)} vs ${teamLabel(entry.b)}`,
+      ),
+      href,
+    ].join('\n')
+  }
   if (command.kind === 'leaderboard') {
     const ranking = await qqCheckInLeaderboard(database, groupOpenId)
     if (!ranking.length) return '还没有有效的连续签到记录。发送“签到”成为第一位打卡成员。'
@@ -77,7 +155,6 @@ async function commandReply(
       .join('\n')}`
   }
   const tournament = await getCurrentTournament()
-  const base = resolveSiteOrigin()
   if (!tournament) return `当前没有报名中、进行中或延期赛事。\n${base}/tournaments`
   const status =
     tournament.status === 'registration'

@@ -84,6 +84,10 @@ bind command. The unbind command removes the sender's own binding. Platform owne
 trigger sends the configured morning greeting daily at 09:00 Asia/Shanghai. Do not put QQ secrets or
 group OpenIDs in `wrangler.jsonc`.
 
+The command panel includes daily check-in, ranking, current tournament, personal next match,
+personal registrations, stardust balance, and current schedule commands. Personal commands expose
+only the bound account's summary and never team contact details.
+
 ## Quality
 
 ```sh

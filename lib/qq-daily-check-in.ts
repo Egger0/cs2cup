@@ -25,6 +25,15 @@ export interface QqLeaderboardEntry {
   lastCheckInDate: string
 }
 
+export interface QqRegistrationSummary {
+  tournamentSlug: string
+  tournamentTitle: string
+  teamName: string
+  teamTag: string
+  status: 'pending' | 'approved' | 'rejected'
+  checkedInAt: string | null
+}
+
 interface LinkRow {
   account_id: string
 }
@@ -33,6 +42,15 @@ interface StreakRow {
   current_streak: number
   last_check_in_date: string
   last_signed_at: number
+}
+
+interface RegistrationSummaryRow {
+  tournament_slug: string
+  tournament_title: string
+  team_name: string
+  team_tag: string
+  team_status: 'pending' | 'approved' | 'rejected'
+  checked_in_at: string | null
 }
 
 function validOpenId(value: string) {
@@ -56,6 +74,47 @@ async function activeLink(database: IdentityDatabase, groupOpenId: string, membe
     )
     .bind(groupOpenId, memberOpenId)
     .first<LinkRow>()
+}
+
+export async function qqLinkedAccountId(
+  database: IdentityDatabase,
+  groupOpenId: string,
+  memberOpenId: string,
+) {
+  if (!validOpenId(groupOpenId) || !validOpenId(memberOpenId)) return null
+  return (await activeLink(database, groupOpenId, memberOpenId))?.account_id ?? null
+}
+
+export async function qqAccountRegistrations(
+  database: IdentityDatabase,
+  accountId: string,
+  now = Date.now(),
+): Promise<QqRegistrationSummary[]> {
+  if (!validOpenId(accountId) || !Number.isSafeInteger(now) || now < 0) return []
+  const rows = await database
+    .prepare(
+      `SELECT DISTINCT tournament.slug AS tournament_slug, tournament.title AS tournament_title,
+              team.name AS team_name, team.tag AS team_tag, team.status AS team_status,
+              team.checked_in_at
+       FROM identity_registration_membership AS membership
+       JOIN team ON team.id = membership.team_id
+       JOIN tournament ON tournament.id = team.tournament_id
+       WHERE membership.account_id = ? AND membership.revoked_at IS NULL
+         AND membership.granted_at <= ?
+         AND (membership.expires_at IS NULL OR membership.expires_at > ?)
+       ORDER BY team.created_at DESC, team.id DESC
+       LIMIT 3`,
+    )
+    .bind(accountId, now, now)
+    .all<RegistrationSummaryRow>()
+  return rows.results.map(row => ({
+    tournamentSlug: row.tournament_slug,
+    tournamentTitle: row.tournament_title,
+    teamName: row.team_name,
+    teamTag: row.team_tag,
+    status: row.team_status,
+    checkedInAt: row.checked_in_at,
+  }))
 }
 
 export async function linkQqAccountByUsername(

@@ -13,8 +13,14 @@ registerHooks({
   },
 })
 
-const { checkInFromQq, linkQqAccountByUsername, qqCheckInLeaderboard, unlinkQqAccount } =
-  await import('../lib/qq-daily-check-in.ts')
+const {
+  checkInFromQq,
+  linkQqAccountByUsername,
+  qqAccountRegistrations,
+  qqCheckInLeaderboard,
+  qqLinkedAccountId,
+  unlinkQqAccount,
+} = await import('../lib/qq-daily-check-in.ts')
 const { accountIds, createIdentityKernelFixture } =
   await import('./identity-kernel-test-fixture.mjs')
 
@@ -40,6 +46,18 @@ try {
     ),
     { ok: true },
   )
+  assert.equal(await qqLinkedAccountId(fixture.db, groupOpenId, ownerOpenId), accountIds.reviewer)
+  assert.equal(await qqLinkedAccountId(fixture.db, groupOpenId, 'missing-member-openid'), null)
+  assert.deepEqual(await qqAccountRegistrations(fixture.db, accountIds.owner, fixture.now + 1), [
+    {
+      tournamentSlug: 'kernel-one',
+      tournamentTitle: 'Kernel One',
+      teamName: 'Kernel Alpha',
+      teamTag: 'KAL',
+      status: 'pending',
+      checkedInAt: null,
+    },
+  ])
   assert.deepEqual(
     await linkQqAccountByUsername(
       fixture.db,

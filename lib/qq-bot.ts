@@ -25,6 +25,10 @@ export type QqCommand =
   | { kind: 'check_in' }
   | { kind: 'leaderboard' }
   | { kind: 'current_tournament' }
+  | { kind: 'my_schedule' }
+  | { kind: 'my_registrations' }
+  | { kind: 'stardust' }
+  | { kind: 'schedule' }
   | { kind: 'bind'; username: string }
   | { kind: 'unbind' }
 
@@ -45,6 +49,10 @@ const COMMAND_PANEL = {
     { type: 'command', name: '/签到', desc: '完成今天的社团打卡' },
     { type: 'command', name: '/签到排行', desc: '查看连续签到排名' },
     { type: 'command', name: '/最近赛事', desc: '查看当前赛事安排' },
+    { type: 'command', name: '/我的赛程', desc: '查看绑定账号的下一场比赛' },
+    { type: 'command', name: '/我的报名', desc: '查看绑定账号的报名状态' },
+    { type: 'command', name: '/星尘', desc: '查看今日签到和星尘余额' },
+    { type: 'command', name: '/赛程', desc: '查看当前赛事近期赛程' },
     { type: 'command', name: '/绑定 用户名', desc: '绑定网站用户名' },
     { type: 'command', name: '/解绑', desc: '解除当前 QQ 绑定' },
   ],
@@ -196,6 +204,10 @@ export function qqCommand(content: string): QqCommand | null {
   if (command === '签到') return { kind: 'check_in' }
   if (command === '签到排行') return { kind: 'leaderboard' }
   if (command === '最近赛事') return { kind: 'current_tournament' }
+  if (command === '我的赛程') return { kind: 'my_schedule' }
+  if (command === '我的报名') return { kind: 'my_registrations' }
+  if (command === '星尘') return { kind: 'stardust' }
+  if (command === '赛程') return { kind: 'schedule' }
   const binding = /^\/绑定\s+(\S+)$/.exec(normalized)
   if (binding?.[1]) return { kind: 'bind', username: binding[1] }
   return normalized === '/解绑' ? { kind: 'unbind' } : null

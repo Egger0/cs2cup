@@ -36,6 +36,10 @@ assert.deepEqual(qqCommand('最近赛事'), { kind: 'current_tournament' })
 assert.deepEqual(qqCommand(' <@!robot> /签到 '), { kind: 'check_in' })
 assert.deepEqual(qqCommand('/签到排行'), { kind: 'leaderboard' })
 assert.deepEqual(qqCommand('/最近赛事'), { kind: 'current_tournament' })
+assert.deepEqual(qqCommand('/我的赛程'), { kind: 'my_schedule' })
+assert.deepEqual(qqCommand('/我的报名'), { kind: 'my_registrations' })
+assert.deepEqual(qqCommand('/星尘'), { kind: 'stardust' })
+assert.deepEqual(qqCommand('/赛程'), { kind: 'schedule' })
 assert.deepEqual(qqCommand('/绑定 Reviewer.User'), { kind: 'bind', username: 'Reviewer.User' })
 assert.deepEqual(qqCommand('/解绑'), { kind: 'unbind' })
 assert.equal(qqCommand('绑定 reviewer.user'), null)
@@ -144,6 +148,10 @@ try {
         { type: 'command', name: '/签到', desc: '完成今天的社团打卡' },
         { type: 'command', name: '/签到排行', desc: '查看连续签到排名' },
         { type: 'command', name: '/最近赛事', desc: '查看当前赛事安排' },
+        { type: 'command', name: '/我的赛程', desc: '查看绑定账号的下一场比赛' },
+        { type: 'command', name: '/我的报名', desc: '查看绑定账号的报名状态' },
+        { type: 'command', name: '/星尘', desc: '查看今日签到和星尘余额' },
+        { type: 'command', name: '/赛程', desc: '查看当前赛事近期赛程' },
         { type: 'command', name: '/绑定 用户名', desc: '绑定网站用户名' },
         { type: 'command', name: '/解绑', desc: '解除当前 QQ 绑定' },
       ],
