@@ -119,9 +119,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px 20px;
-  padding-block: 20px;
-  margin-bottom: 8px;
-  border-bottom: 1px solid var(--line);
+  padding-block: 20px 12px;
   color: var(--muted);
 }
 

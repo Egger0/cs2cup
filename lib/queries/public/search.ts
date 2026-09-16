@@ -1,10 +1,12 @@
 import 'server-only'
+import { cloudflareBindings } from '../../cloudflare-bindings'
+import { searchLoadoutCodes } from '../../loadout-codes'
 import { selectPublicRows } from '../../rdb'
 import type { GameRow, PostRow } from '../records'
 import { listTournaments } from './tournaments'
 
 export interface SearchHit {
-  kind: 'tournament' | 'team' | 'post' | 'game'
+  kind: 'tournament' | 'team' | 'post' | 'game' | 'loadout'
   title: string
   subtitle: string
   href: string
@@ -15,7 +17,7 @@ export async function search(query: string): Promise<SearchHit[]> {
   if (term.length === 0) return []
   const like = `ilike.*${term}*`
 
-  const [games, tournaments, posts] = await Promise.all([
+  const [games, tournaments, posts, loadouts] = await Promise.all([
     selectPublicRows<GameRow>('game', {
       filters: { active: 'eq.1', or: `(name.${like},name_en.${like})` },
       limit: 8,
@@ -34,6 +36,7 @@ export async function search(query: string): Promise<SearchHit[]> {
       filters: { or: `(title.${like},summary.${like},body.${like})` },
       limit: 8,
     }),
+    searchLoadoutCodes(cloudflareBindings().db, term).catch(() => []),
   ])
 
   const allTournaments = await listTournaments()
@@ -79,5 +82,6 @@ export async function search(query: string): Promise<SearchHit[]> {
       subtitle: new Date(row.published_at).toLocaleDateString('zh-CN'),
       href: `/news/${row.slug}`,
     })),
+    ...loadouts.map(hit => ({ kind: 'loadout' as const, ...hit })),
   ]
 }

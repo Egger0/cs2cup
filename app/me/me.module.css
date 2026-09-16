@@ -120,3 +120,15 @@
     transition: none;
   }
 }
+
+.loadout b {
+  font-weight: 580;
+}
+
+.loadout[data-status='approved'] b {
+  color: var(--ct);
+}
+
+.loadout:is([data-status='rejected'], [data-status='expired']) b {
+  color: var(--c4);
+}

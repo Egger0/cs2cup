@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { LOADOUT_MODES, formatPrice, matchLoadoutQuery, shareString } from './delta-loadouts.ts'
 import type { IdentityDatabase } from './identity/internal/contracts.ts'
 import type { LoadoutInput, LoadoutStats } from './loadout-input.ts'
 
@@ -88,15 +89,15 @@ export function listAuthorLoadoutCodes(
 
 export async function listOwnLoadoutCodes(
   database: IdentityDatabase,
-  gameId: number,
   accountId: string,
+  gameId: number | null = null,
 ): Promise<LoadoutCode[]> {
   const { results } = await database
     .prepare(
-      `${SELECT_CODE} WHERE code.game_id = ? AND code.account_id = ?
+      `${SELECT_CODE} WHERE code.account_id = ?1 AND (?2 IS NULL OR code.game_id = ?2)
        ORDER BY code.created_at DESC LIMIT 20`,
     )
-    .bind(gameId, accountId)
+    .bind(accountId, gameId)
     .all<LoadoutRow>()
   return results.map(fromRow)
 }
@@ -234,4 +235,67 @@ export async function loadoutShotAccess(
     .prepare(`SELECT status, account_id AS accountId FROM loadout_code WHERE shot_key = ? LIMIT 1`)
     .bind(shotKey)
     .first<{ status: LoadoutStatus; accountId: string }>()
+}
+
+export async function loadoutDigest(database: IdentityDatabase, query: string, origin: string) {
+  const game = await database
+    .prepare('SELECT id, slug FROM game WHERE active = 1 AND loadout_codes = 1 ORDER BY id LIMIT 1')
+    .bind()
+    .first<{ id: number; slug: string }>()
+  if (!game) return '改枪码暂未开放。'
+  const list = `${origin}/games/${game.slug}/loadouts`
+  const { mode, weapons, label, unmatched } = matchLoadoutQuery(query)
+  if (unmatched) return `没认出「${query}」这把枪，试试“/改枪码 M4A1”或“/改枪码 冲锋枪”。\n${list}`
+  const names = weapons && new Set(weapons.map(weapon => weapon.name))
+  const top = (await listLoadoutCodes(database, game.id))
+    .filter(
+      code =>
+        code.status === 'approved' &&
+        (!mode || code.mode === mode) &&
+        (!names || names.has(code.weapon)),
+    )
+    .sort((a, b) => b.copies + b.likes * 3 - (a.copies + a.likes * 3))
+    .slice(0, 3)
+  const scope = [label, mode && LOADOUT_MODES[mode]].filter(Boolean).join(' · ')
+  if (!top.length)
+    return `还没有${scope ? `「${scope}」的` : ''}改枪码，来当第一个枪匠：\n${list}#loadout-submit`
+  return [
+    `热门改枪码${scope ? ` · ${scope}` : ''}`,
+    ...top.flatMap((code, index) => [
+      `${index + 1}. ${code.title}${code.price ? ` · 约${formatPrice(code.price)}` : ''} · 复制 ${code.copies}`,
+      shareString(code.weapon, code.mode, code.code),
+    ]),
+    `${list}?${new URLSearchParams({
+      ...(mode === 'warfare' ? { mode } : {}),
+      ...(weapons?.length === 1 ? { class: weapons[0]!.category, weapon: weapons[0]!.name } : {}),
+    })}`.replace(/\?$/, ''),
+  ].join('\n')
+}
+
+export async function searchLoadoutCodes(database: IdentityDatabase, term: string) {
+  const like = `%${term.replace(/[\\%_]/g, character => `\\${character}`)}%`
+  const { results } = await database
+    .prepare(
+      `SELECT code.id, code.title, code.weapon, code.mode, game.slug AS gameSlug
+       FROM loadout_code AS code
+       JOIN game ON game.id = code.game_id AND game.active = 1 AND game.loadout_codes = 1
+       JOIN identity_account AS account ON account.id = code.account_id AND account.status = 'active'
+       WHERE code.status = 'approved'
+         AND (code.title LIKE ?1 ESCAPE '\\' OR code.weapon LIKE ?1 ESCAPE '\\'
+           OR code.note LIKE ?1 ESCAPE '\\')
+       ORDER BY code.copies DESC, code.id DESC LIMIT 8`,
+    )
+    .bind(like)
+    .all<{
+      id: number
+      title: string
+      weapon: string
+      mode: LoadoutCode['mode']
+      gameSlug: string
+    }>()
+  return results.map(row => ({
+    title: row.title,
+    subtitle: `${row.weapon} · ${LOADOUT_MODES[row.mode]}`,
+    href: `/games/${row.gameSlug}/loadouts/${row.id}`,
+  }))
 }

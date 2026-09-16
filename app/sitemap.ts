@@ -1,4 +1,6 @@
 import type { MetadataRoute } from 'next'
+import { cloudflareBindings } from '@/lib/cloudflare-bindings'
+import { listLoadoutCodes } from '@/lib/loadout-codes'
 import { listGames, listPosts, listTournaments, safely } from '@/lib/queries/public'
 import { resolveSiteOrigin } from '@/lib/site-config'
 
@@ -12,6 +14,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     safely(listTournaments, []),
     safely(() => listPosts(), []),
   ])
+  const loadouts = await Promise.all(
+    games
+      .filter(game => game.loadoutCodes)
+      .map(game => safely(() => listLoadoutCodes(cloudflareBindings().db, game.id), [])),
+  )
 
   return [
     { url: BASE, priority: 1 },
@@ -23,6 +30,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/about`, priority: 0.6 },
     { url: `${BASE}/guestbook`, priority: 0.5 },
     ...games.map(game => ({ url: `${BASE}/games/${game.slug}`, priority: 0.7 })),
+    ...games
+      .filter(game => game.loadoutCodes)
+      .map(game => ({ url: `${BASE}/games/${game.slug}/loadouts`, priority: 0.7 })),
+    ...loadouts.flat().map(code => ({
+      url: `${BASE}/games/${code.gameSlug}/loadouts/${code.id}`,
+      priority: 0.4,
+    })),
     ...tournaments.flatMap(tournament => {
       const base = `${BASE}/tournaments/${tournament.slug}`
       return ['', '/schedule', '/teams', '/bracket', '/results', '/rules'].map(suffix => ({

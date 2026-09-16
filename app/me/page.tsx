@@ -30,11 +30,13 @@ import {
   listCurrentUnifiedTournamentWorkspaces,
 } from '@/lib/queries/staff-check-in'
 import { maskParticipantPrincipal } from '@/lib/tournament-staff-management'
+import { listOwnLoadoutCodes } from '@/lib/loadout-codes'
 import { stardustWallet } from '@/lib/stardust'
 import { incomingSquadInvitations } from '@/lib/squads'
 import { SquadInvitationInbox } from '@/app/squads/SquadInvitationInbox'
 import { AccessReceipt } from './AccessReceipt'
 import { EntryDossier } from './EntryDossier'
+import { MyLoadouts } from './MyLoadouts'
 import styles from './me.module.css'
 import { NextMatchBrief } from './NextMatchBrief'
 import { StardustWallet } from './stardust/StardustWallet'
@@ -97,6 +99,7 @@ async function UnifiedAccountEvents({
     workAccess,
     wallet,
     squadInvitations,
+    loadouts,
   ] = await Promise.all([
     listAccountTournamentRegistrations(database, context, now),
     optional('invitations', listIncomingRegistrationInvitations(database, context, now), []),
@@ -119,6 +122,7 @@ async function UnifiedAccountEvents({
     optional('work access', accountHasWorkAccess(database, context.account.id, now), false),
     optional('stardust wallet', stardustWallet(database, context.account.id, now), null),
     optional('squad invitations', incomingSquadInvitations(database, context.account.id), []),
+    optional('loadout codes', listOwnLoadoutCodes(database, context.account.id), []),
   ])
   const staffPages = Math.max(1, Math.ceil(workspacePage.total / STAFF_PAGE_SIZE))
   if (staffPage > staffPages) redirect(staffPages === 1 ? '/me' : `/me?staffPage=${staffPages}`)
@@ -175,6 +179,8 @@ async function UnifiedAccountEvents({
           </div>
         </section>
       ) : null}
+
+      <MyLoadouts codes={loadouts} />
 
       {entries.length ? (
         <section className={styles.files} aria-label="我的赛事报名">

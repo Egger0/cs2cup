@@ -27,6 +27,7 @@ registerHooks({
 })
 
 const {
+  loadoutDigest,
   getLoadoutCode,
   listAuthorLoadoutCodes,
   listLoadoutCodes,
@@ -228,10 +229,12 @@ try {
     ],
   )
   assert.deepEqual(
-    (await listOwnLoadoutCodes(db, 71, accountIds.owner)).map(code => code.status).sort(),
+    (await listOwnLoadoutCodes(db, accountIds.owner, 71)).map(code => code.status).sort(),
     ['approved', 'expired', 'pending', 'pending', 'rejected'],
   )
   assert.equal((await submit(accountIds.owner, valueWith(codeAt(9)))).ok, true)
+  assert.equal((await listOwnLoadoutCodes(db, accountIds.owner)).length, 6)
+  assert.deepEqual(await listOwnLoadoutCodes(db, accountIds.owner, 72), [])
 
   const like = (id, accountId, liked) => setLoadoutLike(db, { id, accountId, liked }, now)
   assert.equal(await like(first.id, accountIds.manager, true), true)
@@ -284,6 +287,21 @@ try {
     [reviewerComment.id],
   )
   assert.equal((await getLoadoutCode(db, 71, first.id)).comments, 9)
+
+  const origin = 'https://club.test'
+  const digest = await loadoutDigest(db, 'm4', origin)
+  assert.equal(
+    digest,
+    [
+      '热门改枪码 · M4A1',
+      `1. 低后坐 · 约32.5w · 复制 2`,
+      `M4A1突击步枪-烽火地带-${CODE}`,
+      `${origin}/games/identity-kernel/loadouts?class=%E6%AD%A5%E6%9E%AA&weapon=M4A1%E7%AA%81%E5%87%BB%E6%AD%A5%E6%9E%AA`,
+    ].join('\n'),
+  )
+  assert.match(await loadoutDigest(db, '全面', origin), /^还没有「全面战场」的改枪码/)
+  assert.match(await loadoutDigest(db, '水枪', origin), /^没认出「水枪」/)
+  assert.match(await loadoutDigest(db, '', origin), /^热门改枪码\n1\. 低后坐/)
 
   console.log('loadout code tests passed')
 } finally {

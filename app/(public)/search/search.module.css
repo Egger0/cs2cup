@@ -130,7 +130,7 @@
 
 .sources {
   display: grid;
-  grid-template-columns: minmax(70px, 1.2fr) repeat(4, minmax(90px, 1fr));
+  grid-template-columns: minmax(70px, 1.2fr) repeat(5, minmax(80px, 1fr));
   gap: 18px;
   padding: 15px clamp(20px, 3vw, 36px);
   color: var(--index-muted);

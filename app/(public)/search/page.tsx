@@ -13,9 +13,10 @@ const KIND: Record<string, string> = {
   tournament: '赛事',
   team: '战队',
   post: '动态',
+  loadout: '改枪码',
 }
 
-const SOURCES = ['赛事', '战队', '项目', '动态']
+const SOURCES = ['赛事', '战队', '项目', '动态', '改枪码']
 
 export default async function SearchPage({
   searchParams,
@@ -34,7 +35,7 @@ export default async function SearchPage({
         tone="#8fc8ef"
         eyebrow="NINGLI INDEX / 全站检索"
         title="找点什么"
-        lede="从赛事、战队、项目和社团动态里，调取你要找的那一条记录。"
+        lede="从赛事、战队、项目、社团动态和改枪码里，调取你要找的那一条记录。"
         density="compact"
       />
       <section className="section">
@@ -45,7 +46,11 @@ export default async function SearchPage({
             </span>
             <div className={styles.consoleHead} aria-hidden="true">
               <span>NINGLI ESPORTS / PUBLIC INDEX</span>
-              <span>{query ? `QUERY ACTIVE / ${resultCode}` : 'SYSTEM READY / 04 SOURCES'}</span>
+              <span>
+                {query
+                  ? `QUERY ACTIVE / ${resultCode}`
+                  : `SYSTEM READY / ${String(SOURCES.length).padStart(2, '0')} SOURCES`}
+              </span>
             </div>
 
             <form className={styles.form} action="/search">
@@ -57,7 +62,7 @@ export default async function SearchPage({
                 name="q"
                 label="检索词"
                 defaultValue={q}
-                placeholder="宁理杯 / FROST / 纳新"
+                placeholder="宁理杯 / FROST / M4A1"
               />
               <button type="submit" className={styles.go}>
                 <span>执行检索</span>

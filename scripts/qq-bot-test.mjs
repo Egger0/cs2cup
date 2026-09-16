@@ -40,6 +40,9 @@ assert.deepEqual(qqCommand('/我的赛程'), { kind: 'my_schedule' })
 assert.deepEqual(qqCommand('/我的报名'), { kind: 'my_registrations' })
 assert.deepEqual(qqCommand('/星尘'), { kind: 'stardust' })
 assert.deepEqual(qqCommand('/赛程'), { kind: 'schedule' })
+assert.deepEqual(qqCommand('/改枪码'), { kind: 'loadouts', query: '' })
+assert.deepEqual(qqCommand(' <@!robot> 改枪码  m4 全面 '), { kind: 'loadouts', query: 'm4 全面' })
+assert.equal(qqCommand('改枪码大全'), null)
 assert.deepEqual(qqCommand('/绑定 Reviewer.User'), { kind: 'bind', username: 'Reviewer.User' })
 assert.deepEqual(qqCommand('/解绑'), { kind: 'unbind' })
 assert.equal(qqCommand('绑定 reviewer.user'), null)
@@ -152,6 +155,7 @@ try {
         { type: 'command', name: '/我的报名', desc: '查看绑定账号的报名状态' },
         { type: 'command', name: '/星尘', desc: '查看今日签到和星尘余额' },
         { type: 'command', name: '/赛程', desc: '查看当前赛事近期赛程' },
+        { type: 'command', name: '/改枪码 武器', desc: '查看三角洲热门改枪码' },
         { type: 'command', name: '/绑定 用户名', desc: '绑定网站用户名' },
         { type: 'command', name: '/解绑', desc: '解除当前 QQ 绑定' },
       ],
