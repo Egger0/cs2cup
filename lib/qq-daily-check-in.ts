@@ -29,6 +29,10 @@ interface LinkRow {
   account_id: string
 }
 
+interface AccountLinkRow {
+  user_openid: string | null
+}
+
 interface StreakRow {
   current_streak: number
   last_check_in_date: string
@@ -105,10 +109,24 @@ export async function linkQqAccountByPrivateUsername(
     .first<LinkRow>()
   if (!candidate) return { ok: false, reason: 'username_not_found' }
   const accountLinked = await database
-    .prepare('SELECT 1 AS present FROM qq_account_link WHERE account_id = ? LIMIT 1')
+    .prepare('SELECT user_openid FROM qq_account_link WHERE account_id = ? LIMIT 1')
     .bind(candidate.account_id)
-    .first<{ present: number }>()
-  if (accountLinked) return { ok: false, reason: 'account_bound' }
+    .first<AccountLinkRow>()
+  if (accountLinked?.user_openid) return { ok: false, reason: 'account_bound' }
+  if (accountLinked) {
+    await database
+      .prepare(
+        `UPDATE OR IGNORE qq_account_link
+         SET group_openid = ?, member_openid = ?, user_openid = ?, linked_at = ?
+         WHERE account_id = ? AND user_openid IS NULL`,
+      )
+      .bind(groupOpenId, userOpenId, userOpenId, now, candidate.account_id)
+      .run()
+    return (await activePrivateLink(database, groupOpenId, userOpenId))?.account_id ===
+      candidate.account_id
+      ? { ok: true }
+      : { ok: false, reason: 'account_bound' }
+  }
 
   await database
     .prepare(

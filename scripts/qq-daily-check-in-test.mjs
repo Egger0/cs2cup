@@ -26,6 +26,7 @@ const groupOpenId = 'official-group-openid'
 const ownerOpenId = 'owner-member-openid'
 const ownerUserOpenId = 'owner-user-openid'
 const managerOpenId = 'manager-member-openid'
+const managerUserOpenId = 'manager-user-openid'
 const at = (day, hour = 0, minute = 0) => Date.UTC(2026, 8, day, hour - 8, minute)
 
 const fixture = await createIdentityKernelFixture()
@@ -108,6 +109,14 @@ try {
      VALUES (?, ?, ?, ?)`,
     [accountIds.weakStaff, groupOpenId, managerOpenId, at(5, 8)],
   )
+  assert.deepEqual(
+    await linkQqAccountByPrivateUsername(
+      fixture.db,
+      { groupOpenId, userOpenId: managerUserOpenId, username: 'staff.user' },
+      at(5, 8, 1),
+    ),
+    { ok: true },
+  )
 
   assert.deepEqual(
     await checkInFromQq(
@@ -134,7 +143,11 @@ try {
     { kind: 'checked_in', streak: 2, rank: 1, reward: 0 },
   )
   assert.deepEqual(
-    await checkInFromQq(fixture.db, { groupOpenId, memberOpenId: managerOpenId }, at(5, 8, 4)),
+    await checkInFromQq(
+      fixture.db,
+      { groupOpenId, memberOpenId: managerOpenId, userOpenId: managerUserOpenId },
+      at(5, 8, 4),
+    ),
     { kind: 'checked_in', streak: 1, rank: 2, reward: 0 },
   )
   assert.deepEqual(await qqCheckInLeaderboard(fixture.db, groupOpenId, at(5, 9)), [
