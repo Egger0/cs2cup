@@ -4,11 +4,13 @@ import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '@/lib/auth'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { currentTimeMillis } from '@/lib/current-time'
-import { reviewLoadoutCode } from '@/lib/loadout-codes'
+import { reviewLoadoutCode, type LoadoutDecision } from '@/lib/loadout-codes'
 
-export async function reviewLoadoutCodeAction(id: number, decision: 'approved' | 'rejected') {
+const DECISIONS: readonly LoadoutDecision[] = ['approved', 'rejected', 'expired', 'dismiss']
+
+export async function reviewLoadoutCodeAction(id: number, decision: LoadoutDecision) {
   const admin = await requireAdmin()
-  if (!Number.isSafeInteger(id) || id <= 0 || !['approved', 'rejected'].includes(decision)) {
+  if (!Number.isSafeInteger(id) || id <= 0 || !DECISIONS.includes(decision)) {
     return { ok: false as const, error: '投稿编号或审核决定无效' }
   }
   const result = await reviewLoadoutCode(

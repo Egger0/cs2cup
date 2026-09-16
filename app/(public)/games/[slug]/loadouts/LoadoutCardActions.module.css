@@ -1,0 +1,78 @@
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.actions .copy {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--button-ink);
+  font-weight: 580;
+}
+
+.actions .copy:hover {
+  border-color: var(--ink);
+  background: var(--ink);
+}
+
+.feedback {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+}
+
+.like {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.like b {
+  font-variant-numeric: tabular-nums;
+  font-weight: 620;
+}
+
+.like:hover {
+  border-color: var(--ink);
+}
+
+.like[aria-pressed='true'] {
+  border-color: var(--ct);
+  background: var(--ct-dim);
+  color: var(--ct);
+}
+
+.report,
+.reported {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.report {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 4px;
+}
+
+.report:hover {
+  color: var(--c4);
+}

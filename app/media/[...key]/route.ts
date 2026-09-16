@@ -1,5 +1,8 @@
 import { posix } from 'node:path'
 import { getCurrentUnifiedPlatformOwner } from '@/lib/auth'
+import { cloudflareBindings } from '@/lib/cloudflare-bindings'
+import { getAuthContext } from '@/lib/identity/kernel'
+import { loadoutShotAccess } from '@/lib/loadout-codes'
 import { PRIVATE_NO_STORE_HEADERS } from '@/lib/http-cache'
 import { parseVariantKey, variantStemMatches } from '@/lib/photo-variants'
 import { selectPrivateRow, selectPrivateRows, selectPublicRow, selectPublicRows } from '@/lib/rdb'
@@ -39,7 +42,19 @@ async function findPhoto(published: boolean, storageKey: string) {
   return candidates.some(row => variantStemMatches(row.storage_key, variant.stem))
 }
 
+async function canReadLoadoutShot(storageKey: string) {
+  const shot = await loadoutShotAccess(cloudflareBindings().db, storageKey).catch(() => null)
+  if (!shot) return null
+  if (shot.status === 'approved' || shot.status === 'expired') return 'published' as const
+  const context = await getAuthContext().catch(() => null)
+  if (context?.kind === 'authenticated' && context.account.id === shot.accountId) {
+    return 'private' as const
+  }
+  return (await getCurrentUnifiedPlatformOwner().catch(() => null)) ? ('private' as const) : null
+}
+
 async function canReadPhoto(storageKey: string) {
+  if (storageKey.startsWith('loadouts/')) return canReadLoadoutShot(storageKey)
   if (await findPhoto(true, storageKey)) return 'published' as const
 
   const unifiedOwner = await getCurrentUnifiedPlatformOwner().catch(() => null)

@@ -42,6 +42,7 @@ const config = [
   },
   {
     files: [
+      'app/**/loadouts/Loadout{Cards,SubmitForm,ReviewRow}.tsx',
       'components/domain/PosterWall.tsx',
       'components/home/HomeStatement.tsx',
       'components/home/HomeWall.tsx',

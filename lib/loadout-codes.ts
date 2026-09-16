@@ -1,70 +1,89 @@
 import 'server-only'
 
 import type { IdentityDatabase } from './identity/internal/contracts.ts'
-import { CONTROL_CHARACTER } from './registration-form.ts'
+import type { LoadoutInput, LoadoutStats } from './loadout-input.ts'
 
 export const LOADOUT_PENDING_LIMIT = 5
 
-const LIMITS = { weapon: [1, 30], title: [1, 40], code: [4, 200], note: [0, 200] } as const
+export type LoadoutStatus = 'pending' | 'approved' | 'rejected' | 'expired'
 
-export type LoadoutField = keyof typeof LIMITS
-export type LoadoutInput = Record<LoadoutField, string>
-export type LoadoutStatus = 'pending' | 'approved' | 'rejected'
-
-export interface LoadoutCode {
+export interface LoadoutCode extends LoadoutInput {
   readonly id: number
-  readonly weapon: string
-  readonly title: string
-  readonly code: string
-  readonly note: string | null
+  readonly shotKey: string | null
   readonly status: LoadoutStatus
+  readonly copies: number
+  readonly reports: number
+  readonly likes: number
+  readonly comments: number
   readonly authorName: string
   readonly authorHandle: string | null
+  readonly gameSlug: string
   readonly createdAt: number
 }
 
-export interface PendingLoadoutCode extends LoadoutCode {
+export interface ReviewLoadoutCode extends LoadoutCode {
   readonly gameName: string
-  readonly gameSlug: string
 }
 
-const SELECT_CODE = `SELECT code.id, code.weapon, code.title, code.code, code.note, code.status,
+interface LoadoutRow extends Omit<LoadoutCode, 'tags' | 'stats'> {
+  readonly tags: string
+  readonly recoil: number | null
+  readonly handling: number | null
+  readonly stability: number | null
+  readonly hipfire: number | null
+  readonly distance: number | null
+}
+
+const SELECT_CODE = `SELECT code.id, code.mode, code.weapon, code.code, code.title, code.note, code.tags,
+  code.price, code.recoil, code.handling, code.stability, code.hipfire, code.distance,
+  code.shot_key AS shotKey, code.status, code.copies,
+  (SELECT COUNT(*) FROM loadout_report WHERE code_id = code.id) AS reports,
+  (SELECT COUNT(*) FROM loadout_like WHERE code_id = code.id) AS likes,
+  (SELECT COUNT(*) FROM loadout_comment WHERE code_id = code.id AND hidden_at IS NULL) AS comments,
   account.display_name AS authorName, account.public_handle AS authorHandle,
-  code.created_at AS createdAt
+  (SELECT slug FROM game WHERE game.id = code.game_id) AS gameSlug, code.created_at AS createdAt
   FROM loadout_code AS code
   JOIN identity_account AS account ON account.id = code.account_id`
 
-export function parseLoadoutInput(
-  source: Partial<Record<LoadoutField, unknown>>,
-): { ok: true; value: LoadoutInput } | { ok: false; field: LoadoutField } {
-  const value = {} as LoadoutInput
-  for (const [field, [min, max]] of Object.entries(LIMITS) as [
-    LoadoutField,
-    readonly [number, number],
-  ][]) {
-    const raw = source[field]
-    const text = typeof raw === 'string' ? raw.trim() : ''
-    const length = [...text].length
-    if (length < min || length > max || CONTROL_CHARACTER.test(text)) return { ok: false, field }
-    value[field] = text
-  }
-  return { ok: true, value }
+function fromRow<T extends LoadoutRow>(source: T) {
+  const { tags, recoil, handling, stability, hipfire, distance, ...row } = source
+  const stats =
+    recoil === null ? null : ({ recoil, handling, stability, hipfire, distance } as LoadoutStats)
+  return { ...row, tags: JSON.parse(tags) as string[], stats }
 }
 
-export async function listLoadoutCodes(
-  database: IdentityDatabase,
-  gameId: number,
-  limit = 60,
-): Promise<LoadoutCode[]> {
+async function listPublic(database: IdentityDatabase, where: string, ...values: unknown[]) {
   const { results } = await database
     .prepare(
       `${SELECT_CODE}
-       WHERE code.game_id = ? AND code.status = 'approved' AND account.status = 'active'
-       ORDER BY code.reviewed_at DESC, code.id DESC LIMIT ?`,
+       WHERE ${where} AND code.status IN ('approved', 'expired') AND account.status = 'active'
+       ORDER BY code.reviewed_at DESC, code.id DESC LIMIT 600`,
     )
-    .bind(gameId, limit)
-    .all<LoadoutCode>()
-  return results
+    .bind(...values)
+    .all<LoadoutRow>()
+  return results.map(fromRow)
+}
+
+export function listLoadoutCodes(
+  database: IdentityDatabase,
+  gameId: number,
+): Promise<LoadoutCode[]> {
+  return listPublic(database, 'code.game_id = ?', gameId)
+}
+
+export async function getLoadoutCode(
+  database: IdentityDatabase,
+  gameId: number,
+  id: number,
+): Promise<LoadoutCode | null> {
+  return (await listPublic(database, 'code.game_id = ? AND code.id = ?', gameId, id))[0] ?? null
+}
+
+export function listAuthorLoadoutCodes(
+  database: IdentityDatabase,
+  accountId: string,
+): Promise<LoadoutCode[]> {
+  return listPublic(database, `code.account_id = ? AND code.status = 'approved'`, accountId)
 }
 
 export async function listOwnLoadoutCodes(
@@ -78,32 +97,53 @@ export async function listOwnLoadoutCodes(
        ORDER BY code.created_at DESC LIMIT 20`,
     )
     .bind(gameId, accountId)
-    .all<LoadoutCode>()
-  return results
+    .all<LoadoutRow>()
+  return results.map(fromRow)
 }
 
 export type SubmitLoadoutResult =
-  | { readonly ok: true }
+  | { readonly ok: true; readonly id: number }
   | { readonly ok: false; readonly reason: 'duplicate' | 'limit' | 'closed' }
 
 export async function submitLoadoutCode(
   database: IdentityDatabase,
-  input: { accountId: string; gameId: number; value: LoadoutInput },
+  input: { accountId: string; gameId: number; value: LoadoutInput; shotKey: string | null },
   now: number,
 ): Promise<SubmitLoadoutResult> {
-  const { accountId, gameId, value } = input
+  const { accountId, gameId, value, shotKey } = input
+  const stats = value.stats
   try {
-    await database
+    const row = await database
       .prepare(
-        `INSERT INTO loadout_code (game_id, account_id, weapon, title, code, note, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO loadout_code (game_id, account_id, mode, weapon, code, title, note, tags,
+           price, recoil, handling, stability, hipfire, distance, shot_key, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
       )
-      .bind(gameId, accountId, value.weapon, value.title, value.code, value.note || null, now)
-      .run()
-    return { ok: true }
+      .bind(
+        gameId,
+        accountId,
+        value.mode,
+        value.weapon,
+        value.code,
+        value.title,
+        value.note,
+        JSON.stringify(value.tags),
+        value.price,
+        stats?.recoil ?? null,
+        stats?.handling ?? null,
+        stats?.stability ?? null,
+        stats?.hipfire ?? null,
+        stats?.distance ?? null,
+        shotKey,
+        now,
+      )
+      .first<{ id: number }>()
+    return { ok: true, id: Number(row?.id) }
   } catch (error) {
     const message = error instanceof Error ? error.message : ''
-    if (/UNIQUE constraint failed/i.test(message)) return { ok: false, reason: 'duplicate' }
+    if (/UNIQUE constraint failed: loadout_code\.game_id/i.test(message)) {
+      return { ok: false, reason: 'duplicate' }
+    }
     if (!/loadout code submission rejected/.test(message)) throw error
     const pending = await database
       .prepare(
@@ -118,37 +158,80 @@ export async function submitLoadoutCode(
   }
 }
 
-export async function listPendingLoadoutCodes(
+export async function listLoadoutCodesForReview(
   database: IdentityDatabase,
-): Promise<PendingLoadoutCode[]> {
-  const { results } = await database
-    .prepare(
-      `SELECT code.id, code.weapon, code.title, code.code, code.note, code.status,
-              account.display_name AS authorName, account.public_handle AS authorHandle,
-              code.created_at AS createdAt, game.name AS gameName, game.slug AS gameSlug
-       FROM loadout_code AS code
-       JOIN identity_account AS account ON account.id = code.account_id
-       JOIN game ON game.id = code.game_id
-       WHERE code.status = 'pending'
-       ORDER BY code.created_at ASC LIMIT 100`,
-    )
-    .bind()
-    .all<PendingLoadoutCode>()
-  return results
+): Promise<{ pending: ReviewLoadoutCode[]; reported: ReviewLoadoutCode[] }> {
+  const select = (where: string, order: string) =>
+    database
+      .prepare(
+        `${SELECT_CODE.replace(
+          'FROM loadout_code AS code',
+          ', game.name AS gameName FROM loadout_code AS code',
+        )}
+         JOIN game ON game.id = code.game_id
+         WHERE ${where} ORDER BY ${order} LIMIT 100`,
+      )
+      .bind()
+      .all<LoadoutRow & { gameName: string }>()
+  const [pending, reported] = await Promise.all([
+    select(`code.status = 'pending'`, 'code.created_at ASC'),
+    select(
+      `code.status = 'approved' AND EXISTS (SELECT 1 FROM loadout_report WHERE code_id = code.id)`,
+      'reports DESC, code.id ASC',
+    ),
+  ])
+  return { pending: pending.results.map(fromRow), reported: reported.results.map(fromRow) }
+}
+
+export type LoadoutDecision = 'approved' | 'rejected' | 'expired' | 'dismiss'
+
+const DECISION_FROM: Record<LoadoutDecision, LoadoutStatus> = {
+  approved: 'pending',
+  rejected: 'pending',
+  expired: 'approved',
+  dismiss: 'approved',
 }
 
 export async function reviewLoadoutCode(
   database: IdentityDatabase,
-  input: { id: number; reviewerAccountId: string; decision: 'approved' | 'rejected' },
+  input: { id: number; reviewerAccountId: string; decision: LoadoutDecision },
   now: number,
 ): Promise<{ ok: true; gameSlug: string } | { ok: false }> {
-  const row = await database
-    .prepare(
-      `UPDATE loadout_code SET status = ?, reviewed_at = ?, reviewed_by_account_id = ?
-       WHERE id = ? AND status = 'pending'
-       RETURNING (SELECT slug FROM game WHERE game.id = loadout_code.game_id) AS gameSlug`,
-    )
-    .bind(input.decision, now, input.reviewerAccountId, input.id)
-    .first<{ gameSlug: string }>()
+  const { id, reviewerAccountId, decision } = input
+  const statement =
+    decision === 'dismiss'
+      ? database
+          .prepare(
+            `DELETE FROM loadout_report WHERE code_id = (
+               SELECT id FROM loadout_code WHERE id = ? AND status = 'approved')
+             RETURNING (SELECT game.slug FROM loadout_code JOIN game ON game.id = loadout_code.game_id
+               WHERE loadout_code.id = loadout_report.code_id) AS gameSlug`,
+          )
+          .bind(id)
+      : database
+          .prepare(
+            `UPDATE loadout_code SET status = ?, reviewed_at = ?, reviewed_by_account_id = ?
+             WHERE id = ? AND status = ?
+             RETURNING (SELECT slug FROM game WHERE game.id = loadout_code.game_id) AS gameSlug`,
+          )
+          .bind(decision, now, reviewerAccountId, id, DECISION_FROM[decision])
+  const row = await statement.first<{ gameSlug: string }>()
   return row ? { ok: true, gameSlug: row.gameSlug } : { ok: false }
+}
+
+export async function recordLoadoutCopy(database: IdentityDatabase, id: number) {
+  await database
+    .prepare(`UPDATE loadout_code SET copies = copies + 1 WHERE id = ? AND status = 'approved'`)
+    .bind(id)
+    .run()
+}
+
+export async function loadoutShotAccess(
+  database: IdentityDatabase,
+  shotKey: string,
+): Promise<{ status: LoadoutStatus; accountId: string } | null> {
+  return database
+    .prepare(`SELECT status, account_id AS accountId FROM loadout_code WHERE shot_key = ? LIMIT 1`)
+    .bind(shotKey)
+    .first<{ status: LoadoutStatus; accountId: string }>()
 }

@@ -49,6 +49,11 @@ const rdbModule = dataModule(`
     return globalThis.__mediaPrivateRows ?? []
   }
 `)
+const loadoutModule = dataModule(`
+  export async function loadoutShotAccess(_database, key) {
+    return globalThis.__mediaLoadoutShots?.[key] ?? null
+  }
+`)
 const storageModule = dataModule(`
   export async function getObject() {
     globalThis.__mediaReads += 1
@@ -77,6 +82,12 @@ registerHooks({
       return { url: source('../lib/http-cache.ts'), shortCircuit: true }
     }
     if (specifier === '@/lib/rdb') return { url: rdbModule, shortCircuit: true }
+    if (specifier === '@/lib/cloudflare-bindings')
+      return { url: bindingsModule, shortCircuit: true }
+    if (specifier === '@/lib/identity/kernel') {
+      return { url: identityKernelModule, shortCircuit: true }
+    }
+    if (specifier === '@/lib/loadout-codes') return { url: loadoutModule, shortCircuit: true }
     if (specifier === '@/lib/photo-variants') {
       return { url: source('../lib/photo-variants.ts'), shortCircuit: true }
     }
@@ -231,6 +242,30 @@ try {
   const wildcardParams = { params: Promise.resolve({ key: ['private', 'a_c.960.webp'] }) }
   const wildcardPhoto = await GET(wildcardRequest, wildcardParams)
   assert.equal(wildcardPhoto.status, 404)
+
+  const author = 'L'.repeat(43)
+  globalThis.__mediaLoadoutShots = {
+    'loadouts/live.webp': { status: 'approved', accountId: author },
+    'loadouts/queued.webp': { status: 'pending', accountId: author },
+  }
+  const shot = name =>
+    GET(new Request(`http://localhost/media/loadouts/${name}`), {
+      params: Promise.resolve({ key: ['loadouts', name] }),
+    })
+  globalThis.__adminUnifiedContext = undefined
+  const liveShot = await shot('live.webp')
+  assert.equal(liveShot.status, 200)
+  assert.match(liveShot.headers.get('cache-control') ?? '', /immutable/)
+  assert.equal((await shot('queued.webp')).status, 404, 'pending screenshots stay private')
+  assert.equal((await shot('unknown.webp')).status, 404)
+  globalThis.__adminUnifiedContext = { kind: 'authenticated', account: { id: author } }
+  const ownShot = await shot('queued.webp')
+  assert.equal(ownShot.status, 200, 'authors see their own pending screenshot')
+  assert.match(ownShot.headers.get('cache-control') ?? '', /no-store/)
+  globalThis.__adminUnifiedContext = undefined
+  globalThis.__mediaUnifiedPlatformOwner = { accountId: 'U'.repeat(43), uid: 'Unified Owner' }
+  assert.equal((await shot('queued.webp')).status, 200, 'reviewers see pending screenshots')
+  globalThis.__mediaUnifiedPlatformOwner = null
 
   console.log('admin authorization session and media wiring tests passed')
 } finally {
