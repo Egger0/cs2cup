@@ -19,6 +19,7 @@ import { listViewerLoadoutMarks } from '@/lib/loadout-community'
 import { PLANET_COLORS } from '@/lib/planets'
 import { getGame } from '@/lib/queries/public'
 import { LoadoutCards } from './LoadoutCards'
+import { HeroStats, HeroWeapon } from './LoadoutHero'
 import { LoadoutSubmitForm } from './LoadoutSubmitForm'
 import styles from './loadouts.module.css'
 
@@ -128,6 +129,12 @@ export default async function LoadoutsPage({
     </Link>
   )
   const filtered = Boolean(category || weapon || price || tag)
+  const published = codes.filter(code => code.status === 'approved')
+  const hero = published.reduce<LoadoutCode | null>(
+    (best, code) => (!best || code.copies > best.copies ? code : best),
+    null,
+  )
+  const heroImage = hero && findWeapon(hero.weapon)?.image
 
   return (
     <>
@@ -136,13 +143,21 @@ export default async function LoadoutsPage({
         tone={PLANET_COLORS.get(game.slug)}
         eyebrow={`${game.name} / 改枪码`}
         title="改枪码"
-        lede="社员实测、审核后展示的改装方案。复制完整改枪码，到改枪台「方案 → 方案共享」粘贴导入即可。"
+        lede="枪匠们压箱底的改装方案。复制完整改枪码，到改枪台「方案 → 方案共享」一贴即用。"
         density="compact"
+        art={heroImage ? <HeroWeapon image={heroImage} /> : undefined}
       >
-        <ButtonLink href="#loadout-submit" variant="primary">
-          投稿我的改枪码
+        <ButtonLink href="#loadout-browse" variant="primary">
+          挑一套方案
         </ButtonLink>
-        <ButtonLink href={`/games/${game.slug}`}>返回{game.name}</ButtonLink>
+        <ButtonLink href="#loadout-submit">投稿我的改枪码</ButtonLink>
+        <HeroStats
+          items={[
+            ['套方案', published.length],
+            ['次复制', published.reduce((sum, code) => sum + code.copies, 0)],
+            ['位枪匠', new Set(published.map(code => code.authorName)).size],
+          ]}
+        />
       </PageMasthead>
 
       <section className="section" id="loadout-browse">
@@ -175,7 +190,7 @@ export default async function LoadoutsPage({
                   ),
                 )}
               </div>
-              {weaponCounts.size > 1 ? (
+              {category && weaponCounts.size > 1 ? (
                 <div className={styles.filterRow} role="group" aria-label="武器">
                   <span className={styles.filterLabel}>武器</span>
                   {chip('全部', !weapon, href({ weapon: null }))}
@@ -240,15 +255,15 @@ export default async function LoadoutsPage({
               }
             >
               {filtered
-                ? '没有符合筛选条件的方案，换个条件看看。'
-                : `还没有通过审核的${LOADOUT_MODES[mode]}改枪码，来投第一条吧。`}
+                ? '这个组合还没人改出来，换个条件，或者你来当第一个枪匠。'
+                : `${LOADOUT_MODES[mode]}还是一片空白，第一套方案等你来填。`}
             </Empty>
           )}
 
           {expired.length ? (
             <details className={styles.expired}>
               <summary>已失效的方案 · {expired.length}</summary>
-              <p>赛季更新或配件调整后，这些码在游戏里已无法导入，留作参考。</p>
+              <p>版本更迭后这些码已经导不进去了，配件思路还能参考。</p>
               <LoadoutCards codes={expired} />
             </details>
           ) : null}

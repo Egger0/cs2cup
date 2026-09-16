@@ -45,9 +45,11 @@ export function LoadoutCard({
   mine = false,
   marks,
   single = false,
-}: CardOptions & { code: LoadoutCode; single?: boolean }) {
+  preview,
+}: CardOptions & { code: LoadoutCode; single?: boolean; preview?: { shot: string | null } }) {
   const Root = single ? 'article' : 'li'
-  const published = code.status === 'approved' || code.status === 'expired'
+  const published = !preview && (code.status === 'approved' || code.status === 'expired')
+  const shot = preview ? preview.shot : code.shotKey && photoUrl(code.shotKey)
   const detail = `/games/${code.gameSlug}/loadouts/${code.id}`
   const weapon = findWeapon(code.weapon)
   const sharedAt = codeSharedAt(code.code)
@@ -56,39 +58,36 @@ export function LoadoutCard({
   return (
     <Root
       className={styles.card}
-      id={mine || single ? undefined : `loadout-${code.id}`}
+      id={mine || single || preview ? undefined : `loadout-${code.id}`}
       data-status={code.status}
       data-single={single ? '' : undefined}
     >
-      <figure className={styles.media} data-shot={code.shotKey ? '' : undefined}>
-        {code.shotKey ? (
-          <a href={photoUrl(code.shotKey)} target="_blank" rel="noreferrer">
-            <img
-              src={photoUrl(code.shotKey)}
-              alt={`「${code.title}」改枪台截图`}
-              loading="lazy"
-              decoding="async"
-            />
-          </a>
-        ) : weapon?.image ? (
-          <img src={weapon.image} alt="" loading="lazy" decoding="async" />
-        ) : (
-          <span className={styles.silhouette} aria-hidden="true">
-            {weapon?.short ?? code.weapon}
-          </span>
-        )}
-        <figcaption className={styles.overlay}>
-          <span className={styles.mode} data-mode={code.mode}>
-            {LOADOUT_MODES[code.mode]}
-          </span>
-          {code.price ? (
-            <span className={styles.price}>
-              <small>约</small>
-              {formatPrice(code.price)}
+      {single && !shot && !preview ? null : (
+        <figure className={styles.media} data-shot={shot ? '' : undefined}>
+          {shot ? (
+            <a href={shot} target="_blank" rel="noreferrer">
+              <img src={shot} alt={`「${code.title}」改枪台截图`} loading="lazy" decoding="async" />
+            </a>
+          ) : weapon?.image ? (
+            <img src={weapon.image} alt="" loading="lazy" decoding="async" />
+          ) : (
+            <span className={styles.silhouette} aria-hidden="true">
+              {weapon?.short ?? (code.weapon || '?')}
             </span>
-          ) : null}
-        </figcaption>
-      </figure>
+          )}
+          <figcaption className={styles.overlay}>
+            <span className={styles.mode} data-mode={code.mode}>
+              {LOADOUT_MODES[code.mode]}
+            </span>
+            {code.price ? (
+              <span className={styles.price}>
+                <small>约</small>
+                {formatPrice(code.price)}
+              </span>
+            ) : null}
+          </figcaption>
+        </figure>
+      )}
 
       <div className={styles.body}>
         <p className={styles.weapon}>
@@ -104,7 +103,7 @@ export function LoadoutCard({
             </span>
           ) : null}
         </p>
-        {single ? null : (
+        {single && !preview ? null : (
           <h3 className={styles.title}>
             {published ? <Link href={detail}>{code.title}</Link> : code.title}
           </h3>
@@ -141,7 +140,7 @@ export function LoadoutCard({
         {code.note ? <p className={styles.note}>{code.note}</p> : null}
 
         <p className={styles.meta}>
-          {mine ? null : code.authorHandle ? (
+          {mine || preview ? null : code.authorHandle ? (
             <Link href={`/players/${code.authorHandle}`}>{code.authorName}</Link>
           ) : (
             <span>{code.authorName}</span>
@@ -157,16 +156,18 @@ export function LoadoutCard({
 
         <div className={styles.codeRow}>
           <code className={styles.code}>{full}</code>
-          <LoadoutCardActions
-            id={code.id}
-            value={full}
-            title={code.title}
-            live={!mine && code.status === 'approved'}
-            signedIn={Boolean(marks)}
-            likes={code.likes}
-            liked={marks?.liked.has(code.id) ?? false}
-            reported={marks?.reported.has(code.id) ?? false}
-          />
+          {preview ? null : (
+            <LoadoutCardActions
+              id={code.id}
+              value={full}
+              title={code.title}
+              live={!mine && code.status === 'approved'}
+              signedIn={Boolean(marks)}
+              likes={code.likes}
+              liked={marks?.liked.has(code.id) ?? false}
+              reported={marks?.reported.has(code.id) ?? false}
+            />
+          )}
         </div>
       </div>
     </Root>

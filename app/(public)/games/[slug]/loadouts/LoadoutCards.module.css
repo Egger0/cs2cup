@@ -23,7 +23,7 @@
   aspect-ratio: 16 / 9;
   overflow: hidden;
   background:
-    radial-gradient(70% 90% at 50% 58%, rgb(155 202 235 / 14%), transparent 70%),
+    radial-gradient(60% 80% at 50% 62%, rgb(139 147 101 / 26%), transparent 72%),
     linear-gradient(180deg, var(--space), var(--void));
 }
 
@@ -222,7 +222,27 @@
 
 .bar {
   height: 4px;
-  background: linear-gradient(90deg, var(--ct) 0 calc(var(--value) * 100%), var(--line) 0);
+  background:
+    linear-gradient(var(--ct), var(--ct)) 0 0 / calc(var(--value) * 100%) 100% no-repeat,
+    var(--line);
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .bar {
+      animation: fill linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+  }
+}
+
+@keyframes fill {
+  from {
+    background-size:
+      0 100%,
+      auto;
+  }
 }
 
 .note {

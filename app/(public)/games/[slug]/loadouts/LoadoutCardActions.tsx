@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useTransition } from 'react'
-import { CopyTextButton } from '@/components/ui/CopyTextButton'
+import { useEffect, useRef, useState, useTransition } from 'react'
+import { Icon } from '@/components/ui/Icon'
 import { recordLoadoutCopyAction, reportLoadoutCodeAction, setLoadoutLikeAction } from './actions'
 import styles from './LoadoutCardActions.module.css'
 
@@ -13,6 +13,68 @@ function firstCopyThisSession(id: number) {
     sessionStorage.setItem(key, '1')
   } catch {}
   return true
+}
+
+export function LoadoutCopyButton({
+  id,
+  value,
+  title,
+  className,
+  hint = false,
+}: {
+  id: number
+  value: string
+  title: string
+  className?: string
+  hint?: boolean
+}) {
+  const [state, setState] = useState<'idle' | 'copied' | 'manual'>('idle')
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  useEffect(() => () => clearTimeout(timer.current), [])
+
+  async function copy() {
+    clearTimeout(timer.current)
+    try {
+      await navigator.clipboard.writeText(value)
+      setState('copied')
+      timer.current = setTimeout(() => setState('idle'), 2600)
+      if (firstCopyThisSession(id)) void recordLoadoutCopyAction(id).catch(() => {})
+    } catch {
+      setState('manual')
+    }
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        className={`${styles.copy} ${className ?? ''}`}
+        data-state={state}
+        aria-label={`复制「${title}」改枪码`}
+        onClick={copy}
+      >
+        <Icon name={state === 'copied' ? 'check' : 'copy'} size={16} />
+        {state === 'copied' ? '已复制' : '复制改枪码'}
+      </button>
+      <span className={hint ? styles.hint : styles.silent} role="status">
+        {state === 'copied'
+          ? '去改枪台「方案 → 方案共享」粘贴'
+          : state === 'manual'
+            ? '浏览器没让自动复制，请手动复制下面这行。'
+            : ''}
+      </span>
+      {state === 'manual' ? (
+        <input
+          className={styles.manual}
+          aria-label={`「${title}」改枪码`}
+          value={value}
+          readOnly
+          autoFocus
+          onFocus={event => event.currentTarget.select()}
+        />
+      ) : null}
+    </>
+  )
 }
 
 export function LoadoutCardActions({
@@ -56,16 +118,9 @@ export function LoadoutCardActions({
 
   return (
     <div className={styles.actions}>
-      <CopyTextButton
-        value={value}
-        label={`复制「${title}」改枪码`}
-        className={styles.copy}
-        onCopied={() => {
-          if (firstCopyThisSession(id)) void recordLoadoutCopyAction(id).catch(() => {})
-        }}
-      >
-        复制改枪码
-      </CopyTextButton>
+      <span className={styles.copyGroup}>
+        <LoadoutCopyButton id={id} value={value} title={title} />
+      </span>
       {live ? (
         <span className={styles.feedback}>
           {signedIn ? (

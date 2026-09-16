@@ -11,10 +11,12 @@ export function ShareButton({
   share,
   children = '分享',
   accessTips = false,
+  className,
 }: {
   share: PublicShare
   children?: React.ReactNode
   accessTips?: boolean
+  className?: string
 }) {
   const [open, setOpen] = useState(false)
   const trigger = useRef<HTMLButtonElement>(null)
@@ -23,7 +25,7 @@ export function ShareButton({
       <button
         ref={trigger}
         type="button"
-        className={styles.trigger}
+        className={className ? `${styles.trigger} ${className}` : styles.trigger}
         aria-haspopup="dialog"
         onClick={() => setOpen(true)}
       >

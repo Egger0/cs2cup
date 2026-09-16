@@ -8,10 +8,8 @@ export function CopyTextButton({
   label,
   className,
   children,
-  onCopied,
 }: {
   value: string
-  onCopied?: () => void
   label: string
   className?: string
   children?: ReactNode
@@ -23,7 +21,6 @@ export function CopyTextButton({
     try {
       await navigator.clipboard.writeText(value)
       setStatus('copied')
-      onCopied?.()
     } catch {
       setStatus('manual')
     }

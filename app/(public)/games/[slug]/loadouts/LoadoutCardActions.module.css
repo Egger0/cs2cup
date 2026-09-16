@@ -6,16 +6,88 @@
   gap: 8px 12px;
 }
 
-.actions .copy {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--button-ink);
-  font-weight: 580;
+.copyGroup {
+  position: relative;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
-.actions .copy:hover {
+.copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--button-ink);
+  font-size: 0.875rem;
+  font-weight: 580;
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms var(--ease-out);
+}
+
+.copy:hover {
   border-color: var(--ink);
   background: var(--ink);
+}
+
+.copy:active {
+  transform: scale(0.96);
+}
+
+.copy:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.copy[data-state='copied'] {
+  border-color: var(--ink);
+  background: var(--ink);
+}
+
+.copy[data-state='copied'] svg {
+  animation: tick 360ms var(--ease-out);
+}
+
+@keyframes tick {
+  from {
+    scale: 0.4;
+    rotate: -20deg;
+  }
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.silent {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.manual {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font:
+    0.8125rem var(--font-mono),
+    monospace;
 }
 
 .feedback {

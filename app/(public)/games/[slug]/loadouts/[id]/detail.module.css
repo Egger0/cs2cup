@@ -101,3 +101,17 @@
 .commentForm > div {
   width: 100%;
 }
+
+.heroCopy {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.share.share {
+  min-height: 46px;
+  padding-inline: 20px;
+  border-color: var(--line-strong);
+  border-radius: 999px;
+}

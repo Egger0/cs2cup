@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PageMasthead, SectionHead } from '@/components/domain/Sections'
-import { ButtonLink } from '@/components/ui'
 import { getCurrentUnifiedPlatformOwner } from '@/lib/auth'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { LOADOUT_MODES, findWeapon, formatPrice, shareString } from '@/lib/delta-loadouts'
@@ -11,6 +10,10 @@ import { listLoadoutComments, listViewerLoadoutMarks } from '@/lib/loadout-commu
 import { PLANET_COLORS } from '@/lib/planets'
 import { publicMetadata } from '@/lib/public-metadata'
 import { getGame } from '@/lib/queries/public'
+import { resolveSiteOrigin } from '@/lib/site-config'
+import { ShareButton } from '@/components/share/ShareButton'
+import { LoadoutCopyButton } from '../LoadoutCardActions'
+import { HeroStats, HeroWeapon } from '../LoadoutHero'
 import { LoadoutCard, LoadoutCards } from '../LoadoutCards'
 import { LoadoutComments } from './LoadoutComments'
 import styles from './detail.module.css'
@@ -61,6 +64,7 @@ export default async function LoadoutDetailPage({ params }: { params: Params }) 
     listLoadoutCodes(db, game.id),
   ])
   const weapon = findWeapon(code.weapon)
+  const full = shareString(code.weapon, code.mode, code.code)
   const related = siblings
     .filter(
       other =>
@@ -79,10 +83,33 @@ export default async function LoadoutDetailPage({ params }: { params: Params }) 
         tone={PLANET_COLORS.get(game.slug)}
         eyebrow={`${game.name} / 改枪码 / ${LOADOUT_MODES[code.mode]}`}
         title={code.title}
-        lede={`${code.authorName} 分享的 ${weapon?.name ?? code.weapon} 方案。复制完整改枪码，到改枪台「方案 → 方案共享」粘贴导入。`}
+        lede={`${code.authorName}分享的 ${weapon?.short ?? code.weapon} 方案。复制完整改枪码，到改枪台「方案 → 方案共享」一贴即用。`}
         density="compact"
+        art={weapon?.image ? <HeroWeapon image={weapon.image} /> : undefined}
       >
-        <ButtonLink href={`/games/${game.slug}/loadouts`}>全部改枪码</ButtonLink>
+        <span className={styles.heroCopy}>
+          <LoadoutCopyButton id={code.id} value={full} title={code.title} hint />
+        </span>
+        <ShareButton
+          className={styles.share}
+          share={{
+            title: code.title,
+            text: `${weapon?.short ?? code.weapon} · ${LOADOUT_MODES[code.mode]}${
+              code.price ? ` · 约 ${formatPrice(code.price)}` : ''
+            }　${full}`,
+            url: `${resolveSiteOrigin()}/games/${game.slug}/loadouts/${code.id}`,
+            label: '改枪码 / LOADOUT',
+          }}
+        >
+          分享给队友
+        </ShareButton>
+        <HeroStats
+          items={[
+            ['次复制', code.copies],
+            ['人说好用', code.likes],
+            ...(code.price ? [['哈夫币', formatPrice(code.price)] as const] : []),
+          ]}
+        />
       </PageMasthead>
 
       <section className="section">
