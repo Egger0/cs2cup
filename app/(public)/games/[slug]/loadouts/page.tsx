@@ -65,7 +65,7 @@ export default async function LoadoutsPage({
       : null
   const [codes, own, marks] = await Promise.all([
     listLoadoutCodes(db, game.id),
-    accountId ? listOwnLoadoutCodes(db, game.id, accountId) : Promise.resolve([]),
+    accountId ? listOwnLoadoutCodes(db, accountId, game.id) : Promise.resolve([]),
     accountId ? listViewerLoadoutMarks(db, accountId) : Promise.resolve(null),
   ])
 

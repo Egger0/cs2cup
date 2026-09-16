@@ -4,6 +4,7 @@ import { cloudflareBindings, cloudflareEnvironment } from '@/lib/cloudflare-bind
 import { formatSiteCompactDateTime } from '@/lib/datetime'
 import { buildScheduleEntries } from '@/lib/schedule'
 import { stardustBalance, stardustGrantedAt } from '@/lib/stardust'
+import { loadoutDigest } from '@/lib/loadout-codes'
 import { sendQqWelcome } from '@/lib/qq-automation'
 import {
   checkInFromQq,
@@ -126,6 +127,7 @@ async function commandReply(
     ])
     return `我的星尘：${balance}\n今日签到：${checkedInAt === null ? '未完成' : '已完成'}\n${base}/me#stardust-wallet`
   }
+  if (command.kind === 'loadouts') return loadoutDigest(database, command.query, base)
   if (command.kind === 'schedule') {
     const tournament = await getCurrentTournament()
     if (!tournament) return `当前没有报名中、进行中或延期赛事。\n${base}/tournaments`

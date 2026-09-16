@@ -29,6 +29,7 @@ export type QqCommand =
   | { kind: 'my_registrations' }
   | { kind: 'stardust' }
   | { kind: 'schedule' }
+  | { kind: 'loadouts'; query: string }
   | { kind: 'bind'; username: string }
   | { kind: 'unbind' }
 
@@ -53,6 +54,7 @@ const COMMAND_PANEL = {
     { type: 'command', name: '/我的报名', desc: '查看绑定账号的报名状态' },
     { type: 'command', name: '/星尘', desc: '查看今日签到和星尘余额' },
     { type: 'command', name: '/赛程', desc: '查看当前赛事近期赛程' },
+    { type: 'command', name: '/改枪码 武器', desc: '查看三角洲热门改枪码' },
     { type: 'command', name: '/绑定 用户名', desc: '绑定网站用户名' },
     { type: 'command', name: '/解绑', desc: '解除当前 QQ 绑定' },
   ],
@@ -208,6 +210,8 @@ export function qqCommand(content: string): QqCommand | null {
   if (command === '我的报名') return { kind: 'my_registrations' }
   if (command === '星尘') return { kind: 'stardust' }
   if (command === '赛程') return { kind: 'schedule' }
+  const loadouts = /^改枪码(?:\s+(.{1,20}))?$/.exec(command)
+  if (loadouts) return { kind: 'loadouts', query: loadouts[1]?.trim() ?? '' }
   const binding = /^\/绑定\s+(\S+)$/.exec(normalized)
   if (binding?.[1]) return { kind: 'bind', username: binding[1] }
   return normalized === '/解绑' ? { kind: 'unbind' } : null

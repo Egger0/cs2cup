@@ -203,3 +203,25 @@ export function parsePastedLoadout(text: string): PastedLoadout | null {
     label: label && label !== weapon?.name ? label : null,
   }
 }
+
+export function matchLoadoutQuery(query: string) {
+  const words = query.toUpperCase().split(/\s+/).filter(Boolean)
+  const mode: LoadoutMode | null = words.some(word => /全面|大战场/.test(word))
+    ? 'warfare'
+    : words.some(word => /烽火|跑刀|摸金/.test(word))
+      ? 'operations'
+      : null
+  const needles = words.filter(word => !/全面|大战场|烽火|跑刀|摸金/.test(word))
+  const weapons = needles.length
+    ? DELTA_WEAPONS.filter(weapon =>
+        needles.some(
+          needle =>
+            weapon.name.toUpperCase().includes(needle) ||
+            weapon.short.toUpperCase().replaceAll('-', '').includes(needle.replaceAll('-', '')) ||
+            weapon.category === needle,
+        ),
+      )
+    : null
+  const label = weapons?.length === 1 ? weapons[0]!.short : needles.join(' ')
+  return { mode, weapons, label, unmatched: Boolean(needles.length && !weapons?.length) }
+}
