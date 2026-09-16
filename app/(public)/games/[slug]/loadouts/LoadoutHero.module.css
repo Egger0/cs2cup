@@ -1,0 +1,65 @@
+.weapon.weapon {
+  position: absolute;
+  top: 16%;
+  right: clamp(12px, 4vw, 72px);
+  width: min(56vw, 820px);
+  height: 64%;
+  object-fit: contain;
+  object-position: 100% 50%;
+  rotate: -9deg;
+  filter: drop-shadow(0 40px 60px rgb(0 0 0 / 70%))
+    drop-shadow(0 0 70px color-mix(in srgb, var(--tone) 32%, transparent));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .weapon.weapon {
+    animation: drift 9s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes drift {
+  to {
+    translate: -1.5% -2%;
+    rotate: -7deg;
+  }
+}
+
+@media (max-width: 720px) {
+  .weapon.weapon {
+    top: 9%;
+    right: -12vw;
+    width: 104vw;
+    height: 40%;
+    opacity: 0.72;
+  }
+}
+
+.stats {
+  display: inline-flex;
+  gap: 28px;
+  margin-inline-start: 8px;
+}
+
+@media (max-width: 720px) {
+  .stats {
+    margin-inline-start: 0;
+  }
+}
+
+.stat {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+.stat b {
+  color: var(--ink);
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.25rem;
+  font-weight: 570;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}

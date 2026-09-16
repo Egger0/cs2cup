@@ -6,11 +6,11 @@ import { PostList } from '@/components/domain/PostList'
 import { PageMasthead, SectionHead } from '@/components/domain/Sections'
 import { TournamentList } from '@/components/domain/TournamentList'
 import { Honours } from '@/components/domain/Honours'
-import { LoadoutCodeList } from '@/components/domain/LoadoutCodeList'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { listLoadoutCodes } from '@/lib/loadout-codes'
 import { getGame, listHonours, listPosts, listTournaments, safely } from '@/lib/queries/public'
 import styles from './game.module.css'
+import { LoadoutCards } from './loadouts/LoadoutCards'
 
 export const revalidate = 300
 
@@ -30,7 +30,13 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
     safely(() => listPosts(), []),
     safely(listHonours, []),
     game.loadoutCodes
-      ? safely(() => listLoadoutCodes(cloudflareBindings().db, game.id, 6), [])
+      ? safely(async () => {
+          const codes = await listLoadoutCodes(cloudflareBindings().db, game.id)
+          return codes
+            .filter(code => code.status === 'approved')
+            .sort((a, b) => b.copies - a.copies)
+            .slice(0, 3)
+        }, [])
       : Promise.resolve([]),
   ])
 
@@ -139,15 +145,15 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
               <div data-rise className={styles.sectionBar}>
                 <SectionHead
                   eyebrow="改枪码"
-                  title="社员的改装方案"
-                  lede="复制改枪码，在游戏的改装界面粘贴即可使用。"
+                  title="社员最常复制的方案"
+                  lede="复制完整改枪码，到改枪台「方案 → 方案共享」粘贴导入。"
                 />
                 <ButtonLink href={`/games/${game.slug}/loadouts`}>
                   全部改枪码 · 投稿 <span aria-hidden="true">→</span>
                 </ButtonLink>
               </div>
               {loadouts.length > 0 ? (
-                <LoadoutCodeList codes={loadouts} />
+                <LoadoutCards codes={loadouts} />
               ) : (
                 <Empty
                   action={

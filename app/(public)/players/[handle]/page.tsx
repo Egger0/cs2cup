@@ -5,6 +5,8 @@ import { PageMasthead, SectionHead } from '@/components/domain/Sections'
 import { PlayerBadges, PlayerGameCards } from '@/components/domain/PlayerGameCards'
 import { Empty } from '@/components/ui'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
+import { listAuthorLoadoutCodes } from '@/lib/loadout-codes'
+import { LoadoutCards } from '../../games/[slug]/loadouts/LoadoutCards'
 import { publicMetadata } from '@/lib/public-metadata'
 import { playerProfileByHandle } from '@/lib/queries/player-profile'
 import styles from './player.module.css'
@@ -36,6 +38,9 @@ export default async function PlayerPage({ params }: { params: Promise<{ handle:
   const { handle } = await params
   const profile = await profileOf(handle)
   if (!profile) notFound()
+  const loadouts = await listAuthorLoadoutCodes(cloudflareBindings().db, profile.accountId).catch(
+    () => [],
+  )
 
   return (
     <>
@@ -86,6 +91,12 @@ export default async function PlayerPage({ params }: { params: Promise<{ handle:
             <Empty>还没有已认领的参赛记录</Empty>
           )}
         </section>
+        {loadouts.length ? (
+          <section className={styles.section}>
+            <SectionHead eyebrow="改枪码" title="TA 分享的改装方案" />
+            <LoadoutCards codes={loadouts} />
+          </section>
+        ) : null}
       </div>
     </>
   )

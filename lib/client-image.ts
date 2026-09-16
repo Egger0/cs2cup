@@ -34,6 +34,19 @@ async function encode(image: ImageBitmap, width: number, height: number, quality
   return { blob, canvas }
 }
 
+export async function renderWebp(file: File, maxEdge: number, quality: number) {
+  const image = await createImageBitmap(file)
+  try {
+    const scale = Math.min(1, maxEdge / Math.max(image.width, image.height))
+    const width = Math.max(1, Math.round(image.width * scale))
+    const height = Math.max(1, Math.round(image.height * scale))
+    const { blob } = await encode(image, width, height, quality)
+    return new File([blob], 'upload.webp', { type: 'image/webp' })
+  } finally {
+    image.close()
+  }
+}
+
 export async function renderImageVariants(file: File) {
   const image = await createImageBitmap(file)
   try {

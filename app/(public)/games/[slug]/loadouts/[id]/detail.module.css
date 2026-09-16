@@ -1,0 +1,117 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 48px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.discussion {
+  display: grid;
+  gap: 20px;
+  scroll-margin-top: 148px;
+}
+
+.comments {
+  display: grid;
+  gap: 24px;
+}
+
+.thread {
+  display: grid;
+  list-style: none;
+  border-top: 1px solid var(--ink);
+}
+
+.thread li {
+  display: grid;
+  gap: 6px;
+  padding-block: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.thread li[data-hidden] {
+  opacity: 0.5;
+}
+
+.commentMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.commentMeta :is(a, b) {
+  color: var(--ink);
+  font-weight: 620;
+}
+
+.commentMeta a:hover {
+  color: var(--ct);
+}
+
+.commentMeta button {
+  min-height: 32px;
+  margin-inline-start: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.commentMeta button:hover {
+  color: var(--c4);
+}
+
+.commentBody {
+  color: var(--ink);
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.quiet {
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.quiet a {
+  color: var(--ct);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.commentForm {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.commentForm > div {
+  width: 100%;
+}
+
+.heroCopy {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.share.share {
+  min-height: 46px;
+  padding-inline: 20px;
+  border-color: var(--line-strong);
+  border-radius: 999px;
+}

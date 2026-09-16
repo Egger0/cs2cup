@@ -34,6 +34,7 @@ export interface PlayerBadge {
 }
 
 export interface PlayerProfile {
+  readonly accountId: string
   readonly displayName: string
   readonly handle: string
   readonly entries: PlayerTournamentEntry[]
@@ -174,6 +175,7 @@ export async function playerProfileByHandle(
     .first<{ won: number; checkIns: number }>()
 
   return {
+    accountId: first.account_id,
     displayName: first.display_name,
     handle: first.public_handle,
     entries,
