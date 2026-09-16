@@ -73,13 +73,14 @@ the required registration fingerprint secret is domain-separated into stable pas
 authentication-fingerprint keys. Configure both values of a dedicated pair together and retain old
 password pepper versions while credentials still reference them.
 
-## QQ group bot
+## QQ bot
 
 The optional QQ official bot webhook is `POST /api/qq/webhook`. Set all three `QQ_BOT_*` values as
-Worker Secrets, configure that URL in QQ Open Platform, and subscribe to the group @-message and
-`GROUP_MEMBER_ADD` events. The application validates QQ's signed callback, accepts only the
-configured group OpenID, welcomes new members, and binds a QQ member to a site username through the
-bind command. The unbind command removes the sender's own binding. Platform owners can use
+Worker Secrets, configure that URL in QQ Open Platform, and subscribe to the group @-message,
+`GROUP_MEMBER_ADD`, and `C2C_MESSAGE_CREATE` events. The application validates QQ's signed callback,
+accepts group commands only from the configured group OpenID, and welcomes new members. Users bind or
+unbind their site username only by private chat with the bot; group binding commands direct users to
+private chat. Platform owners can use
 **Sync QQ Command Panel** in Admin Settings to publish the group command panel. A Cloudflare Cron
 trigger sends the configured morning greeting daily at 09:00 Asia/Shanghai. Do not put QQ secrets or
 group OpenIDs in `wrangler.jsonc`.

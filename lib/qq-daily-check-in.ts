@@ -45,29 +45,53 @@ function previousDate(date: string) {
     .slice(0, 10)
 }
 
-async function activeLink(database: IdentityDatabase, groupOpenId: string, memberOpenId: string) {
+async function activeLink(
+  database: IdentityDatabase,
+  groupOpenId: string,
+  memberOpenId: string,
+  userOpenId?: string,
+) {
   return database
     .prepare(
       `SELECT link.account_id
        FROM qq_account_link AS link
        JOIN identity_account AS account ON account.id = link.account_id
-       WHERE link.group_openid = ? AND link.member_openid = ? AND account.status = 'active'
+       WHERE link.group_openid = ?
+         AND (link.member_openid = ? OR link.user_openid = ?)
+         AND account.status = 'active'
        LIMIT 1`,
     )
-    .bind(groupOpenId, memberOpenId)
+    .bind(groupOpenId, memberOpenId, userOpenId ?? '')
     .first<LinkRow>()
 }
 
-export async function linkQqAccountByUsername(
+async function activePrivateLink(
   database: IdentityDatabase,
-  input: { groupOpenId: string; memberOpenId: string; username: string },
+  groupOpenId: string,
+  userOpenId: string,
+) {
+  return database
+    .prepare(
+      `SELECT link.account_id
+       FROM qq_account_link AS link
+       JOIN identity_account AS account ON account.id = link.account_id
+       WHERE link.group_openid = ? AND link.user_openid = ? AND account.status = 'active'
+       LIMIT 1`,
+    )
+    .bind(groupOpenId, userOpenId)
+    .first<LinkRow>()
+}
+
+export async function linkQqAccountByPrivateUsername(
+  database: IdentityDatabase,
+  input: { groupOpenId: string; userOpenId: string; username: string },
   now = Date.now(),
 ): Promise<QqLinkResult> {
-  const { groupOpenId, memberOpenId } = input
+  const { groupOpenId, userOpenId } = input
   const username = evaluateUsernamePolicy(input.username)
-  if (!validOpenId(groupOpenId) || !validOpenId(memberOpenId) || !username.ok)
+  if (!validOpenId(groupOpenId) || !validOpenId(userOpenId) || !username.ok)
     return { ok: false, reason: 'invalid_username' }
-  if (await activeLink(database, groupOpenId, memberOpenId))
+  if (await activePrivateLink(database, groupOpenId, userOpenId))
     return { ok: false, reason: 'already_bound' }
   const candidate = await database
     .prepare(
@@ -86,44 +110,45 @@ export async function linkQqAccountByUsername(
     .first<{ present: number }>()
   if (accountLinked) return { ok: false, reason: 'account_bound' }
 
-  await database.batch([
-    database
-      .prepare(
-        `INSERT OR IGNORE INTO qq_account_link (account_id, group_openid, member_openid, linked_at)
-         VALUES (?, ?, ?, ?)`,
-      )
-      .bind(candidate.account_id, groupOpenId, memberOpenId, now),
-  ])
-  const linked = await activeLink(database, groupOpenId, memberOpenId)
+  await database
+    .prepare(
+      `INSERT OR IGNORE INTO qq_account_link
+       (account_id, group_openid, member_openid, user_openid, linked_at)
+       VALUES (?, ?, ?, ?, ?)`,
+    )
+    .bind(candidate.account_id, groupOpenId, userOpenId, userOpenId, now)
+    .run()
+  const linked = await activePrivateLink(database, groupOpenId, userOpenId)
   return linked?.account_id === candidate.account_id
     ? { ok: true }
     : { ok: false, reason: 'already_bound' }
 }
 
-export async function unlinkQqAccount(
+export async function unlinkQqAccountByUserOpenId(
   database: IdentityDatabase,
-  input: { groupOpenId: string; memberOpenId: string },
+  input: { groupOpenId: string; userOpenId: string },
 ): Promise<QqUnlinkResult> {
-  const { groupOpenId, memberOpenId } = input
-  if (!validOpenId(groupOpenId) || !validOpenId(memberOpenId))
+  const { groupOpenId, userOpenId } = input
+  if (!validOpenId(groupOpenId) || !validOpenId(userOpenId))
     return { ok: false, reason: 'not_bound' }
-  if (!(await activeLink(database, groupOpenId, memberOpenId)))
+  if (!(await activePrivateLink(database, groupOpenId, userOpenId))) {
     return { ok: false, reason: 'not_bound' }
+  }
   await database
-    .prepare('DELETE FROM qq_account_link WHERE group_openid = ? AND member_openid = ?')
-    .bind(groupOpenId, memberOpenId)
+    .prepare('DELETE FROM qq_account_link WHERE group_openid = ? AND user_openid = ?')
+    .bind(groupOpenId, userOpenId)
     .run()
-  return (await activeLink(database, groupOpenId, memberOpenId))
+  return (await activePrivateLink(database, groupOpenId, userOpenId))
     ? { ok: false, reason: 'not_bound' }
     : { ok: true }
 }
 
 export async function checkInFromQq(
   database: IdentityDatabase,
-  input: { groupOpenId: string; memberOpenId: string },
+  input: { groupOpenId: string; memberOpenId: string; userOpenId?: string },
   now = Date.now(),
 ): Promise<QqCheckInResult> {
-  const link = await activeLink(database, input.groupOpenId, input.memberOpenId)
+  const link = await activeLink(database, input.groupOpenId, input.memberOpenId, input.userOpenId)
   if (!link) return { kind: 'unbound' }
   const today = shanghaiDate(now)
   const yesterday = previousDate(today)

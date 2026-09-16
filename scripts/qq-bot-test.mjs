@@ -14,7 +14,9 @@ const {
   qqCommand,
   qqGroupMemberAdd,
   qqGroupMessage,
+  qqPrivateMessage,
   qqWebhookVerification,
+  replyToQqUser,
   syncQqGroupCommandPanel,
   sendQqGroupMessage,
   verifyQqWebhookSignature,
@@ -60,6 +62,24 @@ assert.deepEqual(
     content: '签到',
   },
 )
+assert.deepEqual(
+  qqPrivateMessage({
+    id: 'event-private-1',
+    t: 'C2C_MESSAGE_CREATE',
+    d: {
+      id: 'message-private-1',
+      content: '/绑定 Reviewer.User',
+      author: { user_openid: 'user-1' },
+    },
+  }),
+  {
+    eventId: 'event-private-1',
+    messageId: 'message-private-1',
+    userOpenId: 'user-1',
+    content: '/绑定 Reviewer.User',
+  },
+)
+assert.equal(qqPrivateMessage({ t: 'GROUP_AT_MESSAGE_CREATE', d: {} }), null)
 assert.equal(qqGroupMessage({ t: 'GROUP_MESSAGE_CREATE', d: {} }), null)
 assert.deepEqual(
   qqGroupMemberAdd({
@@ -144,8 +164,6 @@ try {
         { type: 'command', name: '/签到', desc: '完成今天的社团打卡' },
         { type: 'command', name: '/签到排行', desc: '查看连续签到排名' },
         { type: 'command', name: '/最近赛事', desc: '查看当前赛事安排' },
-        { type: 'command', name: '/绑定 用户名', desc: '绑定网站用户名' },
-        { type: 'command', name: '/解绑', desc: '解除当前 QQ 绑定' },
       ],
       remark: 'nbt-qq-group-commands',
     },
@@ -182,6 +200,23 @@ try {
   assert.deepEqual(JSON.parse(requests.at(-1).init.body), {
     content: '早安，宁理电竞社！今天记得签到哦',
     msg_type: 0,
+  })
+  await replyToQqUser(
+    { appId: 'app', appSecret: 'secret', allowedGroupOpenId: 'group-1' },
+    {
+      eventId: 'event-private-1',
+      messageId: 'message-private-1',
+      userOpenId: 'user-1',
+      content: '/解绑',
+    },
+    '已解除当前 QQ 的网站账号绑定。',
+  )
+  assert.equal(requests.at(-1).url.endsWith('/users/user-1/messages'), true)
+  assert.deepEqual(JSON.parse(requests.at(-1).init.body), {
+    content: '已解除当前 QQ 的网站账号绑定。',
+    msg_type: 0,
+    msg_id: 'message-private-1',
+    msg_seq: 1,
   })
 } finally {
   globalThis.fetch = originalFetch
