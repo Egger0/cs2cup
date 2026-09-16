@@ -12,14 +12,6 @@ export interface QqGroupMessage {
   messageId: string
   groupOpenId: string
   memberOpenId: string
-  userOpenId?: string
-  content: string
-}
-
-export interface QqPrivateMessage {
-  eventId: string
-  messageId: string
-  userOpenId: string
   content: string
 }
 
@@ -53,6 +45,8 @@ const COMMAND_PANEL = {
     { type: 'command', name: '/签到', desc: '完成今天的社团打卡' },
     { type: 'command', name: '/签到排行', desc: '查看连续签到排名' },
     { type: 'command', name: '/最近赛事', desc: '查看当前赛事安排' },
+    { type: 'command', name: '/绑定 用户名', desc: '绑定网站用户名' },
+    { type: 'command', name: '/解绑', desc: '解除当前 QQ 绑定' },
   ],
   remark: COMMAND_PANEL_REMARK,
 }
@@ -166,31 +160,9 @@ export function qqGroupMessage(payload: unknown): QqGroupMessage | null {
   const messageId = data ? stringValue(data.id) : null
   const groupOpenId = data ? stringValue(data.group_openid) : null
   const memberOpenId = author ? stringValue(author.member_openid) : null
-  const userOpenId = author ? (stringValue(author.user_openid) ?? stringValue(author.id)) : null
   const content = data ? stringValue(data.content) : null
   if (!eventId || !messageId || !groupOpenId || !memberOpenId || content === null) return null
-  return {
-    eventId,
-    messageId,
-    groupOpenId,
-    memberOpenId,
-    ...(userOpenId ? { userOpenId } : {}),
-    content,
-  }
-}
-
-export function qqPrivateMessage(payload: unknown): QqPrivateMessage | null {
-  const source = recordValue(payload)
-  if (!source || eventType(source) !== 'C2C_MESSAGE_CREATE') return null
-  const data = eventData(source)
-  const author = data ? recordValue(data.author) : null
-  const eventId =
-    stringValue(source.id) ?? stringValue(source.event_id) ?? stringValue(source.eventId)
-  const messageId = data ? stringValue(data.id) : null
-  const userOpenId = author ? (stringValue(author.user_openid) ?? stringValue(author.id)) : null
-  const content = data ? stringValue(data.content) : null
-  if (!eventId || !messageId || !userOpenId || content === null) return null
-  return { eventId, messageId, userOpenId, content }
+  return { eventId, messageId, groupOpenId, memberOpenId, content }
 }
 
 export function qqGroupMemberAdd(payload: unknown): QqGroupMemberAdd | null {
@@ -240,15 +212,6 @@ async function postGroupReply(config: QqBotConfig, message: QqGroupMessage, cont
 
 export function replyToQqGroup(config: QqBotConfig, message: QqGroupMessage, content: string) {
   return postGroupReply(config, message, content)
-}
-
-export function replyToQqUser(config: QqBotConfig, message: QqPrivateMessage, content: string) {
-  return qqBotApiRequest(
-    config,
-    `/users/${encodeURIComponent(message.userOpenId)}/messages`,
-    'POST',
-    { content, msg_type: 0, msg_id: message.messageId, msg_seq: 1 },
-  )
 }
 
 interface QqCommandPanelRecord {

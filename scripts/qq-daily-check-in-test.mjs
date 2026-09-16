@@ -13,20 +13,14 @@ registerHooks({
   },
 })
 
-const {
-  checkInFromQq,
-  linkQqAccountByPrivateUsername,
-  qqCheckInLeaderboard,
-  unlinkQqAccountByUserOpenId,
-} = await import('../lib/qq-daily-check-in.ts')
+const { checkInFromQq, linkQqAccountByUsername, qqCheckInLeaderboard, unlinkQqAccount } =
+  await import('../lib/qq-daily-check-in.ts')
 const { accountIds, createIdentityKernelFixture } =
   await import('./identity-kernel-test-fixture.mjs')
 
 const groupOpenId = 'official-group-openid'
 const ownerOpenId = 'owner-member-openid'
-const ownerUserOpenId = 'owner-user-openid'
 const managerOpenId = 'manager-member-openid'
-const managerUserOpenId = 'manager-user-openid'
 const at = (day, hour = 0, minute = 0) => Date.UTC(2026, 8, day, hour - 8, minute)
 
 const fixture = await createIdentityKernelFixture()
@@ -39,115 +33,87 @@ try {
   const staffName = displayName(accountIds.weakStaff)
 
   assert.deepEqual(
-    await linkQqAccountByPrivateUsername(
+    await linkQqAccountByUsername(
       fixture.db,
-      { groupOpenId, userOpenId: ownerUserOpenId, username: 'Reviewer.User' },
+      { groupOpenId, memberOpenId: ownerOpenId, username: 'Reviewer.User' },
       at(4, 20),
     ),
     { ok: true },
   )
   assert.deepEqual(
-    await linkQqAccountByPrivateUsername(
+    await linkQqAccountByUsername(
       fixture.db,
-      { groupOpenId, userOpenId: ownerUserOpenId, username: 'reviewer.user' },
+      { groupOpenId, memberOpenId: ownerOpenId, username: 'reviewer.user' },
       at(4, 20, 1),
     ),
     { ok: false, reason: 'already_bound' },
   )
   assert.deepEqual(
-    await linkQqAccountByPrivateUsername(
+    await linkQqAccountByUsername(
       fixture.db,
-      { groupOpenId, userOpenId: 'other-user-openid', username: 'reviewer.user' },
+      { groupOpenId, memberOpenId: 'other-member-openid', username: 'reviewer.user' },
       at(4, 20, 2),
     ),
     { ok: false, reason: 'account_bound' },
   )
   assert.deepEqual(
-    await linkQqAccountByPrivateUsername(
+    await linkQqAccountByUsername(
       fixture.db,
-      { groupOpenId, userOpenId: 'invalid-user-openid', username: 'bad name' },
+      { groupOpenId, memberOpenId: 'invalid-member-openid', username: 'bad name' },
       at(4, 20, 3),
     ),
     { ok: false, reason: 'invalid_username' },
   )
   assert.deepEqual(
-    await linkQqAccountByPrivateUsername(
+    await linkQqAccountByUsername(
       fixture.db,
-      { groupOpenId, userOpenId: 'missing-user-openid', username: 'missing.user' },
+      { groupOpenId, memberOpenId: 'missing-member-openid', username: 'missing.user' },
       at(4, 20, 4),
     ),
     { ok: false, reason: 'username_not_found' },
   )
   assert.deepEqual(
-    await unlinkQqAccountByUserOpenId(fixture.db, { groupOpenId, userOpenId: 'other-user-openid' }),
+    await unlinkQqAccount(fixture.db, { groupOpenId, memberOpenId: 'other-member-openid' }),
     { ok: false, reason: 'not_bound' },
   )
+  assert.deepEqual(await unlinkQqAccount(fixture.db, { groupOpenId, memberOpenId: ownerOpenId }), {
+    ok: true,
+  })
   assert.deepEqual(
-    await unlinkQqAccountByUserOpenId(fixture.db, { groupOpenId, userOpenId: ownerUserOpenId }),
-    {
-      ok: true,
-    },
-  )
-  assert.deepEqual(
-    await checkInFromQq(
-      fixture.db,
-      { groupOpenId, memberOpenId: ownerOpenId, userOpenId: ownerUserOpenId },
-      at(4, 21),
-    ),
+    await checkInFromQq(fixture.db, { groupOpenId, memberOpenId: ownerOpenId }, at(4, 21)),
     { kind: 'unbound' },
   )
   assert.deepEqual(
-    await linkQqAccountByPrivateUsername(
+    await linkQqAccountByUsername(
       fixture.db,
-      { groupOpenId, userOpenId: ownerUserOpenId, username: 'reviewer.user' },
+      { groupOpenId, memberOpenId: ownerOpenId, username: 'reviewer.user' },
       at(4, 22),
     ),
     { ok: true },
   )
-  fixture.execute(
-    `INSERT INTO qq_account_link (account_id, group_openid, member_openid, linked_at)
-     VALUES (?, ?, ?, ?)`,
-    [accountIds.weakStaff, groupOpenId, managerOpenId, at(5, 8)],
-  )
   assert.deepEqual(
-    await linkQqAccountByPrivateUsername(
+    await linkQqAccountByUsername(
       fixture.db,
-      { groupOpenId, userOpenId: managerUserOpenId, username: 'staff.user' },
-      at(5, 8, 1),
+      { groupOpenId, memberOpenId: managerOpenId, username: 'staff.user' },
+      at(5, 8),
     ),
     { ok: true },
   )
 
   assert.deepEqual(
-    await checkInFromQq(
-      fixture.db,
-      { groupOpenId, memberOpenId: ownerOpenId, userOpenId: ownerUserOpenId },
-      at(4, 23, 59),
-    ),
+    await checkInFromQq(fixture.db, { groupOpenId, memberOpenId: ownerOpenId }, at(4, 23, 59)),
     { kind: 'checked_in', streak: 1, rank: 1, reward: 0 },
   )
   assert.deepEqual(
-    await checkInFromQq(
-      fixture.db,
-      { groupOpenId, memberOpenId: ownerOpenId, userOpenId: ownerUserOpenId },
-      at(4, 23, 59) + 1,
-    ),
+    await checkInFromQq(fixture.db, { groupOpenId, memberOpenId: ownerOpenId }, at(4, 23, 59) + 1),
     { kind: 'already_checked_in', streak: 1 },
   )
   assert.deepEqual(
-    await checkInFromQq(
-      fixture.db,
-      { groupOpenId, memberOpenId: ownerOpenId, userOpenId: ownerUserOpenId },
-      at(5, 0, 0),
-    ),
+    await checkInFromQq(fixture.db, { groupOpenId, memberOpenId: ownerOpenId }, at(5, 0, 0)),
     { kind: 'checked_in', streak: 2, rank: 1, reward: 0 },
   )
   assert.deepEqual(
-    await checkInFromQq(
-      fixture.db,
-      { groupOpenId, memberOpenId: managerOpenId, userOpenId: managerUserOpenId },
-      at(5, 8, 4),
-    ),
+    await checkInFromQq(fixture.db, { groupOpenId, memberOpenId: managerOpenId }, at(5, 8, 4)),
     { kind: 'checked_in', streak: 1, rank: 2, reward: 0 },
   )
   assert.deepEqual(await qqCheckInLeaderboard(fixture.db, groupOpenId, at(5, 9)), [
@@ -155,11 +121,7 @@ try {
     { displayName: staffName, streak: 1, lastCheckInDate: '2026-09-05' },
   ])
   assert.deepEqual(
-    await checkInFromQq(
-      fixture.db,
-      { groupOpenId, memberOpenId: ownerOpenId, userOpenId: ownerUserOpenId },
-      at(7, 8),
-    ),
+    await checkInFromQq(fixture.db, { groupOpenId, memberOpenId: ownerOpenId }, at(7, 8)),
     { kind: 'checked_in', streak: 1, rank: 1, reward: 0 },
   )
   assert.deepEqual(await qqCheckInLeaderboard(fixture.db, groupOpenId, at(7, 9)), [

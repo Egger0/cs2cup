@@ -4,19 +4,17 @@ import { cloudflareBindings, cloudflareEnvironment } from '@/lib/cloudflare-bind
 import { sendQqWelcome } from '@/lib/qq-automation'
 import {
   checkInFromQq,
-  linkQqAccountByPrivateUsername,
+  linkQqAccountByUsername,
   qqCheckInLeaderboard,
-  unlinkQqAccountByUserOpenId,
+  unlinkQqAccount,
 } from '@/lib/qq-daily-check-in'
 import {
   qqBotConfig,
   qqCommand,
   qqGroupMemberAdd,
   qqGroupMessage,
-  qqPrivateMessage,
   qqWebhookVerification,
   replyToQqGroup,
-  replyToQqUser,
   verifyQqWebhookSignature,
 } from '@/lib/qq-bot'
 import { getCurrentTournament } from '@/lib/queries/public/tournaments'
@@ -39,19 +37,31 @@ function tournamentTime(value: string | null) {
   }).format(date)
 }
 
-async function groupCommandReply(
+async function commandReply(
   command: NonNullable<ReturnType<typeof qqCommand>>,
   groupOpenId: string,
   memberOpenId: string,
-  userOpenId?: string,
 ) {
   const database = cloudflareBindings().db
   if (command.kind === 'bind') {
-    return '请私聊机器人使用“/绑定 用户名”。'
+    const linked = await linkQqAccountByUsername(database, {
+      groupOpenId,
+      memberOpenId,
+      username: command.username,
+    })
+    if (linked.ok) return '绑定成功。现在可以发送“签到”参加社团每日打卡。'
+    if (linked.reason === 'already_bound') return '这个 QQ 已经绑定过网站账号，不能覆盖绑定。'
+    if (linked.reason === 'account_bound')
+      return '这个网站账号已经绑定过 QQ；如需换绑，请联系平台负责人。'
+    if (linked.reason === 'username_not_found') return '该用户名未注册，请前往官网创建账号。'
+    return '用户名格式不正确。请使用网站登录时的用户名。'
   }
-  if (command.kind === 'unbind') return '请私聊机器人使用“/解绑”。'
+  if (command.kind === 'unbind') {
+    const unlinked = await unlinkQqAccount(database, { groupOpenId, memberOpenId })
+    return unlinked.ok ? '已解除当前 QQ 的网站账号绑定。' : '当前 QQ 没有可解除的绑定。'
+  }
   if (command.kind === 'check_in') {
-    const result = await checkInFromQq(database, { groupOpenId, memberOpenId, userOpenId })
+    const result = await checkInFromQq(database, { groupOpenId, memberOpenId })
     if (result.kind === 'unbound') {
       return '请先发送“/绑定 你的用户名”。'
     }
@@ -93,29 +103,6 @@ async function groupCommandReply(
     .join('\n')
 }
 
-async function privateBindingReply(
-  command: Extract<NonNullable<ReturnType<typeof qqCommand>>, { kind: 'bind' | 'unbind' }>,
-  groupOpenId: string,
-  userOpenId: string,
-) {
-  const database = cloudflareBindings().db
-  if (command.kind === 'unbind') {
-    const unlinked = await unlinkQqAccountByUserOpenId(database, { groupOpenId, userOpenId })
-    return unlinked.ok ? '已解除当前 QQ 的网站账号绑定。' : '当前 QQ 没有可解除的绑定。'
-  }
-  const linked = await linkQqAccountByPrivateUsername(database, {
-    groupOpenId,
-    userOpenId,
-    username: command.username,
-  })
-  if (linked.ok) return '绑定成功。现在可以回到官方群发送“签到”参加社团每日打卡。'
-  if (linked.reason === 'already_bound') return '这个 QQ 已经绑定过网站账号，不能覆盖绑定。'
-  if (linked.reason === 'account_bound')
-    return '这个网站账号已经绑定过 QQ；如需换绑，请联系平台负责人。'
-  if (linked.reason === 'username_not_found') return '该用户名未注册，请前往官网创建账号。'
-  return '用户名格式不正确。请使用网站登录时的用户名。'
-}
-
 export async function POST(request: Request) {
   const config = qqBotConfig(cloudflareEnvironment())
   if (!config) return new NextResponse('QQ bot is not configured', { status: 503 })
@@ -152,26 +139,6 @@ export async function POST(request: Request) {
       return new NextResponse('QQ bot unavailable', { status: 503 })
     }
   }
-  const privateMessage = qqPrivateMessage(payload)
-  if (privateMessage) {
-    const command = qqCommand(privateMessage.content)
-    if (!command || (command.kind !== 'bind' && command.kind !== 'unbind')) {
-      return new NextResponse(null, { status: 204 })
-    }
-    if (!config.allowedGroupOpenId) return new NextResponse(null, { status: 204 })
-    try {
-      const content = await privateBindingReply(
-        command,
-        config.allowedGroupOpenId,
-        privateMessage.userOpenId,
-      )
-      await replyToQqUser(config, privateMessage, content)
-      return new NextResponse(null, { status: 204 })
-    } catch (error) {
-      console.error('[qq-bot] private binding unavailable', error)
-      return new NextResponse('QQ bot unavailable', { status: 503 })
-    }
-  }
   const message = qqGroupMessage(payload)
   if (!message) return new NextResponse(null, { status: 204 })
   const command = qqCommand(message.content)
@@ -195,12 +162,7 @@ export async function POST(request: Request) {
   if (message.groupOpenId !== config.allowedGroupOpenId)
     return new NextResponse(null, { status: 204 })
   try {
-    const content = await groupCommandReply(
-      command,
-      message.groupOpenId,
-      message.memberOpenId,
-      message.userOpenId,
-    )
+    const content = await commandReply(command, message.groupOpenId, message.memberOpenId)
     await replyToQqGroup(config, message, content)
     return new NextResponse(null, { status: 204 })
   } catch (error) {

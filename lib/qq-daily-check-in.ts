@@ -29,10 +29,6 @@ interface LinkRow {
   account_id: string
 }
 
-interface AccountLinkRow {
-  user_openid: string | null
-}
-
 interface StreakRow {
   current_streak: number
   last_check_in_date: string
@@ -49,53 +45,29 @@ function previousDate(date: string) {
     .slice(0, 10)
 }
 
-async function activeLink(
-  database: IdentityDatabase,
-  groupOpenId: string,
-  memberOpenId: string,
-  userOpenId?: string,
-) {
+async function activeLink(database: IdentityDatabase, groupOpenId: string, memberOpenId: string) {
   return database
     .prepare(
       `SELECT link.account_id
        FROM qq_account_link AS link
        JOIN identity_account AS account ON account.id = link.account_id
-       WHERE link.group_openid = ?
-         AND (link.member_openid = ? OR link.user_openid = ?)
-         AND account.status = 'active'
+       WHERE link.group_openid = ? AND link.member_openid = ? AND account.status = 'active'
        LIMIT 1`,
     )
-    .bind(groupOpenId, memberOpenId, userOpenId ?? '')
+    .bind(groupOpenId, memberOpenId)
     .first<LinkRow>()
 }
 
-async function activePrivateLink(
+export async function linkQqAccountByUsername(
   database: IdentityDatabase,
-  groupOpenId: string,
-  userOpenId: string,
-) {
-  return database
-    .prepare(
-      `SELECT link.account_id
-       FROM qq_account_link AS link
-       JOIN identity_account AS account ON account.id = link.account_id
-       WHERE link.group_openid = ? AND link.user_openid = ? AND account.status = 'active'
-       LIMIT 1`,
-    )
-    .bind(groupOpenId, userOpenId)
-    .first<LinkRow>()
-}
-
-export async function linkQqAccountByPrivateUsername(
-  database: IdentityDatabase,
-  input: { groupOpenId: string; userOpenId: string; username: string },
+  input: { groupOpenId: string; memberOpenId: string; username: string },
   now = Date.now(),
 ): Promise<QqLinkResult> {
-  const { groupOpenId, userOpenId } = input
+  const { groupOpenId, memberOpenId } = input
   const username = evaluateUsernamePolicy(input.username)
-  if (!validOpenId(groupOpenId) || !validOpenId(userOpenId) || !username.ok)
+  if (!validOpenId(groupOpenId) || !validOpenId(memberOpenId) || !username.ok)
     return { ok: false, reason: 'invalid_username' }
-  if (await activePrivateLink(database, groupOpenId, userOpenId))
+  if (await activeLink(database, groupOpenId, memberOpenId))
     return { ok: false, reason: 'already_bound' }
   const candidate = await database
     .prepare(
@@ -109,64 +81,49 @@ export async function linkQqAccountByPrivateUsername(
     .first<LinkRow>()
   if (!candidate) return { ok: false, reason: 'username_not_found' }
   const accountLinked = await database
-    .prepare('SELECT user_openid FROM qq_account_link WHERE account_id = ? LIMIT 1')
+    .prepare('SELECT 1 AS present FROM qq_account_link WHERE account_id = ? LIMIT 1')
     .bind(candidate.account_id)
-    .first<AccountLinkRow>()
-  if (accountLinked?.user_openid) return { ok: false, reason: 'account_bound' }
-  if (accountLinked) {
-    await database
-      .prepare(
-        `UPDATE OR IGNORE qq_account_link
-         SET group_openid = ?, member_openid = ?, user_openid = ?, linked_at = ?
-         WHERE account_id = ? AND user_openid IS NULL`,
-      )
-      .bind(groupOpenId, userOpenId, userOpenId, now, candidate.account_id)
-      .run()
-    return (await activePrivateLink(database, groupOpenId, userOpenId))?.account_id ===
-      candidate.account_id
-      ? { ok: true }
-      : { ok: false, reason: 'account_bound' }
-  }
+    .first<{ present: number }>()
+  if (accountLinked) return { ok: false, reason: 'account_bound' }
 
-  await database
-    .prepare(
-      `INSERT OR IGNORE INTO qq_account_link
-       (account_id, group_openid, member_openid, user_openid, linked_at)
-       VALUES (?, ?, ?, ?, ?)`,
-    )
-    .bind(candidate.account_id, groupOpenId, userOpenId, userOpenId, now)
-    .run()
-  const linked = await activePrivateLink(database, groupOpenId, userOpenId)
+  await database.batch([
+    database
+      .prepare(
+        `INSERT OR IGNORE INTO qq_account_link (account_id, group_openid, member_openid, linked_at)
+         VALUES (?, ?, ?, ?)`,
+      )
+      .bind(candidate.account_id, groupOpenId, memberOpenId, now),
+  ])
+  const linked = await activeLink(database, groupOpenId, memberOpenId)
   return linked?.account_id === candidate.account_id
     ? { ok: true }
     : { ok: false, reason: 'already_bound' }
 }
 
-export async function unlinkQqAccountByUserOpenId(
+export async function unlinkQqAccount(
   database: IdentityDatabase,
-  input: { groupOpenId: string; userOpenId: string },
+  input: { groupOpenId: string; memberOpenId: string },
 ): Promise<QqUnlinkResult> {
-  const { groupOpenId, userOpenId } = input
-  if (!validOpenId(groupOpenId) || !validOpenId(userOpenId))
+  const { groupOpenId, memberOpenId } = input
+  if (!validOpenId(groupOpenId) || !validOpenId(memberOpenId))
     return { ok: false, reason: 'not_bound' }
-  if (!(await activePrivateLink(database, groupOpenId, userOpenId))) {
+  if (!(await activeLink(database, groupOpenId, memberOpenId)))
     return { ok: false, reason: 'not_bound' }
-  }
   await database
-    .prepare('DELETE FROM qq_account_link WHERE group_openid = ? AND user_openid = ?')
-    .bind(groupOpenId, userOpenId)
+    .prepare('DELETE FROM qq_account_link WHERE group_openid = ? AND member_openid = ?')
+    .bind(groupOpenId, memberOpenId)
     .run()
-  return (await activePrivateLink(database, groupOpenId, userOpenId))
+  return (await activeLink(database, groupOpenId, memberOpenId))
     ? { ok: false, reason: 'not_bound' }
     : { ok: true }
 }
 
 export async function checkInFromQq(
   database: IdentityDatabase,
-  input: { groupOpenId: string; memberOpenId: string; userOpenId?: string },
+  input: { groupOpenId: string; memberOpenId: string },
   now = Date.now(),
 ): Promise<QqCheckInResult> {
-  const link = await activeLink(database, input.groupOpenId, input.memberOpenId, input.userOpenId)
+  const link = await activeLink(database, input.groupOpenId, input.memberOpenId)
   if (!link) return { kind: 'unbound' }
   const today = shanghaiDate(now)
   const yesterday = previousDate(today)
