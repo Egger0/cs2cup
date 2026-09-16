@@ -1,10 +1,11 @@
-import { notFound, redirect } from 'next/navigation'
 import { listGames, safely } from '@/lib/queries/public'
 
 export const dynamic = 'force-dynamic'
 
-export default async function LoadoutsShortcut() {
+export async function GET() {
   const game = (await safely(listGames, [])).find(entry => entry.loadoutCodes)
-  if (!game) notFound()
-  redirect(`/games/${game.slug}/loadouts`)
+  return new Response(null, {
+    status: 307,
+    headers: { Location: game ? `/games/${game.slug}/loadouts` : '/games' },
+  })
 }
