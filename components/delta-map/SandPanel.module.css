@@ -1,0 +1,167 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+
+.heading h2 {
+  font-family: var(--space-serif);
+  font-size: clamp(30px, 3vw, 42px);
+  line-height: 1.1;
+}
+
+.heading p,
+.credit {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.code {
+  color: var(--honour);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.group h3 {
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.chips,
+.layers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chips button,
+.layers button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font: 500 13px var(--font-body);
+  background: none;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.chips button[aria-pressed='true'] {
+  border-color: var(--honour);
+  color: var(--ink);
+  background: color-mix(in srgb, var(--honour) 14%, transparent);
+}
+
+.layers i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tone);
+  opacity: 0.35;
+}
+
+.layers small {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+.layers button[aria-pressed='true'] {
+  border-color: color-mix(in srgb, var(--tone) 55%, transparent);
+  color: var(--ink);
+}
+
+.layers button[aria-pressed='true'] i {
+  box-shadow: 0 0 8px var(--tone);
+  opacity: 1;
+}
+
+.layers button:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.selected {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-left: 2px solid var(--tone);
+  background: var(--surface);
+}
+
+.selected small {
+  color: var(--tone);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.selected p {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.selected button {
+  justify-self: start;
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  color: var(--muted);
+  font: 12px var(--font-body);
+  text-decoration: underline;
+  background: none;
+  cursor: pointer;
+}
+
+.exits {
+  display: grid;
+  max-height: 260px;
+  overflow-y: auto;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.exits button {
+  display: grid;
+  width: 100%;
+  gap: 2px;
+  padding: 9px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font: 14px var(--font-body);
+  text-align: left;
+  background: none;
+  cursor: pointer;
+}
+
+.exits small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.exits button:hover span,
+.exits button[aria-pressed='true'] span {
+  color: #7fe0a8;
+}
+
+.loadouts {
+  color: var(--honour);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.loadouts:hover {
+  text-decoration: underline;
+}

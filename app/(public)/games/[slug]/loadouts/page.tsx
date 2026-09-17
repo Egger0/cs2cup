@@ -161,6 +161,7 @@ export default async function LoadoutsPage({
           挑一套方案
         </ButtonLink>
         <ButtonLink href="#loadout-submit">投稿我的改枪码</ButtonLink>
+        <ButtonLink href={`/games/${game.slug}/maps`}>战术沙盘</ButtonLink>
         <HeroStats
           items={[
             ['社员方案', count('member')],

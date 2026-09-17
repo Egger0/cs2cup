@@ -71,6 +71,9 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
           查看本项目赛事
         </ButtonLink>
         <ButtonLink href="/squads">组队参赛</ButtonLink>
+        {game.loadoutCodes ? (
+          <ButtonLink href={`/games/${game.slug}/maps`}>战术沙盘</ButtonLink>
+        ) : null}
         <span className={styles.stats}>
           <span className={styles.stat}>
             <b>{String(mine.length).padStart(2, '0')}</b>

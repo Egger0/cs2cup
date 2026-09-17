@@ -28,7 +28,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...games.map(game => ({ url: `${BASE}/games/${game.slug}`, priority: 0.7 })),
     ...games
       .filter(game => game.loadoutCodes)
-      .map(game => ({ url: `${BASE}/games/${game.slug}/loadouts`, priority: 0.7 })),
+      .flatMap(game => [
+        { url: `${BASE}/games/${game.slug}/loadouts`, priority: 0.7 },
+        { url: `${BASE}/games/${game.slug}/maps`, priority: 0.6 },
+      ]),
     ...loadouts.map(code => ({
       url: `${BASE}/games/${code.gameSlug}/loadouts/${code.id}`,
       priority: 0.4,

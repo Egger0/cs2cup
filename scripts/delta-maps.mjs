@@ -1,0 +1,195 @@
+import { mkdir, writeFile } from 'node:fs/promises'
+import { chromium } from 'playwright'
+import sharp from 'sharp'
+import { isolines } from '../lib/isolines.ts'
+import { GRID, buildField, kindOf, projector, samples } from './delta-map-field.mjs'
+
+const SOURCE = 'https://game.gtimg.cn/images/dfm/cp/a20240729directory/js/lib/'
+const SCRIPTS = [
+  'daba_floor',
+  'cgxg_floor',
+  'bks_floor',
+  'cxjy_floor',
+  'az3_floor',
+  'map_article',
+  'map_cgxg',
+  'map_htjd',
+  'map_bks',
+  'map_cxjy',
+  'map_az3',
+]
+const MAPS = [
+  { id: 'zero-dam', name: '零号大坝', en: 'Zero Dam' },
+  { id: 'layali-grove', name: '长弓溪谷', en: 'Layali Grove' },
+  { id: 'space-city', name: '航天基地', en: 'Space City' },
+  { id: 'brakkesh', name: '巴克什', en: 'Brakkesh' },
+  { id: 'tide-prison', name: '潮汐监狱', en: 'Tide Prison' },
+  { id: 'az3', name: 'AZ3', en: 'AZ3' },
+]
+const OUTPUT = new URL('../public/games/delta/maps/', import.meta.url)
+
+const ascii = value =>
+  JSON.stringify(value).replace(
+    /[^\x20-\x7e]/g,
+    char => `\\u${char.charCodeAt(0).toString(16).padStart(4, '0')}`,
+  )
+
+const download = async name => {
+  const response = await fetch(`${SOURCE}${name}.js`)
+  if (!response.ok) throw new Error(`${name}.js answered ${response.status}`)
+  return response.text()
+}
+
+export function difficultyTable(main) {
+  const table = new Map()
+  for (const block of main.split(/\binfo: /).slice(1)) {
+    const field = key => block.match(new RegExp(`${key}: ['"]?([^'",\\n]+)`))?.[1]?.trim()
+    const info = block.match(/^\w+/)?.[0]
+    const [icons, regions, name, level, layer] = ['icons', 'poi', 'name', 'level', 'layer'].map(
+      field,
+    )
+    if (!info || !icons || !name || !level || icons.includes('.')) continue
+    const entries = table.get(name) ?? []
+    if (!entries.some(entry => entry.icons === icons))
+      entries.push({ info, icons, regions, level, layer })
+    table.set(name, entries)
+  }
+  return table
+}
+
+async function evaluate(sources, names) {
+  const browser = await chromium.launch()
+  try {
+    const page = await browser.newPage({ javaScriptEnabled: true })
+    await page.route('**/*', route => route.abort())
+    await page.setContent('<!doctype html><title>sandbox</title>')
+    for (const source of sources) await page.addScriptTag({ content: source })
+    return await page.evaluate(
+      list => Object.fromEntries(list.map(name => [name, globalThis.eval(name)])),
+      names,
+    )
+  } finally {
+    await browser.close()
+  }
+}
+
+const pointOf = (item, project, field, regions) => {
+  const [x, y] = field.local(project(item))
+  const near = regions.reduce((best, region) =>
+    Math.hypot(region[1] - x, region[2] - y) < Math.hypot(best[1] - x, best[2] - y) ? region : best,
+  )
+  const floor = /^-?\d+$/.test(item.floor ?? '') ? `${item.floor}F` : item.floor
+  const note = [item['大区域'] ?? `近${near[0]}`, item['撤离条件'], floor]
+    .filter(Boolean)
+    .join(' · ')
+  return [kindOf(item), +x.toFixed(4), +y.toFixed(4), +field.at(x, y).toFixed(3), item.name, note]
+}
+
+export function exitsOf(levels) {
+  const found = new Map()
+  for (const level of levels)
+    for (const [kind, , , , label, note] of level.points) {
+      if (kind !== 'exit') continue
+      const key = `${label}\u0000${note}`
+      found.set(key, new Set([...(found.get(key) ?? []), level.name]))
+    }
+  return [...found].map(([key, names]) => [
+    ...key.split('\u0000'),
+    names.size === levels.length ? '' : [...names].join(' · '),
+  ])
+}
+
+async function poster(id, field) {
+  const values = Array.from(field.height, (value, index) =>
+    field.mask[index] < 127 ? -1 : value / 255,
+  )
+  const path = segments => segments.map(([a, b]) => `M${a[0]} ${a[1]}L${b[0]} ${b[1]}`).join('')
+  const lines = Array.from({ length: 15 }, (_, index) => {
+    const major = (index + 1) % 4 === 0
+    return `<path d="${path(isolines(values, GRID, (index + 1) / 16))}" stroke="rgba(216,177,105,${major ? 0.8 : 0.42})" stroke-width="${major ? 0.24 : 0.12}"/>`
+  })
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 ${GRID - 1} ${GRID - 1}" fill="none">
+  <path d="${path(isolines(field.mask, GRID, 127))}" stroke="#9bcaeb" stroke-width="0.3"/>${lines.join('')}</svg>`
+  await sharp(Buffer.from(svg))
+    .webp({ quality: 82, alphaQuality: 90 })
+    .toFile(new URL(`${id}.webp`, OUTPUT).pathname)
+}
+
+async function main() {
+  const [mainSource, ...sources] = await Promise.all(['main', ...SCRIPTS].map(download))
+  const table = difficultyTable(mainSource)
+  const wanted = MAPS.flatMap(map => {
+    const entries = table.get(map.name)
+    if (!entries?.length) throw new Error(`No difficulty entries for ${map.name}`)
+    return entries.flatMap(entry => [entry.info, entry.icons, entry.regions].filter(Boolean))
+  })
+  const globals = await evaluate(sources, [...new Set(wanted)])
+  await mkdir(OUTPUT, { recursive: true })
+  const summary = []
+  for (const map of MAPS) {
+    const entries = table.get(map.name)
+    const info = globals[entries[0].info]
+    const turn = /map_yc/.test(entries[0].layer ?? '') ? 90 : (info.rotate ?? 0)
+    const project = projector(info, turn)
+    const meters = (info.width * 2) / 100
+    const items = entries.flatMap(entry => globals[entry.icons])
+    const field = buildField(
+      samples(items, project),
+      meters,
+      items.filter(kindOf).map(item => {
+        const [u, v] = project(item)
+        return { u, v }
+      }),
+    )
+    const regions = (globals[entries[0].regions] ?? [])
+      .filter((region, index, all) => all.findIndex(other => other.name === region.name) === index)
+      .map(region => {
+        const [x, y] = field.local(project(region))
+        return [region.name, +x.toFixed(4), +y.toFixed(4), +field.at(x, y).toFixed(3)]
+      })
+    const levels = entries.map(entry => ({
+      name: entry.level,
+      points: globals[entry.icons]
+        .filter(item => kindOf(item))
+        .map(item => pointOf(item, project, field, regions))
+        .filter(([, x, y]) => x > 0 && y > 0 && x < 1 && y < 1),
+    }))
+    const data = {
+      id: map.id,
+      name: map.name,
+      meters: field.meters,
+      relief: field.relief,
+      grid: GRID,
+      height: Buffer.from(field.height).toString('base64'),
+      mask: Buffer.from(field.mask).toString('base64'),
+      urban: Buffer.from(field.urban).toString('base64'),
+      regions,
+      levels,
+    }
+    await writeFile(new URL(`${map.id}.json`, OUTPUT), ascii(data))
+    await poster(map.id, field)
+    summary.push({
+      ...map,
+      meters: field.meters,
+      relief: field.relief,
+      areas: regions.map(([name]) => name).join(' · '),
+      levels: levels.map(level => level.name),
+      bosses: [
+        ...new Set(levels.flatMap(level => level.points.filter(([kind]) => kind === 'boss'))),
+      ]
+        .map(point => point[4])
+        .filter((name, index, all) => all.indexOf(name) === index)
+        .join('、'),
+      exits: exitsOf(levels),
+    })
+    console.log(
+      `${map.name}: ${field.meters} m, ${levels.length} difficulties, ${regions.length} areas`,
+    )
+  }
+  await writeFile(
+    new URL('../lib/delta-map-summaries.ts', import.meta.url),
+    `import type { DeltaMapSummary } from './delta-sand'\n\nexport const DELTA_MAP_SUMMARIES: DeltaMapSummary[] = ${JSON.stringify(summary)}\n`,
+  )
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) await main()
