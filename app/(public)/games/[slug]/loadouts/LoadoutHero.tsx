@@ -1,7 +1,19 @@
 import styles from './LoadoutHero.module.css'
 
-export function HeroWeapon({ image }: { image: string }) {
-  return <img className={styles.weapon} src={image} alt="" fetchPriority="high" decoding="async" />
+export function HeroBuild({ shot, weapon }: { shot: string | null; weapon: string | null }) {
+  if (shot) {
+    return (
+      <span className={styles.plate}>
+        <img src={shot} alt="" fetchPriority="high" decoding="async" />
+      </span>
+    )
+  }
+  return weapon ? (
+    <>
+      <img className={styles.ghost} src={weapon} alt="" fetchPriority="high" decoding="async" />
+      <span className={styles.ghostNote}>底枪示意 · 非改装效果</span>
+    </>
+  ) : null
 }
 
 export function HeroStats({ items }: { items: readonly (readonly [string, string | number])[] }) {

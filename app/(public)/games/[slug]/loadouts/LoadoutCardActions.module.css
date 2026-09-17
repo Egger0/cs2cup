@@ -148,3 +148,21 @@
 .report:hover {
   color: var(--c4);
 }
+
+.shotUpload {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.shotUpload input:focus-visible + .hint,
+.shotUpload:focus-within label {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.shotUpload label[data-disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}

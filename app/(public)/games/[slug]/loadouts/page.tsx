@@ -17,9 +17,10 @@ import { getAuthContext } from '@/lib/identity/kernel'
 import { listLoadoutCodes, listOwnLoadoutCodes, type LoadoutCode } from '@/lib/loadout-codes'
 import { listViewerLoadoutMarks } from '@/lib/loadout-community'
 import { PLANET_COLORS } from '@/lib/planets'
+import { photoUrl } from '@/lib/media'
 import { getGame } from '@/lib/queries/public'
 import { LoadoutCards } from './LoadoutCards'
-import { HeroStats, HeroWeapon } from './LoadoutHero'
+import { HeroBuild, HeroStats } from './LoadoutHero'
 import { LoadoutSubmitForm } from './LoadoutSubmitForm'
 import styles from './loadouts.module.css'
 
@@ -130,11 +131,12 @@ export default async function LoadoutsPage({
   )
   const filtered = Boolean(category || weapon || price || tag)
   const published = codes.filter(code => code.status === 'approved')
-  const hero = published.reduce<LoadoutCode | null>(
-    (best, code) => (!best || code.copies > best.copies ? code : best),
-    null,
-  )
-  const heroImage = hero && findWeapon(hero.weapon)?.image
+  const hero = published
+    .filter(code => code.shotKey)
+    .reduce<LoadoutCode | null>(
+      (best, code) => (!best || code.copies > best.copies ? code : best),
+      null,
+    )
 
   return (
     <>
@@ -145,7 +147,7 @@ export default async function LoadoutsPage({
         title="改枪码"
         lede="枪匠们压箱底的改装方案。复制完整改枪码，到改枪台「方案 → 方案共享」一贴即用。"
         density="compact"
-        art={heroImage ? <HeroWeapon image={heroImage} /> : undefined}
+        art={hero?.shotKey ? <HeroBuild shot={photoUrl(hero.shotKey)} weapon={null} /> : undefined}
       >
         <ButtonLink href="#loadout-browse" variant="primary">
           挑一套方案
@@ -283,7 +285,7 @@ export default async function LoadoutsPage({
             <>
               <LoadoutSubmitForm slug={game.slug} />
               {own.length ? (
-                <div className={styles.own}>
+                <div className={styles.own} id="loadout-mine">
                   <h3>我的投稿</h3>
                   <LoadoutCards codes={own} mine />
                 </div>

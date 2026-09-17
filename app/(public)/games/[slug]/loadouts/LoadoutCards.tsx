@@ -13,6 +13,7 @@ import type { LoadoutCode } from '@/lib/loadout-codes'
 import type { LoadoutMarks } from '@/lib/loadout-community'
 import { photoUrl } from '@/lib/media'
 import { LoadoutCardActions } from './LoadoutCardActions'
+import { LoadoutShotUpload } from './LoadoutShotUpload'
 import styles from './LoadoutCards.module.css'
 
 const STATUS = {
@@ -63,13 +64,20 @@ export function LoadoutCard({
       data-single={single ? '' : undefined}
     >
       {single && !shot && !preview ? null : (
-        <figure className={styles.media} data-shot={shot ? '' : undefined}>
+        <figure
+          className={styles.media}
+          data-shot={shot ? '' : undefined}
+          data-ghost={!shot && weapon?.image ? '' : undefined}
+        >
           {shot ? (
             <a href={shot} target="_blank" rel="noreferrer">
               <img src={shot} alt={`「${code.title}」改枪台截图`} loading="lazy" decoding="async" />
             </a>
           ) : weapon?.image ? (
-            <img src={weapon.image} alt="" loading="lazy" decoding="async" />
+            <>
+              <img src={weapon.image} alt="" loading="lazy" decoding="async" />
+              <span className={styles.ghostNote}>底枪示意 · 非改装效果</span>
+            </>
           ) : (
             <span className={styles.silhouette} aria-hidden="true">
               {weapon?.short ?? (code.weapon || '?')}
@@ -153,6 +161,15 @@ export function LoadoutCard({
             </Link>
           ) : null}
         </p>
+
+        {mine && code.status !== 'rejected' ? (
+          <LoadoutShotUpload
+            id={code.id}
+            hasShot={Boolean(code.shotKey)}
+            reviewed={code.status !== 'pending'}
+            queued={Boolean(code.pendingShotKey)}
+          />
+        ) : null}
 
         <div className={styles.codeRow}>
           <code className={styles.code}>{full}</code>

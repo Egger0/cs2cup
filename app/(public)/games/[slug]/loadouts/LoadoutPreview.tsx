@@ -39,6 +39,7 @@ export function LoadoutPreview({
       ? (Object.fromEntries(statValues.map(([key, value]) => [key, Number(value)])) as LoadoutStats)
       : null,
     shotKey: null,
+    pendingShotKey: null,
     status: 'pending',
     copies: 0,
     reports: 0,

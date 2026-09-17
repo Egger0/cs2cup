@@ -2,7 +2,7 @@ import { posix } from 'node:path'
 import { getCurrentUnifiedPlatformOwner } from '@/lib/auth'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { getAuthContext } from '@/lib/identity/kernel'
-import { loadoutShotAccess } from '@/lib/loadout-codes'
+import { loadoutShotAccess } from '@/lib/loadout-shots'
 import { PRIVATE_NO_STORE_HEADERS } from '@/lib/http-cache'
 import { parseVariantKey, variantStemMatches } from '@/lib/photo-variants'
 import { selectPrivateRow, selectPrivateRows, selectPublicRow, selectPublicRows } from '@/lib/rdb'
@@ -45,7 +45,7 @@ async function findPhoto(published: boolean, storageKey: string) {
 async function canReadLoadoutShot(storageKey: string) {
   const shot = await loadoutShotAccess(cloudflareBindings().db, storageKey).catch(() => null)
   if (!shot) return null
-  if (shot.status === 'approved' || shot.status === 'expired') return 'published' as const
+  if (shot.published) return 'published' as const
   const context = await getAuthContext().catch(() => null)
   if (context?.kind === 'authenticated' && context.account.id === shot.accountId) {
     return 'private' as const

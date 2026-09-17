@@ -87,7 +87,7 @@ registerHooks({
     if (specifier === '@/lib/identity/kernel') {
       return { url: identityKernelModule, shortCircuit: true }
     }
-    if (specifier === '@/lib/loadout-codes') return { url: loadoutModule, shortCircuit: true }
+    if (specifier === '@/lib/loadout-shots') return { url: loadoutModule, shortCircuit: true }
     if (specifier === '@/lib/photo-variants') {
       return { url: source('../lib/photo-variants.ts'), shortCircuit: true }
     }
@@ -245,8 +245,8 @@ try {
 
   const author = 'L'.repeat(43)
   globalThis.__mediaLoadoutShots = {
-    'loadouts/live.webp': { status: 'approved', accountId: author },
-    'loadouts/queued.webp': { status: 'pending', accountId: author },
+    'loadouts/live.webp': { published: true, accountId: author },
+    'loadouts/queued.webp': { published: false, accountId: author },
   }
   const shot = name =>
     GET(new Request(`http://localhost/media/loadouts/${name}`), {

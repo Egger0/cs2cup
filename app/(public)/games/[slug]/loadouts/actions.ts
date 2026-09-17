@@ -1,11 +1,9 @@
 'use server'
 
-import { randomUUID } from 'node:crypto'
 import { revalidatePath } from 'next/cache'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { currentTimeMillis } from '@/lib/current-time'
 import { getAuthContext } from '@/lib/identity/kernel'
-import { imageSize, sniffMime } from '@/lib/image'
 import { getCurrentUnifiedPlatformOwner } from '@/lib/auth'
 import {
   parseLoadoutComment,
@@ -16,7 +14,12 @@ import {
 } from '@/lib/loadout-community'
 import { recordLoadoutCopy, submitLoadoutCode } from '@/lib/loadout-codes'
 import { parseLoadoutInput, type LoadoutField } from '@/lib/loadout-input'
-import { putObject, removeObject, uploadsEnabled } from '@/lib/storage'
+import {
+  discardLoadoutShots,
+  replaceLoadoutShot,
+  storeLoadoutShot,
+  type StoredShot,
+} from '@/lib/loadout-shots'
 
 const FIELD_ERROR: Record<LoadoutField | 'shot', string> = {
   code: '没认出改枪码：需要游戏里复制的完整串，或末尾 21 位码。',
@@ -28,6 +31,17 @@ const FIELD_ERROR: Record<LoadoutField | 'shot', string> = {
   price: '价格按「万哈夫币」填写，例如 32.5。',
   stats: '属性要么全部填写（0–999 的整数），要么全部留空。',
   shot: '截图需为 2 MB 以内、边长 320–2560 像素的图片。',
+}
+
+function shotError(reason: Extract<StoredShot, { ok: false }>['reason']): LoadoutSubmission {
+  return reason === 'unavailable'
+    ? { ok: false, error: '截图存储暂时不可用，请稍后再试。' }
+    : {
+        ok: false,
+        error:
+          reason === 'missing' ? '请上传改枪台截图，让大家看到改装后的样子。' : FIELD_ERROR.shot,
+        field: 'shot',
+      }
 }
 
 export type LoadoutSubmission =
@@ -56,34 +70,20 @@ export async function submitLoadoutCodeAction(
     .first<{ id: number }>()
   if (!game) return { ok: false, error: '这个项目暂未开放改枪码投稿。' }
 
-  const shot = form.get('shot')
-  let shotKey: string | null = null
-  if (shot instanceof File && shot.size > 0) {
-    if (!uploadsEnabled()) return { ok: false, error: '暂时无法上传截图，请先不带截图投稿。' }
-    const buffer = Buffer.from(await shot.arrayBuffer())
-    const size = sniffMime(buffer) === 'image/webp' ? imageSize('image/webp', buffer) : null
-    if (
-      shot.size > 2 * 1024 * 1024 ||
-      !size ||
-      Math.min(size.width, size.height) < 320 ||
-      Math.max(size.width, size.height) > 2560
-    ) {
-      return { ok: false, error: FIELD_ERROR.shot, field: 'shot' }
-    }
-    shotKey = `loadouts/${randomUUID()}.webp`
-    await putObject(shotKey, buffer, 'image/webp')
-  }
+  const shot = await storeLoadoutShot(form.get('shot'))
+  if (!shot.ok) return shotError(shot.reason)
+  const shotKey = shot.key
 
   const result = await submitLoadoutCode(
     db,
     { accountId, gameId: game.id, value: parsed.value, shotKey },
     currentTimeMillis(),
   ).catch(async error => {
-    if (shotKey) await removeObject(shotKey).catch(() => {})
+    await discardLoadoutShots(shotKey)
     throw error
   })
   if (!result.ok) {
-    if (shotKey) await removeObject(shotKey).catch(() => {})
+    await discardLoadoutShots(shotKey)
     return {
       ok: false,
       error:
@@ -169,4 +169,23 @@ export async function removeLoadoutCommentAction(slug: string, codeId: number, c
     revalidatePath(`/games/${slug}/loadouts/${codeId}`)
     return { ok: true }
   })
+}
+
+export async function replaceLoadoutShotAction(
+  id: number,
+  form: FormData,
+): Promise<LoadoutSubmission> {
+  const accountId = await signedInAccount()
+  if (!accountId) return { ok: false, error: '登录后才能上传截图。', signIn: true }
+  if (!Number.isSafeInteger(id) || id <= 0) return { ok: false, error: '方案编号无效。' }
+  const shot = await storeLoadoutShot(form.get('shot'))
+  if (!shot.ok) return shotError(shot.reason)
+  const result = await replaceLoadoutShot(cloudflareBindings().db, { id, accountId, key: shot.key })
+  if (!result.ok) {
+    await discardLoadoutShots(shot.key)
+    return { ok: false, error: '这套方案现在不能更换截图，刷新后再试。' }
+  }
+  await discardLoadoutShots(result.stale)
+  revalidatePath(`/games/${result.gameSlug}/loadouts`)
+  return { ok: true }
 }

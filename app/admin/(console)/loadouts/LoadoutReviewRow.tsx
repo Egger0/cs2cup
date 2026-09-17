@@ -14,7 +14,7 @@ import {
 import { siteDayKey } from '@/lib/datetime'
 import type { LoadoutDecision, ReviewLoadoutCode } from '@/lib/loadout-codes'
 import { photoUrl } from '@/lib/media'
-import { reviewLoadoutCodeAction } from '../actions/loadouts'
+import { reviewLoadoutCodeAction, reviewLoadoutShotAction } from '../actions/loadouts'
 import styles from '../admin.module.css'
 import review from './review.module.css'
 
@@ -26,6 +26,10 @@ const DECISIONS = {
   reported: [
     ['expired', '标记失效', 'danger'],
     ['dismiss', '仍然可用', 'ghost'],
+  ],
+  shot: [
+    ['adopt', '采用新截图', 'primary'],
+    ['keep', '保留原图', 'ghost'],
   ],
 } as const
 
@@ -41,11 +45,16 @@ export function LoadoutReviewRow({
   const [error, setError] = useState('')
   const weapon = findWeapon(code.weapon)
   const sharedAt = codeSharedAt(code.code)
+  const shown = kind === 'shot' ? code.pendingShotKey : code.shotKey
 
-  const decide = (decision: LoadoutDecision) =>
+  const decide = (decision: LoadoutDecision | 'adopt' | 'keep') =>
     startTransition(async () => {
       setError('')
-      const result = await reviewLoadoutCodeAction(code.id, decision).catch(() => ({
+      const run =
+        decision === 'adopt' || decision === 'keep'
+          ? reviewLoadoutShotAction(code.id, decision === 'adopt')
+          : reviewLoadoutCodeAction(code.id, decision)
+      const result = await run.catch(() => ({
         ok: false as const,
         error: '审核保存失败，请稍后重试。',
       }))
@@ -57,12 +66,12 @@ export function LoadoutReviewRow({
     <article className={`${styles.listRow} ${review.row}`} aria-busy={pending}>
       <a
         className={review.media}
-        href={code.shotKey ? photoUrl(code.shotKey) : undefined}
+        href={shown ? photoUrl(shown) : undefined}
         target="_blank"
         rel="noreferrer"
       >
-        {code.shotKey ? (
-          <img src={photoUrl(code.shotKey)} alt="改枪台截图" />
+        {shown ? (
+          <img src={photoUrl(shown)} alt={kind === 'shot' ? '待审核的新截图' : '改枪台截图'} />
         ) : weapon?.image ? (
           <img src={weapon.image} alt="" data-weapon="" />
         ) : null}
@@ -82,6 +91,14 @@ export function LoadoutReviewRow({
           <div className={styles.listMeta}>
             {LOADOUT_STATS.map(([key, label]) => `${label} ${code.stats![key]}`).join(' · ')}
             {code.shotKey ? '' : ' · 无截图，属性未核对'}
+            {kind === 'shot' && code.shotKey ? (
+              <>
+                {' · '}
+                <a href={photoUrl(code.shotKey)} target="_blank" rel="noreferrer">
+                  对比原图
+                </a>
+              </>
+            ) : null}
           </div>
         ) : null}
         {code.note ? <p className={review.note}>{code.note}</p> : null}
