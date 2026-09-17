@@ -249,3 +249,59 @@
     transition: none;
   }
 }
+
+.floorPlan {
+  position: absolute;
+  top: calc(50% + (var(--fy) - var(--fs) / 2 - 0.5) * 100cqmin);
+  left: calc(50% + (var(--fx) - var(--fs) / 2 - 0.5) * 100cqmin);
+  width: calc(var(--fs) * 100cqmin);
+  height: calc(var(--fs) * 100cqmin);
+  outline: 1px solid #9bcaeb;
+  pointer-events: none;
+}
+
+.routeLine {
+  position: absolute;
+  inset: 0;
+  width: 100cqmin;
+  height: 100cqmin;
+  margin: auto;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.routeLine polyline {
+  fill: none;
+  stroke: #ffd166;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.floorTag {
+  padding: 2px 8px;
+  border: 1px solid #9bcaeb;
+  border-radius: 3px;
+  color: var(--space-ink);
+  font: 600 11px var(--font-mono, monospace);
+  background: rgb(6 7 10 / 70%);
+  cursor: pointer;
+}
+
+.floorTag[aria-pressed='true'] {
+  color: #06070a;
+  background: #9bcaeb;
+}
+
+.table[data-mode='flat'] .floorTag {
+  display: none;
+}
+
+.table[data-mode='flat'][data-routing='true'] .overlay,
+.table[data-mode='solid'][data-routing='true'] canvas {
+  cursor: crosshair;
+}
+
+.table[data-mode='flat'][data-routing='true'] .overlay {
+  pointer-events: auto;
+}

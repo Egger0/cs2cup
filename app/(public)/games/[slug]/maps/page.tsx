@@ -48,7 +48,7 @@ export default async function MapsPage({
         tone={PLANET_COLORS.get(game.slug)}
         eyebrow={`${game.name} / 烽火地带`}
         title="战术沙盘"
-        lede="六张烽火地带地图摆上桌：区域、撤离点和撤离条件、首领、钥匙房，拖一拖就立起来。开局前先看一眼，少跑冤枉路。"
+        lede="六张烽火地带地图摆上桌：楼层逐层拆开看，钥匙房、保险箱、撤离条件一搜就到，跑图路线量好距离直接甩进群里。"
         density="compact"
       >
         <ButtonLink href="#sandtable" variant="primary">

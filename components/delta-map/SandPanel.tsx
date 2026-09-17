@@ -7,6 +7,9 @@ import {
   type SandKind,
   type SandPoint,
 } from '@/lib/delta-sand'
+import { SandSearch } from './SandSearch'
+import { SandFloors, SandPicked, SandRoute } from './SandPlanner'
+import type { Waypoint } from './SandTable'
 import styles from './SandPanel.module.css'
 
 export function SandPanel({
@@ -15,10 +18,18 @@ export function SandPanel({
   level,
   kinds,
   selected,
+  building,
+  floor,
+  routing,
+  route,
   loadouts,
   onLevel,
   onKinds,
   onPoint,
+  onRegion,
+  onBuilding,
+  onRouting,
+  onRoute,
   onClear,
 }: {
   map: DeltaMapSummary
@@ -26,10 +37,18 @@ export function SandPanel({
   level: number
   kinds: ReadonlySet<SandKind>
   selected: SandPoint | null
+  building: number | null
+  floor: string | null
+  routing: boolean
+  route: Waypoint[]
   loadouts: string
   onLevel: (level: number) => void
   onKinds: (kinds: ReadonlySet<SandKind>) => void
   onPoint: (point: SandPoint) => void
+  onRegion: (x: number, y: number) => void
+  onBuilding: (index: number | null, floor: string | null) => void
+  onRouting: (routing: boolean) => void
+  onRoute: (route: Waypoint[]) => void
   onClear: () => void
 }) {
   const points = data?.levels[level]?.points ?? []
@@ -66,6 +85,40 @@ export function SandPanel({
         </div>
       </div>
 
+      <SandSearch data={data} points={points} onPoint={onPoint} onRegion={onRegion} />
+
+      {data?.buildings.length ? (
+        <SandFloors
+          data={data}
+          points={points}
+          building={building}
+          floor={floor}
+          onBuilding={onBuilding}
+        />
+      ) : null}
+
+      <SandRoute
+        meters={map.meters}
+        routing={routing}
+        route={route}
+        onRouting={onRouting}
+        onRoute={onRoute}
+      />
+
+      {selected ? (
+        <SandPicked
+          selected={selected}
+          points={points}
+          meters={map.meters}
+          onPoint={onPoint}
+          onRoute={next => {
+            onRoute(next)
+            onRouting(true)
+          }}
+          onClear={onClear}
+        />
+      ) : null}
+
       <div className={styles.group}>
         <h3>图层</h3>
         <div className={styles.layers}>
@@ -89,20 +142,6 @@ export function SandPanel({
         </div>
       </div>
 
-      {selected ? (
-        <div
-          className={styles.selected}
-          style={{ '--tone': SAND_KINDS[selected[0]].color } as CSSProperties}
-        >
-          <small>{SAND_KINDS[selected[0]].label}</small>
-          <b>{selected[4]}</b>
-          {selected[5] ? <p>{selected[5]}</p> : null}
-          <button type="button" onClick={onClear}>
-            取消选中
-          </button>
-        </div>
-      ) : null}
-
       <div className={styles.group}>
         <h3>撤离点 · {exits.length}</h3>
         <ol className={styles.exits}>
@@ -113,8 +152,8 @@ export function SandPanel({
                 aria-pressed={selected === point}
                 onClick={() => onPoint(point)}
               >
-                <span>{point[4]}</span>
-                {point[5] ? <small>{point[5]}</small> : null}
+                <span>{point[3]}</span>
+                {point[4] ? <small>{point[4]}</small> : null}
               </button>
             </li>
           ))}
@@ -125,7 +164,7 @@ export function SandPanel({
         {map.name}能用的改枪码 <span aria-hidden="true">→</span>
       </Link>
       <p className={styles.credit}>
-        底图与点位来自《三角洲行动》官方地图工具，版权归腾讯；地形起伏由点位高程推算并做了夸张。
+        底图、楼层图与点位来自《三角洲行动》官方地图工具，版权归腾讯；地形起伏由点位高程推算并做了夸张。
       </p>
     </aside>
   )

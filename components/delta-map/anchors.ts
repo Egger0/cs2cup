@@ -1,5 +1,4 @@
 import * as T from 'three'
-import type { Plate } from './plate'
 
 interface Box {
   x: number
@@ -20,22 +19,19 @@ const set = (element: HTMLElement, name: string, value: string) => {
 
 export function placeAnchors(
   overlay: HTMLElement,
-  plate: Plate,
+  locate: (element: HTMLElement) => T.Vector3 | null,
+  world: T.Object3D,
   camera: T.Camera,
   width: number,
   height: number,
-  rise: number,
+  ready: boolean,
 ) {
   const anchors = [...overlay.querySelectorAll<HTMLElement>('[data-sand-anchor]')]
   const placed: Box[] = []
   const ranked = anchors
     .map(element => {
-      const x = Number(element.dataset.x)
-      const y = Number(element.dataset.y)
-      const lift = Number(element.dataset.rise ?? 0.03)
-      const world = plate.world(x, y)
-      world.y = world.y * (0.02 + rise * 0.98) + lift
-      const projected = world.project(camera)
+      const local = locate(element)
+      const projected = local ? world.localToWorld(local).project(camera) : new T.Vector3(0, 0, 2)
       return {
         element,
         priority: Number(element.dataset.priority ?? 0),
@@ -60,9 +56,7 @@ export function placeAnchors(
       box.x + box.width < width - 4 &&
       anchor.sy < height - 4
     const visible =
-      rise > 0.6 &&
-      onScreen &&
-      (anchor.priority > 0 || placed.every(other => !overlaps(box, other)))
+      ready && onScreen && (anchor.priority > 0 || placed.every(other => !overlaps(box, other)))
     if (visible) placed.push(box)
     set(element, '--sx', `${Math.round(anchor.sx)}px`)
     set(element, '--sy', `${Math.round(anchor.sy)}px`)

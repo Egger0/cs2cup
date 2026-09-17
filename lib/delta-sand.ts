@@ -1,20 +1,47 @@
-export type SandKind = 'exit' | 'boss' | 'spawn' | 'key' | 'vault'
+export const SAND_KINDS = {
+  exit: { label: '撤离点', color: '#7fe0a8', rise: 0.2 },
+  boss: { label: '首领', color: '#f0757b', rise: 0.16 },
+  key: { label: '钥匙房 · 密码房', color: '#d8b169', rise: 0.1 },
+  vault: { label: '保险箱 · 高级储物', color: '#c3a6ff', rise: 0.065 },
+  tech: { label: '电脑 · 服务器', color: '#8fc8ef', rise: 0.05 },
+  arms: { label: '武器 · 弹药', color: '#e59866', rise: 0.045 },
+  medical: { label: '医疗物资', color: '#f5a3c7', rise: 0.045 },
+  task: { label: '行动 · 任务', color: '#ffd166', rise: 0.06 },
+  special: { label: '特殊物资', color: '#6fd3c7', rise: 0.05 },
+  stash: { label: '野外 · 藏匿', color: '#b8c77a', rise: 0.035 },
+  bags: { label: '箱包 · 柜子', color: '#a8a39a', rise: 0.03 },
+  spawn: { label: '出生点', color: '#9fb3bb', rise: 0.05 },
+} as const
 
-export const SAND_KINDS: Record<SandKind, { label: string; color: string }> = {
-  exit: { label: '撤离点', color: '#7fe0a8' },
-  boss: { label: '首领', color: '#f0757b' },
-  key: { label: '钥匙房 · 密码房', color: '#d8b169' },
-  vault: { label: '高价值容器', color: '#c3a6ff' },
-  spawn: { label: '出生点', color: '#9fb3bb' },
+export type SandKind = keyof typeof SAND_KINDS
+
+export const SAND_DEFAULT_KINDS: SandKind[] = ['exit', 'boss', 'key']
+
+const ICONS: [SandKind, string[]][] = [
+  ['boss', ['boss']],
+  ['spawn', ['csd']],
+  ['key', ['tyfk', 'mmf']],
+  ['vault', ['bxx', 'xbxx', 'hkcwx', 'gjcwx']],
+  ['tech', ['fwq', 'dn', 'dnjx']],
+  ['arms', ['wqx', 'dwqx', 'dyx']],
+  ['medical', ['ylb', 'ylwzd', 'ypbwx']],
+  ['task', ['xdjqz', 'xdjqzgjz', 'my', 'cbt', 'qxj']],
+  ['stash', ['nw', 'cnw', 'ywwzx', 'jbd', 'snc', 'ljx', 'mt', 'sjb']],
+  ['bags', ['lxd', 'xlx', 'stx', 'dsb', 'kdx', 'dgjx', 'gjg', 'ctg', 'cwg', 'yf']],
+]
+
+export function sandKindOf(item: {
+  type?: string
+  icon?: string
+  catalog?: string
+}): SandKind | null {
+  if (item.catalog === 'fish') return null
+  if (item.type === 'retreat') return 'exit'
+  const icon = item.icon ?? ''
+  return ICONS.find(([, icons]) => icons.includes(icon))?.[0] ?? (icon ? 'special' : null)
 }
 
-export const SAND_RISE: Record<SandKind, number> = {
-  exit: 0.2,
-  boss: 0.16,
-  key: 0.1,
-  vault: 0.065,
-  spawn: 0.05,
-}
+export const NIGHT_LEVEL = /夜/
 
 export interface DeltaMapSummary {
   id: string
@@ -28,7 +55,23 @@ export interface DeltaMapSummary {
   exits: [label: string, note: string, only: string][]
 }
 
-export type SandPoint = [SandKind, number, number, number, string, string]
+export type SandPoint = [
+  kind: SandKind,
+  x: number,
+  y: number,
+  label: string,
+  note: string,
+  floor?: string,
+  link?: number[],
+]
+
+export interface SandBuilding {
+  name: string
+  x: number
+  y: number
+  floors: string[]
+  frames: [x: number, y: number, size: number][]
+}
 
 export interface DeltaMapData {
   id: string
@@ -39,8 +82,13 @@ export interface DeltaMapData {
   height: string
   mask: string
   regions: [string, number, number, number][]
+  buildings: SandBuilding[]
   levels: { name: string; points: SandPoint[] }[]
 }
 
+export const floorKey = (building: number, floor: string) => `${building}:${floor}`
+
 export const mapDataUrl = (id: string) => `/games/delta/maps/${id}.json`
 export const mapImageUrl = (id: string, size: 1024 | 2048) => `/games/delta/maps/${id}-${size}.webp`
+export const floorImageUrl = (id: string, building: number, floor: string) =>
+  `/games/delta/maps/${id}-b${building}-${floor.toLowerCase()}.webp`

@@ -1,0 +1,228 @@
+.group h3 {
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.search label {
+  display: grid;
+  gap: 8px;
+}
+
+.search label span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.search input {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  color: var(--ink);
+  font: 14px var(--font-body);
+  background: var(--surface);
+}
+
+.search input:focus-visible {
+  border-color: var(--honour);
+  outline: none;
+}
+
+.results {
+  display: grid;
+  max-height: 280px;
+  overflow-y: auto;
+  margin-top: 8px;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.results button,
+.nearest button:first-child {
+  display: grid;
+  width: 100%;
+  gap: 2px;
+  padding: 8px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font: 14px var(--font-body);
+  text-align: left;
+  background: none;
+  cursor: pointer;
+}
+
+.results span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.results i {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--tone, var(--muted));
+}
+
+.results small,
+.nearest small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.results button:hover span {
+  color: var(--honour);
+}
+
+.none,
+.hintText {
+  padding: 8px 2px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.buildings,
+.floors,
+.routeTools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.buildings button,
+.floors button,
+.route > button,
+.routeTools button {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  font: 500 13px var(--font-body);
+  background: none;
+  cursor: pointer;
+}
+
+.buildings small,
+.floors small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.buildings button[aria-pressed='true'],
+.floors button[aria-pressed='true'],
+.route > button[aria-pressed='true'] {
+  border-color: #9bcaeb;
+  background: rgb(155 202 235 / 12%);
+}
+
+.floors {
+  margin-top: 10px;
+  padding: 10px;
+  border-left: 2px solid #9bcaeb;
+  background: var(--surface);
+}
+
+.floors b {
+  font-family: var(--font-mono, monospace);
+}
+
+.surface {
+  color: var(--muted) !important;
+}
+
+.route {
+  display: grid;
+  gap: 10px;
+}
+
+.route > button {
+  justify-self: start;
+  border-color: #ffd166;
+  color: #ffd166;
+}
+
+.route p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.route p b {
+  color: #ffd166;
+  font-family: var(--font-mono, monospace);
+  font-size: 24px;
+}
+
+.route p span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.selected {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-left: 2px solid var(--tone);
+  background: var(--surface);
+}
+
+.selected > small {
+  color: var(--tone);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.selected > p {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.link {
+  color: var(--tone) !important;
+}
+
+.nearest {
+  display: grid;
+  margin-top: 6px;
+  list-style: none;
+}
+
+.nearest li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.go,
+.dismiss {
+  flex: none;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: #ffd166;
+  font: 12px var(--font-body);
+  background: none;
+  cursor: pointer;
+}
+
+.dismiss {
+  justify-self: start;
+  margin-top: 4px;
+  border: 0;
+  padding: 0;
+  color: var(--muted);
+  text-decoration: underline;
+}

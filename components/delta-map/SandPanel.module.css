@@ -1,4 +1,8 @@
 .panel {
+  max-height: clamp(460px, 78svh, 860px);
+  overflow-y: auto;
+  padding-right: 6px;
+  scrollbar-width: thin;
   display: flex;
   flex-direction: column;
   gap: 22px;
@@ -93,37 +97,6 @@
   opacity: 0.4;
 }
 
-.selected {
-  display: grid;
-  gap: 4px;
-  padding: 12px 14px;
-  border-left: 2px solid var(--tone);
-  background: var(--surface);
-}
-
-.selected small {
-  color: var(--tone);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-}
-
-.selected p {
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.selected button {
-  justify-self: start;
-  margin-top: 4px;
-  padding: 0;
-  border: 0;
-  color: var(--muted);
-  font: 12px var(--font-body);
-  text-decoration: underline;
-  background: none;
-  cursor: pointer;
-}
-
 .exits {
   display: grid;
   max-height: 260px;
@@ -164,4 +137,12 @@
 
 .loadouts:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .panel {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
 }
