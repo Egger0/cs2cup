@@ -4,7 +4,7 @@ import { cloudflareBindings, cloudflareEnvironment } from '@/lib/cloudflare-bind
 import { formatSiteCompactDateTime } from '@/lib/datetime'
 import { buildScheduleEntries } from '@/lib/schedule'
 import { stardustBalance, stardustGrantedAt } from '@/lib/stardust'
-import { loadoutDigest } from '@/lib/loadout-codes'
+import { loadoutDigest } from '@/lib/loadout-reach'
 import { sendQqWelcome } from '@/lib/qq-automation'
 import {
   checkInFromQq,

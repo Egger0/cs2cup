@@ -30,7 +30,7 @@ import {
   listCurrentUnifiedTournamentWorkspaces,
 } from '@/lib/queries/staff-check-in'
 import { maskParticipantPrincipal } from '@/lib/tournament-staff-management'
-import { listOwnLoadoutCodes } from '@/lib/loadout-codes'
+import { listOwnLoadoutCodes } from '@/lib/loadout-queries'
 import { stardustWallet } from '@/lib/stardust'
 import { incomingSquadInvitations } from '@/lib/squads'
 import { SquadInvitationInbox } from '@/app/squads/SquadInvitationInbox'

@@ -10,7 +10,7 @@
   "compatibility_date": "2026-08-28",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "triggers": {
-    "crons": ["0 1 * * *"],
+    "crons": ["0 1 * * *", "30 19 * * *"],
   },
   "vars": {
     "NEXT_PUBLIC_SITE_URL": "https://cn.nbtesportsclub.online",

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
-import { listLoadoutCodes } from '@/lib/loadout-codes'
+import { listLoadoutSitemap } from '@/lib/loadout-reach'
 import { listGames, listPosts, listTournaments, safely } from '@/lib/queries/public'
 import { resolveSiteOrigin } from '@/lib/site-config'
 
@@ -14,11 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     safely(listTournaments, []),
     safely(() => listPosts(), []),
   ])
-  const loadouts = await Promise.all(
-    games
-      .filter(game => game.loadoutCodes)
-      .map(game => safely(() => listLoadoutCodes(cloudflareBindings().db, game.id), [])),
-  )
+  const loadouts = await safely(() => listLoadoutSitemap(cloudflareBindings().db), [])
 
   return [
     { url: BASE, priority: 1 },
@@ -33,7 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...games
       .filter(game => game.loadoutCodes)
       .map(game => ({ url: `${BASE}/games/${game.slug}/loadouts`, priority: 0.7 })),
-    ...loadouts.flat().map(code => ({
+    ...loadouts.map(code => ({
       url: `${BASE}/games/${code.gameSlug}/loadouts/${code.id}`,
       priority: 0.4,
     })),

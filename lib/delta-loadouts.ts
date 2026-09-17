@@ -29,7 +29,7 @@ const ROSTER: Record<WeaponCategory, readonly Row[]> = {
     ['AKM突击步枪', 'AKM', '7.62x39mm', '18010000006'],
     ['QBZ95-1突击步枪', 'QBZ95-1', '5.8x42mm', '18010000008'],
     ['AKS-74U突击步枪', 'AKS-74U', '5.45x39mm', '18010000010'],
-    ['MK47突击步枪', 'MK47', '7.62x39mm', '18010000011'],
+    ['MK47突击步枪', 'MK47', '7.62x39mm', '18010000043'],
     ['ASh-12战斗步枪', 'ASh-12', '12.7x55mm', '18010000012'],
     ['K416突击步枪', 'K416', '5.56x45mm', '18010000013'],
     ['M16A4突击步枪', 'M16A4', '5.56x45mm', '18010000014'],
@@ -37,7 +37,7 @@ const ROSTER: Record<WeaponCategory, readonly Row[]> = {
     ['M7战斗步枪', 'M7', '6.8x51mm', '18010000016'],
     ['SG552突击步枪', 'SG552', '5.56x45mm', '18010000017'],
     ['AK-12突击步枪', 'AK-12', '5.45x39mm', '18010000018'],
-    ['SCAR-H战斗步枪', 'SCAR-H', '7.62x51mm', '18010000021'],
+    ['SCARH战斗步枪', 'SCAR-H', '7.62x51mm', '18010000021'],
     ['G3战斗步枪', 'G3', '7.62x51mm', '18010000023'],
     ['PTR-32突击步枪', 'PTR-32', '7.62x39mm', '18010000024'],
     ['CAR-15突击步枪', 'CAR-15', '5.56x45mm', '18010000031'],
@@ -47,8 +47,8 @@ const ROSTER: Record<WeaponCategory, readonly Row[]> = {
     ['KC17突击步枪', 'KC17', '5.45x39mm', '18010000042'],
     ['MCX LT突击步枪', 'MCX LT', '.300 BLK', '18010000044'],
     ['AR57突击步枪', 'AR57', '5.7x28mm', '18010000045'],
-    ['MDR突击步枪', 'MDR', '7.62x51mm', '18010000049'],
-    ['RM277突击步枪', 'RM277', '6.8x51mm', '18010000051'],
+    ['RM277突击步枪', 'RM277', '6.8x51mm', '18010000049'],
+    ['MDR战斗步枪', 'MDR', '7.62x51mm', '18010000051'],
   ],
   冲锋枪: [
     ['MP5冲锋枪', 'MP5', '9x19mm', '18020000001'],
@@ -73,7 +73,7 @@ const ROSTER: Record<WeaponCategory, readonly Row[]> = {
     ['SR-25射手步枪', 'SR-25', '7.62x51mm', '18050000007'],
     ['SR9射手步枪', 'SR9', '7.62x51mm', '18050000008'],
     ['PSG-1射手步枪', 'PSG-1', '7.62x51mm', '18050000031'],
-    ['Marlin杠杆步枪', 'Marlin', '.45-70 Govt', '18050000032'],
+    ['杠杆式步枪', 'Marlin', '.45-70 Govt', '18050000032'],
     ['SVCH精确射手步枪', 'SVCH', '7.62x54R', '18050000033'],
   ],
   狙击步枪: [
@@ -105,7 +105,7 @@ const ROSTER: Record<WeaponCategory, readonly Row[]> = {
     ['G17', 'G17', '9x19mm', '18070000010'],
     ['M1911', 'M1911', '.45 ACP', '18070000033'],
   ],
-  特殊武器: [['复合弓', '复合弓', '箭矢']],
+  特殊武器: [['复合弓', '复合弓', '箭矢', '18150000001']],
 }
 
 export const DELTA_WEAPONS: readonly DeltaWeapon[] = WEAPON_CATEGORIES.flatMap(category =>
@@ -224,4 +224,20 @@ export function matchLoadoutQuery(query: string) {
     : null
   const label = weapons?.length === 1 ? weapons[0]!.short : needles.join(' ')
   return { mode, weapons, label, unmatched: Boolean(needles.length && !weapons?.length) }
+}
+
+export function formatCount(value: number) {
+  return value < 10_000 ? String(value) : `${Number((value / 10_000).toFixed(1))}w`
+}
+
+const CHANNELS: Record<string, string> = {
+  douyin: '抖音',
+  bilibili: 'B站',
+  kuaishou: '快手',
+  huya: '虎牙',
+  douyu: '斗鱼',
+}
+
+export function channelLabel(channel: string | null) {
+  return channel ? (CHANNELS[channel] ?? channel) : null
 }

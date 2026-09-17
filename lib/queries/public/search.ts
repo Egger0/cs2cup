@@ -1,6 +1,6 @@
 import 'server-only'
 import { cloudflareBindings } from '../../cloudflare-bindings'
-import { searchLoadoutCodes } from '../../loadout-codes'
+import { searchLoadoutCodes } from '../../loadout-reach'
 import { selectPublicRows } from '../../rdb'
 import type { GameRow, PostRow } from '../records'
 import { listTournaments } from './tournaments'

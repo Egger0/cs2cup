@@ -1,5 +1,5 @@
 import { LOADOUT_STATS, type LoadoutMode } from '@/lib/delta-loadouts'
-import type { LoadoutCode } from '@/lib/loadout-codes'
+import type { LoadoutCode } from '@/lib/loadout-queries'
 import type { LoadoutStats } from '@/lib/loadout-input'
 import { LoadoutCard } from './LoadoutCards'
 
@@ -38,6 +38,14 @@ export function LoadoutPreview({
     stats: statValues.every(([, value]) => /^\d{1,3}$/.test(value))
       ? (Object.fromEntries(statValues.map(([key, value]) => [key, Number(value)])) as LoadoutStats)
       : null,
+    source: 'member',
+    maps: [],
+    accessories: [],
+    baseStats: null,
+    renderUrl: null,
+    authorChannel: null,
+    applyCount: 0,
+    officialLikes: 0,
     shotKey: null,
     pendingShotKey: null,
     status: 'pending',

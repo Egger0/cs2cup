@@ -3,9 +3,16 @@ import { notFound } from 'next/navigation'
 import { PageMasthead, SectionHead } from '@/components/domain/Sections'
 import { getCurrentUnifiedPlatformOwner } from '@/lib/auth'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
-import { LOADOUT_MODES, findWeapon, formatPrice, shareString } from '@/lib/delta-loadouts'
+import {
+  LOADOUT_MODES,
+  channelLabel,
+  findWeapon,
+  formatCount,
+  formatPrice,
+  shareString,
+} from '@/lib/delta-loadouts'
 import { getAuthContext } from '@/lib/identity/kernel'
-import { getLoadoutCode, listLoadoutCodes } from '@/lib/loadout-codes'
+import { getLoadoutCode, listLoadoutAccessories, queryLoadoutCodes } from '@/lib/loadout-queries'
 import { listLoadoutComments, listViewerLoadoutMarks } from '@/lib/loadout-community'
 import { PLANET_COLORS } from '@/lib/planets'
 import { publicMetadata } from '@/lib/public-metadata'
@@ -16,6 +23,7 @@ import { ShareButton } from '@/components/share/ShareButton'
 import { LoadoutCopyButton } from '../LoadoutCardActions'
 import { HeroBuild, HeroStats } from '../LoadoutHero'
 import { LoadoutCard, LoadoutCards } from '../LoadoutCards'
+import { LoadoutAccessories } from './LoadoutAccessories'
 import { LoadoutComments } from './LoadoutComments'
 import styles from './detail.module.css'
 
@@ -59,23 +67,19 @@ export default async function LoadoutDetailPage({ params }: { params: Params }) 
   const moderator = accountId
     ? Boolean(await getCurrentUnifiedPlatformOwner().catch(() => null))
     : false
-  const [marks, comments, siblings] = await Promise.all([
+  const [marks, comments, { codes: related }, accessories] = await Promise.all([
     accountId ? listViewerLoadoutMarks(db, accountId) : Promise.resolve(null),
     listLoadoutComments(db, code.id, moderator),
-    listLoadoutCodes(db, game.id),
+    queryLoadoutCodes(
+      db,
+      game.id,
+      { mode: code.mode, weapons: [code.weapon], excludeId: code.id },
+      { limit: 3 },
+    ),
+    listLoadoutAccessories(db, code.accessories),
   ])
   const weapon = findWeapon(code.weapon)
   const full = shareString(code.weapon, code.mode, code.code)
-  const related = siblings
-    .filter(
-      other =>
-        other.id !== code.id &&
-        other.status === 'approved' &&
-        other.mode === code.mode &&
-        other.weapon === code.weapon,
-    )
-    .sort((a, b) => b.copies - a.copies)
-    .slice(0, 3)
 
   return (
     <>
@@ -84,12 +88,19 @@ export default async function LoadoutDetailPage({ params }: { params: Params }) 
         tone={PLANET_COLORS.get(game.slug)}
         eyebrow={`${game.name} / 改枪码 / ${LOADOUT_MODES[code.mode]}`}
         title={code.title}
-        lede={`${code.authorName}分享的 ${weapon?.short ?? code.weapon} 方案。复制完整改枪码，到改枪台「方案 → 方案共享」一贴即用。`}
+        lede={
+          code.source === 'official'
+            ? `官方精选 · ${code.authorName}${
+                code.authorChannel ? `（${channelLabel(code.authorChannel)}）` : ''
+              }的 ${weapon?.short ?? code.weapon} 方案，游戏内已被使用 ${formatCount(code.applyCount)} 次。`
+            : `${code.authorName}分享的 ${weapon?.short ?? code.weapon} 方案。复制完整改枪码，到改枪台「方案 → 方案共享」一贴即用。`
+        }
         density="compact"
         art={
-          code.shotKey || weapon?.image ? (
+          code.shotKey || code.renderUrl || weapon?.image ? (
             <HeroBuild
               shot={code.shotKey && photoUrl(code.shotKey)}
+              render={code.renderUrl}
               weapon={weapon?.image ?? null}
             />
           ) : undefined
@@ -110,17 +121,30 @@ export default async function LoadoutDetailPage({ params }: { params: Params }) 
           分享给队友
         </ShareButton>
         <HeroStats
-          items={[
-            ['次复制', code.copies],
-            ['人说好用', code.likes],
-            ...(code.price ? [['哈夫币', formatPrice(code.price)] as const] : []),
-          ]}
+          items={(
+            [
+              ['游戏内使用', code.applyCount ? formatCount(code.applyCount) : 0],
+              ['次复制', code.copies],
+              ['人说好用', code.likes],
+              ['哈夫币', code.price ? formatPrice(code.price) : 0],
+            ] as const
+          ).filter(
+            ([label, value]) =>
+              value !== 0 ||
+              (code.source === 'member' && label !== '哈夫币' && label !== '游戏内使用'),
+          )}
         />
       </PageMasthead>
 
       <section className="section">
         <div className={`wrap ${styles.layout}`}>
-          <LoadoutCard code={code} marks={marks} single />
+          <div className={styles.build}>
+            <LoadoutCard code={code} marks={marks} single />
+            {code.maps.length ? (
+              <p className={styles.maps}>适用地图：{code.maps.join(' · ')}</p>
+            ) : null}
+            <LoadoutAccessories items={accessories} />
+          </div>
           <div className={styles.discussion} id="comments">
             <SectionHead
               eyebrow={`${comments.filter(comment => !comment.hidden).length} 条留言`}

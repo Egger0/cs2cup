@@ -22,21 +22,23 @@ import { siteDayKey } from '@/lib/datetime'
 import { submitLoadoutCodeAction, type LoadoutSubmission } from './actions'
 import { LoadoutPreview } from './LoadoutPreview'
 import { LoadoutShotField } from './LoadoutShotField'
+import { useLoadoutLookup } from './LoadoutLookup'
 import styles from './LoadoutSubmitForm.module.css'
 
-export function LoadoutSubmitForm({ slug }: { slug: string }) {
+export function LoadoutSubmitForm({ slug, initialCode }: { slug: string; initialCode?: string }) {
+  const initial = initialCode ? parsePastedLoadout(initialCode) : null
   const router = useRouter()
   const form = useRef<HTMLFormElement>(null)
   const [pending, startTransition] = useTransition()
   const [result, setResult] = useState<LoadoutSubmission | null>(null)
-  const [code, setCode] = useState('')
-  const [mode, setMode] = useState<LoadoutMode>('operations')
-  const [weapon, setWeapon] = useState('')
-  const [title, setTitle] = useState('')
+  const [code, setCode] = useState(initial ? initialCode! : '')
+  const [mode, setMode] = useState<LoadoutMode>(initial?.mode ?? 'operations')
+  const [weapon, setWeapon] = useState(initial?.weapon?.name ?? '')
+  const [title, setTitle] = useState(initial?.label?.slice(0, 40) ?? '')
   const [tags, setTags] = useState<string[]>([])
   const [shot, setShot] = useState<string | null>(null)
   const [draft, setDraft] = useState<Record<string, string>>({})
-  const parsed = code.trim() ? parsePastedLoadout(code) : null
+  const { parsed, found } = useLoadoutLookup(slug, code)
   const picked = findWeapon(weapon)
   const sharedAt = parsed ? codeSharedAt(parsed.code) : null
   const fieldError = (field: string) =>
@@ -113,13 +115,22 @@ export function LoadoutSubmitForm({ slug }: { slug: string }) {
           error={fieldError('code')}
         />
         <p className={styles.detected} aria-live="polite">
-          {!code.trim()
-            ? '粘贴后会自动认出武器、模式和分享日期。'
-            : !parsed
-              ? '还没认出改枪码：需要完整串，或末尾 21 位码。'
-              : `已识别 ${parsed.code}${parsed.weapon ? ` · ${parsed.weapon.short}` : ''}${
-                  parsed.mode ? ` · ${LOADOUT_MODES[parsed.mode]}` : ''
-                }${sharedAt ? ` · 分享于 ${siteDayKey(sharedAt)}` : ''}`}
+          {found ? (
+            <>
+              这套码已收录
+              {found.source === 'official' ? '在官方精选' : `，由 ${found.authorName} 分享`}
+              ，不用重复投稿：
+              <Link href={`/games/${slug}/loadouts/${found.id}`}>「{found.title}」→</Link>
+            </>
+          ) : !code.trim() ? (
+            '粘贴后会自动认出武器、模式和分享日期。'
+          ) : !parsed ? (
+            '还没认出改枪码：需要完整串，或末尾 21 位码。'
+          ) : (
+            `已识别 ${parsed.code}${parsed.weapon ? ` · ${parsed.weapon.short}` : ''}${
+              parsed.mode ? ` · ${LOADOUT_MODES[parsed.mode]}` : ''
+            }${sharedAt ? ` · 分享于 ${siteDayKey(sharedAt)}` : ''}`
+          )}
         </p>
 
         <LoadoutShotField error={fieldError('shot')} onPick={setShot} />

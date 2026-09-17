@@ -115,3 +115,13 @@
   border-color: var(--line-strong);
   border-radius: 999px;
 }
+
+.build {
+  display: grid;
+  gap: 24px;
+}
+
+.maps {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
