@@ -12,7 +12,8 @@ import {
   shareString,
 } from '@/lib/delta-loadouts'
 import { siteDayKey } from '@/lib/datetime'
-import type { LoadoutDecision, ReviewLoadoutCode } from '@/lib/loadout-codes'
+import type { LoadoutDecision } from '@/lib/loadout-codes'
+import type { ReviewLoadoutCode } from '@/lib/loadout-queries'
 import { photoUrl } from '@/lib/media'
 import { reviewLoadoutCodeAction, reviewLoadoutShotAction } from '../actions/loadouts'
 import styles from '../admin.module.css'

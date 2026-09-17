@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { LOADOUT_MODES, findWeapon } from '@/lib/delta-loadouts'
-import type { LoadoutCode } from '@/lib/loadout-codes'
+import type { LoadoutCode } from '@/lib/loadout-queries'
 import styles from './me.module.css'
 
 const STATUS = {

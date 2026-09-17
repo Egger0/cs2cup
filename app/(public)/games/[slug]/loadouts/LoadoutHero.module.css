@@ -11,6 +11,19 @@
   opacity: 0.16;
 }
 
+.render.render {
+  position: absolute;
+  top: 14%;
+  right: clamp(12px, 4vw, 72px);
+  width: min(58vw, 860px);
+  height: 68%;
+  object-fit: contain;
+  object-position: 100% 50%;
+  rotate: -7deg;
+  filter: drop-shadow(0 40px 60px rgb(0 0 0 / 70%))
+    drop-shadow(0 0 70px color-mix(in srgb, var(--tone) 32%, transparent));
+}
+
 .ghostNote {
   position: absolute;
   right: clamp(24px, 6vw, 110px);
@@ -45,6 +58,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .ghost.ghost,
+  .render.render,
   .plate {
     animation: drift 9s ease-in-out infinite alternate;
   }
@@ -57,11 +71,32 @@
 }
 
 @media (max-width: 720px) {
+  .render.render {
+    top: 9%;
+    right: -10vw;
+    width: 104vw;
+    height: 42%;
+    opacity: 0.85;
+  }
+
   .ghost.ghost {
     top: 9%;
     right: -12vw;
     width: 104vw;
     height: 40%;
+  }
+
+  .render.render {
+    position: absolute;
+    top: 14%;
+    right: clamp(12px, 4vw, 72px);
+    width: min(58vw, 860px);
+    height: 68%;
+    object-fit: contain;
+    object-position: 100% 50%;
+    rotate: -7deg;
+    filter: drop-shadow(0 40px 60px rgb(0 0 0 / 70%))
+      drop-shadow(0 0 70px color-mix(in srgb, var(--tone) 32%, transparent));
   }
 
   .ghostNote {

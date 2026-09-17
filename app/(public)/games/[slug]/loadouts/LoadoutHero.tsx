@@ -1,11 +1,31 @@
 import styles from './LoadoutHero.module.css'
 
-export function HeroBuild({ shot, weapon }: { shot: string | null; weapon: string | null }) {
+export function HeroBuild({
+  shot,
+  render = null,
+  weapon,
+}: {
+  shot: string | null
+  render?: string | null
+  weapon: string | null
+}) {
   if (shot) {
     return (
       <span className={styles.plate}>
         <img src={shot} alt="" fetchPriority="high" decoding="async" />
       </span>
+    )
+  }
+  if (render) {
+    return (
+      <img
+        className={styles.render}
+        src={render}
+        alt=""
+        referrerPolicy="no-referrer"
+        fetchPriority="high"
+        decoding="async"
+      />
     )
   }
   return weapon ? (

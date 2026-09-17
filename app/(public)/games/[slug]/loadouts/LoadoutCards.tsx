@@ -1,19 +1,20 @@
 import Link from 'next/link'
-import type { CSSProperties } from 'react'
 import {
   LOADOUT_MODES,
-  LOADOUT_STATS,
   codeSharedAt,
   findWeapon,
+  channelLabel,
+  formatCount,
   formatPrice,
   shareString,
 } from '@/lib/delta-loadouts'
 import { siteDayKey } from '@/lib/datetime'
-import type { LoadoutCode } from '@/lib/loadout-codes'
+import type { LoadoutCode } from '@/lib/loadout-queries'
 import type { LoadoutMarks } from '@/lib/loadout-community'
 import { photoUrl } from '@/lib/media'
 import { LoadoutCardActions } from './LoadoutCardActions'
 import { LoadoutShotUpload } from './LoadoutShotUpload'
+import { LoadoutStatBars } from './LoadoutStatBars'
 import styles from './LoadoutCards.module.css'
 
 const STATUS = {
@@ -63,16 +64,25 @@ export function LoadoutCard({
       data-status={code.status}
       data-single={single ? '' : undefined}
     >
-      {single && !shot && !preview ? null : (
+      {single && !shot && !code.renderUrl && !preview ? null : (
         <figure
           className={styles.media}
           data-shot={shot ? '' : undefined}
-          data-ghost={!shot && weapon?.image ? '' : undefined}
+          data-render={!shot && code.renderUrl ? '' : undefined}
+          data-ghost={!shot && !code.renderUrl && weapon?.image ? '' : undefined}
         >
           {shot ? (
             <a href={shot} target="_blank" rel="noreferrer">
               <img src={shot} alt={`「${code.title}」改枪台截图`} loading="lazy" decoding="async" />
             </a>
+          ) : code.renderUrl ? (
+            <img
+              src={code.renderUrl}
+              alt={`「${code.title}」改装效果`}
+              loading="lazy"
+              decoding="async"
+              referrerPolicy="no-referrer"
+            />
           ) : weapon?.image ? (
             <>
               <img src={weapon.image} alt="" loading="lazy" decoding="async" />
@@ -124,37 +134,27 @@ export function LoadoutCard({
           </ul>
         ) : null}
 
-        {code.stats ? (
-          <dl className={styles.stats}>
-            {LOADOUT_STATS.map(([key, label]) => (
-              <div key={key} className={styles.stat}>
-                <dt>{label}</dt>
-                <dd>
-                  {key === 'distance' ? null : (
-                    <span
-                      className={styles.bar}
-                      style={{ '--value': Math.min(code.stats![key], 100) / 100 } as CSSProperties}
-                      aria-hidden="true"
-                    />
-                  )}
-                  <b>{code.stats![key]}</b>
-                  {key === 'distance' ? <small>m</small> : null}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        ) : null}
+        {code.stats ? <LoadoutStatBars stats={code.stats} base={code.baseStats} /> : null}
 
         {code.note ? <p className={styles.note}>{code.note}</p> : null}
 
         <p className={styles.meta}>
-          {mine || preview ? null : code.authorHandle ? (
+          {code.source === 'official' ? (
+            <>
+              <b className={styles.official}>官方精选</b>
+              <span>
+                {code.authorName}
+                {code.authorChannel ? ` · ${channelLabel(code.authorChannel)}` : ''}
+              </span>
+              {code.applyCount ? <span>游戏内 {formatCount(code.applyCount)} 次使用</span> : null}
+            </>
+          ) : mine || preview ? null : code.authorHandle ? (
             <Link href={`/players/${code.authorHandle}`}>{code.authorName}</Link>
           ) : (
             <span>{code.authorName}</span>
           )}
-          {sharedAt ? <span>分享于 {siteDayKey(sharedAt)}</span> : null}
-          {code.copies ? <span>复制 {code.copies} 次</span> : null}
+          {sharedAt && code.source === 'member' ? <span>分享于 {siteDayKey(sharedAt)}</span> : null}
+          {code.copies ? <span>站内复制 {code.copies} 次</span> : null}
           {published && !single ? (
             <Link href={`${detail}#comments`}>
               {code.comments ? `${code.comments} 条留言` : '去留言'}

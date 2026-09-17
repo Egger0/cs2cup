@@ -174,3 +174,29 @@
   color: var(--muted);
   font-size: 0.875rem;
 }
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 32px;
+  color: var(--muted);
+  font:
+    0.875rem var(--font-mono),
+    monospace;
+}
+
+.pager a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--ink);
+}
+
+.pager a:hover {
+  border-color: var(--ink);
+}

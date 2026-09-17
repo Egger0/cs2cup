@@ -1,0 +1,55 @@
+.lookup {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 36px;
+  padding: 20px clamp(16px, 3vw, 28px);
+  border: 1px solid var(--line-strong);
+  background: linear-gradient(90deg, rgb(139 147 101 / 12%), transparent 60%), var(--surface);
+}
+
+.label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  color: var(--ink);
+  font-size: 1.125rem;
+  font-weight: 650;
+}
+
+.label span {
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
+.input {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  font:
+    1rem var(--font-mono),
+    monospace;
+}
+
+.input:focus {
+  border-color: var(--accent);
+  outline: 1px solid var(--accent);
+}
+
+.result {
+  min-height: 1.6em;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.result a {
+  margin-inline-start: 4px;
+  color: var(--ct);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

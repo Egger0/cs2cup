@@ -42,7 +42,7 @@ const config = [
   },
   {
     files: [
-      'app/**/loadouts/Loadout{Cards,Hero,SubmitForm,ReviewRow}.tsx',
+      'app/**/loadouts/**/Loadout{Accessories,Cards,Hero,SubmitForm,ReviewRow}.tsx',
       'components/domain/PosterWall.tsx',
       'components/home/HomeStatement.tsx',
       'components/home/HomeWall.tsx',

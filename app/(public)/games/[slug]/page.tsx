@@ -7,7 +7,7 @@ import { PageMasthead, SectionHead } from '@/components/domain/Sections'
 import { TournamentList } from '@/components/domain/TournamentList'
 import { Honours } from '@/components/domain/Honours'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
-import { listLoadoutCodes } from '@/lib/loadout-codes'
+import { queryLoadoutCodes } from '@/lib/loadout-queries'
 import { getGame, listHonours, listPosts, listTournaments, safely } from '@/lib/queries/public'
 import styles from './game.module.css'
 import { LoadoutCards } from './loadouts/LoadoutCards'
@@ -31,11 +31,13 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
     safely(listHonours, []),
     game.loadoutCodes
       ? safely(async () => {
-          const codes = await listLoadoutCodes(cloudflareBindings().db, game.id)
+          const { codes } = await queryLoadoutCodes(
+            cloudflareBindings().db,
+            game.id,
+            {},
+            { limit: 3 },
+          )
           return codes
-            .filter(code => code.status === 'approved')
-            .sort((a, b) => b.copies - a.copies)
-            .slice(0, 3)
         }, [])
       : Promise.resolve([]),
   ])

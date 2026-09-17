@@ -6,7 +6,7 @@
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "send_metrics": false,
   "triggers": {
-    "crons": ["0 1 * * *"],
+    "crons": ["0 1 * * *", "30 19 * * *"],
   },
   "vars": {
     "NEXT_PUBLIC_SITE_URL": "http://localhost:3000",

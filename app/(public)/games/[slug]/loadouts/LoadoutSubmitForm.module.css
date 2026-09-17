@@ -175,3 +175,10 @@
     max-width: 420px;
   }
 }
+
+.detected a {
+  margin-inline-start: 4px;
+  color: var(--ct);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

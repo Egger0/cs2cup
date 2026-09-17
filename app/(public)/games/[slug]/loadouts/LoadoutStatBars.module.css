@@ -1,0 +1,84 @@
+.stats {
+  display: grid;
+  gap: 6px;
+  padding-block: 4px;
+}
+
+.stat {
+  display: grid;
+  grid-template-columns: 6.5em 1fr;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.8125rem;
+}
+
+.stat dt {
+  color: var(--muted);
+}
+
+.stat dd {
+  display: grid;
+  grid-template-columns: 1fr 3.4em 2.4em;
+  align-items: center;
+  gap: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat dd b {
+  color: var(--ink);
+  font-weight: 620;
+  text-align: end;
+}
+
+.stat dd b small {
+  margin-inline-start: 2px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.stat dd i {
+  font-size: 0.75rem;
+  font-style: normal;
+  text-align: end;
+}
+
+.stat dd i[data-sign='up'] {
+  color: var(--ct);
+}
+
+.stat dd i[data-sign='down'] {
+  color: var(--c4);
+}
+
+.stat:last-child dd {
+  grid-template-columns: 1fr 3.4em 2.4em;
+}
+
+.stat:last-child dd b {
+  grid-column: 2;
+}
+
+.bar {
+  height: 4px;
+  background:
+    linear-gradient(var(--ct), var(--ct)) 0 0 / calc(var(--value) * 100%) 100% no-repeat,
+    var(--line);
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .bar {
+      animation: fill linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+  }
+}
+
+@keyframes fill {
+  from {
+    background-size:
+      0 100%,
+      auto;
+  }
+}

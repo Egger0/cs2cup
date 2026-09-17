@@ -13,6 +13,8 @@ import {
   setLoadoutLike,
 } from '@/lib/loadout-community'
 import { recordLoadoutCopy, submitLoadoutCode } from '@/lib/loadout-codes'
+import { findLoadoutByCode } from '@/lib/loadout-queries'
+import { parsePastedLoadout } from '@/lib/delta-loadouts'
 import { parseLoadoutInput, type LoadoutField } from '@/lib/loadout-input'
 import {
   discardLoadoutShots,
@@ -69,6 +71,17 @@ export async function submitLoadoutCodeAction(
     .bind(slug)
     .first<{ id: number }>()
   if (!game) return { ok: false, error: '这个项目暂未开放改枪码投稿。' }
+  const existing = await findLoadoutByCode(db, game.id, parsed.value.code)
+  if (existing) {
+    return {
+      ok: false,
+      error:
+        existing.source === 'official'
+          ? `这套码已收录在官方精选：「${existing.title}」。`
+          : '这条改枪码已经有人投过了。',
+      field: 'code',
+    }
+  }
 
   const shot = await storeLoadoutShot(form.get('shot'))
   if (!shot.ok) return shotError(shot.reason)
@@ -188,4 +201,17 @@ export async function replaceLoadoutShotAction(
   await discardLoadoutShots(result.stale)
   revalidatePath(`/games/${result.gameSlug}/loadouts`)
   return { ok: true }
+}
+
+export async function lookupLoadoutCodeAction(slug: string, raw: string) {
+  const pasted = typeof raw === 'string' ? parsePastedLoadout(raw.slice(0, 300)) : null
+  if (!pasted) return null
+  const db = cloudflareBindings().db
+  const game = await db
+    .prepare('SELECT id FROM game WHERE slug = ? AND active = 1 AND loadout_codes = 1')
+    .bind(slug)
+    .first<{ id: number }>()
+  if (!game) return null
+  const found = await findLoadoutByCode(db, game.id, pasted.code)
+  return found && (found.status === 'approved' || found.status === 'expired') ? found : null
 }

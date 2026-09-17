@@ -26,17 +26,13 @@ registerHooks({
   },
 })
 
-const {
-  loadoutDigest,
-  getLoadoutCode,
-  listAuthorLoadoutCodes,
-  listLoadoutCodes,
-  listLoadoutCodesForReview,
-  listOwnLoadoutCodes,
-  recordLoadoutCopy,
-  reviewLoadoutCode,
-  submitLoadoutCode,
-} = await import('../lib/loadout-codes.ts')
+const { listLoadoutCodesForReview, recordLoadoutCopy, reviewLoadoutCode, submitLoadoutCode } =
+  await import('../lib/loadout-codes.ts')
+const { getLoadoutCode, listAuthorLoadoutCodes, listOwnLoadoutCodes, queryLoadoutCodes } =
+  await import('../lib/loadout-queries.ts')
+const { loadoutDigest } = await import('../lib/loadout-reach.ts')
+const visible = async (status = 'approved') =>
+  (await queryLoadoutCodes(db, 71, { status }, { sort: 'new', limit: 50 })).codes
 const {
   listLoadoutComments,
   listViewerLoadoutMarks,
@@ -164,11 +160,13 @@ try {
     () =>
       database
         .prepare(
-          `INSERT INTO loadout_code (game_id, account_id, mode, weapon, code, title, price, created_at)
-           VALUES (71, ?, 'warfare', 'AK', ?, 'priced', 10, 1)`,
+          `INSERT INTO loadout_code (game_id, source, account_id, mode, weapon, code, title,
+             status, created_at, reviewed_at, synced_at, author_name)
+           VALUES (71, 'official', ?, 'operations', 'AK', ?, 'forged', 'approved', 1, 1, 1, 'x')`,
         )
         .run(accountIds.manager, codeAt(21)),
     /CHECK constraint failed/,
+    'official rows carry no account and need an official id',
   )
 
   const { pending } = await listLoadoutCodesForReview(db)
@@ -177,7 +175,7 @@ try {
   assert.deepEqual(pending[0].tags, valid.tags)
   assert.equal(pending[0].shotKey, 'loadouts/a.webp')
   assert.equal(pending[0].gameSlug, 'identity-kernel')
-  assert.deepEqual(await listLoadoutCodes(db, 71), [])
+  assert.deepEqual(await visible(), [])
   const [first, second, third] = pending
   assert.equal(
     await reportLoadoutCode(db, { id: first.id, accountId: accountIds.manager }, now),
@@ -222,7 +220,7 @@ try {
     false,
   )
   assert.deepEqual(
-    (await listLoadoutCodes(db, 71)).map(code => [code.code, code.status]),
+    [...(await visible('expired')), ...(await visible())].map(code => [code.code, code.status]),
     [
       [third.code, 'expired'],
       [CODE, 'approved'],
