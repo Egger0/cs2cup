@@ -62,7 +62,7 @@ export async function mosaic({ layer, zoom, tile, world, frame, required = 0.9 }
 export async function buildImagery(layer, frame, grid, write) {
   const fine = await mosaic({ layer, zoom: 5, tile: 256, world: 8192, frame }).catch(() => null)
   const canvas = fine ?? (await mosaic({ layer, zoom: 4, tile: 256, world: 4096, frame }))
-  const sizes = fine ? [1024, 2048, 4096] : [1024, 2048]
+  const sizes = fine ? [256, 1024, 2048, 4096] : [256, 1024, 2048]
   for (const width of sizes)
     await write(width, await sharp(canvas).resize(width, width).webp({ quality: 80 }).toBuffer())
   const { data, info } = await sharp(canvas)

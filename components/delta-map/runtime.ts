@@ -61,6 +61,7 @@ export async function startSandTable(
   let announced = false
   let showing = 0
   let inside: number | null = null
+  let inset = 0
   let level: string | null = null
   let sharpen: (() => void) | null = null
   const adaptation = createAdaptation(ratio => renderer.setPixelRatio(ratio), callbacks.fail)
@@ -82,6 +83,7 @@ export async function startSandTable(
       sharpen = null
     }
     renderer.render(scene, camera)
+    host.style.setProperty('--azimuth', `${-orbit.view.azimuth}rad`)
     if (content.plate)
       placeAnchors(overlay, content.locate, world, camera, width, height, rise > 0.6)
     if (!announced && content.plate) {
@@ -145,13 +147,17 @@ export async function startSandTable(
   const fitView = () => {
     const plate = content.plate
     if (!plate) return
-    const fit = Math.tan(T.MathUtils.degToRad(camera.fov / 2)) * Math.min(1.5, camera.aspect)
+    const visible =
+      inset && width > inset * 2 ? (width - inset) / Math.max(1, height) : camera.aspect
+    const fit = Math.tan(T.MathUtils.degToRad(camera.fov / 2)) * Math.min(1.5, visible)
     orbit.frame(plate.center, (plate.radius * 1.1) / fit)
   }
   const resize = () => {
     width = host.clientWidth
     height = host.clientHeight
     camera.aspect = width / Math.max(1, height)
+    if (inset && width > inset * 2) camera.setViewOffset(width, height, inset / 2, 0, width, height)
+    else camera.clearViewOffset()
     camera.updateProjectionMatrix()
     fitView()
     adaptation.apply(width, height)
@@ -250,6 +256,15 @@ export async function startSandTable(
     overview() {
       orbit.overview()
       poke()
+    },
+    north() {
+      orbit.goal.azimuth = Math.round(orbit.goal.azimuth / (Math.PI * 2)) * Math.PI * 2
+      poke()
+    },
+    inset(pixels: number) {
+      if (pixels === inset) return
+      inset = pixels
+      resize()
     },
     zoom(factor: number) {
       orbit.zoom(factor)
