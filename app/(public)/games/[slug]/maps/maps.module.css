@@ -1,0 +1,81 @@
+.stage {
+  background:
+    radial-gradient(ellipse 60% 40% at 30% 0%, rgb(139 147 101 / 14%), transparent 70%),
+    var(--space);
+}
+
+.dossier {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: clamp(24px, 3vw, 40px) clamp(20px, 2.4vw, 32px);
+  margin-top: clamp(24px, 4vh, 40px);
+}
+
+.card {
+  composes: sheet from '@/components/ui/Surface.module.css';
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 16px;
+}
+
+.card header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card h3 {
+  font-family: var(--space-serif);
+  font-size: 26px;
+}
+
+.card header span {
+  color: var(--muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.regions {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.boss {
+  color: var(--c4);
+  font-size: 13px;
+}
+
+.exits {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  font-size: 14px;
+}
+
+.exits li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+}
+
+.exits small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.exits em {
+  color: var(--honour);
+  font-size: 12px;
+  font-style: normal;
+}
+
+.card > a {
+  align-self: flex-start;
+  margin-top: auto;
+}
