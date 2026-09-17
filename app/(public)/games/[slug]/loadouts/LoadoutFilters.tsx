@@ -7,7 +7,8 @@ import {
   type LoadoutMode,
   type PriceTier,
 } from '@/lib/delta-loadouts'
-import type { LoadoutSort, LoadoutSource, loadoutFacets } from '@/lib/loadout-queries'
+import type { loadoutFacets } from '@/lib/loadout-facets'
+import type { LoadoutSort, LoadoutSource } from '@/lib/loadout-queries'
 import styles from './loadouts.module.css'
 
 export interface BrowseState {
@@ -20,11 +21,13 @@ export interface BrowseState {
   readonly tag: string | null
   readonly sort: LoadoutSort
   readonly page: number
+  readonly saved: boolean
 }
 
-type Patch = Partial<Record<keyof BrowseState, string | number | null>>
+type Patch = Partial<Record<keyof BrowseState, string | number | boolean | null>>
 const SOURCES = { member: '社员投稿', official: '官方精选' } as const
 const SORTS = { hot: '社团热度', usage: '使用最多', new: '最新收录' } as const
+type VisibleSort = keyof typeof SORTS
 
 export function browseHref(slug: string, state: BrowseState, patch: Patch) {
   const next: Patch = { page: null, ...patch }
@@ -34,8 +37,9 @@ export function browseHref(slug: string, state: BrowseState, patch: Patch) {
       value === null ||
       (key === 'mode' && value === 'operations') ||
       (key === 'sort' && value === 'hot') ||
-      (key === 'page' && value === 1)
-    if (!skip) query.set(key, String(value))
+      (key === 'page' && value === 1) ||
+      (key === 'saved' && !value)
+    if (!skip) query.set(key, value === true ? '1' : String(value))
   }
   const text = query.toString()
   return `/games/${slug}/loadouts${text ? `?${text}` : ''}#loadout-browse`
@@ -46,8 +50,10 @@ export function LoadoutFilters({
   state,
   facets,
   total,
+  signedIn,
 }: {
   slug: string
+  signedIn: boolean
   state: BrowseState
   facets: Awaited<ReturnType<typeof loadoutFacets>>
   total: number
@@ -109,15 +115,21 @@ export function LoadoutFilters({
         {row(
           '来源',
           <>
-            {chip('全部', !state.source, href({ source: null }), modeCount(state.mode))}
+            {chip(
+              '全部',
+              !state.source && !state.saved,
+              href({ source: null, saved: false }),
+              modeCount(state.mode),
+            )}
             {(Object.keys(SOURCES) as LoadoutSource[]).map(entry =>
               chip(
                 SOURCES[entry],
-                entry === state.source,
-                href({ source: entry }),
+                entry === state.source && !state.saved,
+                href({ source: entry, saved: false }),
                 modeCount(state.mode, entry),
               ),
             )}
+            {signedIn ? chip('我的收藏', state.saved, href({ source: null, saved: true })) : null}
           </>,
         )}
         {categories.size
@@ -210,7 +222,23 @@ export function LoadoutFilters({
           ) : null}
         </p>
         <nav className={styles.sort} aria-label="排序">
-          {(Object.keys(SORTS) as LoadoutSort[]).map(entry =>
+          <a
+            className={styles.random}
+            href={`/games/${slug}/loadouts/random?${new URLSearchParams(
+              Object.entries({
+                mode: state.mode,
+                source: state.source,
+                weapon: state.weapon,
+                price: state.price,
+                map: state.map,
+                tag: state.tag,
+                saved: state.saved ? '1' : null,
+              }).filter((entry): entry is [string, string] => Boolean(entry[1])),
+            )}`}
+          >
+            随机来一把
+          </a>
+          {(Object.keys(SORTS) as VisibleSort[]).map(entry =>
             chip(SORTS[entry], entry === state.sort, href({ sort: entry })),
           )}
         </nav>

@@ -8,7 +8,12 @@ import {
   type LoadoutMode,
 } from './delta-loadouts.ts'
 import type { IdentityDatabase } from './identity/internal/contracts.ts'
-import { queryLoadoutCodes, type LoadoutSource } from './loadout-queries.ts'
+import {
+  getLoadoutCode,
+  queryLoadoutCodes,
+  randomLoadoutId,
+  type LoadoutSource,
+} from './loadout-queries.ts'
 
 const VISIBLE = `(code.source = 'official' OR account.status = 'active')`
 
@@ -32,6 +37,17 @@ export async function loadoutDigest(database: IdentityDatabase, query: string, o
     .first<{ id: number; slug: string }>()
   if (!game) return '改枪码暂未开放。'
   const list = `${origin}/games/${game.slug}/loadouts`
+  if (query === '随机') {
+    const id = await randomLoadoutId(database, game.id, {})
+    const pick = id ? await getLoadoutCode(database, game.id, id) : null
+    if (!pick) return `改枪码库还是空的，来当第一个枪匠：\n${list}#loadout-submit`
+    return [
+      `随机来一把：${pick.title}`,
+      `${pick.weapon} · ${LOADOUT_MODES[pick.mode]}${pick.price ? ` · 约${formatPrice(pick.price)}` : ''}`,
+      shareString(pick.weapon, pick.mode, pick.code),
+      `${list}/${pick.id}`,
+    ].join('\n')
+  }
   const { mode, weapons, label, unmatched } = matchLoadoutQuery(query)
   if (unmatched) return `没认出「${query}」这把枪，试试“/改枪码 M4A1”或“/改枪码 冲锋枪”。\n${list}`
   const { codes: top } = await queryLoadoutCodes(

@@ -200,3 +200,27 @@
 .pager a:hover {
   border-color: var(--ink);
 }
+
+.featured {
+  display: grid;
+  gap: 24px;
+  margin-bottom: 56px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.random {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 7px 14px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 0.875rem;
+}
+
+.random:hover {
+  border-style: solid;
+  border-color: var(--ink);
+}

@@ -10,6 +10,8 @@ import {
   postLoadoutComment,
   removeLoadoutComment,
   reportLoadoutCode,
+  setLoadoutFavorite,
+  setLoadoutFeatured,
   setLoadoutLike,
 } from '@/lib/loadout-community'
 import { recordLoadoutCopy, submitLoadoutCode } from '@/lib/loadout-codes'
@@ -147,6 +149,36 @@ export async function setLoadoutLikeAction(id: number, liked: boolean) {
       ? { ok: true }
       : { ok: false, error: '这套方案暂时不能点「好用」。' },
   )
+}
+
+export async function setLoadoutFavoriteAction(id: number, saved: boolean) {
+  return asMember(id, async accountId =>
+    (await setLoadoutFavorite(
+      cloudflareBindings().db,
+      { id, accountId, saved: saved === true },
+      currentTimeMillis(),
+    ))
+      ? { ok: true }
+      : { ok: false, error: '这套方案暂时不能收藏。' },
+  )
+}
+
+export async function setLoadoutFeaturedAction(id: number, featured: boolean) {
+  return asMember(id, async () => {
+    if (!(await getCurrentUnifiedPlatformOwner().catch(() => null))) {
+      return { ok: false, error: '只有社团管理员可以设置精选。' }
+    }
+    const slug = await setLoadoutFeatured(
+      cloudflareBindings().db,
+      { id, featured: featured === true },
+      currentTimeMillis(),
+    )
+    if (!slug) return { ok: false, error: '只有已展示的方案可以设为精选。' }
+    revalidatePath(`/games/${slug}`)
+    revalidatePath(`/games/${slug}/loadouts`)
+    revalidatePath(`/games/${slug}/loadouts/${id}`)
+    return { ok: true }
+  })
 }
 
 export async function postLoadoutCommentAction(slug: string, id: number, body: string) {

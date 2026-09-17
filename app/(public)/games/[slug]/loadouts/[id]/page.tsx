@@ -23,6 +23,7 @@ import { ShareButton } from '@/components/share/ShareButton'
 import { LoadoutCopyButton } from '../LoadoutCardActions'
 import { HeroBuild, HeroStats } from '../LoadoutHero'
 import { LoadoutCard, LoadoutCards } from '../LoadoutCards'
+import { FeatureToggle } from './FeatureToggle'
 import { LoadoutAccessories } from './LoadoutAccessories'
 import { LoadoutComments } from './LoadoutComments'
 import styles from './detail.module.css'
@@ -120,6 +121,9 @@ export default async function LoadoutDetailPage({ params }: { params: Params }) 
         >
           分享给队友
         </ShareButton>
+        {moderator && code.status === 'approved' ? (
+          <FeatureToggle id={code.id} featured={Boolean(code.featuredAt)} />
+        ) : null}
         <HeroStats
           items={(
             [

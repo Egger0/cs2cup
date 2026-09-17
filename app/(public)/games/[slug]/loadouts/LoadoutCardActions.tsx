@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { Icon } from '@/components/ui/Icon'
-import { recordLoadoutCopyAction, reportLoadoutCodeAction, setLoadoutLikeAction } from './actions'
+import { recordLoadoutCopyAction, setLoadoutFavoriteAction, setLoadoutLikeAction } from './actions'
 import styles from './LoadoutCardActions.module.css'
 
 function firstCopyThisSession(id: number) {
@@ -82,23 +82,41 @@ export function LoadoutCardActions({
   value,
   title,
   live,
+  savable,
   signedIn,
   likes,
   liked,
-  reported,
+  saved,
 }: {
   id: number
   value: string
   title: string
   live: boolean
+  savable: boolean
   signedIn: boolean
   likes: number
   liked: boolean
-  reported: boolean
+  saved: boolean
 }) {
   const [pending, startTransition] = useTransition()
   const [like, setLike] = useState({ liked, count: likes })
-  const [message, setMessage] = useState<string | null>(reported ? '已反馈失效' : null)
+  const [message, setMessage] = useState<string | null>(null)
+  const [keep, setKeep] = useState(saved)
+
+  function toggleSave() {
+    const next = !keep
+    setKeep(next)
+    startTransition(async () => {
+      const result = await setLoadoutFavoriteAction(id, next).catch(() => ({
+        ok: false as const,
+        error: '网络异常，请稍后重试。',
+      }))
+      if (!result.ok) {
+        setKeep(!next)
+        setMessage(result.error)
+      }
+    })
+  }
 
   function toggleLike() {
     const next = { liked: !like.liked, count: like.count + (like.liked ? -1 : 1) }
@@ -121,6 +139,19 @@ export function LoadoutCardActions({
       <span className={styles.copyGroup}>
         <LoadoutCopyButton id={id} value={value} title={title} />
       </span>
+      {savable && signedIn ? (
+        <button
+          type="button"
+          className={styles.save}
+          aria-pressed={keep}
+          aria-label={keep ? `取消收藏「${title}」` : `收藏「${title}」`}
+          title={keep ? '已收藏' : '收藏'}
+          disabled={pending}
+          onClick={toggleSave}
+        >
+          <Icon name="bookmark" size={18} />
+        </button>
+      ) : null}
       {live ? (
         <span className={styles.feedback}>
           {signedIn ? (
@@ -146,23 +177,6 @@ export function LoadoutCardActions({
             <span className={styles.reported} role="status">
               {message}
             </span>
-          ) : signedIn ? (
-            <button
-              type="button"
-              className={styles.report}
-              disabled={pending}
-              onClick={() =>
-                startTransition(async () => {
-                  const result = await reportLoadoutCodeAction(id).catch(() => ({
-                    ok: false as const,
-                    error: '网络异常，请稍后重试。',
-                  }))
-                  setMessage(result.ok ? '已反馈失效，谢谢' : result.error)
-                })
-              }
-            >
-              反馈失效
-            </button>
           ) : null}
         </span>
       ) : null}

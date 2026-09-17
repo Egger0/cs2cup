@@ -12,10 +12,10 @@ import {
   type PriceTier,
 } from '@/lib/delta-loadouts'
 import { getAuthContext } from '@/lib/identity/kernel'
+import { loadoutFacets } from '@/lib/loadout-facets'
 import { listViewerLoadoutMarks } from '@/lib/loadout-community'
 import {
   listOwnLoadoutCodes,
-  loadoutFacets,
   queryLoadoutCodes,
   type LoadoutSort,
   type LoadoutSource,
@@ -36,7 +36,17 @@ const PAGE_SIZE = 24
 
 type Search = Partial<
   Record<
-    'mode' | 'source' | 'class' | 'weapon' | 'price' | 'map' | 'tag' | 'sort' | 'page' | 'paste',
+    | 'mode'
+    | 'source'
+    | 'class'
+    | 'weapon'
+    | 'price'
+    | 'map'
+    | 'tag'
+    | 'sort'
+    | 'page'
+    | 'paste'
+    | 'saved',
     string
   >
 >
@@ -93,6 +103,7 @@ export default async function LoadoutsPage({
     tag: text(search.tag),
     sort: pick(search.sort, ['hot', 'usage', 'new'] as LoadoutSort[]) ?? 'hot',
     page: Math.max(1, Math.min(200, Number.parseInt(search.page ?? '1', 10) || 1)),
+    saved: Boolean(accountId && search.saved === '1'),
   }
   const weapons = weapon
     ? [weapon]
@@ -106,8 +117,9 @@ export default async function LoadoutsPage({
     price: price ? ([PRICE_TIERS[price][1], PRICE_TIERS[price][2]] as const) : null,
     map: state.map,
     tag: state.tag,
+    savedBy: state.saved ? accountId : null,
   }
-  const [{ codes, total }, expired, own, marks, heroes] = await Promise.all([
+  const [{ codes, total }, expired, own, marks, heroes, featured] = await Promise.all([
     queryLoadoutCodes(db, game.id, filter, {
       sort: state.sort,
       limit: PAGE_SIZE,
@@ -117,13 +129,14 @@ export default async function LoadoutsPage({
     accountId ? listOwnLoadoutCodes(db, accountId, game.id) : Promise.resolve([]),
     accountId ? listViewerLoadoutMarks(db, accountId) : Promise.resolve(null),
     queryLoadoutCodes(db, game.id, {}, { sort: 'hot', limit: 12 }),
+    queryLoadoutCodes(db, game.id, { featured: true }, { sort: 'featured', limit: 3 }),
   ])
-  const hero = heroes.codes.find(code => code.shotKey || code.renderUrl)
+  const hero = [...featured.codes, ...heroes.codes].find(code => code.shotKey || code.renderUrl)
   const count = (from: LoadoutSource) =>
     facets.groups
       .filter(group => group.source === from)
       .reduce((sum, group) => sum + group.count, 0)
-  const filtered = Boolean(category || weapon || price || state.map || state.tag)
+  const filtered = Boolean(category || weapon || price || state.map || state.tag || state.saved)
 
   return (
     <>
@@ -158,8 +171,24 @@ export default async function LoadoutsPage({
 
       <section className="section" id="loadout-browse">
         <div className="wrap">
+          {featured.codes.length && state.page === 1 && !filtered ? (
+            <div className={styles.featured}>
+              <SectionHead
+                eyebrow="CLUB PICKS · 社团精选"
+                title="管理员挑过的方案"
+                lede="社团内战、日常开黑里反复验证过的配置，先从这几套开始。"
+              />
+              <LoadoutCards codes={featured.codes} marks={marks} anchored={false} />
+            </div>
+          ) : null}
           <LoadoutLookup slug={game.slug} />
-          <LoadoutFilters slug={game.slug} state={state} facets={facets} total={total} />
+          <LoadoutFilters
+            slug={game.slug}
+            state={state}
+            facets={facets}
+            total={total}
+            signedIn={Boolean(accountId)}
+          />
 
           {codes.length ? (
             <LoadoutCards codes={codes} marks={marks} />
@@ -172,7 +201,9 @@ export default async function LoadoutsPage({
               }
             >
               {filtered
-                ? '这个组合还没人改出来，换个条件，或者你来当第一个枪匠。'
+                ? state.saved
+                  ? '还没有收藏的方案，看到顺手的点一下书签。'
+                  : '这个组合还没人改出来，换个条件，或者你来当第一个枪匠。'
                 : `${LOADOUT_MODES[mode]}还是一片空白，第一套方案等你来填。`}
             </Empty>
           )}
