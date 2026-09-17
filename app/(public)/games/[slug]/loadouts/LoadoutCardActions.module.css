@@ -130,12 +130,13 @@
 .reported {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
+  min-height: 32px;
   padding: 0;
   border: 0;
   background: none;
   color: var(--muted);
   font-size: 0.8125rem;
+  line-height: 1.4;
 }
 
 .report {
@@ -165,4 +166,35 @@
 .shotUpload label[data-disabled] {
   opacity: 0.5;
   pointer-events: none;
+}
+
+.save {
+  display: inline-grid;
+  margin-inline-start: auto;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.save:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.save[aria-pressed='true'] {
+  border-color: var(--honour);
+  color: var(--honour);
+}
+
+.save[aria-pressed='true'] svg {
+  fill: currentColor;
+  animation: tick 360ms var(--ease-out);
 }

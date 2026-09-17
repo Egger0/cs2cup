@@ -1,12 +1,12 @@
 import 'server-only'
 
-import { findWeapon, type LoadoutMode } from './delta-loadouts.ts'
+import type { LoadoutMode } from './delta-loadouts.ts'
 import type { IdentityDatabase } from './identity/internal/contracts.ts'
 import type { LoadoutInput, LoadoutStats } from './loadout-input.ts'
 
 export type LoadoutStatus = 'pending' | 'approved' | 'rejected' | 'expired'
 export type LoadoutSource = 'member' | 'official'
-export type LoadoutSort = 'hot' | 'usage' | 'new'
+export type LoadoutSort = 'hot' | 'usage' | 'new' | 'featured'
 
 export interface LoadoutCode extends Omit<LoadoutInput, 'tags'> {
   readonly id: number
@@ -19,6 +19,7 @@ export interface LoadoutCode extends Omit<LoadoutInput, 'tags'> {
   readonly authorChannel: string | null
   readonly applyCount: number
   readonly officialLikes: number
+  readonly featuredAt: number | null
   readonly shotKey: string | null
   readonly pendingShotKey: string | null
   readonly status: LoadoutStatus
@@ -54,7 +55,7 @@ export const SELECT_CODE = `SELECT code.id, code.source, code.mode, code.weapon,
   COALESCE(code.base_stats, (SELECT stats FROM loadout_weapon WHERE name = code.weapon)) AS baseStats,
   code.render_url AS renderUrl, code.author_channel AS authorChannel,
   code.apply_count AS applyCount, code.official_likes AS officialLikes,
-  code.shot_key AS shotKey, code.pending_shot_key AS pendingShotKey, code.status, code.copies,
+  code.featured_at AS featuredAt, code.shot_key AS shotKey, code.pending_shot_key AS pendingShotKey, code.status, code.copies,
   (SELECT COUNT(*) FROM loadout_report WHERE code_id = code.id) AS reports,
   (SELECT COUNT(*) FROM loadout_like WHERE code_id = code.id) AS likes,
   (SELECT COUNT(*) FROM loadout_comment WHERE code_id = code.id AND hidden_at IS NULL) AS comments,
@@ -100,12 +101,15 @@ export interface LoadoutFilter {
   readonly map?: string | null
   readonly status?: 'approved' | 'expired'
   readonly excludeId?: number | null
+  readonly savedBy?: string | null
+  readonly featured?: boolean
 }
 
 const ORDER: Record<LoadoutSort, string> = {
   hot: 'code.copies + likes * 3 DESC, code.apply_count DESC, code.id DESC',
   usage: 'code.apply_count + code.copies DESC, code.id DESC',
   new: 'COALESCE(code.reviewed_at, code.created_at) DESC, code.id DESC',
+  featured: 'code.featured_at DESC, code.id DESC',
 }
 
 function where(gameId: number, filter: LoadoutFilter) {
@@ -116,7 +120,10 @@ function where(gameId: number, filter: LoadoutFilter) {
       AND (?6 IS NULL OR code.price BETWEEN ?6 AND ?7)
       AND (?8 IS NULL OR EXISTS (SELECT 1 FROM json_each(code.tags) WHERE value = ?8))
       AND (?9 IS NULL OR EXISTS (SELECT 1 FROM json_each(code.maps) WHERE value = ?9))
-      AND (?10 IS NULL OR code.id != ?10) AND ${VISIBLE}`,
+      AND (?10 IS NULL OR code.id != ?10)
+      AND (?11 IS NULL OR EXISTS (
+        SELECT 1 FROM loadout_favorite WHERE code_id = code.id AND account_id = ?11))
+      AND (?12 = 0 OR code.featured_at IS NOT NULL) AND ${VISIBLE}`,
     values: [
       gameId,
       filter.status ?? 'approved',
@@ -128,6 +135,8 @@ function where(gameId: number, filter: LoadoutFilter) {
       filter.tag ?? null,
       filter.map ?? null,
       filter.excludeId ?? null,
+      filter.savedBy ?? null,
+      filter.featured ? 1 : 0,
     ],
   }
 }
@@ -143,7 +152,7 @@ export async function queryLoadoutCodes(
     database
       .prepare(
         `${SELECT_CODE} WHERE ${clause} ORDER BY ${ORDER[options.sort ?? 'hot']}
-         LIMIT ?11 OFFSET ?12`,
+         LIMIT ?13 OFFSET ?14`,
       )
       .bind(...values, options.limit, options.offset ?? 0)
       .all<LoadoutRow>(),
@@ -158,58 +167,21 @@ export async function queryLoadoutCodes(
   return { codes: page.results.map(fromRow), total: Number(total?.count ?? 0) }
 }
 
-export async function loadoutFacets(
+export async function randomLoadoutId(
   database: IdentityDatabase,
   gameId: number,
-  filter: Pick<LoadoutFilter, 'mode' | 'source'>,
+  filter: LoadoutFilter,
 ) {
-  const scoped = `FROM loadout_code AS code
-    LEFT JOIN identity_account AS account ON account.id = code.account_id
-    WHERE code.game_id = ?1 AND code.status = 'approved' AND ${VISIBLE}`
-  const narrowed = `${scoped} AND code.mode = ?2 AND (?3 IS NULL OR code.source = ?3)`
-  const bind = [gameId, filter.mode ?? 'operations', filter.source ?? null]
-  const [groups, weapons, tags, maps] = await Promise.all([
-    database
-      .prepare(`SELECT code.mode, code.source, COUNT(*) AS count ${scoped} GROUP BY 1, 2`)
-      .bind(gameId)
-      .all<{ mode: LoadoutMode; source: LoadoutSource; count: number }>(),
-    database
-      .prepare(
-        `SELECT code.weapon AS name, weapon.category, COUNT(*) AS count ${narrowed.replace(
-          'LEFT JOIN identity_account',
-          'LEFT JOIN loadout_weapon AS weapon ON weapon.name = code.weapon LEFT JOIN identity_account',
-        )} GROUP BY 1, 2 ORDER BY count DESC`,
-      )
-      .bind(...bind)
-      .all<{ name: string; category: string | null; count: number }>(),
-    database
-      .prepare(
-        `SELECT tag.value AS name, COUNT(*) AS count ${narrowed.replace(
-          'WHERE',
-          ', json_each(code.tags) AS tag WHERE',
-        )} GROUP BY 1 ORDER BY count DESC LIMIT 10`,
-      )
-      .bind(...bind)
-      .all<{ name: string; count: number }>(),
-    database
-      .prepare(
-        `SELECT place.value AS name, COUNT(*) AS count ${narrowed.replace(
-          'WHERE',
-          ', json_each(code.maps) AS place WHERE',
-        )} GROUP BY 1 ORDER BY count DESC LIMIT 12`,
-      )
-      .bind(...bind)
-      .all<{ name: string; count: number }>(),
-  ])
-  return {
-    groups: groups.results,
-    weapons: weapons.results.map(row => ({
-      ...row,
-      category: row.category ?? findWeapon(row.name)?.category ?? '特殊武器',
-    })),
-    tags: tags.results,
-    maps: maps.results,
-  }
+  const { clause, values } = where(gameId, filter)
+  const row = await database
+    .prepare(
+      `SELECT code.id FROM loadout_code AS code
+       LEFT JOIN identity_account AS account ON account.id = code.account_id
+       WHERE ${clause} ORDER BY random() LIMIT 1`,
+    )
+    .bind(...values)
+    .first<{ id: number }>()
+  return row?.id ?? null
 }
 
 async function selectVisible(database: IdentityDatabase, clause: string, ...values: unknown[]) {

@@ -28,9 +28,13 @@ registerHooks({
 
 const { normalizeOfficialLoadout } = await import('../lib/loadout-official.ts')
 const { syncOfficialLoadouts } = await import('../lib/loadout-official-sync.ts')
-const { getLoadoutCode, listLoadoutAccessories, loadoutFacets, queryLoadoutCodes } =
+const { loadoutFacets } = await import('../lib/loadout-facets.ts')
+const { getLoadoutCode, listLoadoutAccessories, queryLoadoutCodes, randomLoadoutId } =
   await import('../lib/loadout-queries.ts')
 const { submitLoadoutCode } = await import('../lib/loadout-codes.ts')
+const { listSavedLoadouts, listViewerLoadoutMarks, setLoadoutFavorite, setLoadoutFeatured } =
+  await import('../lib/loadout-community.ts')
+const { loadoutDigest } = await import('../lib/loadout-reach.ts')
 const { default: fixture } = await import('./fixtures/delta-official.mjs')
 const { accountIds, createIdentityKernelFixture } =
   await import('./identity-kernel-test-fixture.mjs')
@@ -190,6 +194,42 @@ try {
   const pruned = await syncOfficialLoadouts(db, fetcherFor([m700]), now + 4)
   assert.equal(pruned.expired, 1)
   assert.equal((await queryLoadoutCodes(db, 71, { source: 'official' }, { limit: 10 })).total, 1)
+
+  const save = (id, saved) =>
+    setLoadoutFavorite(db, { id, accountId: accountIds.manager, saved }, now)
+  assert.equal(await save(detail.id, true), true)
+  assert.equal(await save(detail.id, true), true, 'saving twice is idempotent')
+  assert.equal(await save(999999, true), false)
+  assert.deepEqual([...(await listViewerLoadoutMarks(db, accountIds.manager)).saved], [detail.id])
+  assert.deepEqual(
+    (await queryLoadoutCodes(db, 71, { savedBy: accountIds.manager }, { limit: 10 })).codes.map(
+      code => code.id,
+    ),
+    [detail.id],
+  )
+  assert.equal((await listSavedLoadouts(db, accountIds.manager))[0].title, '稳准狠M700')
+  assert.equal(await save(detail.id, false), true)
+  assert.deepEqual(await listSavedLoadouts(db, accountIds.manager), [])
+
+  assert.equal(
+    await setLoadoutFeatured(db, { id: member.id, featured: true }, now + 5),
+    'identity-kernel',
+  )
+  const picks = await queryLoadoutCodes(db, 71, { featured: true }, { sort: 'featured', limit: 3 })
+  assert.deepEqual(
+    picks.codes.map(code => [code.id, code.featuredAt]),
+    [[member.id, now + 5]],
+  )
+  await setLoadoutFeatured(db, { id: member.id, featured: false }, now + 6)
+  assert.equal((await queryLoadoutCodes(db, 71, { featured: true }, { limit: 3 })).total, 0)
+
+  assert.equal(
+    await randomLoadoutId(db, 71, { weapons: ['M700狙击步枪'] }),
+    detail.id,
+    'random picks respect filters',
+  )
+  assert.equal(await randomLoadoutId(db, 71, { weapons: ['复合弓'] }), null)
+  assert.match(await loadoutDigest(db, '随机', 'https://club.test'), /^随机来一把：/)
 
   console.log('loadout official library tests passed')
 } finally {

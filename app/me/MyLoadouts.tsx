@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { LOADOUT_MODES, findWeapon } from '@/lib/delta-loadouts'
+import type { listSavedLoadouts } from '@/lib/loadout-community'
 import type { LoadoutCode } from '@/lib/loadout-queries'
 import styles from './me.module.css'
 
@@ -32,6 +33,33 @@ export function MyLoadouts({ codes }: { codes: readonly LoadoutCode[] }) {
             ) : (
               <Link href={`/games/${code.gameSlug}/loadouts#loadout-mine`}>查看投稿</Link>
             )}
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+export function SavedLoadouts({ items }: { items: Awaited<ReturnType<typeof listSavedLoadouts>> }) {
+  if (!items.length) return null
+  return (
+    <section className={styles.drafts} aria-labelledby="saved-loadouts-title">
+      <h2 id="saved-loadouts-title">我的收藏</h2>
+      <div>
+        {items.map(item => (
+          <article key={item.id} className={styles.loadout} data-status={item.status}>
+            <span>
+              {findWeapon(item.weapon)?.short ?? item.weapon} · {LOADOUT_MODES[item.mode]}
+              {item.source === 'official' ? ' · 官方精选' : ''}
+              {item.status === 'expired' ? (
+                <>
+                  {' · '}
+                  <b>已失效</b>
+                </>
+              ) : null}
+            </span>
+            <strong>{item.title}</strong>
+            <Link href={`/games/${item.gameSlug}/loadouts/${item.id}`}>打开方案</Link>
           </article>
         ))}
       </div>

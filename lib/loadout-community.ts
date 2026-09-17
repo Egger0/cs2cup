@@ -18,14 +18,16 @@ export interface LoadoutComment {
 export async function listViewerLoadoutMarks(database: IdentityDatabase, accountId: string) {
   const { results } = await database
     .prepare(
-      `SELECT code_id AS id, 'like' AS kind FROM loadout_like WHERE account_id = ?
+      `SELECT code_id AS id, 'like' AS kind FROM loadout_like WHERE account_id = ?1
        UNION ALL
-       SELECT code_id AS id, 'report' AS kind FROM loadout_report WHERE account_id = ?`,
+       SELECT code_id AS id, 'report' AS kind FROM loadout_report WHERE account_id = ?1
+       UNION ALL
+       SELECT code_id AS id, 'favorite' AS kind FROM loadout_favorite WHERE account_id = ?1`,
     )
-    .bind(accountId, accountId)
-    .all<{ id: number; kind: 'like' | 'report' }>()
+    .bind(accountId)
+    .all<{ id: number; kind: 'like' | 'report' | 'favorite' }>()
   const ids = (kind: string) => new Set(results.filter(row => row.kind === kind).map(row => row.id))
-  return { liked: ids('like'), reported: ids('report') }
+  return { liked: ids('like'), reported: ids('report'), saved: ids('favorite') }
 }
 
 export type LoadoutMarks = Awaited<ReturnType<typeof listViewerLoadoutMarks>>
@@ -62,6 +64,45 @@ export async function setLoadoutLike(
       .run(),
     /loadout like rejected/,
   )
+}
+
+export async function setLoadoutFavorite(
+  database: IdentityDatabase,
+  input: { id: number; accountId: string; saved: boolean },
+  now: number,
+): Promise<boolean> {
+  const row = input.saved
+    ? await database
+        .prepare(
+          `INSERT INTO loadout_favorite (code_id, account_id, created_at)
+           SELECT id, ?2, ?3 FROM loadout_code WHERE id = ?1 AND status IN ('approved', 'expired')
+           ON CONFLICT DO UPDATE SET created_at = created_at RETURNING code_id`,
+        )
+        .bind(input.id, input.accountId, now)
+        .first()
+    : await database
+        .prepare(
+          'DELETE FROM loadout_favorite WHERE code_id = ? AND account_id = ? RETURNING code_id',
+        )
+        .bind(input.id, input.accountId)
+        .first()
+  return input.saved ? Boolean(row) : true
+}
+
+export async function setLoadoutFeatured(
+  database: IdentityDatabase,
+  input: { id: number; featured: boolean },
+  now: number,
+): Promise<string | null> {
+  const row = await database
+    .prepare(
+      `UPDATE loadout_code SET featured_at = CASE WHEN ?1 THEN ?2 ELSE NULL END
+       WHERE id = ?3 AND status = 'approved'
+       RETURNING (SELECT slug FROM game WHERE game.id = loadout_code.game_id) AS gameSlug`,
+    )
+    .bind(input.featured ? 1 : 0, now, input.id)
+    .first<{ gameSlug: string }>()
+  return row?.gameSlug ?? null
 }
 
 export function reportLoadoutCode(
@@ -155,4 +196,28 @@ export async function removeLoadoutComment(
         .bind(input.commentId, input.accountId)
         .first()
   return Boolean(row)
+}
+
+export async function listSavedLoadouts(database: IdentityDatabase, accountId: string) {
+  const { results } = await database
+    .prepare(
+      `SELECT code.id, code.title, code.weapon, code.mode, code.status, code.source,
+              game.slug AS gameSlug
+       FROM loadout_favorite AS favorite
+       JOIN loadout_code AS code ON code.id = favorite.code_id
+       JOIN game ON game.id = code.game_id
+       WHERE favorite.account_id = ? AND code.status IN ('approved', 'expired')
+       ORDER BY favorite.created_at DESC LIMIT 12`,
+    )
+    .bind(accountId)
+    .all<{
+      id: number
+      title: string
+      weapon: string
+      mode: 'operations' | 'warfare'
+      status: 'approved' | 'expired'
+      source: 'member' | 'official'
+      gameSlug: string
+    }>()
+  return results
 }

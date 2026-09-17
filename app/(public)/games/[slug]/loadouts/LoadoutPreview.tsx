@@ -46,6 +46,7 @@ export function LoadoutPreview({
     authorChannel: null,
     applyCount: 0,
     officialLikes: 0,
+    featuredAt: null,
     shotKey: null,
     pendingShotKey: null,
     status: 'pending',

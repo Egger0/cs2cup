@@ -13,6 +13,7 @@ import type { LoadoutCode } from '@/lib/loadout-queries'
 import type { LoadoutMarks } from '@/lib/loadout-community'
 import { photoUrl } from '@/lib/media'
 import { LoadoutCardActions } from './LoadoutCardActions'
+import { LoadoutReportButton } from './LoadoutReportButton'
 import { LoadoutShotUpload } from './LoadoutShotUpload'
 import { LoadoutStatBars } from './LoadoutStatBars'
 import styles from './LoadoutCards.module.css'
@@ -25,6 +26,7 @@ const STATUS = {
 } as const
 
 interface CardOptions {
+  readonly anchored?: boolean
   readonly mine?: boolean
   readonly marks?: LoadoutMarks | null
 }
@@ -44,6 +46,7 @@ export function LoadoutCards({
 
 export function LoadoutCard({
   code,
+  anchored = true,
   mine = false,
   marks,
   single = false,
@@ -60,7 +63,7 @@ export function LoadoutCard({
   return (
     <Root
       className={styles.card}
-      id={mine || single || preview ? undefined : `loadout-${code.id}`}
+      id={!anchored || mine || single || preview ? undefined : `loadout-${code.id}`}
       data-status={code.status}
       data-single={single ? '' : undefined}
     >
@@ -94,8 +97,11 @@ export function LoadoutCard({
             </span>
           )}
           <figcaption className={styles.overlay}>
-            <span className={styles.mode} data-mode={code.mode}>
-              {LOADOUT_MODES[code.mode]}
+            <span className={styles.badges}>
+              <span className={styles.mode} data-mode={code.mode}>
+                {LOADOUT_MODES[code.mode]}
+              </span>
+              {code.featuredAt ? <span className={styles.pick}>社团精选</span> : null}
             </span>
             {code.price ? (
               <span className={styles.price}>
@@ -160,6 +166,9 @@ export function LoadoutCard({
               {code.comments ? `${code.comments} 条留言` : '去留言'}
             </Link>
           ) : null}
+          {marks && !mine && !preview && code.status === 'approved' ? (
+            <LoadoutReportButton id={code.id} reported={marks.reported.has(code.id)} />
+          ) : null}
         </p>
 
         {mine && code.status !== 'rejected' ? (
@@ -179,10 +188,11 @@ export function LoadoutCard({
               value={full}
               title={code.title}
               live={!mine && code.status === 'approved'}
+              savable={!mine}
               signedIn={Boolean(marks)}
               likes={code.likes}
               liked={marks?.liked.has(code.id) ?? false}
-              reported={marks?.reported.has(code.id) ?? false}
+              saved={marks?.saved.has(code.id) ?? false}
             />
           )}
         </div>

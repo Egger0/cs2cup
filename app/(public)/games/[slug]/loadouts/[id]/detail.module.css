@@ -125,3 +125,32 @@
   color: var(--muted);
   font-size: 0.875rem;
 }
+
+.feature {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.feature button {
+  min-height: 46px;
+  padding-inline: 18px;
+  border: 1px dashed rgb(241 239 232 / 40%);
+  border-radius: 999px;
+  background: transparent;
+  color: #f1efe8;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.feature button[aria-pressed='true'] {
+  border-style: solid;
+  border-color: #c9a45a;
+  color: #e6c27a;
+}
+
+.feature [role='alert'] {
+  color: #f0a3ab;
+  font-size: 0.8125rem;
+}
