@@ -2,7 +2,6 @@ import sharp from 'sharp'
 
 const TILES = 'https://game.gtimg.cn/images/dfm/cp/a20240729directory/img/'
 export const SEA = { r: 21, g: 28, b: 34 }
-export const SIZES = [1024, 2048]
 
 export const isWater = (r, g, b) => b - r >= 7 && b < 64 && g < 60
 
@@ -61,9 +60,11 @@ export async function mosaic({ layer, zoom, tile, world, frame, required = 0.9 }
 }
 
 export async function buildImagery(layer, frame, grid, write) {
-  const canvas = await mosaic({ layer, zoom: 4, tile: 256, world: 4096, frame })
-  for (const width of SIZES)
-    await write(width, await sharp(canvas).resize(width, width).webp({ quality: 78 }).toBuffer())
+  const fine = await mosaic({ layer, zoom: 5, tile: 256, world: 8192, frame }).catch(() => null)
+  const canvas = fine ?? (await mosaic({ layer, zoom: 4, tile: 256, world: 4096, frame }))
+  const sizes = fine ? [1024, 2048, 4096] : [1024, 2048]
+  for (const width of sizes)
+    await write(width, await sharp(canvas).resize(width, width).webp({ quality: 80 }).toBuffer())
   const { data, info } = await sharp(canvas)
     .resize(grid, grid, { kernel: 'cubic' })
     .raw()
@@ -73,5 +74,5 @@ export async function buildImagery(layer, frame, grid, write) {
     const at = index * info.channels
     water[index] = isWater(data[at], data[at + 1], data[at + 2]) ? 255 : 0
   }
-  return water
+  return { water, detail: sizes.at(-1) }
 }

@@ -61,6 +61,7 @@ export type SandPoint = [
   y: number,
   label: string,
   note: string,
+  icon: number,
   floor?: string,
   link?: number[],
 ]
@@ -79,6 +80,7 @@ export interface DeltaMapData {
   meters: number
   relief: number
   grid: number
+  detail: 2048 | 4096
   height: string
   mask: string
   regions: [string, number, number, number][]
@@ -89,6 +91,8 @@ export interface DeltaMapData {
 export const floorKey = (building: number, floor: string) => `${building}:${floor}`
 
 export const mapDataUrl = (id: string) => `/games/delta/maps/${id}.json`
-export const mapImageUrl = (id: string, size: 1024 | 2048) => `/games/delta/maps/${id}-${size}.webp`
+export const mapImageUrl = (id: string, size: 1024 | 2048 | 4096) =>
+  `/games/delta/maps/${id}-${size}.webp`
+export const ICON_ATLAS = { url: '/games/delta/maps/icons.webp', columns: 8, cell: 96 }
 export const floorImageUrl = (id: string, building: number, floor: string) =>
   `/games/delta/maps/${id}-b${building}-${floor.toLowerCase()}.webp`

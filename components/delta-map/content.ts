@@ -32,7 +32,7 @@ export function createContent(world: T.Group, invalidate: () => void) {
     if (!plate) return
     const surface = plate
     markers = buildMarkers(
-      points().filter(point => !point[5]),
+      points().filter(point => !point[6]),
       (x, y, rise) => surface.world(x, y, rise),
     )
     markers.show(kinds)
@@ -116,9 +116,11 @@ export function createContent(world: T.Group, invalidate: () => void) {
       })
       return moving
     },
-    heads() {
-      return [...(markers?.group.visible ? markers.heads : []), ...(stack?.heads() ?? [])].filter(
-        head => head.mesh.parent?.visible !== false,
+    pick(x: number, y: number, camera: T.Camera, width: number, height: number) {
+      return (
+        stack?.pick(x, y, camera, width, height) ??
+        markers?.pick(x, y, camera, width, height) ??
+        null
       )
     },
     locate(element: HTMLElement) {

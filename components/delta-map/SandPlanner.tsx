@@ -65,7 +65,7 @@ export function SandFloors({
             >
               <b>{code}</b>
               <small>
-                {points.filter(point => point[5] === `${building}:${code}`).length} 个点位
+                {points.filter(point => point[6] === `${building}:${code}`).length} 个点位
               </small>
             </button>
           ))}
@@ -156,7 +156,7 @@ export function SandPicked({
   const nearest =
     selected[0] === 'spawn'
       ? points
-          .filter(point => point[0] === 'exit' && !point[5])
+          .filter(point => point[0] === 'exit' && !point[6])
           .map(point => ({
             point,
             distance: Math.hypot(point[1] - selected[1], point[2] - selected[2]) * meters,
@@ -172,7 +172,7 @@ export function SandPicked({
       <small>{SAND_KINDS[selected[0]].label}</small>
       <b>{selected[3]}</b>
       {selected[4] ? <p>{selected[4]}</p> : null}
-      {selected[6]?.length ? (
+      {selected[7]?.length ? (
         <p className={styles.link}>光柱连线指向联动位置，需先到那里开启</p>
       ) : null}
       {nearest.length ? (

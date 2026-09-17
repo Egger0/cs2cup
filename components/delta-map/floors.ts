@@ -45,7 +45,7 @@ export function buildFloorStack(
   const extent = Math.max(bounds.max.x - bounds.min.x, bounds.max.y - bounds.min.y) * 2
   const middle = bounds.getCenter(new T.Vector2())
   const base = plate.heightAt(building.x, building.y) + 0.03
-  const gap = T.MathUtils.clamp(extent * 0.22, 0.05, 0.14)
+  const gap = T.MathUtils.clamp(extent * 0.12, 0.03, 0.08)
   const group = new T.Group()
   const maps: T.Texture[] = []
   const plates: {
@@ -90,7 +90,7 @@ export function buildFloorStack(
       ),
     )
     const markers = buildMarkers(
-      points.filter(point => point[5] === `${index}:${code}`),
+      points.filter(point => point[6] === `${index}:${code}`),
       (x, y, rise) => new T.Vector3((x - fx) * 2, rise * 0.4 + 0.004, (y - fy) * 2),
       0.6,
     )
@@ -113,15 +113,27 @@ export function buildFloorStack(
 
   return {
     group,
-    center: () =>
-      new T.Vector3(
-        middle.x * 2 - 1,
-        heightOf((building.floors.length - 1) / 2, 1),
-        middle.y * 2 - 1,
-      ),
-    distance: Math.max(0.5, extent * 2.1 + gap * building.floors.length),
-    heads: () =>
-      plates.filter(entry => entry.markers.group.visible).flatMap(entry => entry.markers.heads),
+    view(code: string | null) {
+      const floor = code === null ? -1 : building.floors.indexOf(code)
+      const frame = building.frames[floor]
+      if (!frame)
+        return {
+          target: new T.Vector3(
+            middle.x * 2 - 1,
+            heightOf((building.floors.length - 1) / 2, 1),
+            middle.y * 2 - 1,
+          ),
+          distance: Math.max(0.35, extent * 1.45 + gap * building.floors.length),
+        }
+      return {
+        target: new T.Vector3(frame[0] * 2 - 1, heightOf(floor, 1), frame[1] * 2 - 1),
+        distance: Math.max(0.28, frame[2] * 2 * 1.9),
+      }
+    },
+    pick(x: number, y: number, camera: T.Camera, width: number, height: number) {
+      const active = plates.find(entry => entry.markers.group.visible)
+      return active?.markers.pick(x, y, camera, width, height) ?? null
+    },
     anchor(code: string, x: number, y: number, rise: number) {
       const floor = building.floors.indexOf(code)
       if (floor < 0) return null
@@ -134,7 +146,7 @@ export function buildFloorStack(
     focus(code: string | null, kinds: ReadonlySet<SandKind>) {
       const indoor = new Set([...INDOOR, ...kinds])
       for (const entry of plates) {
-        entry.opacity.value = code === null ? 0.8 : entry.code === code ? 1 : 0.14
+        entry.opacity.value = code === null ? 0.8 : entry.code === code ? 1 : 0.07
         entry.markers.show(indoor)
         entry.markers.group.visible = entry.code === code
       }

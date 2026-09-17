@@ -157,7 +157,7 @@ export function SandTable({
   const focusPoint = (point: SandPoint) => {
     setSelected(point)
     setKinds(previous => (previous.has(point[0]) ? previous : new Set([...previous, point[0]])))
-    const [owner, code] = (point[5] ?? '').split(':')
+    const [owner, code] = (point[6] ?? '').split(':')
     if (code) {
       setBuilding(Number(owner))
       setFloor(code)

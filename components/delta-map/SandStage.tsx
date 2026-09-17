@@ -56,7 +56,7 @@ export function SandStage({
   const flat = mode === 'flat'
   const inside = building === null ? null : (data?.buildings[building] ?? null)
   const points = (data?.levels[level]?.points ?? []).filter(point =>
-    inside ? point[5] === `${building}:${floor}` : !point[5],
+    inside ? point[6] === `${building}:${floor}` : !point[6],
   )
   const tap = (event: MouseEvent<HTMLDivElement>) => {
     if (!flat || !routing || event.target !== event.currentTarget) return
@@ -143,7 +143,7 @@ export function SandStage({
             data-priority="2"
             data-x={pinned[1]}
             data-y={pinned[2]}
-            data-floor={pinned[5] || undefined}
+            data-floor={pinned[6] || undefined}
             data-rise={SAND_KINDS[pinned[0]].rise + 0.03}
             style={spot(pinned[1], pinned[2], {
               '--tone': SAND_KINDS[pinned[0]].color,
