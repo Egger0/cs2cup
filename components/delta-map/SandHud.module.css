@@ -1,0 +1,249 @@
+.icon {
+  --inset: calc(var(--size) * 0.16);
+  --inner: calc(var(--size) - var(--inset) * 2 - 3px);
+  display: inline-block;
+  flex: none;
+  width: var(--size);
+  height: var(--size);
+  box-sizing: border-box;
+  padding: var(--inset);
+  border: 1.5px solid var(--tone);
+  border-radius: 50%;
+  background:
+    var(--atlas) calc(var(--column) * var(--inner) * -1) calc(var(--row) * var(--inner) * -1) /
+      calc(var(--inner) * 8) auto no-repeat content-box content-box,
+    #0b0d10;
+}
+
+.icon[data-empty='true'] {
+  background: radial-gradient(circle, var(--tone) 28%, #0b0d10 32%);
+}
+
+.panel {
+  border: 1px solid rgb(155 202 235 / 14%);
+  border-radius: 10px;
+  background: rgb(9 11 14 / 84%);
+}
+
+.rail {
+  composes: panel;
+  position: absolute;
+  z-index: 3;
+  top: 88px;
+  left: 16px;
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+}
+
+.rail button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 6px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--space-muted);
+  font: 500 14px var(--font-body);
+  text-align: left;
+  background: none;
+  cursor: pointer;
+}
+
+.rail img {
+  width: 36px;
+  height: 36px;
+  border-radius: 5px;
+  object-fit: cover;
+  opacity: 0.6;
+  transition: opacity 160ms ease;
+}
+
+.rail button:hover,
+.rail button[aria-pressed='true'] {
+  color: var(--space-ink);
+}
+
+.rail button:hover img,
+.rail button[aria-pressed='true'] img {
+  opacity: 1;
+}
+
+.rail button[aria-pressed='true'] {
+  background: rgb(216 177 105 / 14%);
+  box-shadow: inset 2px 0 0 var(--honour);
+}
+
+.layers {
+  composes: panel;
+  position: absolute;
+  z-index: 3;
+  bottom: 16px;
+  left: 16px;
+  display: flex;
+  max-width: calc(100% - var(--drawer, 0px) - 96px);
+  gap: 2px;
+  overflow-x: auto;
+  padding: 6px;
+  scrollbar-width: none;
+}
+
+.layers button {
+  position: relative;
+  display: grid;
+  flex: none;
+  justify-items: center;
+  gap: 2px;
+  width: 50px;
+  padding: 5px 0 3px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--space-muted);
+  font: 600 10px/1.2 var(--font-body);
+  background: none;
+  cursor: pointer;
+}
+
+.tip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  padding: 4px 8px;
+  border-radius: 5px;
+  color: var(--space-ink);
+  font-size: 12px;
+  white-space: nowrap;
+  background: #0b0d10;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition: opacity 120ms ease;
+}
+
+.layers button:hover .tip,
+.layers button:focus-visible .tip {
+  opacity: 1;
+}
+
+.layers button[aria-pressed='false'] > [aria-hidden] {
+  filter: grayscale(1);
+  opacity: 0.38;
+}
+
+.layers button[aria-pressed='true'] {
+  color: var(--space-ink);
+  background: rgb(255 255 255 / 6%);
+}
+
+.layers button:disabled {
+  display: none;
+}
+
+.controls {
+  composes: panel;
+  position: absolute;
+  z-index: 3;
+  right: calc(var(--drawer, 0px) + 16px);
+  bottom: 16px;
+  display: grid;
+  padding: 4px;
+}
+
+.controls button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  color: var(--space-ink);
+  font: 400 20px/1 var(--font-body);
+  background: none;
+  cursor: pointer;
+}
+
+.controls button:hover {
+  background: rgb(255 255 255 / 8%);
+}
+
+.controls svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.compass svg {
+  transform: rotate(var(--azimuth, 0rad));
+}
+
+.compass path {
+  stroke: none;
+  fill: var(--space-muted);
+}
+
+.compass path:first-child {
+  fill: #f0757b;
+}
+
+.hint {
+  position: absolute;
+  z-index: 3;
+  top: 96px;
+  left: 50%;
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: var(--space-ink);
+  font-size: 13px;
+  background: rgb(9 11 14 / 84%);
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.hint:empty {
+  display: none;
+}
+
+@media (max-width: 1099px) {
+  .rail {
+    top: 76px;
+    right: 12px;
+    left: 12px;
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .rail button {
+    flex: none;
+    padding-right: 10px;
+    font-size: 13px;
+  }
+
+  .rail img {
+    width: 28px;
+    height: 28px;
+  }
+
+  .rail button[aria-pressed='true'] {
+    box-shadow: inset 0 -2px 0 var(--honour);
+  }
+
+  .layers {
+    right: 64px;
+    bottom: 12px;
+    left: 12px;
+    max-width: none;
+  }
+
+  .controls {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .hint {
+    top: auto;
+    bottom: 96px;
+  }
+}

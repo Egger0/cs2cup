@@ -91,7 +91,7 @@ export interface DeltaMapData {
 export const floorKey = (building: number, floor: string) => `${building}:${floor}`
 
 export const mapDataUrl = (id: string) => `/games/delta/maps/${id}.json`
-export const mapImageUrl = (id: string, size: 1024 | 2048 | 4096) =>
+export const mapImageUrl = (id: string, size: 256 | 1024 | 2048 | 4096) =>
   `/games/delta/maps/${id}-${size}.webp`
 export const ICON_ATLAS = { url: '/games/delta/maps/icons.webp', columns: 8, cell: 96 }
 export const floorImageUrl = (id: string, building: number, floor: string) =>

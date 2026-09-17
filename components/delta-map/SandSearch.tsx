@@ -1,7 +1,8 @@
 'use client'
 
-import { useDeferredValue, useState, type CSSProperties } from 'react'
-import { SAND_KINDS, type DeltaMapData, type SandPoint } from '@/lib/delta-sand'
+import { useDeferredValue, useState } from 'react'
+import type { DeltaMapData, SandPoint } from '@/lib/delta-sand'
+import { PointRow } from './SandPlanner'
 import styles from './SandTools.module.css'
 
 export function SandSearch({
@@ -17,57 +18,57 @@ export function SandSearch({
 }) {
   const [query, setQuery] = useState('')
   const term = useDeferredValue(query.trim())
-  const regions = term ? (data?.regions ?? []).filter(([name]) => name.includes(term)) : []
   const floorName = (point: SandPoint) => {
     const [owner, code] = (point[6] ?? '').split(':')
     return code ? `${data?.buildings[Number(owner)]?.name ?? ''} ${code}` : ''
   }
+  const regions = term ? (data?.regions ?? []).filter(([name]) => name.includes(term)) : []
   const hits = term
     ? points
         .filter(point => `${point[3]} ${point[4]} ${floorName(point)}`.includes(term))
-        .slice(0, 30)
+        .slice(0, 40)
     : []
   return (
-    <div className={styles.search}>
-      <label>
-        <span>搜点位</span>
-        <input
-          type="search"
-          value={query}
-          placeholder="变电站宿舍、服务器、拉闸…"
-          onChange={event => setQuery(event.target.value)}
-        />
-      </label>
+    <div className={styles.stack}>
+      <input
+        className={styles.search}
+        type="search"
+        value={query}
+        aria-label="搜索点位、房间或区域"
+        placeholder="搜点位、房间或区域，比如 变电站宿舍"
+        onChange={event => setQuery(event.target.value)}
+      />
       {term ? (
-        <ul className={styles.results} aria-live="polite">
+        <div aria-live="polite">
           {regions.map(([name, x, y]) => (
-            <li key={`region-${name}`}>
-              <button type="button" onClick={() => onRegion(x, y)}>
-                <span>{name}</span>
-                <small>区域</small>
-              </button>
-            </li>
+            <button
+              key={name}
+              type="button"
+              className={styles.region}
+              onClick={() => onRegion(x, y)}
+            >
+              <b>{name}</b>
+              <small>飞到这个区域</small>
+            </button>
           ))}
           {hits.map((point, index) => (
-            <li key={index}>
-              <button
-                type="button"
-                style={{ '--tone': SAND_KINDS[point[0]].color } as CSSProperties}
-                onClick={() => onPoint(point)}
-              >
-                <span>
-                  <i aria-hidden="true" />
-                  {point[3]}
-                </span>
-                <small>{[floorName(point), point[4]].filter(Boolean).join(' · ')}</small>
-              </button>
-            </li>
+            <PointRow
+              key={index}
+              point={point}
+              active={false}
+              detail={[floorName(point), point[4]].filter(Boolean).join(' · ')}
+              onPoint={onPoint}
+            />
           ))}
           {!regions.length && !hits.length ? (
-            <li className={styles.none}>这个难度没有匹配的点位</li>
+            <p className={styles.empty}>这个难度下没有匹配「{term}」的点位。</p>
           ) : null}
-        </ul>
-      ) : null}
+        </div>
+      ) : (
+        <p className={styles.empty}>
+          可以搜物资名、房间名、撤离条件（比如「丢弃背包」「钥匙卡」）或楼层。
+        </p>
+      )}
     </div>
   )
 }

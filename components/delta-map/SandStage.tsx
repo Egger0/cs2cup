@@ -1,4 +1,4 @@
-import type { CSSProperties, MouseEvent, RefObject } from 'react'
+import type { CSSProperties, MouseEvent, ReactNode, RefObject } from 'react'
 import {
   SAND_KINDS,
   floorImageUrl,
@@ -8,12 +8,14 @@ import {
   type SandPoint,
 } from '@/lib/delta-sand'
 import type { SandRuntime } from './runtime'
+import { SandIcon } from './SandIcon'
 import type { Waypoint } from './SandTable'
 import styles from './SandTable.module.css'
+import hud from './SandHud.module.css'
 
 export type SandMode = 'loading' | 'solid' | 'flat'
 
-const spot = (x: number, y: number, extra?: CSSProperties) =>
+const spot = (x: number, y: number, extra?: object) =>
   ({ '--fx': x, '--fy': y, ...extra }) as CSSProperties
 
 export function SandStage({
@@ -30,6 +32,7 @@ export function SandStage({
   routing,
   route,
   runtime,
+  children,
   onPoint,
   onFloor,
   onGround,
@@ -48,6 +51,7 @@ export function SandStage({
   routing: boolean
   route: Waypoint[]
   runtime: RefObject<SandRuntime | null>
+  children: ReactNode
   onPoint: (point: SandPoint) => void
   onFloor: (code: string) => void
   onGround: (x: number, y: number) => void
@@ -55,6 +59,7 @@ export function SandStage({
 }) {
   const flat = mode === 'flat'
   const inside = building === null ? null : (data?.buildings[building] ?? null)
+  const frame = inside && floor ? inside.frames[inside.floors.indexOf(floor)] : undefined
   const points = (data?.levels[level]?.points ?? []).filter(point =>
     inside ? point[6] === `${building}:${floor}` : !point[6],
   )
@@ -66,21 +71,16 @@ export function SandStage({
     const y = (event.clientY - rect.top - (rect.height - side) / 2) / side
     if (x >= 0 && y >= 0 && x <= 1 && y <= 1) onGround(x, y)
   }
+  const conditions = pinned?.[4].split(' · ') ?? []
   return (
     <div ref={host} className={styles.viewport} data-sand-stage>
       <img className={styles.poster} src={mapImageUrl(mapId, 1024)} alt="" />
-      {flat && inside && floor && inside.frames[inside.floors.indexOf(floor)] ? (
+      {flat && frame ? (
         <img
           className={styles.floorPlan}
-          src={floorImageUrl(mapId, building!, floor)}
+          src={floorImageUrl(mapId, building!, floor!)}
           alt=""
-          style={spot(
-            inside.frames[inside.floors.indexOf(floor)]![0],
-            inside.frames[inside.floors.indexOf(floor)]![1],
-            {
-              '--fs': inside.frames[inside.floors.indexOf(floor)]![2],
-            } as CSSProperties,
-          )}
+          style={spot(frame[0], frame[1], { '--fs': frame[2] })}
         />
       ) : null}
       {flat && route.length ? (
@@ -98,11 +98,11 @@ export function SandStage({
                   type="button"
                   className={styles.dot}
                   aria-label={`${SAND_KINDS[point[0]].label} ${point[3]}`}
-                  style={spot(point[1], point[2], {
-                    '--tone': SAND_KINDS[point[0]].color,
-                  } as CSSProperties)}
+                  style={spot(point[1], point[2])}
                   onClick={() => onPoint(point)}
-                />
+                >
+                  <SandIcon icon={point[5]} kind={point[0]} size={22} />
+                </button>
               ))
           : null}
         {inside
@@ -144,38 +144,60 @@ export function SandStage({
             data-x={pinned[1]}
             data-y={pinned[2]}
             data-floor={pinned[6] || undefined}
-            data-rise={SAND_KINDS[pinned[0]].rise + 0.03}
-            style={spot(pinned[1], pinned[2], {
-              '--tone': SAND_KINDS[pinned[0]].color,
-            } as CSSProperties)}
+            data-rise={SAND_KINDS[pinned[0]].rise * 0.55 + 0.02}
+            style={spot(pinned[1], pinned[2], { '--tone': SAND_KINDS[pinned[0]].color })}
           >
-            <small>{SAND_KINDS[pinned[0]].label}</small>
-            <b>{pinned[3]}</b>
-            {pinned[4] ? <span>{pinned[4]}</span> : null}
+            <SandIcon icon={pinned[5]} kind={pinned[0]} size={40} />
+            <div>
+              <b>{pinned[3]}</b>
+              <small>{SAND_KINDS[pinned[0]].label}</small>
+              {conditions.length ? (
+                <ul>
+                  {conditions.map(condition => (
+                    <li key={condition}>{condition}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
           </div>
         ) : null}
       </div>
+      {children}
       {mode === 'solid' ? (
-        <div className={styles.controls}>
+        <div className={hud.controls}>
+          <button
+            type="button"
+            className={hud.compass}
+            aria-label="朝向正北"
+            title="朝向正北"
+            onClick={() => runtime.current?.north()}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3 16 12h-8z" />
+              <path d="M12 21 8 12h8z" />
+            </svg>
+          </button>
           <button type="button" aria-label="放大" onClick={() => runtime.current?.zoom(0.8)}>
             +
           </button>
           <button type="button" aria-label="缩小" onClick={() => runtime.current?.zoom(1.25)}>
             −
           </button>
-          <button type="button" onClick={onOverview}>
-            全图
+          <button type="button" aria-label="回到全图" title="回到全图" onClick={onOverview}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+            </svg>
           </button>
         </div>
       ) : null}
-      <p className={styles.hint} aria-live="polite">
+      <p className={hud.hint} aria-live="polite">
         {routing
-          ? '规划路线中 · 点沙盘添加途经点'
-          : mode === 'solid'
-            ? '拖动旋转 · 点区域名飞过去 · 点一下沙盘后滚轮缩放'
-            : mode === 'flat'
-              ? '俯视图 · 这台设备没有开启 3D'
-              : '沙盘展开中…'}
+          ? '点沙盘添加途经点'
+          : mode === 'flat'
+            ? '俯视图模式：这台设备没有开启 3D'
+            : mode === 'loading'
+              ? '沙盘展开中'
+              : null}
       </p>
     </div>
   )
