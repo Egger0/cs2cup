@@ -1,4 +1,4 @@
-.weapon.weapon {
+.ghost.ghost {
   position: absolute;
   top: 16%;
   right: clamp(12px, 4vw, 72px);
@@ -7,12 +7,45 @@
   object-fit: contain;
   object-position: 100% 50%;
   rotate: -9deg;
-  filter: drop-shadow(0 40px 60px rgb(0 0 0 / 70%))
-    drop-shadow(0 0 70px color-mix(in srgb, var(--tone) 32%, transparent));
+  filter: grayscale(1) brightness(1.8);
+  opacity: 0.16;
+}
+
+.ghostNote {
+  position: absolute;
+  right: clamp(24px, 6vw, 110px);
+  bottom: 24%;
+  color: #9fb3bb;
+  font:
+    0.75rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.12em;
+}
+
+.plate {
+  position: absolute;
+  top: 18%;
+  right: clamp(16px, 5vw, 96px);
+  width: min(48vw, 720px);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid rgb(155 202 235 / 24%);
+  border-radius: 6px;
+  box-shadow:
+    0 40px 90px rgb(0 0 0 / 70%),
+    0 0 80px color-mix(in srgb, var(--tone) 28%, transparent);
+  transform: perspective(1400px) rotateY(-16deg) rotateZ(-2deg);
+}
+
+.plate img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .weapon.weapon {
+  .ghost.ghost,
+  .plate {
     animation: drift 9s ease-in-out infinite alternate;
   }
 }
@@ -20,17 +53,28 @@
 @keyframes drift {
   to {
     translate: -1.5% -2%;
-    rotate: -7deg;
   }
 }
 
 @media (max-width: 720px) {
-  .weapon.weapon {
+  .ghost.ghost {
     top: 9%;
     right: -12vw;
     width: 104vw;
     height: 40%;
-    opacity: 0.72;
+  }
+
+  .ghostNote {
+    top: 44%;
+    right: 20px;
+    bottom: auto;
+  }
+
+  .plate {
+    top: 10%;
+    right: -8vw;
+    width: 86vw;
+    opacity: 0.55;
   }
 }
 

@@ -23,12 +23,14 @@ export function MyLoadouts({ codes }: { codes: readonly LoadoutCode[] }) {
               <b>{STATUS[code.status]}</b>
             </span>
             <strong>{code.title}</strong>
-            {code.status === 'approved' || code.status === 'expired' ? (
+            {!code.shotKey && code.status !== 'rejected' ? (
+              <Link href={`/games/${code.gameSlug}/loadouts#loadout-mine`}>补传改装截图</Link>
+            ) : code.status === 'approved' || code.status === 'expired' ? (
               <Link href={`/games/${code.gameSlug}/loadouts/${code.id}`}>
                 复制 {code.copies} · 好用 {code.likes} · 留言 {code.comments}
               </Link>
             ) : (
-              <Link href={`/games/${code.gameSlug}/loadouts#loadout-submit`}>查看投稿</Link>
+              <Link href={`/games/${code.gameSlug}/loadouts#loadout-mine`}>查看投稿</Link>
             )}
           </article>
         ))}

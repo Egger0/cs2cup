@@ -11,6 +11,7 @@ export type LoadoutStatus = 'pending' | 'approved' | 'rejected' | 'expired'
 export interface LoadoutCode extends LoadoutInput {
   readonly id: number
   readonly shotKey: string | null
+  readonly pendingShotKey: string | null
   readonly status: LoadoutStatus
   readonly copies: number
   readonly reports: number
@@ -37,7 +38,7 @@ interface LoadoutRow extends Omit<LoadoutCode, 'tags' | 'stats'> {
 
 const SELECT_CODE = `SELECT code.id, code.mode, code.weapon, code.code, code.title, code.note, code.tags,
   code.price, code.recoil, code.handling, code.stability, code.hipfire, code.distance,
-  code.shot_key AS shotKey, code.status, code.copies,
+  code.shot_key AS shotKey, code.pending_shot_key AS pendingShotKey, code.status, code.copies,
   (SELECT COUNT(*) FROM loadout_report WHERE code_id = code.id) AS reports,
   (SELECT COUNT(*) FROM loadout_like WHERE code_id = code.id) AS likes,
   (SELECT COUNT(*) FROM loadout_comment WHERE code_id = code.id AND hidden_at IS NULL) AS comments,
@@ -159,9 +160,11 @@ export async function submitLoadoutCode(
   }
 }
 
-export async function listLoadoutCodesForReview(
-  database: IdentityDatabase,
-): Promise<{ pending: ReviewLoadoutCode[]; reported: ReviewLoadoutCode[] }> {
+export async function listLoadoutCodesForReview(database: IdentityDatabase): Promise<{
+  pending: ReviewLoadoutCode[]
+  reported: ReviewLoadoutCode[]
+  shots: ReviewLoadoutCode[]
+}> {
   const select = (where: string, order: string) =>
     database
       .prepare(
@@ -174,14 +177,19 @@ export async function listLoadoutCodesForReview(
       )
       .bind()
       .all<LoadoutRow & { gameName: string }>()
-  const [pending, reported] = await Promise.all([
+  const [pending, reported, shots] = await Promise.all([
     select(`code.status = 'pending'`, 'code.created_at ASC'),
     select(
       `code.status = 'approved' AND EXISTS (SELECT 1 FROM loadout_report WHERE code_id = code.id)`,
       'reports DESC, code.id ASC',
     ),
+    select(`code.pending_shot_key IS NOT NULL`, 'code.id ASC'),
   ])
-  return { pending: pending.results.map(fromRow), reported: reported.results.map(fromRow) }
+  return {
+    pending: pending.results.map(fromRow),
+    reported: reported.results.map(fromRow),
+    shots: shots.results.map(fromRow),
+  }
 }
 
 export type LoadoutDecision = 'approved' | 'rejected' | 'expired' | 'dismiss'
@@ -225,16 +233,6 @@ export async function recordLoadoutCopy(database: IdentityDatabase, id: number) 
     .prepare(`UPDATE loadout_code SET copies = copies + 1 WHERE id = ? AND status = 'approved'`)
     .bind(id)
     .run()
-}
-
-export async function loadoutShotAccess(
-  database: IdentityDatabase,
-  shotKey: string,
-): Promise<{ status: LoadoutStatus; accountId: string } | null> {
-  return database
-    .prepare(`SELECT status, account_id AS accountId FROM loadout_code WHERE shot_key = ? LIMIT 1`)
-    .bind(shotKey)
-    .first<{ status: LoadoutStatus; accountId: string }>()
 }
 
 export async function loadoutDigest(database: IdentityDatabase, query: string, origin: string) {

@@ -35,6 +35,24 @@
   transition: transform 420ms var(--ease-out);
 }
 
+.media[data-ghost] img {
+  filter: grayscale(1) brightness(1.7);
+  opacity: 0.2;
+}
+
+.ghostNote {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  left: 12px;
+  color: var(--space-muted);
+  font:
+    0.75rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
 .card:hover .media img {
   transform: translateX(-2%) scale(1.03);
 }
@@ -302,4 +320,10 @@
 
 .title a:hover {
   color: var(--ct);
+}
+
+@media (min-width: 721px) {
+  .card[data-single] .media {
+    display: none;
+  }
 }

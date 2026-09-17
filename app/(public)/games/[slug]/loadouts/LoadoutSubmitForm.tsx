@@ -21,6 +21,7 @@ import {
 import { siteDayKey } from '@/lib/datetime'
 import { submitLoadoutCodeAction, type LoadoutSubmission } from './actions'
 import { LoadoutPreview } from './LoadoutPreview'
+import { LoadoutShotField } from './LoadoutShotField'
 import styles from './LoadoutSubmitForm.module.css'
 
 export function LoadoutSubmitForm({ slug }: { slug: string }) {
@@ -120,6 +121,8 @@ export function LoadoutSubmitForm({ slug }: { slug: string }) {
                   parsed.mode ? ` · ${LOADOUT_MODES[parsed.mode]}` : ''
                 }${sharedAt ? ` · 分享于 ${siteDayKey(sharedAt)}` : ''}`}
         </p>
+
+        <LoadoutShotField error={fieldError('shot')} onPick={setShot} />
 
         <div className={styles.pair}>
           <fieldset className={styles.segmented}>
@@ -241,32 +244,6 @@ export function LoadoutSubmitForm({ slug }: { slug: string }) {
             </p>
           ) : null}
         </fieldset>
-
-        <div className={styles.shotField}>
-          <label className={fieldStyles.label} htmlFor="loadout-shot">
-            改枪台截图
-            <span className={fieldStyles.hint}>选填，会替换卡片上的枪械图，也方便审核核对属性</span>
-          </label>
-          <input
-            id="loadout-shot"
-            name="shot"
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            onChange={event => {
-              const file = event.target.files?.[0]
-              setShot(current => {
-                if (current) URL.revokeObjectURL(current)
-                return file ? URL.createObjectURL(file) : null
-              })
-            }}
-          />
-
-          {fieldError('shot') ? (
-            <p className={fieldStyles.error} role="alert">
-              {fieldError('shot')}
-            </p>
-          ) : null}
-        </div>
 
         <Field
           id="loadout-note"

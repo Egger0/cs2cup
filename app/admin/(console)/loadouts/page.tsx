@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function AdminLoadoutsPage() {
   await requireAdmin()
-  const { pending, reported } = await listLoadoutCodesForReview(cloudflareBindings().db)
+  const { pending, reported, shots } = await listLoadoutCodesForReview(cloudflareBindings().db)
 
   return (
     <>
@@ -31,6 +31,16 @@ export default async function AdminLoadoutsPage() {
           </div>
         )}
       </section>
+      {shots.length ? (
+        <section className={styles.panel}>
+          <h2 className={styles.panelHead}>截图更新 · {shots.length} 条</h2>
+          <div className={styles.list}>
+            {shots.map(code => (
+              <LoadoutReviewRow key={code.id} code={code} kind="shot" />
+            ))}
+          </div>
+        </section>
+      ) : null}
       {reported.length ? (
         <section className={styles.panel}>
           <h2 className={styles.panelHead}>失效反馈 · {reported.length} 条</h2>
