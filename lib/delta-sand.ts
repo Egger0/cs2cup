@@ -38,10 +38,9 @@ export interface DeltaMapData {
   grid: number
   height: string
   mask: string
-  urban: string
   regions: [string, number, number, number][]
   levels: { name: string; points: SandPoint[] }[]
 }
 
 export const mapDataUrl = (id: string) => `/games/delta/maps/${id}.json`
-export const mapPosterUrl = (id: string) => `/games/delta/maps/${id}.webp`
+export const mapImageUrl = (id: string, size: 1024 | 2048) => `/games/delta/maps/${id}-${size}.webp`

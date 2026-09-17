@@ -6,7 +6,7 @@ import {
   SAND_KINDS,
   SAND_RISE,
   mapDataUrl,
-  mapPosterUrl,
+  mapImageUrl,
   type DeltaMapData,
   type DeltaMapSummary,
   type SandKind,
@@ -116,7 +116,7 @@ export function SandTable({
   }, [map.id])
 
   useEffect(() => {
-    if (booted && current) runtime.current?.show(current, 0)
+    if (booted && current) void runtime.current?.show(current)
   }, [booted, current])
 
   useEffect(() => {
@@ -163,7 +163,7 @@ export function SandTable({
         ))}
       </div>
       <div ref={host} className={styles.viewport} data-sand-stage>
-        <img key={map.id} className={styles.poster} src={mapPosterUrl(map.id)} alt="" />
+        <img key={map.id} className={styles.poster} src={mapImageUrl(map.id, 1024)} alt="" />
         <div ref={overlay} className={styles.overlay}>
           {mode === 'flat'
             ? points

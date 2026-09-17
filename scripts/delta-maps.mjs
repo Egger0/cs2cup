@@ -1,8 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { chromium } from 'playwright'
-import sharp from 'sharp'
-import { isolines } from '../lib/isolines.ts'
-import { GRID, buildField, kindOf, projector, samples } from './delta-map-field.mjs'
+import { buildImagery } from './delta-map-imagery.mjs'
+import { GRID, buildField, composeRelief, kindOf, projector, samples } from './delta-map-field.mjs'
 
 const SOURCE = 'https://game.gtimg.cn/images/dfm/cp/a20240729directory/js/lib/'
 const SCRIPTS = [
@@ -99,22 +98,6 @@ export function exitsOf(levels) {
   ])
 }
 
-async function poster(id, field) {
-  const values = Array.from(field.height, (value, index) =>
-    field.mask[index] < 127 ? -1 : value / 255,
-  )
-  const path = segments => segments.map(([a, b]) => `M${a[0]} ${a[1]}L${b[0]} ${b[1]}`).join('')
-  const lines = Array.from({ length: 15 }, (_, index) => {
-    const major = (index + 1) % 4 === 0
-    return `<path d="${path(isolines(values, GRID, (index + 1) / 16))}" stroke="rgba(216,177,105,${major ? 0.8 : 0.42})" stroke-width="${major ? 0.24 : 0.12}"/>`
-  })
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 ${GRID - 1} ${GRID - 1}" fill="none">
-  <path d="${path(isolines(field.mask, GRID, 127))}" stroke="#9bcaeb" stroke-width="0.3"/>${lines.join('')}</svg>`
-  await sharp(Buffer.from(svg))
-    .webp({ quality: 82, alphaQuality: 90 })
-    .toFile(new URL(`${id}.webp`, OUTPUT).pathname)
-}
-
 async function main() {
   const [mainSource, ...sources] = await Promise.all(['main', ...SCRIPTS].map(download))
   const table = difficultyTable(mainSource)
@@ -154,20 +137,24 @@ async function main() {
         .map(item => pointOf(item, project, field, regions))
         .filter(([, x, y]) => x > 0 && y > 0 && x < 1 && y < 1),
     }))
+    const water = await buildImagery(
+      entries[0].layer,
+      [...field.origin, field.side],
+      GRID,
+      (width, image) => writeFile(new URL(`${map.id}-${width}.webp`, OUTPUT), image),
+    )
     const data = {
       id: map.id,
       name: map.name,
       meters: field.meters,
       relief: field.relief,
       grid: GRID,
-      height: Buffer.from(field.height).toString('base64'),
+      height: Buffer.from(composeRelief(field, water)).toString('base64'),
       mask: Buffer.from(field.mask).toString('base64'),
-      urban: Buffer.from(field.urban).toString('base64'),
       regions,
       levels,
     }
     await writeFile(new URL(`${map.id}.json`, OUTPUT), ascii(data))
-    await poster(map.id, field)
     summary.push({
       ...map,
       meters: field.meters,

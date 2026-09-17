@@ -65,11 +65,7 @@ export function buildField(points, meters, anchors = []) {
       .sort((a, b) => a - b),
     0.75,
   )
-  const [solid, smooth, dense] = [
-    gauss(Math.max(24, spacing * 1.6)),
-    gauss(Math.max(40, spacing * 2.6)),
-    gauss(9),
-  ]
+  const [solid, smooth] = [gauss(Math.max(24, spacing * 1.6)), gauss(Math.max(40, spacing * 2.6))]
   const local = points.map(point => ({
     ...point,
     x: (point.u - origin[0]) / side,
@@ -81,7 +77,6 @@ export function buildField(points, meters, anchors = []) {
     .filter(pin => pin.x > 0 && pin.y > 0 && pin.x < 1 && pin.y < 1)
   const height = new Uint8Array(GRID * GRID)
   const mask = new Uint8Array(GRID * GRID)
-  const urban = new Uint8Array(GRID * GRID)
   for (let row = 0; row < GRID; row++)
     for (let col = 0; col < GRID; col++) {
       const x = col / (GRID - 1)
@@ -89,22 +84,18 @@ export function buildField(points, meters, anchors = []) {
       let mass = 0
       let weights = 0
       let sum = 0
-      let built = 0
       for (const point of local) {
         const d2 = (point.x - x) ** 2 + (point.y - y) ** 2
         mass += Math.exp(-d2 * solid)
         const weight = Math.exp(-d2 * smooth) * (point.indoor ? 0.2 : 1)
         weights += weight
         sum += weight * point.zc
-        if (!point.kind || point.kind === 'vault' || point.kind === 'key')
-          built += Math.exp(-d2 * dense)
       }
       for (const pin of pins) mass += 3 * Math.exp(-((pin.x - x) ** 2 + (pin.y - y) ** 2) * solid)
       const index = row * GRID + col
       mask[index] = Math.min(255, Math.round(mass * 230))
       if (weights < 1e-12) continue
       height[index] = Math.round(((sum / weights - low) / (high - low)) * 255)
-      urban[index] = Math.min(255, Math.round(built * 64))
     }
   const reach = Math.max(2, Math.round(80 / ((side * meters) / GRID)))
   const closed = blur(filter(filter(mask, reach, Math.max), reach, Math.min), 2)
@@ -115,7 +106,6 @@ export function buildField(points, meters, anchors = []) {
     relief: Math.round(high - low),
     height,
     mask: closed,
-    urban,
     local: point => [(point[0] - origin[0]) / side, (point[1] - origin[1]) / side],
     at(x, y) {
       const col = Math.min(GRID - 1, Math.max(0, Math.round(x * (GRID - 1))))
@@ -156,4 +146,16 @@ function blur(values, radius) {
       out[row * GRID + col] = Math.round(sum / count)
     }
   return out
+}
+
+export function composeRelief({ height, mask }, water) {
+  const inside = [...height].filter((_, index) => mask[index] >= 127).sort((a, b) => a - b)
+  const middle = inside[Math.floor(inside.length / 2)] ?? 128
+  const wet = blur(blur(water, 2), 1)
+  const relief = height.map((value, index) => {
+    const weight = Math.min(1, Math.max(0, (mask[index] - 60) / 100))
+    const land = weight * value + (1 - weight) * middle
+    return Math.round((0.12 + (0.88 * land) / 255) * (1 - wet[index] / 255) * 255)
+  })
+  return blur(relief, 1)
 }
