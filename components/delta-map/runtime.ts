@@ -3,14 +3,16 @@ import { WebGPURenderer } from 'three/webgpu'
 import type { DeltaMapData, SandKind, SandPoint } from '@/lib/delta-sand'
 import type { Backend } from '@/components/home/solar/hardware'
 import { createAdaptation } from '@/components/home/solar/adapt'
-import { buildPlate, loadImagery, type Plate } from './plate'
-import { buildMarkers, type Markers } from './markers'
+import { loadImagery } from './plate'
+import { createContent } from './content'
+import { createLighting } from './lighting'
 import { bindOrbit, createOrbit } from './orbit'
 import { placeAnchors } from './anchors'
 
 export interface SandCallbacks {
   hover: (point: SandPoint | null) => void
   select: (point: SandPoint | null) => void
+  ground: (x: number, y: number) => void
   ready: () => void
   fail: () => void
 }
@@ -39,9 +41,7 @@ export async function startSandTable(
     return null
   }
   const scene = new T.Scene()
-  const sun = new T.DirectionalLight('#ffe9c4', 2.6)
-  sun.position.set(-2.2, 1.6, -1.2)
-  scene.add(new T.HemisphereLight('#9bcaeb', '#0b0c0b', 1.1), sun)
+  const light = createLighting(scene)
   const world = new T.Group()
   scene.add(world)
   const camera = new T.PerspectiveCamera(34, 1, 0.02, 40)
@@ -51,9 +51,6 @@ export async function startSandTable(
   host.prepend(canvas)
   const reduced = matchMedia('(prefers-reduced-motion: reduce)')
   const raycaster = new T.Raycaster()
-  let plate: Plate | null = null
-  let markers: Markers | null = null
-  let kinds: ReadonlySet<SandKind> = new Set()
   let rise = 1
   let frame = 0
   let last = performance.now()
@@ -62,22 +59,9 @@ export async function startSandTable(
   let disposed = false
   let announced = false
   let showing = 0
-  let shown = ''
-  let chosenLevel = 0
+  let inside: number | null = null
   const adaptation = createAdaptation(ratio => renderer.setPixelRatio(ratio), callbacks.fail)
 
-  const clear = () => {
-    plate?.dispose()
-    for (const child of [...world.children]) {
-      world.remove(child)
-      child.traverse(object => {
-        if (object instanceof T.Mesh || object instanceof T.LineSegments) {
-          object.geometry.dispose()
-          ;(object.material as T.Material).dispose()
-        }
-      })
-    }
-  }
   const draw = (now: number) => {
     frame = 0
     if (disposed || document.hidden) return
@@ -87,16 +71,17 @@ export async function startSandTable(
     const still = reduced.matches
     rise = still ? 1 : Math.min(1, rise + seconds / 1.5)
     world.scale.y = 0.02 + ease(rise) * 0.98
-    if (markers) markers.group.visible = rise > 0.55
+    const unfolding = content.step(seconds, still, rise)
     const moving = still ? (orbit.snap(), false) : orbit.step(seconds)
     if (moving) adaptation.sample(elapsed, width, height)
     renderer.render(scene, camera)
-    if (plate) placeAnchors(overlay, plate, camera, width, height, rise)
-    if (!announced && plate) {
+    if (content.plate)
+      placeAnchors(overlay, content.locate, world, camera, width, height, rise > 0.6)
+    if (!announced && content.plate) {
       announced = true
       callbacks.ready()
     }
-    if (moving || rise < 1) frame = requestAnimationFrame(draw)
+    if (moving || unfolding || rise < 1) frame = requestAnimationFrame(draw)
   }
   const poke = () => {
     if (!frame && !disposed) {
@@ -104,6 +89,7 @@ export async function startSandTable(
       frame = requestAnimationFrame(draw)
     }
   }
+  const content = createContent(world, poke)
   const ray = (event: PointerEvent) => {
     const rect = canvas.getBoundingClientRect()
     raycaster.setFromCamera(
@@ -115,12 +101,9 @@ export async function startSandTable(
     )
   }
   const pick = (event: PointerEvent) => {
-    if (!markers?.group.visible) return null
     ray(event)
-    raycaster.params.Line = { threshold: 0 }
     let best: { distance: number; point: SandPoint } | null = null
-    for (const { mesh, points } of markers.heads) {
-      if (!mesh.parent?.visible) continue
+    for (const { mesh, points } of content.heads()) {
       mesh.computeBoundingSphere()
       for (const hit of raycaster.intersectObject(mesh))
         if (hit.instanceId !== undefined && (!best || hit.distance < best.distance))
@@ -136,13 +119,11 @@ export async function startSandTable(
     event => {
       const point = pick(event)
       if (point) return callbacks.select(point)
-      if (!plate) return
-      ray(event)
-      const hit = raycaster.intersectObject(plate.mesh)[0]
-      if (hit) {
-        orbit.aim(hit.point.setY(0), Math.min(orbit.goal.distance, 1.8))
-        poke()
-      }
+      const surface = content.plate?.mesh.children[0]
+      const hit = surface && raycaster.intersectObject(surface)[0]
+      if (!hit) return
+      const local = world.worldToLocal(hit.point.clone())
+      callbacks.ground((local.x + 1) / 2, (local.z + 1) / 2)
     },
     event => {
       cancelAnimationFrame(hoverFrame)
@@ -154,6 +135,7 @@ export async function startSandTable(
     },
   )
   const fitView = () => {
+    const plate = content.plate
     if (!plate) return
     const fit = Math.tan(T.MathUtils.degToRad(camera.fov / 2)) * Math.min(1.5, camera.aspect)
     orbit.frame(plate.center, (plate.radius * 1.1) / fit)
@@ -185,12 +167,8 @@ export async function startSandTable(
       const map = await loadImagery(data.id, 1024).catch(() => null)
       if (disposed || token !== showing) return map?.dispose()
       if (!map) return callbacks.fail()
-      clear()
-      markers = null
-      plate = buildPlate(data, map)
-      shown = data.id
-      world.add(plate.mesh)
-      this.level(data, chosenLevel)
+      content.setMap(data, map)
+      inside = null
       rise = 0
       fitView()
       orbit.overview()
@@ -199,42 +177,51 @@ export async function startSandTable(
         orbit.view.azimuth = 0
         orbit.view.distance =
           1.02 / Math.tan(T.MathUtils.degToRad(camera.fov / 2)) / Math.min(1, camera.aspect) +
-          plate.lift
+          content.plate!.lift
       }
       adaptation.settle()
       poke()
       const thrifty = (navigator as { connection?: { saveData?: boolean } }).connection?.saveData
       if (window.innerWidth < 900 || thrifty) return
       const detail = await loadImagery(data.id, 2048).catch(() => null)
-      if (disposed || token !== showing || !plate) return detail?.dispose()
-      if (detail) plate.swap(detail)
+      if (disposed || token !== showing || !content.plate) return detail?.dispose()
+      if (detail) content.plate.swap(detail)
       poke()
     },
-    level(data: DeltaMapData, level: number) {
-      chosenLevel = level
-      if (!plate || shown !== data.id) return
-      if (markers) {
-        world.remove(markers.group)
-        markers.group.traverse(object => {
-          if (object instanceof T.Mesh || object instanceof T.LineSegments) {
-            object.geometry.dispose()
-            ;(object.material as T.Material).dispose()
-          }
-        })
-      }
-      markers = buildMarkers(data.levels[level]?.points ?? [], plate)
-      markers.show(kinds)
-      world.add(markers.group)
+    level(level: number) {
+      content.setLevel(level)
       poke()
     },
     kinds(next: ReadonlySet<SandKind>) {
-      kinds = next
-      markers?.show(next)
+      content.setKinds(next)
       poke()
     },
-    focus(x: number, y: number, distance = 1.5) {
+    building(index: number | null, floor: string | null) {
+      const moved = index !== inside
+      inside = index
+      content.setBuilding(index, floor)
+      const stack = content.stack
+      if (moved && stack) orbit.aim(stack.center(), stack.distance, 0.95)
+      else if (moved) orbit.overview()
+      poke()
+    },
+    route(points: [number, number][]) {
+      content.setRoute(points)
+      poke()
+    },
+    night(on: boolean) {
+      light(on)
+      content.setNight(on)
+      poke()
+    },
+    focus(x: number, y: number, distance?: number) {
+      const plate = content.plate
       if (!plate) return
-      orbit.aim(new T.Vector3(x * 2 - 1, plate.heightAt(x, y) * 0.5, y * 2 - 1), distance, 0.82)
+      orbit.aim(
+        new T.Vector3(x * 2 - 1, plate.heightAt(x, y) * 0.5, y * 2 - 1),
+        distance ?? Math.min(orbit.goal.distance, 1.8),
+        0.82,
+      )
       poke()
     },
     overview() {
@@ -254,7 +241,7 @@ export async function startSandTable(
       unbind()
       canvas.removeEventListener('webglcontextlost', lost)
       document.removeEventListener('visibilitychange', visibility)
-      clear()
+      content.clear()
       renderer.dispose()
       canvas.remove()
     },

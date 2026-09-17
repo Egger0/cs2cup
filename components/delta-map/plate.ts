@@ -12,6 +12,8 @@ import {
   positionLocal,
   smoothstep,
   texture,
+  uniform,
+  vec3,
 } from 'three/tsl'
 import { mapImageUrl, type DeltaMapData } from '@/lib/delta-sand'
 
@@ -37,6 +39,9 @@ const line = (value: Node<'float'>, spacing: number, width: number) => {
   return float(1).sub(smoothstep(0, fwidth(value).mul(width).max(1e-6), distance))
 }
 
+const dim = uniform(1)
+const night = uniform(0)
+
 function surfaceMaterial(data: DeltaMapData, lift: number, art: ReturnType<typeof texture>) {
   const surface = new MeshStandardNodeMaterial({ roughness: 0.92, metalness: 0 })
   const y = positionLocal.y
@@ -48,7 +53,7 @@ function surfaceMaterial(data: DeltaMapData, lift: number, art: ReturnType<typeo
   const offset = positionLocal.add(cell / 2)
   const grid = line(offset.x, cell, 0.8).max(line(offset.z, cell, 0.8))
   const accent = color('#9bcaeb')
-  surface.colorNode = art.rgb
+  const lit = art.rgb
     .mul(1.75)
     .mul(zone)
     .add(
@@ -59,7 +64,8 @@ function surfaceMaterial(data: DeltaMapData, lift: number, art: ReturnType<typeo
       ),
     )
     .add(accent.mul(grid.mul(0.035)))
-  surface.emissiveNode = accent.mul(boundary.mul(0.9))
+  surface.colorNode = mix(lit, lit.mul(vec3(0.55, 0.66, 0.95)), night).mul(dim)
+  surface.emissiveNode = accent.mul(boundary.mul(0.9)).mul(dim)
   return surface
 }
 
@@ -148,6 +154,10 @@ export function buildPlate(data: DeltaMapData, map: T.Texture) {
     world: (x: number, y: number, rise = 0) =>
       new T.Vector3(x * 2 - 1, heightAt(x, y) + rise, y * 2 - 1),
     dispose: () => art.value.dispose(),
+    tone(dimmed: boolean, dark: boolean) {
+      dim.value = dimmed ? 0.28 : 1
+      night.value = dark ? 1 : 0
+    },
     swap(next: T.Texture) {
       art.value.dispose()
       art.value = next

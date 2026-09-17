@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
-import { GRID, buildField, composeRelief, kindOf, projector, samples } from './delta-map-field.mjs'
+import { sandKindOf } from '../lib/delta-sand.ts'
+import { GRID, buildField, composeRelief, projector, samples } from './delta-map-field.mjs'
+import { buildingOf } from './delta-map-floors.mjs'
 import { difficultyTable, exitsOf } from './delta-maps.mjs'
 
 const info = { width: 50000, height: 50000, centerX: 100000, centerY: 200000 }
@@ -8,12 +10,14 @@ assert.deepEqual(projector(info)({ x: 150000, y: -150000 }), [1, 1])
 assert.deepEqual(projector(info, 90)({ x: 150000, y: -150000 }), [0, 1])
 assert.deepEqual(projector(info, -90)({ x: 150000, y: -150000 }), [1, 0])
 
-assert.equal(kindOf({ type: 'retreat', icon: 'ffcld' }), 'exit')
-assert.equal(kindOf({ icon: 'boss', type: 'Boss' }), 'boss')
-assert.equal(kindOf({ icon: 'csd', type: 'revive' }), 'spawn')
-assert.equal(kindOf({ icon: 'tyfk' }), 'key')
-assert.equal(kindOf({ icon: 'hkcwx' }), 'vault')
-assert.equal(kindOf({ icon: 'yf' }), null)
+assert.equal(sandKindOf({ type: 'retreat', icon: 'ffcld' }), 'exit')
+assert.equal(sandKindOf({ icon: 'boss', type: 'Boss' }), 'boss')
+assert.equal(sandKindOf({ icon: 'csd', type: 'revive' }), 'spawn')
+assert.equal(sandKindOf({ icon: 'tyfk' }), 'key')
+assert.equal(sandKindOf({ icon: 'hkcwx' }), 'vault')
+assert.equal(sandKindOf({ icon: 'yf' }), 'bags')
+assert.equal(sandKindOf({ icon: 'fydjz' }), 'special')
+assert.equal(sandKindOf({ icon: 'tilapia', catalog: 'fish' }), null)
 
 const ring = Array.from({ length: 40 }, (_, index) => {
   const angle = (index / 40) * Math.PI * 2
@@ -44,31 +48,51 @@ assert.ok(Math.min(...relief) >= 30, 'dry land keeps a shore above the water lin
 assert.equal(Math.max(...composeRelief(field, flooded)), 0, 'water beds sit at zero')
 
 const table = difficultyTable(`
-  '00': { info: dabaInfo, nav: navList, icons: mapArticle, poi: selectRegion, name: '零号大坝', level: '常规', layer: 'map_db' },
-  { info: dabaInfo, icons: dabaInfo.floorInfo.mapArticle_minus, name: '零号大坝', level: '常规', layer: 'daba_0f' },
+  '00': { info: dabaInfo, icons: mapArticle, poi: selectRegion, name: '零号大坝', level: '常规', layer: 'map_db' },
+  '00_B1': { info: dabaInfo, icons: dabaInfo.floorInfo.mapArticle_minus, name: '零号大坝', level: '常规', layer: 'daba_0f' },
   '10': { info: cgxgInfo, icons: mapArticle_cgxg, poi: selectRegion_cgxg, name: '长弓溪谷', level: '常规', layer: 'map_yc' },
-  { info: cgxgInfo, icons: mapArticle2_cgxg, poi: selectRegion_cgxg, name: '长弓溪谷', level: '常规｜坠机事件', layer: 'map_yc2' },
+  '10_ldz_2F': { info: cgxgInfo, icons: cgxgInfo.floorInfo.mapArticle_ldz_2f, name: '长弓溪谷', level: '常规', layer: 'cgxg_ldz_2f' },
+  '10_s': { info: cgxgInfo, icons: mapArticle2_cgxg, poi: selectRegion_cgxg, name: '长弓溪谷', level: '常规｜坠机事件', layer: 'map_yc2' },
+  '10_s_1F': { info: cgxgInfo, icons: cgxgInfo.floorInfo.mapArticle_s_first, name: '长弓溪谷', level: '常规', layer: 'cgxg_1f' },
+  '50': { info: az3Info, icons: mapArticle_az3, poi: selectRegion_az3, name: 'AZ3', level: '常规', layer: 'map_az3' },
+  '50_1_3F': { info: az3Info, icons: az3Info.floorInfo.mapArticle_first3, name: 'RBMK反应堆', level: '常规',
+    // layer: 'map_az3',
+    layer: 'az3_3_1f' },
 `)
 assert.deepEqual(
   table.get('长弓溪谷').map(entry => entry.level),
   ['常规', '常规｜坠机事件'],
 )
-assert.equal(table.get('零号大坝').length, 1, 'floor layers are not difficulties')
+assert.deepEqual(table.get('零号大坝')[0].floors, [
+  { icons: 'dabaInfo.floorInfo.mapArticle_minus', layer: 'daba_0f', code: 'B1' },
+])
+assert.deepEqual(
+  table.get('长弓溪谷').map(entry => entry.floors.map(floor => floor.code)),
+  [['2F'], ['1F']],
+)
+assert.deepEqual(table.get('AZ3')[0].floors[0], {
+  icons: 'az3Info.floorInfo.mapArticle_first3',
+  layer: 'az3_3_1f',
+  code: '1F',
+})
+assert.equal(buildingOf('cgxg_ldz_b1'), 'cgxg_ldz')
+assert.equal(buildingOf('az3_1_2f'), 'az3_1')
 
 assert.deepEqual(
   exitsOf([
     {
       name: '常规',
       points: [
-        ['exit', 0, 0, 0, '付费撤离点', '近A'],
-        ['boss', 0, 0, 0, 'X', ''],
+        ['exit', 0, 0, '付费撤离点', '近A'],
+        ['boss', 0, 0, 'X', ''],
+        ['exit', 0, 0, '电梯撤离点', '2F', '0:2F'],
       ],
     },
     {
       name: '机密',
       points: [
-        ['exit', 0, 0, 0, '付费撤离点', '近A'],
-        ['exit', 0, 0, 0, '拉闸撤离点', '近B'],
+        ['exit', 0, 0, '付费撤离点', '近A'],
+        ['exit', 0, 0, '拉闸撤离点', '近B'],
       ],
     },
   ]),

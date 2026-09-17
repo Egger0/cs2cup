@@ -1,44 +1,51 @@
 import * as T from 'three'
 import { MeshBasicNodeMaterial } from 'three/webgpu'
 import { color, float } from 'three/tsl'
-import { SAND_KINDS, SAND_RISE, type SandKind, type SandPoint } from '@/lib/delta-sand'
-import type { Plate } from './plate'
+import { SAND_KINDS, type SandKind, type SandPoint } from '@/lib/delta-sand'
 
-const SIZE: Record<SandKind, number> = {
-  exit: 0.016,
-  boss: 0.016,
-  key: 0.012,
-  vault: 0.009,
-  spawn: 0.008,
+export type Place = (x: number, y: number, rise: number) => T.Vector3
+
+const beamMaterial = (tint: T.Color, opacity: number) => {
+  const material = new MeshBasicNodeMaterial({ transparent: true, depthWrite: false })
+  material.colorNode = color(tint)
+  material.opacityNode = float(opacity)
+  return material
 }
 
-export function buildMarkers(points: SandPoint[], plate: Plate) {
+export function buildMarkers(points: SandPoint[], place: Place, scale = 1) {
   const group = new T.Group()
   const heads: { mesh: T.InstancedMesh; points: SandPoint[] }[] = []
   const shape = new T.OctahedronGeometry(1, 0)
   for (const kind of Object.keys(SAND_KINDS) as SandKind[]) {
     const own = points.filter(point => point[0] === kind)
     if (!own.length) continue
-    const tint = new T.Color(SAND_KINDS[kind].color)
+    const { color: hex, rise } = SAND_KINDS[kind]
+    const tint = new T.Color(hex)
     const head = new MeshBasicNodeMaterial()
     head.colorNode = color(tint).mul(1.25)
     const mesh = new T.InstancedMesh(shape, head, own.length)
-    const beam = new MeshBasicNodeMaterial({ transparent: true, depthWrite: false })
-    beam.colorNode = color(tint)
-    beam.opacityNode = float(0.45)
-    const segments: T.Vector3[] = []
+    const beams: T.Vector3[] = []
+    const links: T.Vector3[] = []
     const matrix = new T.Matrix4()
-    own.forEach(([, x, y], index) => {
-      const foot = plate.world(x, y)
-      const top = plate.world(x, y, SAND_RISE[kind])
-      segments.push(foot, top)
-      matrix.compose(top, new T.Quaternion(), new T.Vector3().setScalar(SIZE[kind]))
+    const size = (0.004 + rise * 0.06) * scale
+    own.forEach(([, x, y, , , , link], index) => {
+      const top = place(x, y, rise * scale)
+      beams.push(place(x, y, 0), top)
+      matrix.compose(top, new T.Quaternion(), new T.Vector3().setScalar(size))
       mesh.setMatrixAt(index, matrix)
+      for (let at = 0; link && at + 1 < link.length; at += 2)
+        links.push(top, place(link[at]!, link[at + 1]!, 0.02))
     })
-    const lines = new T.LineSegments(new T.BufferGeometry().setFromPoints(segments), beam)
     const kindGroup = new T.Group()
     kindGroup.name = kind
-    kindGroup.add(lines, mesh)
+    kindGroup.add(
+      new T.LineSegments(new T.BufferGeometry().setFromPoints(beams), beamMaterial(tint, 0.45)),
+      mesh,
+    )
+    if (links.length)
+      kindGroup.add(
+        new T.LineSegments(new T.BufferGeometry().setFromPoints(links), beamMaterial(tint, 0.9)),
+      )
     group.add(kindGroup)
     heads.push({ mesh, points: own })
   }
@@ -52,3 +59,12 @@ export function buildMarkers(points: SandPoint[], plate: Plate) {
 }
 
 export type Markers = ReturnType<typeof buildMarkers>
+
+export function disposeTree(root: T.Object3D) {
+  root.traverse(object => {
+    if (object instanceof T.Mesh || object instanceof T.LineSegments || object instanceof T.Line) {
+      object.geometry.dispose()
+      for (const material of [object.material].flat()) material.dispose()
+    }
+  })
+}

@@ -1,12 +1,11 @@
 'use client'
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { hardwareBackend } from '@/components/home/solar/hardware'
 import {
-  SAND_KINDS,
-  SAND_RISE,
+  NIGHT_LEVEL,
+  SAND_DEFAULT_KINDS,
   mapDataUrl,
-  mapImageUrl,
   type DeltaMapData,
   type DeltaMapSummary,
   type SandKind,
@@ -14,14 +13,17 @@ import {
 } from '@/lib/delta-sand'
 import type { SandRuntime } from './runtime'
 import { SandPanel } from './SandPanel'
+import { SandStage, type SandMode } from './SandStage'
 import styles from './SandTable.module.css'
 
-type Mode = 'loading' | 'solid' | 'flat'
+export type Waypoint = [number, number]
 
-const DEFAULT_KINDS: SandKind[] = ['exit', 'boss', 'key']
-
-const spot = (x: number, y: number, extra?: CSSProperties) =>
-  ({ '--fx': x, '--fy': y, ...extra }) as CSSProperties
+const parseRoute = (value: string | null): Waypoint[] =>
+  (value ?? '')
+    .split(';')
+    .map(pair => pair.split(',').map(Number) as Waypoint)
+    .filter(pair => pair.length === 2 && pair.every(n => Number.isFinite(n) && n >= 0 && n <= 1))
+    .slice(0, 40)
 
 export function SandTable({
   maps,
@@ -36,19 +38,31 @@ export function SandTable({
   const overlay = useRef<HTMLDivElement>(null)
   const runtime = useRef<SandRuntime | null>(null)
   const cache = useRef(new Map<string, Promise<DeltaMapData>>())
+  const ground = useRef<(x: number, y: number) => void>(() => {})
   const [mapId, setMapId] = useState(initial)
   const [level, setLevel] = useState(0)
-  const [kinds, setKinds] = useState<ReadonlySet<SandKind>>(() => new Set(DEFAULT_KINDS))
+  const [kinds, setKinds] = useState<ReadonlySet<SandKind>>(() => new Set(SAND_DEFAULT_KINDS))
   const [data, setData] = useState<DeltaMapData | null>(null)
-  const [mode, setMode] = useState<Mode>('loading')
+  const [mode, setMode] = useState<SandMode>('loading')
   const [booted, setBooted] = useState(false)
   const [hovered, setHovered] = useState<SandPoint | null>(null)
   const [selected, setSelected] = useState<SandPoint | null>(null)
+  const [building, setBuilding] = useState<number | null>(null)
+  const [floor, setFloor] = useState<string | null>(null)
+  const [routing, setRouting] = useState(false)
+  const [route, setRoute] = useState<Waypoint[]>([])
   const map = maps.find(entry => entry.id === mapId) ?? maps[0]!
   const current = data?.id === map.id ? data : null
 
   useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const saved = Number(params.get('level'))
     const controller = new AbortController()
+    queueMicrotask(() => {
+      if (controller.signal.aborted) return
+      if (saved > 0) setLevel(saved)
+      setRoute(parseRoute(params.get('route')))
+    })
     const give = () => {
       runtime.current?.destroy()
       runtime.current = null
@@ -73,6 +87,7 @@ export function SandTable({
           {
             hover: setHovered,
             select: setSelected,
+            ground: (x, y) => ground.current(x, y),
             ready: () => setMode('solid'),
             fail: give,
           },
@@ -107,47 +122,66 @@ export function SandTable({
       value => active && setData(value),
       () => cache.current.delete(map.id),
     )
-    const url = new URL(location.href)
-    url.searchParams.set('map', map.id)
-    history.replaceState(history.state, '', url)
     return () => {
       active = false
     }
   }, [map.id])
 
   useEffect(() => {
+    const url = new URL(location.href)
+    url.searchParams.set('map', map.id)
+    if (level) url.searchParams.set('level', String(level))
+    else url.searchParams.delete('level')
+    if (route.length)
+      url.searchParams.set(
+        'route',
+        route.map(([x, y]) => `${x.toFixed(4)},${y.toFixed(4)}`).join(';'),
+      )
+    else url.searchParams.delete('route')
+    history.replaceState(history.state, '', url)
+  }, [map.id, level, route])
+
+  const levelName = map.levels[level] ?? ''
+  useEffect(() => {
     if (booted && current) void runtime.current?.show(current)
   }, [booted, current])
-
   useEffect(() => {
-    if (booted && current) runtime.current?.level(current, level)
-  }, [booted, current, level])
+    if (booted) runtime.current?.level(level)
+  }, [booted, level])
+  useEffect(() => runtime.current?.kinds(kinds), [booted, kinds])
+  useEffect(() => runtime.current?.building(building, floor), [booted, current, building, floor])
+  useEffect(() => runtime.current?.route(route), [booted, current, route])
+  useEffect(() => runtime.current?.night(NIGHT_LEVEL.test(levelName)), [booted, levelName])
+  useEffect(() => runtime.current?.relabel(), [booted, current, hovered, selected, building])
 
-  useEffect(() => {
-    runtime.current?.kinds(kinds)
-  }, [booted, kinds])
-
-  useEffect(() => {
-    runtime.current?.relabel()
-  }, [booted, current, hovered, selected])
-
-  const choose = (id: string) => {
-    if (id === map.id) return
-    setMapId(id)
-    setLevel(0)
-    setSelected(null)
-    setHovered(null)
-  }
   const focusPoint = (point: SandPoint) => {
     setSelected(point)
     setKinds(previous => (previous.has(point[0]) ? previous : new Set([...previous, point[0]])))
-    runtime.current?.focus(point[1], point[2], 1.3)
+    const [owner, code] = (point[5] ?? '').split(':')
+    if (code) {
+      setBuilding(Number(owner))
+      setFloor(code)
+    } else {
+      setBuilding(null)
+      setFloor(null)
+      runtime.current?.focus(point[1], point[2], 1.2)
+    }
   }
-  const points = current?.levels[level]?.points ?? []
-  const pinned = selected ?? hovered
+  useEffect(() => {
+    ground.current = (x, y) => {
+      if (routing) setRoute(previous => [...previous, [x, y]])
+      else runtime.current?.focus(x, y)
+    }
+  }, [routing])
+  const reset = () => {
+    setSelected(null)
+    setHovered(null)
+    setBuilding(null)
+    setFloor(null)
+  }
 
   return (
-    <div className={styles.table} data-mode={mode}>
+    <div className={styles.table} data-mode={mode} data-routing={routing}>
       <div className={styles.tabs} role="group" aria-label="烽火地带地图">
         {maps.map(entry => (
           <button
@@ -155,104 +189,69 @@ export function SandTable({
             type="button"
             aria-pressed={entry.id === map.id}
             className={styles.tab}
-            onClick={() => choose(entry.id)}
+            onClick={() => {
+              if (entry.id === map.id) return
+              setMapId(entry.id)
+              setLevel(0)
+              setRoute([])
+              reset()
+            }}
           >
             <span>{entry.name}</span>
             <small>{entry.en}</small>
           </button>
         ))}
       </div>
-      <div ref={host} className={styles.viewport} data-sand-stage>
-        <img key={map.id} className={styles.poster} src={mapImageUrl(map.id, 1024)} alt="" />
-        <div ref={overlay} className={styles.overlay}>
-          {mode === 'flat'
-            ? points
-                .filter(point => kinds.has(point[0]))
-                .map((point, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    className={styles.dot}
-                    aria-label={`${SAND_KINDS[point[0]].label} ${point[4]}`}
-                    style={spot(point[1], point[2], {
-                      '--tone': SAND_KINDS[point[0]].color,
-                    } as CSSProperties)}
-                    onClick={() => setSelected(point)}
-                  />
-                ))
-            : null}
-          {(current?.regions ?? []).map(([name, x, y]) => (
-            <button
-              key={name}
-              type="button"
-              className={styles.region}
-              data-sand-anchor
-              data-x={x}
-              data-y={y}
-              style={spot(x, y)}
-              onClick={() => runtime.current?.focus(x, y)}
-            >
-              {name}
-            </button>
-          ))}
-          {pinned ? (
-            <div
-              className={styles.pin}
-              data-sand-anchor
-              data-priority="1"
-              data-x={pinned[1]}
-              data-y={pinned[2]}
-              data-rise={SAND_RISE[pinned[0]] + 0.03}
-              style={spot(pinned[1], pinned[2], {
-                '--tone': SAND_KINDS[pinned[0]].color,
-              } as CSSProperties)}
-            >
-              <small>{SAND_KINDS[pinned[0]].label}</small>
-              <b>{pinned[4]}</b>
-              {pinned[5] ? <span>{pinned[5]}</span> : null}
-            </div>
-          ) : null}
-        </div>
-        {mode === 'solid' ? (
-          <div className={styles.controls}>
-            <button type="button" aria-label="放大" onClick={() => runtime.current?.zoom(0.8)}>
-              +
-            </button>
-            <button type="button" aria-label="缩小" onClick={() => runtime.current?.zoom(1.25)}>
-              −
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setSelected(null)
-                runtime.current?.overview()
-              }}
-            >
-              全图
-            </button>
-          </div>
-        ) : null}
-        <p className={styles.hint} aria-live="polite">
-          {mode === 'solid'
-            ? '拖动旋转 · 点区域名飞过去 · 点一下沙盘后滚轮缩放'
-            : mode === 'flat'
-              ? '俯视图 · 这台设备没有开启 3D'
-              : '沙盘展开中…'}
-        </p>
-      </div>
+      <SandStage
+        host={host}
+        overlay={overlay}
+        data={current}
+        mapId={map.id}
+        mode={mode}
+        level={level}
+        kinds={kinds}
+        pinned={selected ?? hovered}
+        building={building}
+        floor={floor}
+        routing={routing}
+        route={route}
+        runtime={runtime}
+        onPoint={focusPoint}
+        onFloor={setFloor}
+        onGround={(x, y) => ground.current(x, y)}
+        onOverview={() => {
+          reset()
+          runtime.current?.overview()
+        }}
+      />
       <SandPanel
         map={map}
         data={current}
         level={level}
         kinds={kinds}
         selected={selected}
+        building={building}
+        floor={floor}
+        routing={routing}
+        route={route}
         loadouts={loadouts}
         onLevel={value => {
           setLevel(value)
-          setSelected(null)
+          reset()
         }}
         onKinds={setKinds}
         onPoint={focusPoint}
+        onRegion={(x, y) => {
+          reset()
+          runtime.current?.focus(x, y, 1.3)
+        }}
+        onBuilding={(index, code) => {
+          setSelected(null)
+          setBuilding(index)
+          setFloor(code)
+        }}
+        onRouting={setRouting}
+        onRoute={setRoute}
         onClear={() => setSelected(null)}
       />
     </div>

@@ -1,7 +1,9 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { chromium } from 'playwright'
 import { buildImagery } from './delta-map-imagery.mjs'
-import { GRID, buildField, composeRelief, kindOf, projector, samples } from './delta-map-field.mjs'
+import { sandKindOf } from '../lib/delta-sand.ts'
+import { GRID, buildField, composeRelief, projector, samples } from './delta-map-field.mjs'
+import { buildFloors } from './delta-map-floors.mjs'
 
 const SOURCE = 'https://game.gtimg.cn/images/dfm/cp/a20240729directory/js/lib/'
 const SCRIPTS = [
@@ -41,18 +43,51 @@ const download = async name => {
 
 export function difficultyTable(main) {
   const table = new Map()
-  for (const block of main.split(/\binfo: /).slice(1)) {
-    const field = key => block.match(new RegExp(`${key}: ['"]?([^'",\\n]+)`))?.[1]?.trim()
-    const info = block.match(/^\w+/)?.[0]
-    const [icons, regions, name, level, layer] = ['icons', 'poi', 'name', 'level', 'layer'].map(
-      field,
-    )
-    if (!info || !icons || !name || !level || icons.includes('.')) continue
+  const byKey = new Map()
+  for (const [, key, raw] of main.matchAll(/'(\d{2}(?:_\w+)?)':\s*\{([^{}]*)\}/g)) {
+    const body = raw.replace(/^\s*\/\/.*$/gm, '')
+    const field = name => body.match(new RegExp(`\\b${name}: ['"]?([^'",\\n]+)`))?.[1]?.trim()
+    const [info, icons, regions, name, level, layer] = [
+      'info',
+      'icons',
+      'poi',
+      'name',
+      'level',
+      'layer',
+    ].map(field)
+    if (!info || !icons || !level || !layer) continue
+    if (icons.includes('.floorInfo.')) {
+      const segments = key.split('_')
+      const parent = segments
+        .slice(1, -1)
+        .map((_, index, rest) => [segments[0], ...rest.slice(0, rest.length - index)].join('_'))
+        .concat(segments[0])
+        .find(candidate => byKey.has(candidate))
+      const own = layer.match(/_(\d+f|b\d)$/i)?.[1]
+      const code = (segments.length > 2 && own ? own : segments.at(-1)).toUpperCase()
+      byKey.get(parent)?.floors.push({ icons, layer, code: code === '0F' ? 'B1' : code })
+      continue
+    }
     const entries = table.get(name) ?? []
-    if (!entries.some(entry => entry.icons === icons))
-      entries.push({ info, icons, regions, level, layer })
+    const entry = entries.find(other => other.icons === icons) ?? {
+      info,
+      icons,
+      regions,
+      level,
+      layer,
+      floors: [],
+    }
+    if (!entries.includes(entry)) entries.push(entry)
+    byKey.set(key, entry)
     table.set(name, entries)
   }
+  for (const entries of table.values())
+    for (const entry of entries)
+      entry.floors = entry.floors.filter(
+        (floor, index, all) =>
+          all.findIndex(other => other.layer === floor.layer && other.code === floor.code) ===
+          index,
+      )
   return table
 }
 
@@ -72,22 +107,36 @@ async function evaluate(sources, names) {
   }
 }
 
-const pointOf = (item, project, field, regions) => {
+const pointOf = (item, project, field, regions, floor) => {
   const [x, y] = field.local(project(item))
   const near = regions.reduce((best, region) =>
     Math.hypot(region[1] - x, region[2] - y) < Math.hypot(best[1] - x, best[2] - y) ? region : best,
   )
-  const floor = /^-?\d+$/.test(item.floor ?? '') ? `${item.floor}F` : item.floor
-  const note = [item['大区域'] ?? `近${near[0]}`, item['撤离条件'], floor]
+  const storey = /^-?\d+$/.test(item.floor ?? '') ? `${item.floor}F` : item.floor
+  const note = [
+    item['大区域'] && !item['大区域'].includes('_') ? item['大区域'] : `近${near[0]}`,
+    item.sub_name,
+    item['撤离条件'],
+    item['拾取条件'],
+    item['随机'] ?? item['出现条件'],
+    floor ? null : storey,
+  ]
     .filter(Boolean)
     .join(' · ')
-  return [kindOf(item), +x.toFixed(4), +y.toFixed(4), +field.at(x, y).toFixed(3), item.name, note]
+  const link = [item.point1, item.point2]
+    .filter(Boolean)
+    .flatMap(point => field.local(project(point)).map(value => +value.toFixed(4)))
+  const point = [sandKindOf(item), +x.toFixed(4), +y.toFixed(4), item.name, note]
+  if (floor || link.length) point.push(floor ?? '')
+  if (link.length) point.push(link)
+  return point
 }
 
 export function exitsOf(levels) {
   const found = new Map()
   for (const level of levels)
-    for (const [kind, , , , label, note] of level.points) {
+    for (const [kind, , , label, note, floor] of level.points) {
+      if (floor) continue
       if (kind !== 'exit') continue
       const key = `${label}\u0000${note}`
       found.set(key, new Set([...(found.get(key) ?? []), level.name]))
@@ -104,7 +153,16 @@ async function main() {
   const wanted = MAPS.flatMap(map => {
     const entries = table.get(map.name)
     if (!entries?.length) throw new Error(`No difficulty entries for ${map.name}`)
-    return entries.flatMap(entry => [entry.info, entry.icons, entry.regions].filter(Boolean))
+    return entries.flatMap(entry =>
+      [
+        entry.info,
+        entry.icons,
+        entry.regions,
+        `${entry.info}.floorInfo?.info?.maxZomm`,
+        `${entry.info}.floorInfo?.info?.floor`,
+        ...entry.floors.map(floor => floor.icons),
+      ].filter(Boolean),
+    )
   })
   const globals = await evaluate(sources, [...new Set(wanted)])
   await mkdir(OUTPUT, { recursive: true })
@@ -119,7 +177,7 @@ async function main() {
     const field = buildField(
       samples(items, project),
       meters,
-      items.filter(kindOf).map(item => {
+      items.filter(sandKindOf).map(item => {
         const [u, v] = project(item)
         return { u, v }
       }),
@@ -130,12 +188,27 @@ async function main() {
         const [x, y] = field.local(project(region))
         return [region.name, +x.toFixed(4), +y.toFixed(4), +field.at(x, y).toFixed(3)]
       })
-    const levels = entries.map(entry => ({
+    const floors = await buildFloors({
+      entries,
+      globals,
+      zoom: (globals[`${entries[0].info}.floorInfo?.info?.maxZomm`] ?? 6) - 1,
+      catalog: globals[`${entries[0].info}.floorInfo?.info?.floor`],
+      project,
+      field,
+      regions,
+      write: (building, code, image) =>
+        writeFile(new URL(`${map.id}-b${building}-${code.toLowerCase()}.webp`, OUTPUT), image),
+    })
+    const levels = entries.map((entry, level) => ({
       name: entry.level,
-      points: globals[entry.icons]
-        .filter(item => kindOf(item))
-        .map(item => pointOf(item, project, field, regions))
-        .filter(([, x, y]) => x > 0 && y > 0 && x < 1 && y < 1),
+      points: [
+        ...globals[entry.icons]
+          .filter(sandKindOf)
+          .map(item => pointOf(item, project, field, regions)),
+        ...floors.points[level].map(({ item, floor }) =>
+          pointOf(item, project, field, regions, floor),
+        ),
+      ].filter(([, x, y]) => x > 0 && y > 0 && x < 1 && y < 1),
     }))
     const water = await buildImagery(
       entries[0].layer,
@@ -152,6 +225,7 @@ async function main() {
       height: Buffer.from(composeRelief(field, water)).toString('base64'),
       mask: Buffer.from(field.mask).toString('base64'),
       regions,
+      buildings: floors.buildings,
       levels,
     }
     await writeFile(new URL(`${map.id}.json`, OUTPUT), ascii(data))
@@ -164,7 +238,7 @@ async function main() {
       bosses: [
         ...new Set(levels.flatMap(level => level.points.filter(([kind]) => kind === 'boss'))),
       ]
-        .map(point => point[4])
+        .map(point => point[3])
         .filter((name, index, all) => all.indexOf(name) === index)
         .join('、'),
       exits: exitsOf(levels),

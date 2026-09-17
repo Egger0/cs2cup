@@ -1,14 +1,6 @@
+import { sandKindOf } from '../lib/delta-sand.ts'
+
 export const GRID = 128
-
-const KINDS = [
-  ['exit', o => o.type === 'retreat'],
-  ['boss', o => o.icon === 'boss'],
-  ['spawn', o => o.icon === 'csd'],
-  ['key', o => ['tyfk', 'mmf'].includes(o.icon)],
-  ['vault', o => ['bxx', 'xbxx', 'fwq', 'hkcwx', 'gjcwx'].includes(o.icon)],
-]
-
-export const kindOf = item => KINDS.find(([, test]) => test(item))?.[0] ?? null
 
 export function projector(info, turn = 0) {
   const across = x => (Number(x) - info.centerX) / info.width / 2
@@ -24,14 +16,14 @@ export function samples(items, project) {
   const seen = new Set()
   const out = []
   for (const item of items) {
-    if (item.catalog === 'fish') continue
+    if (!sandKindOf(item)) continue
     const z = elevation(item)
     if (!Number.isFinite(z) || z === 0) continue
     const [u, v] = project(item)
     const key = `${u.toFixed(4)}:${v.toFixed(4)}`
     if (seen.has(key)) continue
     seen.add(key)
-    out.push({ u, v, z, indoor: Boolean(item.floor), kind: kindOf(item) })
+    out.push({ u, v, z, indoor: Boolean(item.floor) })
   }
   return out
 }
