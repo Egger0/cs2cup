@@ -32,6 +32,7 @@ export function createOrbit(camera: T.PerspectiveCamera) {
   return {
     view,
     goal,
+    home,
     step(seconds: number, speed = 5) {
       const blend = 1 - Math.exp(-seconds * speed)
       view.azimuth = follow(view.azimuth, goal.azimuth, blend)

@@ -92,7 +92,7 @@ export async function buildFloors({
         frame: probe,
         required: 0.3,
       })
-      const width = Math.min(1024, Math.round(probe[2] * world))
+      const width = Math.min(2048, Math.round(probe[2] * world))
       await write(
         index,
         code,

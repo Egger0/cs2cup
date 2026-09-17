@@ -2,6 +2,7 @@ import * as T from 'three'
 import { MeshStandardNodeMaterial, type Node } from 'three/webgpu'
 import {
   abs,
+  bumpMap,
   attribute,
   color,
   float,
@@ -24,7 +25,7 @@ const loader = new T.TextureLoader()
 
 export const decode = (text: string) => Uint8Array.from(atob(text), char => char.charCodeAt(0))
 
-export async function loadImagery(id: string, size: 1024 | 2048) {
+export async function loadImagery(id: string, size: 1024 | 2048 | 4096) {
   const map = await loader.loadAsync(mapImageUrl(id, size))
   await (map.image as HTMLImageElement).decode().catch(() => {})
   map.colorSpace = T.SRGBColorSpace
@@ -66,6 +67,7 @@ function surfaceMaterial(data: DeltaMapData, lift: number, art: ReturnType<typeo
     .add(accent.mul(grid.mul(0.035)))
   surface.colorNode = mix(lit, lit.mul(vec3(0.55, 0.66, 0.95)), night).mul(dim)
   surface.emissiveNode = accent.mul(boundary.mul(0.9)).mul(dim)
+  surface.normalNode = bumpMap(art, float(0.45))
   return surface
 }
 

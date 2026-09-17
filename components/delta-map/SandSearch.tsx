@@ -19,7 +19,7 @@ export function SandSearch({
   const term = useDeferredValue(query.trim())
   const regions = term ? (data?.regions ?? []).filter(([name]) => name.includes(term)) : []
   const floorName = (point: SandPoint) => {
-    const [owner, code] = (point[5] ?? '').split(':')
+    const [owner, code] = (point[6] ?? '').split(':')
     return code ? `${data?.buildings[Number(owner)]?.name ?? ''} ${code}` : ''
   }
   const hits = term

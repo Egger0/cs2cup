@@ -1,6 +1,6 @@
 import * as T from 'three'
 import { WebGPURenderer } from 'three/webgpu'
-import type { DeltaMapData, SandKind, SandPoint } from '@/lib/delta-sand'
+import { ICON_ATLAS, type DeltaMapData, type SandKind, type SandPoint } from '@/lib/delta-sand'
 import type { Backend } from '@/components/home/solar/hardware'
 import { createAdaptation } from '@/components/home/solar/adapt'
 import { loadImagery } from './plate'
@@ -8,6 +8,7 @@ import { createContent } from './content'
 import { createLighting } from './lighting'
 import { bindOrbit, createOrbit } from './orbit'
 import { placeAnchors } from './anchors'
+import { setAtlas } from './markers'
 
 export interface SandCallbacks {
   hover: (point: SandPoint | null) => void
@@ -60,6 +61,8 @@ export async function startSandTable(
   let announced = false
   let showing = 0
   let inside: number | null = null
+  let level: string | null = null
+  let sharpen: (() => void) | null = null
   const adaptation = createAdaptation(ratio => renderer.setPixelRatio(ratio), callbacks.fail)
 
   const draw = (now: number) => {
@@ -74,6 +77,10 @@ export async function startSandTable(
     const unfolding = content.step(seconds, still, rise)
     const moving = still ? (orbit.snap(), false) : orbit.step(seconds)
     if (moving) adaptation.sample(elapsed, width, height)
+    if (sharpen && orbit.view.distance < orbit.home.distance * 0.62) {
+      sharpen()
+      sharpen = null
+    }
     renderer.render(scene, camera)
     if (content.plate)
       placeAnchors(overlay, content.locate, world, camera, width, height, rise > 0.6)
@@ -90,6 +97,13 @@ export async function startSandTable(
     }
   }
   const content = createContent(world, poke)
+  void new T.TextureLoader().loadAsync(ICON_ATLAS.url).then(map => {
+    map.colorSpace = T.SRGBColorSpace
+    map.flipY = false
+    if (disposed) return map.dispose()
+    setAtlas(map)
+    poke()
+  })
   const ray = (event: PointerEvent) => {
     const rect = canvas.getBoundingClientRect()
     raycaster.setFromCamera(
@@ -101,15 +115,8 @@ export async function startSandTable(
     )
   }
   const pick = (event: PointerEvent) => {
-    ray(event)
-    let best: { distance: number; point: SandPoint } | null = null
-    for (const { mesh, points } of content.heads()) {
-      mesh.computeBoundingSphere()
-      for (const hit of raycaster.intersectObject(mesh))
-        if (hit.instanceId !== undefined && (!best || hit.distance < best.distance))
-          best = { distance: hit.distance, point: points[hit.instanceId]! }
-    }
-    return best?.point ?? null
+    const rect = canvas.getBoundingClientRect()
+    return content.pick(event.clientX - rect.left, event.clientY - rect.top, camera, width, height)
   }
   let hoverFrame = 0
   const unbind = bindOrbit(
@@ -119,6 +126,7 @@ export async function startSandTable(
     event => {
       const point = pick(event)
       if (point) return callbacks.select(point)
+      ray(event)
       const surface = content.plate?.mesh.children[0]
       const hit = surface && raycaster.intersectObject(surface)[0]
       if (!hit) return
@@ -164,11 +172,13 @@ export async function startSandTable(
   return {
     async show(data: DeltaMapData) {
       const token = ++showing
+      sharpen = null
       const map = await loadImagery(data.id, 1024).catch(() => null)
       if (disposed || token !== showing) return map?.dispose()
       if (!map) return callbacks.fail()
       content.setMap(data, map)
       inside = null
+      level = null
       rise = 0
       fitView()
       orbit.overview()
@@ -187,6 +197,16 @@ export async function startSandTable(
       if (disposed || token !== showing || !content.plate) return detail?.dispose()
       if (detail) content.plate.swap(detail)
       poke()
+      if (data.detail !== 4096) return
+      sharpen = () =>
+        void loadImagery(data.id, 4096).then(
+          sharp => {
+            if (disposed || token !== showing || !content.plate) return sharp.dispose()
+            content.plate.swap(sharp)
+            poke()
+          },
+          () => {},
+        )
     },
     level(level: number) {
       content.setLevel(level)
@@ -197,12 +217,15 @@ export async function startSandTable(
       poke()
     },
     building(index: number | null, floor: string | null) {
-      const moved = index !== inside
+      const moved = index !== inside || floor !== level
       inside = index
+      level = floor
       content.setBuilding(index, floor)
       const stack = content.stack
-      if (moved && stack) orbit.aim(stack.center(), stack.distance, 0.95)
-      else if (moved) orbit.overview()
+      if (moved && stack) {
+        const { target, distance } = stack.view(floor)
+        orbit.aim(target, distance, 0.62)
+      } else if (moved) orbit.overview()
       poke()
     },
     route(points: [number, number][]) {

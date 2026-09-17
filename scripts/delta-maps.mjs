@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { chromium } from 'playwright'
 import { buildImagery } from './delta-map-imagery.mjs'
+import { createIconAtlas } from './delta-map-icons.mjs'
 import { sandKindOf } from '../lib/delta-sand.ts'
 import { GRID, buildField, composeRelief, projector, samples } from './delta-map-field.mjs'
 import { buildFloors } from './delta-map-floors.mjs'
@@ -107,7 +108,7 @@ async function evaluate(sources, names) {
   }
 }
 
-const pointOf = (item, project, field, regions, floor) => {
+const pointOf = (item, project, field, regions, atlas, floor) => {
   const [x, y] = field.local(project(item))
   const near = regions.reduce((best, region) =>
     Math.hypot(region[1] - x, region[2] - y) < Math.hypot(best[1] - x, best[2] - y) ? region : best,
@@ -126,7 +127,8 @@ const pointOf = (item, project, field, regions, floor) => {
   const link = [item.point1, item.point2]
     .filter(Boolean)
     .flatMap(point => field.local(project(point)).map(value => +value.toFixed(4)))
-  const point = [sandKindOf(item), +x.toFixed(4), +y.toFixed(4), item.name, note]
+  const icon = atlas.indexOf(item.icon?.replace(/^nav_/, ''))
+  const point = [sandKindOf(item), +x.toFixed(4), +y.toFixed(4), item.name, note, icon]
   if (floor || link.length) point.push(floor ?? '')
   if (link.length) point.push(link)
   return point
@@ -135,7 +137,7 @@ const pointOf = (item, project, field, regions, floor) => {
 export function exitsOf(levels) {
   const found = new Map()
   for (const level of levels)
-    for (const [kind, , , label, note, floor] of level.points) {
+    for (const [kind, , , label, note, , floor] of level.points) {
       if (floor) continue
       if (kind !== 'exit') continue
       const key = `${label}\u0000${note}`
@@ -167,6 +169,7 @@ async function main() {
   const globals = await evaluate(sources, [...new Set(wanted)])
   await mkdir(OUTPUT, { recursive: true })
   const summary = []
+  const atlas = createIconAtlas()
   for (const map of MAPS) {
     const entries = table.get(map.name)
     const info = globals[entries[0].info]
@@ -204,13 +207,13 @@ async function main() {
       points: [
         ...globals[entry.icons]
           .filter(sandKindOf)
-          .map(item => pointOf(item, project, field, regions)),
+          .map(item => pointOf(item, project, field, regions, atlas)),
         ...floors.points[level].map(({ item, floor }) =>
-          pointOf(item, project, field, regions, floor),
+          pointOf(item, project, field, regions, atlas, floor),
         ),
       ].filter(([, x, y]) => x > 0 && y > 0 && x < 1 && y < 1),
     }))
-    const water = await buildImagery(
+    const { water, detail } = await buildImagery(
       entries[0].layer,
       [...field.origin, field.side],
       GRID,
@@ -222,6 +225,7 @@ async function main() {
       meters: field.meters,
       relief: field.relief,
       grid: GRID,
+      detail,
       height: Buffer.from(composeRelief(field, water)).toString('base64'),
       mask: Buffer.from(field.mask).toString('base64'),
       regions,
@@ -247,6 +251,7 @@ async function main() {
       `${map.name}: ${field.meters} m, ${levels.length} difficulties, ${regions.length} areas`,
     )
   }
+  await writeFile(new URL('icons.webp', OUTPUT), await atlas.render())
   await writeFile(
     new URL('../lib/delta-map-summaries.ts', import.meta.url),
     `import type { DeltaMapSummary } from './delta-sand'\n\nexport const DELTA_MAP_SUMMARIES: DeltaMapSummary[] = ${JSON.stringify(summary)}\n`,
