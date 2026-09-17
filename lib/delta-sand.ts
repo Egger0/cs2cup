@@ -30,14 +30,23 @@ const ICONS: [SandKind, string[]][] = [
   ['bags', ['lxd', 'xlx', 'stx', 'dsb', 'kdx', 'dgjx', 'gjg', 'ctg', 'cwg', 'yf']],
 ]
 
-export function sandKindOf(item: {
-  type?: string
-  icon?: string
-  catalog?: string
-}): SandKind | null {
+const NAMED: [RegExp, string][] = [
+  [/电脑/, 'dn'],
+  [/储物柜/, 'cwg'],
+]
+
+type SandItem = { type?: string; icon?: string; catalog?: string; name?: string }
+
+export function sandIconOf(item: SandItem) {
+  const icon = item.icon?.replace(/^nav_/, '') ?? ''
+  if (icon !== 'placeholder') return icon
+  return NAMED.find(([pattern]) => pattern.test(item.name ?? ''))?.[1] ?? ''
+}
+
+export function sandKindOf(item: SandItem): SandKind | null {
   if (item.catalog === 'fish') return null
   if (item.type === 'retreat') return 'exit'
-  const icon = item.icon ?? ''
+  const icon = sandIconOf(item)
   return ICONS.find(([, icons]) => icons.includes(icon))?.[0] ?? (icon ? 'special' : null)
 }
 
