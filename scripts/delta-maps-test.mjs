@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
-import { sandKindOf } from '../lib/delta-sand.ts'
+import { sandIconOf, sandKindOf } from '../lib/delta-sand.ts'
 import { GRID, buildField, composeRelief, projector, samples } from './delta-map-field.mjs'
 import { buildingOf } from './delta-map-floors.mjs'
+import { inlineIcon } from './delta-map-icons.mjs'
 import { difficultyTable, exitsOf } from './delta-maps.mjs'
 
 const info = { width: 50000, height: 50000, centerX: 100000, centerY: 200000 }
@@ -18,6 +19,9 @@ assert.equal(sandKindOf({ icon: 'hkcwx' }), 'vault')
 assert.equal(sandKindOf({ icon: 'yf' }), 'bags')
 assert.equal(sandKindOf({ icon: 'fydjz' }), 'special')
 assert.equal(sandKindOf({ icon: 'tilapia', catalog: 'fish' }), null)
+assert.equal(sandIconOf({ icon: 'placeholder', name: '骇客电脑' }), 'dn')
+assert.equal(sandKindOf({ icon: 'placeholder', name: '个人储物柜' }), 'bags')
+assert.equal(sandKindOf({ icon: 'placeholder', name: '神秘物品' }), null)
 
 const ring = Array.from({ length: 40 }, (_, index) => {
   const angle = (index / 40) * Math.PI * 2
@@ -75,6 +79,14 @@ assert.deepEqual(table.get('AZ3')[0].floors[0], {
   layer: 'az3_3_1f',
   code: '1F',
 })
+assert.deepEqual(
+  inlineIcon(
+    '.img_nav_xdjqz_click { a } .img_nav_xdjqz {\n background: url("data:image/png;base64,aGk=") }',
+    'xdjqz',
+  ),
+  Buffer.from('hi'),
+)
+assert.equal(inlineIcon('.img_nav_boss { color: red }', 'boss'), null)
 assert.equal(buildingOf('cgxg_ldz_b1'), 'cgxg_ldz')
 assert.equal(buildingOf('az3_1_2f'), 'az3_1')
 

@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { chromium } from 'playwright'
 import { buildImagery } from './delta-map-imagery.mjs'
 import { createIconAtlas } from './delta-map-icons.mjs'
-import { sandKindOf } from '../lib/delta-sand.ts'
+import { sandIconOf, sandKindOf } from '../lib/delta-sand.ts'
 import { GRID, buildField, composeRelief, projector, samples } from './delta-map-field.mjs'
 import { buildFloors } from './delta-map-floors.mjs'
 
@@ -127,7 +127,7 @@ const pointOf = (item, project, field, regions, atlas, floor) => {
   const link = [item.point1, item.point2]
     .filter(Boolean)
     .flatMap(point => field.local(project(point)).map(value => +value.toFixed(4)))
-  const icon = atlas.indexOf(item.icon?.replace(/^nav_/, ''))
+  const icon = atlas.indexOf(sandIconOf(item))
   const point = [sandKindOf(item), +x.toFixed(4), +y.toFixed(4), item.name, note, icon]
   if (floor || link.length) point.push(floor ?? '')
   if (link.length) point.push(link)
