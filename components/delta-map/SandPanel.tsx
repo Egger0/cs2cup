@@ -125,7 +125,7 @@ export function SandPanel({
         {map.name}能用的改枪码 <span aria-hidden="true">→</span>
       </Link>
       <p className={styles.credit}>
-        点位来自《三角洲行动》官方地图工具；地形由点位高程推算，是示意沙盘，不是游戏实景。
+        底图与点位来自《三角洲行动》官方地图工具，版权归腾讯；地形起伏由点位高程推算并做了夸张。
       </p>
     </aside>
   )

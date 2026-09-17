@@ -3,8 +3,8 @@ import { WebGPURenderer } from 'three/webgpu'
 import type { DeltaMapData, SandKind, SandPoint } from '@/lib/delta-sand'
 import type { Backend } from '@/components/home/solar/hardware'
 import { createAdaptation } from '@/components/home/solar/adapt'
-import { buildPlate, type Plate } from './plate'
-import { buildBlocks, buildMarkers, type Markers } from './markers'
+import { buildPlate, loadImagery, type Plate } from './plate'
+import { buildMarkers, type Markers } from './markers'
 import { bindOrbit, createOrbit } from './orbit'
 import { placeAnchors } from './anchors'
 
@@ -31,6 +31,7 @@ export async function startSandTable(
   })
   renderer.outputColorSpace = T.SRGBColorSpace
   renderer.toneMapping = T.ACESFilmicToneMapping
+  renderer.toneMappingExposure = 1.15
   renderer.setClearColor('#000000', 0)
   await renderer.init()
   if (signal.aborted) {
@@ -60,9 +61,13 @@ export async function startSandTable(
   let height = 1
   let disposed = false
   let announced = false
+  let showing = 0
+  let shown = ''
+  let chosenLevel = 0
   const adaptation = createAdaptation(ratio => renderer.setPixelRatio(ratio), callbacks.fail)
 
   const clear = () => {
+    plate?.dispose()
     for (const child of [...world.children]) {
       world.remove(child)
       child.traverse(object => {
@@ -175,12 +180,17 @@ export async function startSandTable(
   resize()
 
   return {
-    show(data: DeltaMapData, level: number) {
+    async show(data: DeltaMapData) {
+      const token = ++showing
+      const map = await loadImagery(data.id, 1024).catch(() => null)
+      if (disposed || token !== showing) return map?.dispose()
+      if (!map) return callbacks.fail()
       clear()
       markers = null
-      plate = buildPlate(data)
-      world.add(plate.mesh, buildBlocks(data, plate))
-      this.level(data, level)
+      plate = buildPlate(data, map)
+      shown = data.id
+      world.add(plate.mesh)
+      this.level(data, chosenLevel)
       rise = 0
       fitView()
       orbit.overview()
@@ -193,9 +203,16 @@ export async function startSandTable(
       }
       adaptation.settle()
       poke()
+      const thrifty = (navigator as { connection?: { saveData?: boolean } }).connection?.saveData
+      if (window.innerWidth < 900 || thrifty) return
+      const detail = await loadImagery(data.id, 2048).catch(() => null)
+      if (disposed || token !== showing || !plate) return detail?.dispose()
+      if (detail) plate.swap(detail)
+      poke()
     },
     level(data: DeltaMapData, level: number) {
-      if (!plate) return
+      chosenLevel = level
+      if (!plate || shown !== data.id) return
       if (markers) {
         world.remove(markers.group)
         markers.group.traverse(object => {
