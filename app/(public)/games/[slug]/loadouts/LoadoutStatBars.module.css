@@ -58,6 +58,37 @@
   grid-column: 2;
 }
 
+.stats[data-compact] {
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 20px;
+}
+
+.stats[data-compact] .stat {
+  position: relative;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding-bottom: 8px;
+  font-size: 0.75rem;
+}
+
+.stats[data-compact] dd {
+  grid-template-columns: auto 2.2em;
+  gap: 6px;
+}
+
+.stats[data-compact] dd b {
+  grid-column: 1;
+  font-size: 0.8125rem;
+}
+
+.stats[data-compact] .bar {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+}
+
 .bar {
   height: 4px;
   background:

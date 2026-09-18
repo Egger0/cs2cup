@@ -145,7 +145,9 @@ export function LoadoutCard({
           </ul>
         ) : null}
 
-        {code.stats ? <LoadoutStatBars stats={code.stats} base={code.baseStats} /> : null}
+        {code.stats ? (
+          <LoadoutStatBars stats={code.stats} base={code.baseStats} compact={!single} />
+        ) : null}
 
         {code.note ? <p className={styles.note}>{code.note}</p> : null}
 
