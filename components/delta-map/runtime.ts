@@ -3,12 +3,12 @@ import { WebGPURenderer } from 'three/webgpu'
 import { ICON_ATLAS, type DeltaMapData, type SandKind, type SandPoint } from '@/lib/delta-sand'
 import type { Backend } from '@/components/home/solar/hardware'
 import { createAdaptation } from '@/components/home/solar/adapt'
-import { loadImagery } from './plate'
+import { loadImagery, refineImagery } from './imagery'
 import { createContent } from './content'
 import { createLighting } from './lighting'
 import { bindOrbit, createOrbit } from './orbit'
 import { placeAnchors } from './anchors'
-import { setAtlas } from './markers'
+import { setAtlas, setIconRatio } from './markers'
 
 export interface SandCallbacks {
   hover: (point: SandPoint | null) => void
@@ -63,8 +63,17 @@ export async function startSandTable(
   let inside: number | null = null
   let inset = 0
   let level: string | null = null
-  let sharpen: (() => void) | null = null
-  const adaptation = createAdaptation(ratio => renderer.setPixelRatio(ratio), callbacks.fail)
+  let refine: ReturnType<typeof refineImagery> | null = null
+  let motion = 1
+  let ratio = 0
+  const adaptation = createAdaptation(next => (motion = next), callbacks.fail)
+  const sharpness = (active: boolean) => {
+    const crisp = Math.min(devicePixelRatio || 1, 2, Math.sqrt(9e6 / Math.max(1, width * height)))
+    const next = active ? Math.min(motion, crisp) : crisp
+    if (Math.abs(next - ratio) < 0.01) return
+    renderer.setPixelRatio((ratio = next))
+    setIconRatio(ratio)
+  }
 
   const draw = (now: number) => {
     frame = 0
@@ -78,10 +87,9 @@ export async function startSandTable(
     const unfolding = content.step(seconds, still, rise)
     const moving = still ? (orbit.snap(), false) : orbit.step(seconds)
     if (moving) adaptation.sample(elapsed, width, height)
-    if (sharpen && orbit.view.distance < orbit.home.distance * 0.62) {
-      sharpen()
-      sharpen = null
-    }
+    refine?.(orbit.view.distance / orbit.home.distance, orbit.view.target)
+    const active = moving || unfolding || rise < 1
+    sharpness(active)
     renderer.render(scene, camera)
     host.style.setProperty('--azimuth', `${-orbit.view.azimuth}rad`)
     if (content.plate)
@@ -90,7 +98,7 @@ export async function startSandTable(
       announced = true
       callbacks.ready()
     }
-    if (moving || unfolding || rise < 1) frame = requestAnimationFrame(draw)
+    if (active) frame = requestAnimationFrame(draw)
   }
   const poke = () => {
     if (!frame && !disposed) {
@@ -178,7 +186,7 @@ export async function startSandTable(
   return {
     async show(data: DeltaMapData) {
       const token = ++showing
-      sharpen = null
+      refine = null
       const map = await loadImagery(data.id, 1024).catch(() => null)
       if (disposed || token !== showing) return map?.dispose()
       if (!map) return callbacks.fail()
@@ -196,23 +204,8 @@ export async function startSandTable(
           content.plate!.lift
       }
       adaptation.settle()
+      refine = refineImagery(data, content.plate!, () => !disposed && token === showing, poke)
       poke()
-      const thrifty = (navigator as { connection?: { saveData?: boolean } }).connection?.saveData
-      if (window.innerWidth < 900 || thrifty) return
-      const detail = await loadImagery(data.id, 2048).catch(() => null)
-      if (disposed || token !== showing || !content.plate) return detail?.dispose()
-      if (detail) content.plate.swap(detail)
-      poke()
-      if (data.detail !== 4096) return
-      sharpen = () =>
-        void loadImagery(data.id, 4096).then(
-          sharp => {
-            if (disposed || token !== showing || !content.plate) return sharp.dispose()
-            content.plate.swap(sharp)
-            poke()
-          },
-          () => {},
-        )
     },
     level(level: number) {
       content.setLevel(level)

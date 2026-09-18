@@ -89,7 +89,7 @@ export interface DeltaMapData {
   meters: number
   relief: number
   grid: number
-  detail: 2048 | 4096
+  detail: 2048 | 8192
   height: string
   mask: string
   regions: [string, number, number, number][]
@@ -102,6 +102,9 @@ export const floorKey = (building: number, floor: string) => `${building}:${floo
 export const mapDataUrl = (id: string) => `/games/delta/maps/${id}.json`
 export const mapImageUrl = (id: string, size: 256 | 1024 | 2048 | 4096) =>
   `/games/delta/maps/${id}-${size}.webp`
+export const DETAIL = { side: 8192, tiles: 4 }
+export const detailTileUrl = (id: string, col: number, row: number) =>
+  `/games/delta/maps/${id}-d${col}${row}.webp`
 export const ICON_ATLAS = { url: '/games/delta/maps/icons.webp', columns: 8, cell: 96 }
 export const floorImageUrl = (id: string, building: number, floor: string) =>
   `/games/delta/maps/${id}-b${building}-${floor.toLowerCase()}.webp`

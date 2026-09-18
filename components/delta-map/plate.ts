@@ -2,7 +2,6 @@ import * as T from 'three'
 import { MeshStandardNodeMaterial, type Node } from 'three/webgpu'
 import {
   abs,
-  bumpMap,
   attribute,
   color,
   float,
@@ -16,23 +15,13 @@ import {
   uniform,
   vec3,
 } from 'three/tsl'
-import { mapImageUrl, type DeltaMapData } from '@/lib/delta-sand'
+import type { DeltaMapData } from '@/lib/delta-sand'
+import { createDetail } from './detail'
 
 const EXAGGERATION = 2.4
 const DEPTH = 0.09
 const WATER = 0.07
-const loader = new T.TextureLoader()
-
 export const decode = (text: string) => Uint8Array.from(atob(text), char => char.charCodeAt(0))
-
-export async function loadImagery(id: string, size: 1024 | 2048 | 4096) {
-  const map = await loader.loadAsync(mapImageUrl(id, size))
-  await (map.image as HTMLImageElement).decode().catch(() => {})
-  map.colorSpace = T.SRGBColorSpace
-  map.flipY = false
-  map.anisotropy = 8
-  return map
-}
 
 const line = (value: Node<'float'>, spacing: number, width: number) => {
   const phase = fract(value.div(spacing).add(0.5))
@@ -43,7 +32,7 @@ const line = (value: Node<'float'>, spacing: number, width: number) => {
 const dim = uniform(1)
 const night = uniform(0)
 
-function surfaceMaterial(data: DeltaMapData, lift: number, art: ReturnType<typeof texture>) {
+function surfaceMaterial(data: DeltaMapData, lift: number, art: Node<'vec4'>) {
   const surface = new MeshStandardNodeMaterial({ roughness: 0.92, metalness: 0 })
   const y = positionLocal.y
   const edge = attribute<'float'>('edge')
@@ -67,11 +56,10 @@ function surfaceMaterial(data: DeltaMapData, lift: number, art: ReturnType<typeo
     .add(accent.mul(grid.mul(0.035)))
   surface.colorNode = mix(lit, lit.mul(vec3(0.55, 0.66, 0.95)), night).mul(dim)
   surface.emissiveNode = accent.mul(boundary.mul(0.9)).mul(dim)
-  surface.normalNode = bumpMap(art, float(0.45))
   return surface
 }
 
-export function buildPlate(data: DeltaMapData, map: T.Texture) {
+export function buildPlate(data: DeltaMapData, map: T.Texture, changed: () => void) {
   const n = data.grid
   const height = decode(data.height)
   const mask = decode(data.mask)
@@ -143,7 +131,8 @@ export function buildPlate(data: DeltaMapData, map: T.Texture) {
     }),
   )
   const art = texture(map)
-  const surface = new T.Mesh(top, surfaceMaterial(data, lift, art))
+  const detail = createDetail(data.id, art, changed)
+  const surface = new T.Mesh(top, surfaceMaterial(data, lift, detail.node))
   const mesh = new T.Group()
   mesh.add(surface, new T.Mesh(wall, wallSurface), water)
   const size = box.getSize(new T.Vector3())
@@ -155,7 +144,11 @@ export function buildPlate(data: DeltaMapData, map: T.Texture) {
     heightAt,
     world: (x: number, y: number, rise = 0) =>
       new T.Vector3(x * 2 - 1, heightAt(x, y) + rise, y * 2 - 1),
-    dispose: () => art.value.dispose(),
+    aim: detail.aim,
+    dispose() {
+      art.value.dispose()
+      detail.dispose()
+    },
     tone(dimmed: boolean, dark: boolean) {
       dim.value = dimmed ? 0.28 : 1
       night.value = dark ? 1 : 0

@@ -69,11 +69,12 @@ export function buildFloorStack(
       depthWrite: false,
     })
     const edge = min(min(uv().x, uv().y), min(uv().x.oneMinus(), uv().y.oneMinus()))
-    material.colorNode = art.rgb.mul(1.9)
+    material.colorNode = art.rgb.mul(1.2)
     material.opacityNode = float(opacity).mul(smoothstep(0, 0.12, edge))
     void loader.loadAsync(floorImageUrl(data.id, index, code)).then(map => {
       map.colorSpace = T.SRGBColorSpace
       map.flipY = false
+      map.anisotropy = 8
       maps.push(map)
       art.value = map
       changed()
