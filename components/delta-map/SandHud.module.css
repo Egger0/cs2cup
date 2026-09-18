@@ -21,8 +21,8 @@
 
 .panel {
   border: 1px solid rgb(155 202 235 / 14%);
-  border-radius: 10px;
-  background: rgb(9 11 14 / 84%);
+  border-radius: 12px;
+  background: rgb(9 11 14 / 94%);
 }
 
 .rail {
@@ -42,7 +42,7 @@
   gap: 10px;
   padding: 6px 12px 6px 6px;
   border: 0;
-  border-radius: 7px;
+  border-radius: 8px;
   color: var(--space-muted);
   font: 500 14px var(--font-body);
   text-align: left;
@@ -53,7 +53,7 @@
 .rail img {
   width: 36px;
   height: 36px;
-  border-radius: 5px;
+  border-radius: 6px;
   object-fit: cover;
   opacity: 0.6;
   transition: opacity 160ms ease;
@@ -97,7 +97,7 @@
   width: 50px;
   padding: 5px 0 3px;
   border: 0;
-  border-radius: 7px;
+  border-radius: 8px;
   color: var(--space-muted);
   font: 600 10px/1.2 var(--font-body);
   background: none;
@@ -109,7 +109,7 @@
   bottom: calc(100% + 10px);
   left: 50%;
   padding: 4px 8px;
-  border-radius: 5px;
+  border-radius: 6px;
   color: var(--space-ink);
   font-size: 12px;
   white-space: nowrap;
@@ -155,9 +155,8 @@
   height: 38px;
   place-items: center;
   border: 0;
-  border-radius: 7px;
+  border-radius: 8px;
   color: var(--space-ink);
-  font: 400 20px/1 var(--font-body);
   background: none;
   cursor: pointer;
 }

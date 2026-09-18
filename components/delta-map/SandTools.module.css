@@ -6,7 +6,8 @@
 .row,
 .region {
   display: flex;
-  width: 100%;
+  width: calc(100% + 16px);
+  margin-inline: -8px;
   align-items: center;
   gap: 12px;
   padding: 7px 8px;
@@ -74,12 +75,13 @@
 .floors button,
 .actions button {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
-  min-height: 34px;
+  min-height: 32px;
   padding: 0 12px;
   border: 1px solid rgb(255 255 255 / 12%);
-  border-radius: 7px;
+  border-radius: 8px;
+  line-height: 1;
   color: var(--space-ink);
   font: 500 13px var(--font-body);
   background: none;
@@ -120,7 +122,7 @@
 .group h3 {
   display: flex;
   justify-content: space-between;
-  margin: 4px 8px 4px;
+  margin: 4px 0;
   color: var(--space-muted);
   font-size: 13px;
   font-weight: 600;
@@ -153,8 +155,9 @@
 }
 
 .actions button:disabled {
+  color: var(--space-muted);
   cursor: default;
-  opacity: 0.35;
+  opacity: 0.55;
 }
 
 .actions .primary {
@@ -172,8 +175,8 @@
   display: grid;
   gap: 10px;
   margin: 0 12px 12px;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 12px 8px;
+  border-radius: 12px;
   background: rgb(255 255 255 / 5%);
 }
 
@@ -223,7 +226,7 @@
 
 .chips li {
   padding: 2px 8px;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 12px;
   background: rgb(255 255 255 / 8%);
 }
@@ -240,10 +243,13 @@
 }
 
 .nearest > button:last-child {
+  display: inline-flex;
   flex: none;
-  padding: 4px 10px;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
   border: 1px solid rgb(255 209 102 / 50%);
-  border-radius: 6px;
+  border-radius: 8px;
   color: #ffd166;
   font: 12px var(--font-body);
   background: none;

@@ -178,10 +178,14 @@ export function SandStage({
             </svg>
           </button>
           <button type="button" aria-label="放大" onClick={() => runtime.current?.zoom(0.8)}>
-            +
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
           </button>
           <button type="button" aria-label="缩小" onClick={() => runtime.current?.zoom(1.25)}>
-            −
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14" />
+            </svg>
           </button>
           <button type="button" aria-label="回到全图" title="回到全图" onClick={onOverview}>
             <svg viewBox="0 0 24 24" aria-hidden="true">
