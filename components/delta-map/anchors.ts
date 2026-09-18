@@ -1,6 +1,6 @@
 import * as T from 'three'
 
-interface Box {
+export interface Box {
   x: number
   y: number
   width: number
@@ -62,4 +62,5 @@ export function placeAnchors(
     set(element, '--sy', `${Math.round(anchor.sy)}px`)
     if (element.dataset.visible !== String(visible)) element.dataset.visible = String(visible)
   }
+  return placed
 }

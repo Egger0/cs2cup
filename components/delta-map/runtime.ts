@@ -7,7 +7,7 @@ import { loadImagery, refineImagery } from './imagery'
 import { createContent } from './content'
 import { createLighting } from './lighting'
 import { bindOrbit, createOrbit } from './orbit'
-import { placeAnchors } from './anchors'
+import { placeAnchors, type Box } from './anchors'
 import { setAtlas, setIconRatio } from './markers'
 
 export interface SandCallbacks {
@@ -63,6 +63,7 @@ export async function startSandTable(
   let inside: number | null = null
   let inset = 0
   let level: string | null = null
+  let labels: Box[] = []
   let refine: ReturnType<typeof refineImagery> | null = null
   let motion = 1
   let ratio = 0
@@ -90,11 +91,11 @@ export async function startSandTable(
     refine?.(orbit.view.distance / orbit.home.distance, orbit.view.target)
     const active = moving || unfolding || rise < 1
     sharpness(active)
-    content.settle(camera, width, height)
+    content.settle(camera, width, height, labels)
     renderer.render(scene, camera)
     host.style.setProperty('--azimuth', `${-orbit.view.azimuth}rad`)
     if (content.plate)
-      placeAnchors(overlay, content.locate, world, camera, width, height, rise > 0.6)
+      labels = placeAnchors(overlay, content.locate, world, camera, width, height, rise > 0.6)
     if (!announced && content.plate) {
       announced = true
       callbacks.ready()

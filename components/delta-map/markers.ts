@@ -17,6 +17,7 @@ import {
   vec2,
   vec4,
 } from 'three/tsl'
+import type { Box } from './anchors'
 import { declutter, hitRadius, type IconSet } from './declutter'
 import { ICON_ATLAS, SAND_KINDS, type SandKind, type SandPoint } from '@/lib/delta-sand'
 
@@ -145,7 +146,14 @@ export function buildMarkers(points: SandPoint[], place: Place, scale = 1) {
       kindGroup.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(links), link))
     }
     group.add(kindGroup)
-    sets.push({ mesh, centers, points: own, pixels, shown: new Uint8Array(own.length).fill(1) })
+    sets.push({
+      mesh,
+      centers,
+      points: own,
+      pixels,
+      shown: new Uint8Array(own.length).fill(1),
+      firm: kind === 'exit' || kind === 'boss',
+    })
   }
   const probe = new T.Vector3()
   return {
@@ -153,8 +161,8 @@ export function buildMarkers(points: SandPoint[], place: Place, scale = 1) {
     show(kinds: ReadonlySet<SandKind>) {
       group.children.forEach(child => (child.visible = kinds.has(child.name as SandKind)))
     },
-    settle(camera: T.Camera, width: number, height: number) {
-      if (group.visible) declutter(sets, camera, width, height)
+    settle(camera: T.Camera, width: number, height: number, labels: readonly Box[]) {
+      if (group.visible) declutter(sets, camera, width, height, labels)
     },
     pick(x: number, y: number, camera: T.Camera, width: number, height: number) {
       let best: SandPoint | null = null

@@ -1,16 +1,31 @@
 import * as T from 'three'
+import type { Box } from './anchors'
 
 export interface IconSet {
   mesh: T.Mesh
   centers: T.Vector3[]
   pixels: number
   shown: Uint8Array
+  firm: boolean
 }
 
 const TUCK = 0.36
 const probe = new T.Vector3()
 
-export function declutter(sets: IconSet[], camera: T.Camera, width: number, height: number) {
+const covered = (x: number, y: number, radius: number, boxes: readonly Box[]) =>
+  boxes.some(box => {
+    const dx = x - T.MathUtils.clamp(x, box.x, box.x + box.width)
+    const dy = y - T.MathUtils.clamp(y, box.y, box.y + box.height)
+    return Math.hypot(dx, dy) < radius * 0.8
+  })
+
+export function declutter(
+  sets: IconSet[],
+  camera: T.Camera,
+  width: number,
+  height: number,
+  labels: readonly Box[],
+) {
   const cell = 32
   const grid = new Map<number, [number, number, number][]>()
   const key = (x: number, y: number) => (x + 1024) * 4096 + y + 1024
@@ -34,7 +49,7 @@ export function declutter(sets: IconSet[], camera: T.Camera, width: number, heig
       const y = (-probe.y * 0.5 + 0.5) * height
       const onScreen =
         probe.z < 1 && x > -radius && y > -radius && x < width + radius && y < height + radius
-      const full = onScreen && clear(x, y, radius)
+      const full = onScreen && clear(x, y, radius) && (set.firm || !covered(x, y, radius, labels))
       if (full) {
         const slot = key(Math.floor(x / cell), Math.floor(y / cell))
         grid.set(slot, [...(grid.get(slot) ?? []), [x, y, radius]])

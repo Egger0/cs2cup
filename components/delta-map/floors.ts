@@ -2,6 +2,7 @@ import * as T from 'three'
 import { MeshBasicNodeMaterial } from 'three/webgpu'
 import { float, min, smoothstep, texture, uniform, uv } from 'three/tsl'
 import { floorImageUrl, type DeltaMapData, type SandKind, type SandPoint } from '@/lib/delta-sand'
+import type { Box } from './anchors'
 import { buildMarkers, disposeTree, type Markers } from './markers'
 import type { Plate } from './plate'
 
@@ -128,8 +129,10 @@ export function buildFloorStack(
         distance: Math.max(0.28, frame[2] * 2 * 1.9),
       }
     },
-    settle(camera: T.Camera, width: number, height: number) {
-      plates.find(entry => entry.markers.group.visible)?.markers.settle(camera, width, height)
+    settle(camera: T.Camera, width: number, height: number, labels: readonly Box[]) {
+      plates
+        .find(entry => entry.markers.group.visible)
+        ?.markers.settle(camera, width, height, labels)
     },
     pick(x: number, y: number, camera: T.Camera, width: number, height: number) {
       const active = plates.find(entry => entry.markers.group.visible)
