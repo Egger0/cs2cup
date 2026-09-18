@@ -40,6 +40,8 @@ export const iconAtlas = texture(new T.Texture())
 export const atlasRows = uniform(1)
 const pixelRatio = uniform(1)
 
+export const setIconRatio = (ratio: number) => (pixelRatio.value = ratio)
+
 export function setAtlas(map: T.Texture) {
   iconAtlas.value = map
   atlasRows.value = Math.max(1, (map.image as HTMLImageElement).height / ICON_ATLAS.cell)
@@ -79,7 +81,6 @@ function iconMaterial(tint: T.Color, pixels: number) {
 }
 
 export function buildMarkers(points: SandPoint[], place: Place, scale = 1) {
-  pixelRatio.value = Math.min(2, window.devicePixelRatio || 1)
   const group = new T.Group()
   const sets: { mesh: T.Mesh; centers: T.Vector3[]; points: SandPoint[]; pixels: number }[] = []
   for (const kind of Object.keys(SAND_KINDS) as SandKind[]) {

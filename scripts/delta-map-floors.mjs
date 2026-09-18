@@ -84,19 +84,26 @@ export async function buildFloors({
         field.origin[1] + (frame[1] - frame[2] / 2) * field.side,
         frame[2] * field.side,
       ]
-      const canvas = await mosaic({
-        layer: group.layers.get(code),
-        zoom,
+      const layer = group.layers.get(code)
+      const { canvas, scale } = await mosaic({
+        layer,
+        zoom: zoom + 1,
         tile: 512,
-        world,
+        world: world * 2,
         frame: probe,
         required: 0.3,
-      })
-      const width = Math.min(2048, Math.round(probe[2] * world))
+      }).then(
+        canvas => ({ canvas, scale: world * 2 }),
+        async () => ({
+          canvas: await mosaic({ layer, zoom, tile: 512, world, frame: probe, required: 0.3 }),
+          scale: world,
+        }),
+      )
+      const width = Math.min(2048, Math.round(probe[2] * scale))
       await write(
         index,
         code,
-        await sharp(canvas).resize(width, width).webp({ quality: 80 }).toBuffer(),
+        await sharp(canvas).resize(width, width).webp({ quality: 88 }).toBuffer(),
       )
       frames.push(frame.map(value => +value.toFixed(4)))
     }

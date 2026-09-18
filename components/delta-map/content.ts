@@ -66,7 +66,7 @@ export function createContent(world: T.Group, invalidate: () => void) {
     setMap(next: DeltaMapData, map: T.Texture) {
       this.clear()
       data = next
-      plate = buildPlate(next, map)
+      plate = buildPlate(next, map, invalidate)
       world.add(plate.mesh)
       building = null
       floor = null
