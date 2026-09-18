@@ -57,7 +57,7 @@ export default async function MapsPage({
         <ButtonLink href={loadouts}>改枪码</ButtonLink>
       </PageMasthead>
 
-      <section className={theme.dark} id="sandtable">
+      <section className={`${theme.dark} ${styles.stage}`} id="sandtable">
         <SandTable maps={DELTA_MAPS} initial={deltaMap(map).id} loadouts={loadouts} />
       </section>
 

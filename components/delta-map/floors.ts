@@ -2,6 +2,7 @@ import * as T from 'three'
 import { MeshBasicNodeMaterial } from 'three/webgpu'
 import { float, min, smoothstep, texture, uniform, uv } from 'three/tsl'
 import { floorImageUrl, type DeltaMapData, type SandKind, type SandPoint } from '@/lib/delta-sand'
+import type { Box } from './anchors'
 import { buildMarkers, disposeTree, type Markers } from './markers'
 import type { Plate } from './plate'
 
@@ -53,6 +54,7 @@ export function buildFloorStack(
     mesh: T.Mesh
     opacity: ReturnType<typeof uniform>
     markers: Markers
+    frame: MeshBasicNodeMaterial
   }[] = []
   let expansion = 0
   let target = 1
@@ -84,12 +86,8 @@ export function buildFloorStack(
     for (let at = 0; at < uvs.count; at++) uvs.setY(at, 1 - uvs.getY(at))
     const mesh = new T.Mesh(geometry, material)
     mesh.position.set(fx * 2 - 1, 0, fy * 2 - 1)
-    mesh.add(
-      new T.Line(
-        outline(side),
-        new MeshBasicNodeMaterial({ color: '#9bcaeb', transparent: true, opacity: 0.25 }),
-      ),
-    )
+    const frame = new MeshBasicNodeMaterial({ color: '#9bcaeb', transparent: true, opacity: 0.22 })
+    mesh.add(new T.Line(outline(side), frame))
     const markers = buildMarkers(
       points.filter(point => point[6] === `${index}:${code}`),
       (x, y, rise) => new T.Vector3((x - fx) * 2, rise * 0.4 + 0.004, (y - fy) * 2),
@@ -97,12 +95,12 @@ export function buildFloorStack(
     )
     mesh.add(markers.group)
     group.add(mesh)
-    plates.push({ code, mesh, opacity, markers })
+    plates.push({ code, mesh, opacity, markers, frame })
   })
 
   const pillars = new T.LineSegments(
     new T.BufferGeometry(),
-    new MeshBasicNodeMaterial({ color: '#9bcaeb', transparent: true, opacity: 0.3 }),
+    new MeshBasicNodeMaterial({ color: '#9bcaeb', transparent: true, opacity: 0.14 }),
   )
   group.add(pillars)
   const corners = [
@@ -131,6 +129,11 @@ export function buildFloorStack(
         distance: Math.max(0.28, frame[2] * 2 * 1.9),
       }
     },
+    settle(camera: T.Camera, width: number, height: number, labels: readonly Box[]) {
+      plates
+        .find(entry => entry.markers.group.visible)
+        ?.markers.settle(camera, width, height, labels)
+    },
     pick(x: number, y: number, camera: T.Camera, width: number, height: number) {
       const active = plates.find(entry => entry.markers.group.visible)
       return active?.markers.pick(x, y, camera, width, height) ?? null
@@ -148,6 +151,7 @@ export function buildFloorStack(
       const indoor = new Set([...INDOOR, ...kinds])
       for (const entry of plates) {
         entry.opacity.value = code === null ? 0.8 : entry.code === code ? 1 : 0.07
+        entry.frame.opacity = code === null ? 0.22 : entry.code === code ? 0.55 : 0.05
         entry.markers.show(indoor)
         entry.markers.group.visible = entry.code === code
       }

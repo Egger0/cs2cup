@@ -1,4 +1,5 @@
 import * as T from 'three'
+import type { Box } from './anchors'
 import type { DeltaMapData, SandKind, SandPoint } from '@/lib/delta-sand'
 import { buildFloorStack, type FloorStack } from './floors'
 import { buildMarkers, disposeTree, type Markers } from './markers'
@@ -115,6 +116,10 @@ export function createContent(world: T.Group, invalidate: () => void) {
         return false
       })
       return moving
+    },
+    settle(camera: T.Camera, width: number, height: number, labels: readonly Box[]) {
+      markers?.settle(camera, width, height, labels)
+      stack?.settle(camera, width, height, labels)
     },
     pick(x: number, y: number, camera: T.Camera, width: number, height: number) {
       return (

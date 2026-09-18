@@ -91,6 +91,7 @@ export function bindOrbit(
   poke: () => void,
   tap: (event: PointerEvent) => void,
   hover: (event: PointerEvent | null) => void,
+  nudge: () => void,
 ) {
   const pointers = new Map<number, { x: number; y: number }>()
   let travel = 0
@@ -128,7 +129,7 @@ export function bindOrbit(
     pinch = 0
   }
   const wheel = (event: WheelEvent) => {
-    if (!engaged && !event.ctrlKey) return
+    if (!engaged && !event.ctrlKey) return nudge()
     event.preventDefault()
     orbit.zoom(Math.exp(event.deltaY * (event.ctrlKey ? 0.01 : 0.0012)))
     poke()
