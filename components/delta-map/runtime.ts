@@ -90,6 +90,7 @@ export async function startSandTable(
     refine?.(orbit.view.distance / orbit.home.distance, orbit.view.target)
     const active = moving || unfolding || rise < 1
     sharpness(active)
+    content.settle(camera, width, height)
     renderer.render(scene, camera)
     host.style.setProperty('--azimuth', `${-orbit.view.azimuth}rad`)
     if (content.plate)
@@ -129,6 +130,7 @@ export async function startSandTable(
     return content.pick(event.clientX - rect.left, event.clientY - rect.top, camera, width, height)
   }
   let hoverFrame = 0
+  let nudged = 0
   const unbind = bindOrbit(
     canvas,
     orbit,
@@ -150,6 +152,11 @@ export async function startSandTable(
         canvas.style.cursor = point ? 'pointer' : ''
         callbacks.hover(point)
       })
+    },
+    () => {
+      host.dataset.nudge = ''
+      clearTimeout(nudged)
+      nudged = window.setTimeout(() => delete host.dataset.nudge, 1600)
     },
   )
   const fitView = () => {
@@ -268,6 +275,7 @@ export async function startSandTable(
       disposed = true
       cancelAnimationFrame(frame)
       cancelAnimationFrame(hoverFrame)
+      clearTimeout(nudged)
       size.disconnect()
       unbind()
       canvas.removeEventListener('webglcontextlost', lost)

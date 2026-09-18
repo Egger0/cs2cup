@@ -116,6 +116,10 @@ export function createContent(world: T.Group, invalidate: () => void) {
       })
       return moving
     },
+    settle(camera: T.Camera, width: number, height: number) {
+      markers?.settle(camera, width, height)
+      stack?.settle(camera, width, height)
+    },
     pick(x: number, y: number, camera: T.Camera, width: number, height: number) {
       return (
         stack?.pick(x, y, camera, width, height) ??

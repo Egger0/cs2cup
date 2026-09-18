@@ -1,3 +1,7 @@
+.stage {
+  scroll-margin-top: -148px;
+}
+
 .dossier {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));

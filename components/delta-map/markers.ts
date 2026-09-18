@@ -17,6 +17,7 @@ import {
   vec2,
   vec4,
 } from 'three/tsl'
+import { declutter, hitRadius, type IconSet } from './declutter'
 import { ICON_ATLAS, SAND_KINDS, type SandKind, type SandPoint } from '@/lib/delta-sand'
 
 export type Place = (x: number, y: number, rise: number) => T.Vector3
@@ -56,7 +57,8 @@ function iconMaterial(tint: T.Color, pixels: number) {
     .mul(cameraViewMatrix)
     .mul(modelWorldMatrix)
     .mul(vec4(center, 1))
-  const offset = corner.mul(pixels).mul(pixelRatio).mul(2).div(screenSize).mul(clip.w)
+  const size = attribute<'float'>('scale')
+  const offset = corner.mul(size.mul(pixels)).mul(pixelRatio).mul(2).div(screenSize).mul(clip.w)
   material.vertexNode = vec4(clip.xy.add(offset), clip.z, clip.w)
   const radius = length(corner)
   const disc = smoothstep(0.5, 0.45, radius)
@@ -68,12 +70,13 @@ function iconMaterial(tint: T.Color, pixels: number) {
     .add(vec2(inner.x, float(1).sub(inner.y)))
     .div(vec2(ICON_ATLAS.columns, atlasRows))
   const icon = iconAtlas.sample(lookup)
-  const art = icon.a.mul(inside).mul(known)
+  const full = step(0.99, size)
+  const art = icon.a.mul(inside).mul(known).mul(full)
   const tone = color(tint)
   const plate = mix(
     color('#0b0d10'),
     tone,
-    ring.max(known.oneMinus().mul(smoothstep(0.2, 0.16, radius))),
+    ring.max(known.oneMinus().mul(smoothstep(0.2, 0.16, radius))).max(full.oneMinus()),
   )
   material.colorNode = mix(plate, icon.rgb.mul(1.1), art)
   material.opacityNode = disc.mul(0.9).max(art)
@@ -82,7 +85,7 @@ function iconMaterial(tint: T.Color, pixels: number) {
 
 export function buildMarkers(points: SandPoint[], place: Place, scale = 1) {
   const group = new T.Group()
-  const sets: { mesh: T.Mesh; centers: T.Vector3[]; points: SandPoint[]; pixels: number }[] = []
+  const sets: (IconSet & { points: SandPoint[] })[] = []
   for (const kind of Object.keys(SAND_KINDS) as SandKind[]) {
     const own = points.filter(point => point[0] === kind)
     if (!own.length) continue
@@ -120,6 +123,10 @@ export function buildMarkers(points: SandPoint[], place: Place, scale = 1) {
     geometry.setAttribute('center', new T.Float32BufferAttribute(vertex.center, 3))
     geometry.setAttribute('corner', new T.Float32BufferAttribute(vertex.corner, 2))
     geometry.setAttribute('cell', new T.Float32BufferAttribute(vertex.cell, 2))
+    geometry.setAttribute(
+      'scale',
+      new T.Float32BufferAttribute(new Float32Array(own.length * 4).fill(1), 1),
+    )
     geometry.setIndex(index)
     const pixels = PIXELS[kind] * Math.min(1, 0.4 + scale)
     const mesh = new T.Mesh(geometry, iconMaterial(tint, pixels))
@@ -138,13 +145,16 @@ export function buildMarkers(points: SandPoint[], place: Place, scale = 1) {
       kindGroup.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(links), link))
     }
     group.add(kindGroup)
-    sets.push({ mesh, centers, points: own, pixels })
+    sets.push({ mesh, centers, points: own, pixels, shown: new Uint8Array(own.length).fill(1) })
   }
   const probe = new T.Vector3()
   return {
     group,
     show(kinds: ReadonlySet<SandKind>) {
       group.children.forEach(child => (child.visible = kinds.has(child.name as SandKind)))
+    },
+    settle(camera: T.Camera, width: number, height: number) {
+      if (group.visible) declutter(sets, camera, width, height)
     },
     pick(x: number, y: number, camera: T.Camera, width: number, height: number) {
       let best: SandPoint | null = null
@@ -159,7 +169,7 @@ export function buildMarkers(points: SandPoint[], place: Place, scale = 1) {
             (probe.x * 0.5 + 0.5) * width - x,
             (-probe.y * 0.5 + 0.5) * height - y,
           )
-          if (distance > set.pixels / 2 + 3 || probe.z >= nearest) continue
+          if (distance > hitRadius(set, at) || probe.z >= nearest) continue
           nearest = probe.z
           best = set.points[at]!
         }

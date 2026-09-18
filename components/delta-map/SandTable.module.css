@@ -31,6 +31,22 @@
   }
 }
 
+.viewport[data-nudge]::after {
+  content: '点一下沙盘，即可用滚轮缩放';
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: calc((100% - var(--drawer)) / 2);
+  padding: 10px 18px;
+  border-radius: 999px;
+  color: var(--space-ink);
+  font-size: 14px;
+  background: rgb(9 11 14 / 86%);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: reveal 200ms ease both;
+}
+
 .poster {
   position: absolute;
   top: 0;
