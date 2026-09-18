@@ -162,7 +162,7 @@ export function LoadoutCardActions({
               disabled={pending}
               onClick={toggleLike}
             >
-              好用 <b>{like.count}</b>
+              好用{like.count ? <b>{like.count}</b> : null}
             </button>
           ) : (
             <Link
@@ -170,7 +170,7 @@ export function LoadoutCardActions({
               href="/login"
               aria-label={`登录后点好用，已有 ${like.count} 人觉得好用`}
             >
-              好用 <b>{like.count}</b>
+              好用{like.count ? <b>{like.count}</b> : null}
             </Link>
           )}
           {message ? (

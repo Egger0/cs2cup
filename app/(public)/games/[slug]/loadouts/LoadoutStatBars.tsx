@@ -6,12 +6,14 @@ import styles from './LoadoutStatBars.module.css'
 export function LoadoutStatBars({
   stats,
   base,
+  compact = false,
 }: {
   stats: LoadoutStats
   base: LoadoutStats | null
+  compact?: boolean
 }) {
   return (
-    <dl className={styles.stats}>
+    <dl className={styles.stats} data-compact={compact ? '' : undefined}>
       {LOADOUT_STATS.map(([key, label]) => {
         const delta = base ? stats[key] - base[key] : 0
         return (

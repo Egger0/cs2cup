@@ -170,7 +170,7 @@ export default async function LoadoutsPage({
         />
       </PageMasthead>
 
-      <section className="section" id="loadout-browse">
+      <section className={`section ${styles.browse}`} id="loadout-browse">
         <div className="wrap">
           {featured.codes.length && state.page === 1 && !filtered ? (
             <div className={styles.featured}>
@@ -182,13 +182,13 @@ export default async function LoadoutsPage({
               <LoadoutCards codes={featured.codes} marks={marks} anchored={false} />
             </div>
           ) : null}
-          <LoadoutLookup slug={game.slug} />
           <LoadoutFilters
             slug={game.slug}
             state={state}
             facets={facets}
             total={total}
             signedIn={Boolean(accountId)}
+            lookup={<LoadoutLookup slug={game.slug} />}
           />
 
           {codes.length ? (

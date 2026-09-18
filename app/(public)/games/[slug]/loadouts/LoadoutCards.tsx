@@ -110,6 +110,11 @@ export function LoadoutCard({
               </span>
             ) : null}
           </figcaption>
+          {code.applyCount ? (
+            <p className={styles.usage}>
+              <b>{formatCount(code.applyCount)}</b> 次游戏内使用
+            </p>
+          ) : null}
         </figure>
       )}
 
@@ -140,7 +145,9 @@ export function LoadoutCard({
           </ul>
         ) : null}
 
-        {code.stats ? <LoadoutStatBars stats={code.stats} base={code.baseStats} /> : null}
+        {code.stats ? (
+          <LoadoutStatBars stats={code.stats} base={code.baseStats} compact={!single} />
+        ) : null}
 
         {code.note ? <p className={styles.note}>{code.note}</p> : null}
 
@@ -152,7 +159,6 @@ export function LoadoutCard({
                 {code.authorName}
                 {code.authorChannel ? ` · ${channelLabel(code.authorChannel)}` : ''}
               </span>
-              {code.applyCount ? <span>游戏内 {formatCount(code.applyCount)} 次使用</span> : null}
             </>
           ) : mine || preview ? null : code.authorHandle ? (
             <Link href={`/players/${code.authorHandle}`}>{code.authorName}</Link>
@@ -181,7 +187,9 @@ export function LoadoutCard({
         ) : null}
 
         <div className={styles.codeRow}>
-          <code className={styles.code}>{full}</code>
+          <code className={styles.code} title={full}>
+            {full}
+          </code>
           {preview ? null : (
             <LoadoutCardActions
               id={code.id}
