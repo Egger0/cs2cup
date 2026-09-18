@@ -214,10 +214,43 @@
 }
 
 .note {
+  display: -webkit-box;
+  overflow: hidden;
   color: var(--muted);
   font-size: 0.875rem;
   line-height: 1.7;
   overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.card[data-single] .note {
+  display: block;
+}
+
+.card[data-single] .code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.usage {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  color: var(--space-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 70%);
+  pointer-events: none;
+}
+
+.usage b {
+  margin-inline-end: 4px;
+  color: var(--space-ink);
+  font:
+    600 1rem var(--font-display),
+    sans-serif;
+  letter-spacing: -0.01em;
 }
 
 .meta {
@@ -255,11 +288,13 @@
 }
 
 .code {
+  overflow: hidden;
   color: var(--ink);
   font:
     0.8125rem / 1.6 var(--font-mono),
     monospace;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   user-select: all;
 }
 

@@ -51,9 +51,11 @@ export function LoadoutFilters({
   facets,
   total,
   signedIn,
+  lookup,
 }: {
   slug: string
   signedIn: boolean
+  lookup: React.ReactNode
   state: BrowseState
   facets: Awaited<ReturnType<typeof loadoutFacets>>
   total: number
@@ -81,6 +83,14 @@ export function LoadoutFilters({
   }
   const weapons = facets.weapons.filter(weapon => weapon.category === state.class)
   const filtered = Boolean(state.class || state.weapon || state.price || state.map || state.tag)
+  const more = [
+    state.mode === 'operations' ? '价格' : null,
+    facets.maps.length ? '地图' : null,
+    facets.tags.length ? '标签' : null,
+  ].filter(Boolean)
+  const chosen = [state.price ? PRICE_TIERS[state.price][0] : null, state.map, state.tag].filter(
+    Boolean,
+  )
   const row = (label: string, children: React.ReactNode) => (
     <div className={styles.filterRow} role="group" aria-label={label}>
       <span className={styles.filterLabel}>{label}</span>
@@ -90,26 +100,29 @@ export function LoadoutFilters({
 
   return (
     <>
-      <nav className={styles.modes} aria-label="模式">
-        {(Object.keys(LOADOUT_MODES) as LoadoutMode[]).map(entry => (
-          <Link
-            key={entry}
-            href={href({
-              mode: entry,
-              class: null,
-              weapon: null,
-              price: null,
-              map: null,
-              tag: null,
-            })}
-            aria-current={entry === state.mode ? 'page' : undefined}
-            scroll={false}
-          >
-            {LOADOUT_MODES[entry]}
-            <small>{modeCount(entry)}</small>
-          </Link>
-        ))}
-      </nav>
+      <div className={styles.modeBar}>
+        <nav className={styles.modes} aria-label="模式">
+          {(Object.keys(LOADOUT_MODES) as LoadoutMode[]).map(entry => (
+            <Link
+              key={entry}
+              href={href({
+                mode: entry,
+                class: null,
+                weapon: null,
+                price: null,
+                map: null,
+                tag: null,
+              })}
+              aria-current={entry === state.mode ? 'page' : undefined}
+              scroll={false}
+            >
+              {LOADOUT_MODES[entry]}
+              <small>{modeCount(entry)}</small>
+            </Link>
+          ))}
+        </nav>
+        {lookup}
+      </div>
 
       <div className={styles.filters}>
         {row(
@@ -164,49 +177,57 @@ export function LoadoutFilters({
               </>,
             )
           : null}
-        {state.mode === 'operations'
-          ? row(
-              '价格',
-              <>
-                {chip('不限', !state.price, href({ price: null }))}
-                {(Object.keys(PRICE_TIERS) as PriceTier[]).map(entry =>
-                  chip(PRICE_TIERS[entry][0], entry === state.price, href({ price: entry })),
-                )}
-              </>,
-            )
-          : null}
-        {facets.maps.length
-          ? row(
-              '地图',
-              <>
-                {chip('不限', !state.map, href({ map: null }))}
-                {facets.maps.map(entry =>
-                  chip(
-                    entry.name,
-                    entry.name === state.map,
-                    href({ map: entry.name }),
-                    entry.count,
-                  ),
-                )}
-              </>,
-            )
-          : null}
-        {facets.tags.length
-          ? row(
-              '标签',
-              <>
-                {chip('不限', !state.tag, href({ tag: null }))}
-                {facets.tags.map(entry =>
-                  chip(
-                    entry.name,
-                    entry.name === state.tag,
-                    href({ tag: entry.name }),
-                    entry.count,
-                  ),
-                )}
-              </>,
-            )
-          : null}
+        {more.length ? (
+          <details className={styles.more} open={Boolean(chosen.length) || undefined}>
+            <summary>
+              更多筛选
+              <span>{chosen.length ? chosen.join(' · ') : more.join(' · ')}</span>
+            </summary>
+            {state.mode === 'operations'
+              ? row(
+                  '价格',
+                  <>
+                    {chip('不限', !state.price, href({ price: null }))}
+                    {(Object.keys(PRICE_TIERS) as PriceTier[]).map(entry =>
+                      chip(PRICE_TIERS[entry][0], entry === state.price, href({ price: entry })),
+                    )}
+                  </>,
+                )
+              : null}
+            {facets.maps.length
+              ? row(
+                  '地图',
+                  <>
+                    {chip('不限', !state.map, href({ map: null }))}
+                    {facets.maps.map(entry =>
+                      chip(
+                        entry.name,
+                        entry.name === state.map,
+                        href({ map: entry.name }),
+                        entry.count,
+                      ),
+                    )}
+                  </>,
+                )
+              : null}
+            {facets.tags.length
+              ? row(
+                  '标签',
+                  <>
+                    {chip('不限', !state.tag, href({ tag: null }))}
+                    {facets.tags.map(entry =>
+                      chip(
+                        entry.name,
+                        entry.name === state.tag,
+                        href({ tag: entry.name }),
+                        entry.count,
+                      ),
+                    )}
+                  </>,
+                )
+              : null}
+          </details>
+        ) : null}
       </div>
 
       <div className={styles.resultBar}>

@@ -38,19 +38,17 @@ export function LoadoutLookup({ slug }: { slug: string }) {
 
   return (
     <div className={styles.lookup}>
-      <label htmlFor="loadout-lookup" className={styles.label}>
-        查码
-        <span>贴一串改枪码，看看它是什么方案</span>
+      <label className={styles.field}>
+        <span>查码</span>
+        <input
+          id="loadout-lookup"
+          value={value}
+          onChange={event => setValue(event.target.value)}
+          placeholder="贴一串改枪码，看看它是什么方案"
+          spellCheck={false}
+          autoComplete="off"
+        />
       </label>
-      <input
-        id="loadout-lookup"
-        className={styles.input}
-        value={value}
-        onChange={event => setValue(event.target.value)}
-        placeholder="例如：M700狙击步枪-烽火地带-6L8CPOS04C9NGO2DGDCB8"
-        spellCheck={false}
-        autoComplete="off"
-      />
       <p className={styles.result} aria-live="polite">
         {!value.trim() ? null : !parsed ? (
           '还没认出改枪码：需要完整串，或末尾 21 位码。'

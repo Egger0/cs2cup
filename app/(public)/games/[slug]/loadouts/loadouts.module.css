@@ -1,3 +1,7 @@
+.browse {
+  scroll-margin-top: -96px;
+}
+
 .submit {
   display: grid;
   gap: 24px;
@@ -16,11 +20,18 @@
   font-weight: 620;
 }
 
+.modeBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 32px;
+  border-bottom: 1px solid var(--line-strong);
+}
+
 .modes {
   display: flex;
   gap: 4px 32px;
   flex-wrap: wrap;
-  border-bottom: 1px solid var(--line-strong);
 }
 
 .modes a {
@@ -73,6 +84,48 @@
   font:
     0.8125rem var(--font-mono),
     monospace;
+}
+
+.more > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 36px;
+  width: fit-content;
+  color: var(--ink);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.more > summary::after {
+  color: var(--muted);
+  content: '+';
+  font-family: var(--font-mono), monospace;
+}
+
+.more[open] > summary::after {
+  content: '−';
+}
+
+.more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.more > summary span {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.more[open] > summary {
+  margin-bottom: 10px;
+}
+
+.more {
+  display: grid;
+}
+
+.more[open] {
+  gap: 10px;
 }
 
 .chip {
@@ -142,6 +195,15 @@
 }
 
 @media (max-width: 720px) {
+  .modeBar {
+    border-bottom: 0;
+  }
+
+  .modes {
+    width: 100%;
+    border-bottom: 1px solid var(--line-strong);
+  }
+
   .filterRow {
     flex-wrap: nowrap;
     margin-inline: calc(var(--pad) * -1);
@@ -151,6 +213,19 @@
   }
 
   .filterRow > * {
+    flex: none;
+  }
+
+  .sort {
+    flex-wrap: nowrap;
+    width: calc(100% + var(--pad) * 2);
+    margin-inline: calc(var(--pad) * -1);
+    padding-inline: var(--pad);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .sort > * {
     flex: none;
   }
 }
