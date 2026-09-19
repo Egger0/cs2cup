@@ -21,7 +21,8 @@ registerHooks({
   },
 })
 
-const { checkInForStardust, stardustBalance, stardustWallet } = await import('../lib/stardust.ts')
+const { checkedInToday, dailyCheckIn, stardustBalance, stardustWallet } =
+  await import('../lib/stardust.ts')
 const { matchPredictionBoard, placeMatchPrediction } = await import('../lib/match-prediction.ts')
 const { accountIds, createIdentityKernelFixture, credentialIds, passwordCredentialIds } =
   await import('./identity-kernel-test-fixture.mjs')
@@ -50,20 +51,28 @@ try {
     passwordCredentialId: passwordCredentialIds.reviewer,
   })
 
-  assert.deepEqual(await checkInForStardust(db, accountIds.owner, now), {
-    ok: false,
-    reason: 'membership_required',
+  assert.deepEqual(await dailyCheckIn(db, accountIds.manager, now), {
+    fresh: true,
+    streak: 1,
+    signedAt: now,
+    reward: 0,
   })
+  assert.equal(await checkedInToday(db, accountIds.manager, now + 1), true)
+  assert.equal(await checkedInToday(db, accountIds.owner, now + 1), false)
   await approveMembership(db, owner.context, reviewer.context, now + 1)
   await approveMembership(db, second.context, reviewer.context, now + 10)
 
-  assert.deepEqual(await checkInForStardust(db, accountIds.owner, now + 20), {
-    ok: true,
+  assert.deepEqual(await dailyCheckIn(db, accountIds.owner, now + 20), {
+    fresh: true,
+    streak: 1,
+    signedAt: now + 20,
     reward: 10,
   })
-  assert.deepEqual(await checkInForStardust(db, accountIds.owner, now + 21), {
-    ok: false,
-    reason: 'already_checked_in',
+  assert.deepEqual(await dailyCheckIn(db, accountIds.owner, now + 21), {
+    fresh: false,
+    streak: 1,
+    signedAt: now + 20,
+    reward: 0,
   })
   const wallet = await stardustWallet(db, accountIds.owner, now + 22)
   assert.equal(wallet.eligible, true)
@@ -71,7 +80,7 @@ try {
   assert.equal(wallet.matchdayToday, true)
   assert.equal(wallet.balance, 30)
   assert.equal((await stardustWallet(db, accountIds.owner, now + 23)).balance, 30)
-  await checkInForStardust(db, accountIds.platformOwner, now + 24)
+  await dailyCheckIn(db, accountIds.platformOwner, now + 24)
   await stardustWallet(db, accountIds.platformOwner, now + 25)
   await stardustWallet(db, accountIds.manager, now + 25)
   assert.equal(await stardustBalance(db, accountIds.manager), 0)

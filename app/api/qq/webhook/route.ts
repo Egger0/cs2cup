@@ -3,7 +3,12 @@ import { NextResponse } from 'next/server'
 import { cloudflareBindings, cloudflareEnvironment } from '@/lib/cloudflare-bindings'
 import { formatSiteCompactDateTime } from '@/lib/datetime'
 import { buildScheduleEntries } from '@/lib/schedule'
-import { stardustBalance, stardustGrantedAt } from '@/lib/stardust'
+import {
+  approvedMember,
+  checkedInToday,
+  MEMBERSHIP_REWARD_HINT,
+  stardustBalance,
+} from '@/lib/stardust'
 import { loadoutDigest } from '@/lib/loadout-reach'
 import { sendQqWelcome } from '@/lib/qq-automation'
 import {
@@ -86,8 +91,10 @@ async function commandReply(
       return '请先发送“/绑定 你的用户名”。'
     }
     if (result.kind === 'already_checked_in') return `今天已经签到，当前连续 ${result.streak} 天。`
-    const reward = result.reward ? `，获得 ${result.reward} 星尘` : ''
-    return `签到成功：连续 ${result.streak} 天，当前第 ${result.rank} 名${reward}。`
+    const reward = result.reward
+      ? `，获得 ${result.reward} 星尘。`
+      : `。\n${MEMBERSHIP_REWARD_HINT}`
+    return `签到成功：连续 ${result.streak} 天，当前第 ${result.rank} 名${reward}`
   }
   const base = resolveSiteOrigin()
   if (command.kind === 'my_schedule') {
@@ -121,11 +128,18 @@ async function commandReply(
   if (command.kind === 'stardust') {
     const accountId = await qqLinkedAccountId(database, groupOpenId, memberOpenId)
     if (!accountId) return bindHint()
-    const [balance, checkedInAt] = await Promise.all([
+    const now = Date.now()
+    const [balance, checkedIn, member] = await Promise.all([
       stardustBalance(database, accountId),
-      stardustGrantedAt(database, accountId, 'check_in', Date.now()),
+      checkedInToday(database, accountId, now),
+      approvedMember(database, accountId),
     ])
-    return `我的星尘：${balance}\n今日签到：${checkedInAt === null ? '未完成' : '已完成'}\n${base}/me#stardust-wallet`
+    return [
+      `我的星尘：${balance}`,
+      `今日签到：${checkedIn ? '已完成' : '未完成'}`,
+      ...(member ? [] : [MEMBERSHIP_REWARD_HINT]),
+      `${base}/me#stardust-wallet`,
+    ].join('\n')
   }
   if (command.kind === 'loadouts') return loadoutDigest(database, command.query, base)
   if (command.kind === 'schedule') {

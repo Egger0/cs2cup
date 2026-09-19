@@ -1,10 +1,11 @@
 import 'server-only'
 
 import type { IdentityDatabase } from './identity/internal/contracts.ts'
-import { shanghaiDate } from './qq-automation.ts'
+import { previousDate, shanghaiDate } from './qq-automation.ts'
 
 export const STARDUST_REWARDS = { check_in: 10, matchday: 20 } as const
 export const STARDUST_STAKE_LIMIT = 1000
+export const MEMBERSHIP_REWARD_HINT = '成员资格审核通过后，签到才会发放星尘。'
 
 export type StardustGrantKind = keyof typeof STARDUST_REWARDS
 export type PredictionStatus = 'open' | 'won' | 'lost' | 'void'
@@ -83,20 +84,89 @@ export async function stardustBalance(database: IdentityDatabase, accountId: str
   return Number(row?.balance ?? 0)
 }
 
-export type StardustCheckInResult =
-  | { readonly ok: true; readonly reward: number }
-  | { readonly ok: false; readonly reason: 'membership_required' | 'already_checked_in' }
+export interface DailyCheckIn {
+  readonly fresh: boolean
+  readonly streak: number
+  readonly signedAt: number
+  readonly reward: number
+}
 
-export async function checkInForStardust(
+export async function dailyCheckIn(
   database: IdentityDatabase,
   accountId: string,
   now: number,
-): Promise<StardustCheckInResult> {
-  await stardustGrantStatement(database, accountId, 'check_in', now).run()
-  const at = await stardustGrantedAt(database, accountId, 'check_in', now)
-  if (at === now) return { ok: true, reward: STARDUST_REWARDS.check_in }
-  if (at !== null) return { ok: false, reason: 'already_checked_in' }
-  return { ok: false, reason: 'membership_required' }
+): Promise<DailyCheckIn> {
+  const today = shanghaiDate(now)
+  await database.batch([
+    database
+      .prepare(
+        `INSERT OR IGNORE INTO qq_daily_check_in (account_id, check_in_date, signed_at)
+         VALUES (?, ?, ?)`,
+      )
+      .bind(accountId, today, now),
+    database
+      .prepare(
+        `INSERT INTO qq_check_in_streak (account_id, current_streak, last_check_in_date, last_signed_at)
+         SELECT ?, CASE
+           WHEN (SELECT last_check_in_date FROM qq_check_in_streak WHERE account_id = ?) = ?
+             THEN COALESCE((SELECT current_streak FROM qq_check_in_streak WHERE account_id = ?), 0) + 1
+           ELSE 1
+         END, ?, ?
+         WHERE EXISTS (
+           SELECT 1 FROM qq_daily_check_in
+           WHERE account_id = ? AND check_in_date = ? AND signed_at = ?
+         )
+         AND NOT EXISTS (
+           SELECT 1 FROM qq_check_in_streak
+           WHERE account_id = ? AND last_check_in_date = ?
+         )
+         ON CONFLICT(account_id) DO UPDATE SET
+           current_streak = excluded.current_streak,
+           last_check_in_date = excluded.last_check_in_date,
+           last_signed_at = excluded.last_signed_at`,
+      )
+      .bind(
+        accountId,
+        accountId,
+        previousDate(today),
+        accountId,
+        today,
+        now,
+        accountId,
+        today,
+        now,
+        accountId,
+        today,
+      ),
+    stardustGrantStatement(database, accountId, 'check_in', now),
+  ])
+  const [streak, grantedAt] = await Promise.all([
+    database
+      .prepare(
+        `SELECT current_streak AS streak, last_signed_at AS signedAt
+         FROM qq_check_in_streak WHERE account_id = ? LIMIT 1`,
+      )
+      .bind(accountId)
+      .first<{ streak: number; signedAt: number }>(),
+    stardustGrantedAt(database, accountId, 'check_in', now),
+  ])
+  if (!streak) throw new Error('Daily check-in streak was not recorded')
+  return {
+    fresh: streak.signedAt === now,
+    streak: streak.streak,
+    signedAt: streak.signedAt,
+    reward: grantedAt === now ? STARDUST_REWARDS.check_in : 0,
+  }
+}
+
+export async function checkedInToday(database: IdentityDatabase, accountId: string, now: number) {
+  const row = await database
+    .prepare(
+      'SELECT 1 AS present FROM qq_daily_check_in WHERE account_id = ? AND check_in_date = ?',
+    )
+    .bind(accountId, shanghaiDate(now))
+    .first<{ present: number }>()
+  return row !== null
 }
 
 interface PredictionRow {
@@ -120,7 +190,7 @@ export async function stardustWallet(
   const [eligible, balance, checkIn, matchday, predictions] = await Promise.all([
     approvedMember(database, accountId),
     stardustBalance(database, accountId),
-    stardustGrantedAt(database, accountId, 'check_in', now),
+    checkedInToday(database, accountId, now),
     stardustGrantedAt(database, accountId, 'matchday', now),
     database
       .prepare(
@@ -142,7 +212,7 @@ export async function stardustWallet(
   return {
     eligible,
     balance,
-    checkedInToday: checkIn !== null,
+    checkedInToday: checkIn,
     matchdayToday: matchday !== null,
     predictions: predictions.results.map(row => ({ ...row, delta: Number(row.delta) })),
   }
