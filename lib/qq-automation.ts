@@ -31,6 +31,12 @@ export function shanghaiDate(value: number | Date = Date.now()) {
   return `${fields.year}-${fields.month}-${fields.day}`
 }
 
+export function previousDate(date: string) {
+  return new Date(Date.parse(`${date}T00:00:00.000Z`) - 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10)
+}
+
 async function claimDelivery(
   database: QqAutomationDatabase,
   key: string,

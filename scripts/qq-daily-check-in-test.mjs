@@ -21,6 +21,7 @@ const {
   qqLinkedAccountId,
   unlinkQqAccount,
 } = await import('../lib/qq-daily-check-in.ts')
+const { checkedInToday, dailyCheckIn } = await import('../lib/stardust.ts')
 const { accountIds, createIdentityKernelFixture } =
   await import('./identity-kernel-test-fixture.mjs')
 
@@ -146,6 +147,20 @@ try {
     { displayName: reviewerName, streak: 1, lastCheckInDate: '2026-09-07' },
   ])
   assert.deepEqual(await qqCheckInLeaderboard(fixture.db, 'empty-group', at(7, 9)), [])
+
+  assert.equal((await dailyCheckIn(fixture.db, accountIds.reviewer, at(8, 7))).streak, 2)
+  assert.deepEqual(
+    await checkInFromQq(fixture.db, { groupOpenId, memberOpenId: ownerOpenId }, at(8, 9)),
+    { kind: 'already_checked_in', streak: 2 },
+    'a website check-in counts for the QQ streak',
+  )
+  assert.equal(await checkedInToday(fixture.db, accountIds.weakStaff, at(8, 9)), false)
+  await checkInFromQq(fixture.db, { groupOpenId, memberOpenId: managerOpenId }, at(8, 10))
+  assert.equal(
+    await checkedInToday(fixture.db, accountIds.weakStaff, at(8, 11)),
+    true,
+    'a QQ check-in reads as done without a stardust grant',
+  )
 } finally {
   fixture.database.close()
 }

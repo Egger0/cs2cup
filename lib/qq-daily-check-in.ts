@@ -2,8 +2,8 @@ import 'server-only'
 
 import { evaluateUsernamePolicy } from './identity/internal/username-policy.ts'
 import type { IdentityDatabase } from './identity/internal/contracts.ts'
-import { STARDUST_REWARDS, stardustGrantedAt, stardustGrantStatement } from './stardust.ts'
-import { shanghaiDate } from './qq-automation.ts'
+import { dailyCheckIn } from './stardust.ts'
+import { previousDate, shanghaiDate } from './qq-automation.ts'
 
 export type QqLinkResult =
   | { ok: true }
@@ -38,12 +38,6 @@ interface LinkRow {
   account_id: string
 }
 
-interface StreakRow {
-  current_streak: number
-  last_check_in_date: string
-  last_signed_at: number
-}
-
 interface RegistrationSummaryRow {
   tournament_slug: string
   tournament_title: string
@@ -55,12 +49,6 @@ interface RegistrationSummaryRow {
 
 function validOpenId(value: string) {
   return value.length > 0 && value.length <= 256 && value === value.trim()
-}
-
-function previousDate(date: string) {
-  return new Date(Date.parse(`${date}T00:00:00.000Z`) - 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10)
 }
 
 async function activeLink(database: IdentityDatabase, groupOpenId: string, memberOpenId: string) {
@@ -184,61 +172,10 @@ export async function checkInFromQq(
 ): Promise<QqCheckInResult> {
   const link = await activeLink(database, input.groupOpenId, input.memberOpenId)
   if (!link) return { kind: 'unbound' }
+  const checkIn = await dailyCheckIn(database, link.account_id, now)
+  if (!checkIn.fresh) return { kind: 'already_checked_in', streak: checkIn.streak }
   const today = shanghaiDate(now)
   const yesterday = previousDate(today)
-  await database.batch([
-    database
-      .prepare(
-        `INSERT OR IGNORE INTO qq_daily_check_in (account_id, check_in_date, signed_at)
-         VALUES (?, ?, ?)`,
-      )
-      .bind(link.account_id, today, now),
-    database
-      .prepare(
-        `INSERT INTO qq_check_in_streak (account_id, current_streak, last_check_in_date, last_signed_at)
-         SELECT ?, CASE
-           WHEN (SELECT last_check_in_date FROM qq_check_in_streak WHERE account_id = ?) = ?
-             THEN COALESCE((SELECT current_streak FROM qq_check_in_streak WHERE account_id = ?), 0) + 1
-           ELSE 1
-         END, ?, ?
-         WHERE EXISTS (
-           SELECT 1 FROM qq_daily_check_in
-           WHERE account_id = ? AND check_in_date = ? AND signed_at = ?
-         )
-         AND NOT EXISTS (
-           SELECT 1 FROM qq_check_in_streak
-           WHERE account_id = ? AND last_check_in_date = ?
-         )
-         ON CONFLICT(account_id) DO UPDATE SET
-           current_streak = excluded.current_streak,
-           last_check_in_date = excluded.last_check_in_date,
-           last_signed_at = excluded.last_signed_at`,
-      )
-      .bind(
-        link.account_id,
-        link.account_id,
-        yesterday,
-        link.account_id,
-        today,
-        now,
-        link.account_id,
-        today,
-        now,
-        link.account_id,
-        today,
-      ),
-    stardustGrantStatement(database, link.account_id, 'check_in', now),
-  ])
-  const streak = await database
-    .prepare(
-      `SELECT current_streak, last_check_in_date, last_signed_at
-       FROM qq_check_in_streak WHERE account_id = ? LIMIT 1`,
-    )
-    .bind(link.account_id)
-    .first<StreakRow>()
-  if (!streak) throw new Error('QQ check-in streak was not recorded')
-  if (streak.last_signed_at !== now)
-    return { kind: 'already_checked_in', streak: streak.current_streak }
   const ahead = await database
     .prepare(
       `SELECT COUNT(*) AS count
@@ -250,21 +187,13 @@ export async function checkInFromQq(
          AND (streak.current_streak > ?
            OR (streak.current_streak = ? AND streak.last_signed_at < ?))`,
     )
-    .bind(
-      input.groupOpenId,
-      today,
-      yesterday,
-      streak.current_streak,
-      streak.current_streak,
-      streak.last_signed_at,
-    )
+    .bind(input.groupOpenId, today, yesterday, checkIn.streak, checkIn.streak, checkIn.signedAt)
     .first<{ count: number }>()
-  const grantedAt = await stardustGrantedAt(database, link.account_id, 'check_in', now)
   return {
     kind: 'checked_in',
-    streak: streak.current_streak,
+    streak: checkIn.streak,
     rank: Number(ahead?.count ?? 0) + 1,
-    reward: grantedAt === now ? STARDUST_REWARDS.check_in : 0,
+    reward: checkIn.reward,
   }
 }
 
