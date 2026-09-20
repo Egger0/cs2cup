@@ -1,5 +1,5 @@
 import { ButtonLink } from '@/components/ui'
-import styles from './not-found.module.css'
+import styles from './fault.module.css'
 import theme from '@/app/site-theme.module.css'
 
 export const metadata = { title: '页面不存在' }

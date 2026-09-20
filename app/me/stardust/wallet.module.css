@@ -68,24 +68,6 @@
   gap: 6px;
 }
 
-.checkInButton {
-  min-height: 48px;
-  padding: 10px 22px;
-  border: 1px solid var(--honour);
-  background: var(--honour);
-  color: var(--button-ink);
-  font-size: 0.9375rem;
-  font-weight: 650;
-  cursor: pointer;
-}
-
-.checkInButton:disabled {
-  border-color: var(--line-strong);
-  background: transparent;
-  color: var(--muted);
-  cursor: default;
-}
-
 .hint,
 .matchday,
 .error {

@@ -87,7 +87,10 @@ try {
     'scripts/perf.mjs',
   ]
   const identityScripts = ['scripts/identity-migration-browser.mjs', 'scripts/identity-browser.mjs']
-  for (const script of smokeOnly ? smokeScripts : [...smokeScripts, ...identityScripts]) {
+  const memberScripts = ['scripts/recruitment-lottery-browser.mjs']
+  for (const script of smokeOnly
+    ? smokeScripts
+    : [...smokeScripts, ...identityScripts, ...memberScripts]) {
     run(process.execPath, [script], environment)
   }
 } finally {

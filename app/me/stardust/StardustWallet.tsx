@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { StardustWallet as Wallet } from '@/lib/stardust'
 import { STARDUST_REWARDS } from '@/lib/stardust'
+import { StardustBalance } from './StardustBalance'
 import { StardustCheckInButton } from './StardustCheckInButton'
 import styles from './wallet.module.css'
 
@@ -19,7 +20,7 @@ export function StardustWallet({ wallet }: { wallet: Wallet }) {
       </header>
       <div className={styles.summary}>
         <p className={styles.balance}>
-          <strong>{wallet.balance}</strong>
+          <StardustBalance value={wallet.balance} />
           <span>星尘</span>
         </p>
         {wallet.eligible ? (

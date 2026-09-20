@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
+import { Button } from '@/components/ui'
 import { checkInForStardustAction } from './actions'
 import styles from './wallet.module.css'
 
@@ -12,9 +13,9 @@ export function StardustCheckInButton({ checkedIn }: { checkedIn: boolean }) {
 
   return (
     <div className={styles.checkIn}>
-      <button
+      <Button
         type="button"
-        className={styles.checkInButton}
+        variant={checkedIn ? 'ghost' : 'primary'}
         disabled={checkedIn || pending}
         onClick={() =>
           startTransition(async () => {
@@ -30,7 +31,7 @@ export function StardustCheckInButton({ checkedIn }: { checkedIn: boolean }) {
         }
       >
         {checkedIn ? '今日已签到' : pending ? '签到中…' : '每日签到 +10'}
-      </button>
+      </Button>
       <p
         className={feedback && !feedback.ok ? styles.error : styles.hint}
         role={feedback?.ok === false ? 'alert' : 'status'}
