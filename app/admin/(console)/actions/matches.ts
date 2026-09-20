@@ -22,9 +22,13 @@ function scoreWriteFailure(error: unknown, fallback: string) {
     return { ok: false as const, error: writeError(error, fallback) }
   }
 
-  const effects = [
+  const cleared = [
     error.clearsCurrentReport ? '本场逐图战报' : '',
     error.affectedMatches > 0 ? `${error.affectedMatches} 场下游比赛的比分与战报` : '',
+  ].filter(Boolean)
+  const effects = [
+    cleared.length > 0 ? `清空${cleared.join('及')}` : '',
+    error.resettledMembers > 0 ? `重新结算 ${error.resettledMembers} 名成员的星尘` : '',
   ].filter(Boolean)
   return {
     ok: false as const,
@@ -32,7 +36,7 @@ function scoreWriteFailure(error: unknown, fallback: string) {
     affectedMatches: error.affectedMatches,
     clearsCurrentReport: error.clearsCurrentReport,
     confirmationToken: error.confirmationToken,
-    error: `此次修正将清空${effects.join('及')}。确定继续？`,
+    error: `此次修正将${effects.join('，并')}。确定继续？`,
   }
 }
 

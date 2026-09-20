@@ -37,7 +37,12 @@ const { saveAdminMatchReport, saveAdminMatchScore } =
 const { ScoreCorrectionConfirmationError } = await import('../lib/queries/admin/score-write.ts')
 const { confirmScoreWrite } = await import('../lib/score-confirmation.ts')
 
-async function expectConfirmation(work, affectedMatches, clearsCurrentReport) {
+async function expectConfirmation(
+  work,
+  affectedMatches,
+  clearsCurrentReport,
+  resettledMembers = 0,
+) {
   try {
     await work
     assert.fail('a destructive write must require confirmation')
@@ -45,6 +50,7 @@ async function expectConfirmation(work, affectedMatches, clearsCurrentReport) {
     assert.equal(error instanceof ScoreCorrectionConfirmationError, true)
     assert.equal(error.affectedMatches, affectedMatches)
     assert.equal(error.clearsCurrentReport, clearsCurrentReport)
+    assert.equal(error.resettledMembers, resettledMembers)
     assert.match(error.confirmationToken, /^[a-f0-9]{64}$/)
     return error
   }
@@ -72,7 +78,7 @@ const winnerBMaps = [
 {
   const database = scoreCorrectionFixture()
   const before = scoreCorrectionState(database)
-  const confirmation = await expectConfirmation(saveAdminMatchScore(10, 1, 2, 0, 2), 2, true)
+  const confirmation = await expectConfirmation(saveAdminMatchScore(10, 1, 2, 0, 2), 2, true, 2)
   assert.deepEqual(
     scoreCorrectionState(database),
     before,
@@ -151,6 +157,7 @@ const winnerBMaps = [
     saveAdminMatchReport(10, 1, 2, winnerBMaps),
     2,
     false,
+    2,
   )
   assert.deepEqual(scoreCorrectionState(database), before)
   const result = await saveAdminMatchReport(10, 1, 2, winnerBMaps, confirmation.confirmationToken)
@@ -167,7 +174,7 @@ const winnerBMaps = [
 
 {
   const database = scoreCorrectionFixture()
-  const confirmation = await expectConfirmation(saveAdminMatchReport(10, 1, 2, []), 2, false)
+  const confirmation = await expectConfirmation(saveAdminMatchReport(10, 1, 2, []), 2, false, 2)
   const result = await saveAdminMatchReport(10, 1, 2, [], confirmation.confirmationToken)
   assert.equal(result.winnerTeamId, null)
   assert.equal(result.maps, 0)
@@ -197,12 +204,13 @@ for (const score of [1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
 
 {
   const database = scoreCorrectionFixture()
-  const first = await expectConfirmation(saveAdminMatchScore(10, 1, 2, 0, 2), 2, true)
+  const first = await expectConfirmation(saveAdminMatchScore(10, 1, 2, 0, 2), 2, true, 2)
   database.prepare('UPDATE match SET score_b = 1 WHERE id = 20').run()
   const refreshed = await expectConfirmation(
     saveAdminMatchScore(10, 1, 2, 0, 2, first.confirmationToken),
     2,
     true,
+    2,
   )
   assert.notEqual(refreshed.confirmationToken, first.confirmationToken)
 }

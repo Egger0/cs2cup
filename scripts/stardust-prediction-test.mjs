@@ -166,6 +166,41 @@ try {
   assert.deepEqual(await balances(), [30, 30])
   assert.equal(database.prepare('SELECT COUNT(*) AS count FROM match_prediction').get().count, 0)
 
+  const third = await fixture.session(accountIds.manager, {
+    method: 'passkey',
+    authenticatorCredentialId: credentialIds.manager,
+  })
+  await approveMembership(db, third.context, reviewer.context, now + 30)
+  database
+    .prepare(
+      `INSERT INTO stardust_grant (account_id, kind, grant_date, amount, granted_at)
+       VALUES (?, 'check_in', '2026-01-01', 20, 1)`,
+    )
+    .run(accountIds.manager)
+  database.exec(`
+    INSERT INTO match (id, tournament_id, round, slot, round_label, team_a_id, team_b_id, scheduled_at)
+    VALUES (7003, 71, 1, 0, 'Final', 7101, 7102, '${later}');
+  `)
+  assert.deepEqual(await place(accountIds.owner, 7101, 3, now + 500, 7003), { ok: true })
+  assert.deepEqual(await place(accountIds.platformOwner, 7101, 4, now + 500, 7003), { ok: true })
+  assert.deepEqual(await place(accountIds.manager, 7102, 5, now + 500, 7003), { ok: true })
+  database.prepare('UPDATE match SET winner_team_id = 7101 WHERE id = 7003').run()
+
+  const payouts = database
+    .prepare(
+      'SELECT account_id, stake, status, delta FROM match_prediction_outcome WHERE match_id = 7003',
+    )
+    .all()
+  assert.equal(
+    payouts.reduce((sum, row) => sum + row.delta, 0),
+    0,
+    'an uneven pool pays out exactly what it took in',
+  )
+  const paid = Object.fromEntries(payouts.map(row => [row.stake, row.delta]))
+  assert.deepEqual(paid, { 3: 2, 4: 3, 5: -5 })
+  assert.deepEqual(await balances(), [32, 33], 'the larger winning stake earns the larger share')
+  assert.equal(await stardustBalance(db, accountIds.manager), 15)
+
   console.log('stardust prediction tests passed')
 } finally {
   database.close()

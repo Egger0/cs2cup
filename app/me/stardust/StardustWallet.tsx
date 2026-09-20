@@ -8,7 +8,7 @@ import styles from './wallet.module.css'
 const STATUS = { open: '待赛果', won: '命中', lost: '未命中', void: '已退回' } as const
 
 function signed(value: number) {
-  return value > 0 ? `+${value}` : String(value)
+  return value >= 0 ? `+${value}` : String(value)
 }
 
 export function StardustWallet({ wallet }: { wallet: Wallet }) {
@@ -61,11 +61,11 @@ export function StardustWallet({ wallet }: { wallet: Wallet }) {
         </ol>
       ) : wallet.eligible ? (
         <p className={styles.hint}>
-          在比赛详情页的「赛前预测」里为看好的战队应援，赛果出炉后按应援池比例自动结算。
+          在比赛详情页的「赛前预测」里为看好的战队应援，赛果出炉后自动结算。
         </p>
       ) : null}
       <p className={styles.note}>
-        星尘是社团站内积分，只用于赛前预测这类娱乐玩法，不能充值、兑换或提现。
+        星尘是社团站内积分，只用于站内玩法，不能购买、转账、兑换或提现。
       </p>
     </section>
   )
