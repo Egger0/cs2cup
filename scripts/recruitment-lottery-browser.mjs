@@ -38,10 +38,14 @@ async function login(page, user) {
 
 async function approveApplicant(page) {
   await page.goto(`${BASE}/admin/identity`)
-  const card = page.locator('article', { hasText: BROWSER_USERS.applicant.displayName }).first()
+  const cards = page.locator('article', { hasText: BROWSER_USERS.applicant.displayName })
+  const claim = cards.getByRole('button', { name: '领取并开始审核' })
+  if (await claim.count()) {
+    await claim.first().click()
+    await page.waitForLoadState('networkidle')
+  }
+  const card = cards.filter({ hasText: '给申请者的说明' }).first()
   if ((await card.count()) === 0) return
-  const claim = card.getByRole('button', { name: '领取并开始审核' })
-  if (await claim.isVisible().catch(() => false)) await claim.click()
   await card.getByLabel('决定').selectOption({ label: '通过并授予成员资格' })
   await card.getByLabel('给申请者的说明').fill('抽奖闸门：资料齐全，准予通过。')
   await card.getByRole('button', { name: '确认审核决定' }).click()
