@@ -146,7 +146,7 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
               aria-label={open ? '关闭全站目录' : '打开全站目录'}
               onClick={toggle}
             >
-              <span className={styles.orbitIcon} aria-hidden="true">
+              <span className={styles.menuIcon} aria-hidden="true">
                 <i />
               </span>
               <span className={styles.toggleLabel}>{open ? '关闭' : '星图'}</span>
