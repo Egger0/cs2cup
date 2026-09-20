@@ -1,4 +1,6 @@
 .result {
+  --reel-line: calc(clamp(1.8rem, 4vw, 2.8rem) * 1.08);
+
   display: grid;
   gap: 16px;
   max-width: 720px;
@@ -6,6 +8,15 @@
   margin-bottom: 56px;
   padding: clamp(24px, 4vw, 44px);
   background: linear-gradient(135deg, var(--ct-dim), transparent 62%);
+}
+
+.result:has([data-outcome='won']) {
+  border-top-color: var(--honour);
+  background: linear-gradient(135deg, rgba(141, 102, 31, 0.12), transparent 62%);
+}
+
+.result:has([data-outcome='thanks']) {
+  background: none;
 }
 
 .label {
@@ -16,10 +27,91 @@
   text-transform: uppercase;
 }
 
-.result h2 {
+.result :is(h2, .prizeName) {
   font-family: var(--font-display), var(--font-body), sans-serif;
   font-size: clamp(1.8rem, 4vw, 2.8rem);
   line-height: 1.08;
+}
+
+.prizeName:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+}
+
+.outcome,
+.ready {
+  display: grid;
+  gap: 16px;
+}
+
+.outcome[data-outcome='won'] .label {
+  color: var(--honour);
+}
+
+.outcome[data-outcome='won'] .prizeName::after {
+  display: block;
+  width: 100%;
+  height: 2px;
+  margin-top: 14px;
+  background: var(--honour);
+  content: '';
+}
+
+.outcome[data-outcome='thanks'] :is(.label, .prizeName) {
+  color: var(--muted);
+}
+
+.outcome[data-outcome='claimed'] .label {
+  color: var(--muted-2);
+}
+
+.reel {
+  height: var(--reel-line);
+  overflow: hidden;
+}
+
+.reel ol {
+  list-style: none;
+  animation: reel 1.05s cubic-bezier(0.12, 0.72, 0.16, 1) both;
+  transform: translateY(calc(var(--stop) * var(--reel-line) * -1));
+}
+
+.reel li {
+  height: var(--reel-line);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.reel li:last-child {
+  color: var(--ink);
+}
+
+@keyframes reel {
+  from {
+    transform: translateY(0);
+  }
+}
+
+.landed .outcome {
+  animation: land 260ms ease-out both;
+}
+
+.landed [data-outcome='won'] .prizeName::after {
+  animation: rule 320ms 200ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes land {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes rule {
+  from {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
 }
 
 .notice,
@@ -48,7 +140,7 @@
 }
 
 .receipt strong {
-  color: var(--accent);
+  color: var(--honour);
   font-family: var(--font-mono), monospace;
   font-size: clamp(1.7rem, 6vw, 2.7rem);
   letter-spacing: 0.12em;

@@ -163,6 +163,25 @@ try {
     { ok: false, error: '这份奖品已经核销过。' },
   )
 
+  const lateComer = await fixture.session(accountIds.manager, {
+    method: 'passkey',
+    authenticatorCredentialId: credentialIds.manager,
+  })
+  await approveMembership(db, lateComer.context, reviewer.context, now + 20)
+  database
+    .prepare(
+      `DELETE FROM recruitment_lottery_ticket
+       WHERE NOT EXISTS (
+         SELECT 1 FROM recruitment_lottery_draw
+         WHERE ticket_id = recruitment_lottery_ticket.id
+       )`,
+    )
+    .run()
+  assert.deepEqual(await drawRecruitmentLottery(db, accountIds.manager, campaign.starts_at + 7), {
+    ok: false,
+    error: '奖券已经全部抽完了。',
+  })
+
   console.log('recruitment lottery tests passed')
 } finally {
   database.close()

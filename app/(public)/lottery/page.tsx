@@ -1,14 +1,14 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
-import QRCode from 'qrcode'
 import { PageMasthead, RuleGrid } from '@/components/domain/Sections'
 import { ButtonLink } from '@/components/ui'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { currentTimeMillis } from '@/lib/current-time'
 import { getAuthContext } from '@/lib/identity/kernel'
-import { recruitmentLotteryState } from '@/lib/recruitment-lottery'
+import { recruitmentLotteryPrizeTitles, recruitmentLotteryState } from '@/lib/recruitment-lottery'
 import { LotteryDrawButton } from './LotteryDrawButton'
+import { LotteryResult } from './LotteryResult'
+import { lotteryReceipt } from './receipt'
 import styles from './lottery.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -19,20 +19,17 @@ export const metadata: Metadata = {
 }
 
 export default async function RecruitmentLotteryPage() {
+  const database = cloudflareBindings().db
   const context = await getAuthContext()
   const state = await recruitmentLotteryState(
-    cloudflareBindings().db,
+    database,
     context.kind === 'authenticated' ? context.account.id : null,
     currentTimeMillis(),
   )
   const signedIn = context.kind === 'authenticated' && !context.session.recoveryRestricted
-  const receiptQr = state.draw?.receiptCode
-    ? await QRCode.toDataURL(`NBTLOTTERY:${state.draw.receiptCode}`, {
-        errorCorrectionLevel: 'M',
-        margin: 1,
-        width: 360,
-      })
-    : null
+  const receipt = await lotteryReceipt(state.draw)
+  const ready = !receipt && state.phase === 'open' && signedIn && state.eligible
+  const prizeTitles = ready ? await recruitmentLotteryPrizeTitles(database) : []
 
   return (
     <>
@@ -42,39 +39,15 @@ export default async function RecruitmentLotteryPage() {
         eyebrow="2026 招新 / 9 月 20 日"
         title="百团大战抽奖"
         lede="仅限已审核通过的宁理电竞社成员，每人一次；奖券抽出后不再放回。"
+        density="compact"
       />
       <section className="section">
         <div className="wrap">
           <article className={styles.result} data-rise="2" aria-live="polite">
             {!state.campaign ? (
               <p>抽奖暂未配置。</p>
-            ) : state.draw ? (
-              <>
-                <p className={styles.label}>抽奖结果</p>
-                <h2>{state.draw.prizeTitle}</h2>
-                {state.draw.receiptCode ? (
-                  state.draw.claimedAt ? (
-                    <p className={styles.notice}>奖品已核销，感谢参与百团大战。</p>
-                  ) : (
-                    <div className={styles.receipt}>
-                      <span>摊位兑奖二维码</span>
-                      {receiptQr ? (
-                        <Image
-                          src={receiptQr}
-                          alt="用于摊位核销奖品的二维码"
-                          width={180}
-                          height={180}
-                          unoptimized
-                        />
-                      ) : null}
-                      <strong>{state.draw.receiptCode}</strong>
-                      <p>请向工作人员出示此二维码；核销成功后即可领取奖品。</p>
-                    </div>
-                  )
-                ) : (
-                  <p className={styles.notice}>感谢参与，祝你在宁理电竞社玩得开心。</p>
-                )}
-              </>
+            ) : receipt ? (
+              <LotteryResult receipt={receipt} />
             ) : state.phase === 'upcoming' ? (
               <>
                 <p className={styles.label}>活动尚未开始</p>
@@ -105,12 +78,7 @@ export default async function RecruitmentLotteryPage() {
                 </Link>
               </>
             ) : (
-              <>
-                <p className={styles.label}>资格已确认</p>
-                <h2>你的奖券已就绪</h2>
-                <p className={styles.notice}>点击后立即揭晓结果，每个成员只能抽取一次。</p>
-                <LotteryDrawButton />
-              </>
+              <LotteryDrawButton prizeTitles={prizeTitles} />
             )}
           </article>
 

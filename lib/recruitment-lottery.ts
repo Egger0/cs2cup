@@ -90,6 +90,31 @@ async function approvedMember(database: IdentityDatabase, accountId: string) {
   return row?.eligible === 1
 }
 
+async function remainingTickets(database: IdentityDatabase) {
+  const row = await database
+    .prepare(
+      `SELECT COUNT(*) AS remaining FROM recruitment_lottery_ticket AS ticket
+       WHERE ticket.campaign_id = ?
+         AND NOT EXISTS (
+           SELECT 1 FROM recruitment_lottery_draw WHERE ticket_id = ticket.id
+         )`,
+    )
+    .bind(RECRUITMENT_LOTTERY_CAMPAIGN_ID)
+    .first<{ remaining: number }>()
+  return Number(row?.remaining ?? 0)
+}
+
+export async function recruitmentLotteryPrizeTitles(database: IdentityDatabase) {
+  const rows = await database
+    .prepare(
+      `SELECT title FROM recruitment_lottery_prize
+       WHERE campaign_id = ? ORDER BY sort_order`,
+    )
+    .bind(RECRUITMENT_LOTTERY_CAMPAIGN_ID)
+    .all<{ title: string }>()
+  return rows.results.map(row => row.title)
+}
+
 function visibleDraw(row: DrawRow | null): RecruitmentLotteryState['draw'] {
   if (!row) return null
   return {
@@ -183,7 +208,9 @@ export async function drawRecruitmentLottery(
     if (await drawForAccount(database, accountId)) return { ok: true }
   }
 
-  return { ok: false, error: '奖券刚刚被抽完，请刷新页面确认。' }
+  return (await remainingTickets(database)) === 0
+    ? { ok: false, error: '奖券已经全部抽完了。' }
+    : { ok: false, error: '刚才同时抽的人太多，请再抽一次。' }
 }
 
 export async function claimRecruitmentLotteryPrize(
