@@ -11,8 +11,8 @@ const STATUS_COPY = { open: '待赛果', won: '命中', lost: '未命中', void:
 
 type Payload = { ok: boolean; error?: string; board?: MatchPredictionBoard }
 
-function ratio(total: number, side: number) {
-  return side > 0 ? `×${(total / side).toFixed(2)}` : '—'
+function percent(people: number, side: number) {
+  return people > 0 ? `${Math.round((side / people) * 100)}%` : '—'
 }
 
 export function MatchPrediction({ matchId }: { matchId: number }) {
@@ -40,7 +40,8 @@ export function MatchPrediction({ matchId }: { matchId: number }) {
   if (!board?.sides || board.phase === 'unavailable') return null
   const [a, b] = board.sides
   const total = a.stake + b.stake
-  const share = total ? (a.stake / total) * 100 : 50
+  const people = a.backers + b.backers
+  const share = people ? (a.backers / people) * 100 : 50
   const mineSide = board.sides.find(side => side.id === board.mine?.teamId)
   const canPlace = board.phase === 'open' && board.viewer === 'member' && !board.mine
 
@@ -84,7 +85,7 @@ export function MatchPrediction({ matchId }: { matchId: number }) {
             : board.phase === 'settled'
               ? '赛果已出'
               : '预测已截止'}
-          {` · 应援池 ${total} 星尘 · ${a.backers + b.backers} 人参与`}
+          {` · ${people} 人参与 · 共应援 ${total} 星尘`}
         </p>
       </header>
 
@@ -98,7 +99,7 @@ export function MatchPrediction({ matchId }: { matchId: number }) {
             <strong>{side.tag}</strong>
             <span className={styles.sideName}>{side.name}</span>
             <span className={styles.figures}>
-              <b>{ratio(total, side.stake)}</b> {side.stake} 星尘 · {side.backers} 人
+              <b>{percent(people, side.backers)}</b> {side.backers} 人 · {side.stake} 星尘
             </span>
           </div>
         ))}
@@ -112,10 +113,14 @@ export function MatchPrediction({ matchId }: { matchId: number }) {
           <span>{STATUS_COPY[board.mine.status]}</span>
           你为 {mineSide.tag} 应援了 {board.mine.stake} 星尘
           {board.mine.status === 'open'
-            ? `，命中预计返还 ${Math.floor((board.mine.stake * total) / mineSide.stake)} 星尘`
+            ? '，等赛果出炉'
             : board.mine.status === 'void'
               ? '，已全额退回'
-              : `，结算 ${board.mine.delta > 0 ? '+' : ''}${board.mine.delta} 星尘`}
+              : board.mine.status === 'won'
+                ? board.mine.delta > 0
+                  ? `，获得 +${board.mine.delta} 星尘`
+                  : '，星尘如数返还'
+                : ''}
         </p>
       ) : canPlace ? (
         <form className={styles.form} onSubmit={submit}>
@@ -192,7 +197,7 @@ export function MatchPrediction({ matchId }: { matchId: number }) {
         </p>
       ) : null}
       <p className={styles.note}>
-        星尘是社团站内积分，只用于赛前预测这类娱乐玩法，不能充值、兑换或提现。
+        星尘是社团站内积分，只用于站内玩法，不能购买、转账、兑换或提现。
       </p>
     </section>
   )
