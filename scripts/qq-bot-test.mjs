@@ -12,6 +12,7 @@ registerHooks({
 const {
   qqBotConfig,
   qqCommand,
+  deferQqWebhookEvent,
   qqGroupMemberAdd,
   qqGroupMessage,
   qqWebhookVerification,
@@ -48,6 +49,17 @@ assert.deepEqual(qqCommand('/解绑'), { kind: 'unbind' })
 assert.equal(qqCommand('绑定 reviewer.user'), null)
 assert.equal(qqCommand('/绑定'), null)
 assert.equal(qqCommand('签到啊'), null)
+const background = []
+const failures = []
+deferQqWebhookEvent(
+  { waitUntil: promise => background.push(promise) },
+  Promise.reject(new Error('QQ unavailable')),
+  (message, error) => failures.push({ message, error: error.message }),
+)
+await background[0]
+assert.deepEqual(failures, [
+  { message: '[qq-bot] event handling unavailable', error: 'QQ unavailable' },
+])
 assert.deepEqual(
   qqGroupMessage({
     id: 'event-1',

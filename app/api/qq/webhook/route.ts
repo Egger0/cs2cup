@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getCloudflareContext } from '@opennextjs/cloudflare'
 
 import { cloudflareBindings, cloudflareEnvironment } from '@/lib/cloudflare-bindings'
 import { formatSiteCompactDateTime } from '@/lib/datetime'
@@ -22,6 +23,7 @@ import {
 import {
   qqBotConfig,
   qqCommand,
+  deferQqWebhookEvent,
   qqGroupMemberAdd,
   qqGroupMessage,
   qqWebhookVerification,
@@ -196,6 +198,27 @@ async function commandReply(
     .join('\n')
 }
 
+async function processQqGroupMessage(
+  config: NonNullable<ReturnType<typeof qqBotConfig>>,
+  message: NonNullable<ReturnType<typeof qqGroupMessage>>,
+  command: NonNullable<ReturnType<typeof qqCommand>>,
+) {
+  if (!config.allowedGroupOpenId) {
+    console.info('[qq-bot] allowed group OpenID needed', { groupOpenId: message.groupOpenId })
+    if (command.kind === 'check_in') {
+      await replyToQqGroup(
+        config,
+        message,
+        `机器人正在完成官方群绑定。请将这串群标识发给平台负责人：${message.groupOpenId}`,
+      )
+    }
+    return
+  }
+  if (message.groupOpenId !== config.allowedGroupOpenId) return
+  const content = await commandReply(command, message.groupOpenId, message.memberOpenId)
+  await replyToQqGroup(config, message, content)
+}
+
 export async function POST(request: Request) {
   const config = qqBotConfig(cloudflareEnvironment())
   if (!config) return new NextResponse('QQ bot is not configured', { status: 503 })
@@ -218,48 +241,22 @@ export async function POST(request: Request) {
     if (!config.allowedGroupOpenId || memberAdd.groupOpenId !== config.allowedGroupOpenId) {
       return new NextResponse(null, { status: 204 })
     }
-    try {
-      await sendQqWelcome(
+    deferQqWebhookEvent(
+      getCloudflareContext().ctx,
+      sendQqWelcome(
         config,
         cloudflareBindings().db,
         memberAdd.groupOpenId,
         memberAdd.eventId,
         memberAdd.memberOpenId,
-      )
-      return new NextResponse(null, { status: 204 })
-    } catch (error) {
-      console.error('[qq-bot] welcome message unavailable', error)
-      return new NextResponse('QQ bot unavailable', { status: 503 })
-    }
+      ).then(() => undefined),
+    )
+    return new NextResponse(null, { status: 204 })
   }
   const message = qqGroupMessage(payload)
   if (!message) return new NextResponse(null, { status: 204 })
   const command = qqCommand(message.content)
   if (!command) return new NextResponse(null, { status: 204 })
-  if (!config.allowedGroupOpenId) {
-    console.info('[qq-bot] allowed group OpenID needed', { groupOpenId: message.groupOpenId })
-    if (command.kind === 'check_in') {
-      try {
-        await replyToQqGroup(
-          config,
-          message,
-          `机器人正在完成官方群绑定。请将这串群标识发给平台负责人：${message.groupOpenId}`,
-        )
-      } catch (error) {
-        console.error('[qq-bot] group binding reply unavailable', error)
-        return new NextResponse('QQ bot unavailable', { status: 503 })
-      }
-    }
-    return new NextResponse(null, { status: 204 })
-  }
-  if (message.groupOpenId !== config.allowedGroupOpenId)
-    return new NextResponse(null, { status: 204 })
-  try {
-    const content = await commandReply(command, message.groupOpenId, message.memberOpenId)
-    await replyToQqGroup(config, message, content)
-    return new NextResponse(null, { status: 204 })
-  } catch (error) {
-    console.error('[qq-bot] command handling unavailable', error)
-    return new NextResponse('QQ bot unavailable', { status: 503 })
-  }
+  deferQqWebhookEvent(getCloudflareContext().ctx, processQqGroupMessage(config, message, command))
+  return new NextResponse(null, { status: 204 })
 }

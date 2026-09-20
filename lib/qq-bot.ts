@@ -21,6 +21,10 @@ export interface QqGroupMemberAdd {
   memberOpenId: string
 }
 
+export interface QqWebhookExecutionContext {
+  waitUntil(promise: Promise<unknown>): void
+}
+
 export type QqCommand =
   | { kind: 'check_in' }
   | { kind: 'leaderboard' }
@@ -215,6 +219,14 @@ export function qqCommand(content: string): QqCommand | null {
   const binding = /^\/绑定\s+(\S+)$/.exec(normalized)
   if (binding?.[1]) return { kind: 'bind', username: binding[1] }
   return normalized === '/解绑' ? { kind: 'unbind' } : null
+}
+
+export function deferQqWebhookEvent(
+  context: QqWebhookExecutionContext,
+  task: Promise<void>,
+  report: (message: string, error: unknown) => void = console.error,
+) {
+  context.waitUntil(task.catch(error => report('[qq-bot] event handling unavailable', error)))
 }
 
 async function postGroupReply(config: QqBotConfig, message: QqGroupMessage, content: string) {
