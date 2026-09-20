@@ -49,13 +49,20 @@ export class ScoreCorrectionConfirmationError extends Error {
   readonly affectedMatches: number
   readonly clearsCurrentReport: boolean
   readonly confirmationToken: string
+  readonly resettledMembers: number
 
-  constructor(affectedMatches: number, clearsCurrentReport: boolean, confirmationToken: string) {
+  constructor(
+    affectedMatches: number,
+    clearsCurrentReport: boolean,
+    confirmationToken: string,
+    resettledMembers: number,
+  ) {
     super('score correction requires confirmation')
     this.name = 'ScoreCorrectionConfirmationError'
     this.affectedMatches = affectedMatches
     this.clearsCurrentReport = clearsCurrentReport
     this.confirmationToken = confirmationToken
+    this.resettledMembers = resettledMembers
   }
 }
 
@@ -188,7 +195,17 @@ export async function prepareAdminMatchScore(
   const resetsEstablishedWinner =
     match.winner_team_id !== null && winnerChanged && descendants.size > 0
 
-  if (clearsCurrentReport || resetsEstablishedWinner) {
+  const resettledMembers =
+    winnerChanged && match.winner_team_id !== null
+      ? ((
+          await db
+            .prepare('SELECT COUNT(*) AS members FROM match_prediction WHERE match_id = ?')
+            .bind(matchId)
+            .first<{ members: number }>()
+        )?.members ?? 0)
+      : 0
+
+  if (clearsCurrentReport || resetsEstablishedWinner || resettledMembers > 0) {
     const confirmationToken = await stateToken(db, match, all.results, descendants, [
       scoreA,
       scoreB,
@@ -199,6 +216,7 @@ export async function prepareAdminMatchScore(
         resetsEstablishedWinner ? descendants.size : 0,
         clearsCurrentReport,
         confirmationToken,
+        resettledMembers,
       )
     }
   }

@@ -73,6 +73,14 @@ const schema = `
     score_b INTEGER,
     winner_team_id INTEGER REFERENCES team(id)
   );
+  CREATE TABLE match_prediction (
+    match_id INTEGER NOT NULL REFERENCES match(id) ON DELETE CASCADE,
+    account_id TEXT NOT NULL,
+    team_id INTEGER NOT NULL REFERENCES team(id),
+    stake INTEGER NOT NULL,
+    placed_at INTEGER NOT NULL,
+    PRIMARY KEY (match_id, account_id)
+  );
   CREATE TABLE match_map (
     id INTEGER PRIMARY KEY,
     match_id INTEGER NOT NULL REFERENCES match(id) ON DELETE CASCADE,
@@ -124,6 +132,16 @@ export function scoreCorrectionFixture() {
         "INSERT INTO match_map (id,match_id,pick_order,map_name,action,chosen_by,score_a,score_b,played) VALUES (?,?,1,?,'pick','a',13,5,1)",
       )
       .run(id, matchId, mapName)
+  }
+  for (const [account, teamId] of [
+    ['member-one', 1],
+    ['member-two', 2],
+  ]) {
+    database
+      .prepare(
+        'INSERT INTO match_prediction (match_id,account_id,team_id,stake,placed_at) VALUES (10,?,?,10,1)',
+      )
+      .run(account, teamId)
   }
   globalThis.__scoreCorrectionBindings = { db: new D1Database(database), media: {} }
   return database
