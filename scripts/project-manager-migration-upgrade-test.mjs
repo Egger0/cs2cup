@@ -24,45 +24,62 @@ try {
     VALUES ('${hash('a')}', 1, 1000);
   `)
   database
-    .prepare(`INSERT INTO identity_legacy_admin_bootstrap
+    .prepare(
+      `INSERT INTO identity_legacy_admin_bootstrap
       (legacy_admin_id, secret_hash, legacy_session_token_hash, expected_account_id, issued_at, expires_at)
-      VALUES (1, ?, ?, ?, 100, 900)`)
+      VALUES (1, ?, ?, ?, 100, 900)`,
+    )
     .run(hash('b'), hash('a'), ownerAccountId)
   database
-    .prepare(`INSERT INTO identity_account
+    .prepare(
+      `INSERT INTO identity_account
       (id, webauthn_user_handle, display_name, status, verification_state, created_at, updated_at)
-      VALUES (?, ?, 'Legacy Owner', 'active', 'legacy_unverified', 150, 150)`)
+      VALUES (?, ?, 'Legacy Owner', 'active', 'legacy_unverified', 150, 150)`,
+    )
     .run(ownerAccountId, opaque('U'))
   database
-    .prepare(`INSERT INTO identity_password_credential
+    .prepare(
+      `INSERT INTO identity_password_credential
       (id, account_id, username, algorithm, parameters_json, salt, password_hash, pepper_version,
        registration_kind, legacy_admin_bootstrap_id, created_at, updated_at)
       VALUES (?, ?, 'projectowner', 'argon2id', '{"m":65536,"t":3,"p":1}', ?, ?, 1,
-       'legacy_admin_bootstrap', 1, 200, 200)`)
+       'legacy_admin_bootstrap', 1, 200, 200)`,
+    )
     .run(credentialId, ownerAccountId, Buffer.alloc(16, 1), Buffer.alloc(32, 2))
   database
-    .prepare(`UPDATE identity_legacy_admin_bootstrap
+    .prepare(
+      `UPDATE identity_legacy_admin_bootstrap
       SET status = 'consumed', consumed_at = 250, consume_nonce = ?, password_credential_id = ?,
-          revision = 1, write_nonce = ? WHERE legacy_admin_id = 1`)
+          revision = 1, write_nonce = ? WHERE legacy_admin_id = 1`,
+    )
     .run(opaque('N'), credentialId, opaque('W'))
   database
-    .prepare(`INSERT INTO identity_role_assignment
+    .prepare(
+      `INSERT INTO identity_role_assignment
       (id, account_id, role, scope_type, grant_reason, granted_at)
-      VALUES (?, ?, 'platform_owner', 'platform', 'Legacy bootstrap owner', 260)`)
+      VALUES (?, ?, 'platform_owner', 'platform', 'Legacy bootstrap owner', 260)`,
+    )
     .run(roleId, ownerAccountId)
   database
-    .prepare(`UPDATE identity_legacy_admin_bootstrap
+    .prepare(
+      `UPDATE identity_legacy_admin_bootstrap
       SET status = 'completed', owner_role_assignment_id = ?, completed_at = 260,
-          revision = 2, write_nonce = ? WHERE legacy_admin_id = 1`)
+          revision = 2, write_nonce = ? WHERE legacy_admin_id = 1`,
+    )
     .run(roleId, opaque('X'))
 
   database.exec('BEGIN')
   database.exec(await readFile(new URL('0044_project_manager_role.sql', directory), 'utf8'))
   database.exec('COMMIT')
 
-  assert.equal(database.prepare('SELECT COUNT(*) AS count FROM identity_role_assignment').get().count, 1)
   assert.equal(
-    database.prepare('SELECT COUNT(*) AS count FROM identity_role_assignment_before_project_scope').get().count,
+    database.prepare('SELECT COUNT(*) AS count FROM identity_role_assignment').get().count,
+    1,
+  )
+  assert.equal(
+    database
+      .prepare('SELECT COUNT(*) AS count FROM identity_role_assignment_before_project_scope')
+      .get().count,
     1,
   )
   assert.equal(
