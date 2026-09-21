@@ -20,6 +20,8 @@ export {
   adminDeleteTournament,
   adminListTournaments,
   adminSaveTournament,
+  findTournamentRecord,
+  listTournamentRecordsForGames,
 } from './content/tournaments'
 export {
   adminAttachPhotoVariants,

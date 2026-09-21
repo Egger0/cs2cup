@@ -2,7 +2,8 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { registerHooks } from 'node:module'
 
-const authModule = 'data:text/javascript,export async function requireAdmin(){}'
+const authModule =
+  'data:text/javascript,export async function requireAdmin(){} export async function canCreateTournamentForGame(){return true}'
 const rdbModule = `data:text/javascript,
   export async function deletePrivateRows(){}
   export async function insertPrivateRows(){}
@@ -12,8 +13,7 @@ const actionContentModule = `data:text/javascript,
   export async function adminCreateTournament(values){return globalThis.__tournamentCreate(values)}
   export async function adminDeleteTournament(){}
   export async function adminListPhotos(){return []}
-  export async function adminListTournaments(){return []}
-  export async function adminSaveTournament(){}`
+  export async function adminSaveTournament(){} export async function findTournamentRecord(){return null}`
 const actionRdbModule = `data:text/javascript,
   export class RdbError extends Error {
     constructor(status, table, message) {

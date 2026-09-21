@@ -8,8 +8,8 @@ import {
   adminDeleteTournament,
   adminListPhotos,
   adminSaveTournament,
+  findTournamentRecord,
 } from '@/lib/queries/content'
-import { findTournamentRecord } from '@/lib/queries/content/tournaments'
 import { removeObject } from '@/lib/storage'
 import { parseTournamentCreate, parseTournamentUpdate } from '@/lib/tournament-form'
 import { writeError } from './_errors'
