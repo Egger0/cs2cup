@@ -66,9 +66,6 @@ SELECT
   revoked_by_account_id, revoke_reason, revoked_at, revision, write_nonce
 FROM identity_role_assignment_before_project_scope;
 
--- Keep the renamed table as the foreign-key target for completed legacy owner
--- bootstrap evidence. D1 migrations run in a transaction, so foreign_keys cannot
--- be disabled around this table rebuild.
 
 CREATE UNIQUE INDEX identity_role_active_platform_idx
 ON identity_role_assignment(account_id, role)
