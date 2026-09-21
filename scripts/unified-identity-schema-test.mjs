@@ -14,6 +14,7 @@ const schemaTests = [
   './moderated-password-schema-test.mjs',
   './moderated-recovery-schema-test.mjs',
   './legacy-admin-bootstrap-schema-test.mjs',
+  './project-manager-migration-upgrade-test.mjs',
   './legacy-cutover-session-guard-schema-test.mjs',
   './moderated-migration-upgrade-test.mjs',
 ]
