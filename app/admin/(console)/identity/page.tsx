@@ -201,6 +201,7 @@ export default async function IdentityReviewPage({
           <AccountRecovery />
           <ReviewerAccess
             assignments={access.assignments}
+            games={access.games}
             tournaments={access.tournaments}
             total={access.total}
           />

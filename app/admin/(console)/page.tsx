@@ -22,6 +22,7 @@ export default async function AdminPage({
 }) {
   const access = await requirePlatformConsole()
   if (!access.capabilities.includes('platform.configure')) {
+    if (access.hasProjectWork) redirect('/admin/tournaments')
     if (!access.hasTournamentWork) redirect('/admin/identity')
     const page = parsePageNumber((await searchParams).workspacesPage, WORKSPACE_PAGE_SIZE)
     const result = await listCurrentUnifiedTournamentWorkspaces({

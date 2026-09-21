@@ -1,7 +1,7 @@
 'use server'
 
 import { updateTag } from 'next/cache'
-import { requireAdmin } from '@/lib/auth'
+import { requireTournamentStaffCapability } from '@/lib/auth'
 import { isIsoInstant } from '@/lib/datetime'
 import {
   listAdminMatches,
@@ -45,7 +45,7 @@ function scoreConfirmationToken(value: unknown) {
 }
 
 export async function buildBracket(tournamentId: number) {
-  await requireAdmin()
+  await requireTournamentStaffCapability(tournamentId, 'tournament.bracket.manage')
 
   const teams = await listTeamsWithContact(tournamentId)
   const approved = teams
@@ -88,7 +88,7 @@ export async function recordScore(
   tournamentId: number,
   confirmationToken: string | null = null,
 ) {
-  await requireAdmin()
+  await requireTournamentStaffCapability(tournamentId, 'tournament.results.write')
 
   const matches = await listAdminMatches(tournamentId)
   if (!matches.some(match => match.id === matchId)) {
@@ -123,7 +123,7 @@ export async function saveMatchReport(
   mapsJson: string,
   confirmationToken: string | null = null,
 ) {
-  await requireAdmin()
+  await requireTournamentStaffCapability(tournamentId, 'tournament.results.write')
 
   const matches = await listAdminMatches(tournamentId)
   if (!matches.some(match => match.id === matchId)) {
@@ -193,7 +193,7 @@ export async function saveMatchReport(
 }
 
 export async function publishMatchSchedule(tournamentId: number, payloadJson: string) {
-  await requireAdmin()
+  await requireTournamentStaffCapability(tournamentId, 'tournament.schedule.manage')
 
   if (!Number.isSafeInteger(tournamentId) || tournamentId <= 0) {
     return { ok: false as const, error: '赛事编号无效' }

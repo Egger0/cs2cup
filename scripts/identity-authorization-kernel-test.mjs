@@ -22,6 +22,7 @@ registerHooks({
 const { authorize, revokeSession } = await import('../lib/identity/kernel.ts')
 const { accountIds, createIdentityKernelFixture, credentialIds, opaque, passwordCredentialIds } =
   await import('./identity-kernel-test-fixture.mjs')
+const { assertProjectManagerScope } = await import('./identity-project-manager-scope-test.mjs')
 
 const fixture = await createIdentityKernelFixture()
 const { database, db, now } = fixture
@@ -161,6 +162,7 @@ try {
     { ok: false, reason: 'forbidden' },
     'an assignment is ineffective at its exact expiry',
   )
+  await assertProjectManagerScope({ fixture, decision, manager, owner, platformOwner, now })
   fixture.execute(
     `UPDATE identity_registration_membership
      SET revoked_at = ?, revoke_reason = 'test revocation', revision = revision + 1,

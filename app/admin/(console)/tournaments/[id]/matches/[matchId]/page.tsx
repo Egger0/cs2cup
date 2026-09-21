@@ -2,9 +2,9 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { indexMatches, indexTeams, resolveMatch } from '@/lib/bracket'
 import { formatSiteDateTime } from '@/lib/datetime'
-import { requireAdmin } from '@/lib/auth'
+import { requirePlatformConsole } from '@/lib/auth'
 import { listAdminMatchMaps, listAdminMatches, listTeamsWithContact } from '@/lib/queries/admin'
-import { adminListTournaments } from '@/lib/queries/content'
+import { findTournamentRecord } from '@/lib/queries/content/tournaments'
 import { MatchReportEditor } from './MatchReportEditor'
 import styles from './MatchReportEditor.module.css'
 
@@ -16,24 +16,23 @@ export default async function AdminMatchReportPage({
 }: {
   params: Promise<{ id: string; matchId: string }>
 }) {
-  await requireAdmin()
+  await requirePlatformConsole()
 
   const { id, matchId: rawMatchId } = await params
   const tournamentId = Number(id)
   const matchId = Number(rawMatchId)
   if (!Number.isInteger(tournamentId) || !Number.isInteger(matchId)) notFound()
 
-  const [tournaments, matches, teams] = await Promise.all([
-    adminListTournaments(),
+  const [tournament, matches, teams] = await Promise.all([
+    findTournamentRecord(tournamentId),
     listAdminMatches(tournamentId),
     listTeamsWithContact(tournamentId),
   ])
-  const tournament = tournaments.find(entry => entry.id === tournamentId)
   const match = matches.find(entry => entry.id === matchId && entry.tournamentId === tournamentId)
   if (!tournament || !match) notFound()
 
   const resolved = resolveMatch(match, indexMatches(matches), indexTeams(teams))
-  const maps = await listAdminMatchMaps([match.id])
+  const maps = await listAdminMatchMaps([match.id], tournamentId)
   return (
     <div className={styles.page}>
       <Link href="/admin" className={styles.back}>

@@ -11,6 +11,7 @@ export type PlatformConsoleCapability = Extract<
 
 export interface UnifiedConsolePermissions {
   readonly capabilities: readonly PlatformConsoleCapability[]
+  readonly hasProjectWork: boolean
   readonly hasTournamentWork: boolean
   readonly holdsReviewRole: boolean
 }
@@ -44,7 +45,7 @@ export async function resolveUnifiedConsolePermissions(
   const tournamentSessionAssured =
     !context.session.recoveryRestricted &&
     context.session.authenticatedAt >= now - STAFF_RECENT_AUTH_MAX_AGE_MS
-  const held = (scope: 'tournament' | 'platform', roles: readonly string[]) =>
+  const held = (scope: 'game' | 'tournament' | 'platform', roles: readonly string[]) =>
     database
       .prepare(
         `SELECT 1 AS present FROM identity_role_assignment
@@ -55,21 +56,24 @@ export async function resolveUnifiedConsolePermissions(
       )
       .bind(context.account.id, ...roles, now, now)
       .first<{ present: number }>()
-  const [role, reviewRole] = await Promise.all([
+  const [projectRole, role, reviewRole] = await Promise.all([
+    held('game', ['project_manager']),
     held('tournament', ['organizer', 'referee', 'check_in_operator']),
     held('platform', ['platform_owner', 'identity_reviewer']),
   ])
-  if (capabilities.length || (role && tournamentSessionAssured)) {
+  if (capabilities.length || ((projectRole || role) && tournamentSessionAssured)) {
     return {
       ok: true,
       permissions: {
         capabilities,
+        hasProjectWork: Boolean(projectRole),
         hasTournamentWork: Boolean(role),
         holdsReviewRole: Boolean(reviewRole),
       },
     } as const
   }
   if (
+    projectRole ||
     role ||
     reviewRole ||
     decisions.some(decision => !decision.ok && decision.reason === 'assurance_required')

@@ -38,10 +38,11 @@ interface TournamentRow {
 export async function adminListTournaments(): Promise<Tournament[]> {
   await requireAdmin()
 
-  const rows = await selectPrivateRows<TournamentRow>('tournament', {
-    order: 'season.desc,edition.desc',
-  })
-  return rows.map(row => ({
+  return listTournamentRecords()
+}
+
+function toTournament(row: TournamentRow): Tournament {
+  return {
     id: row.id,
     slug: row.slug,
     title: row.title,
@@ -65,7 +66,28 @@ export async function adminListTournaments(): Promise<Tournament[]> {
     lede: row.lede,
     championName: row.champion_name,
     championNote: row.champion_note,
-  }))
+  }
+}
+
+async function listTournamentRecords(filters?: Record<string, string>): Promise<Tournament[]> {
+  const rows = await selectPrivateRows<TournamentRow>('tournament', {
+    filters,
+    order: 'season.desc,edition.desc',
+  })
+  return rows.map(toTournament)
+}
+
+export async function listTournamentRecordsForGames(
+  gameIds: readonly number[],
+): Promise<Tournament[]> {
+  const ids = [...new Set(gameIds)]
+  if (ids.length === 0 || ids.some(id => !Number.isSafeInteger(id) || id <= 0)) return []
+  return listTournamentRecords({ game_id: `in.(${ids.join(',')})` })
+}
+
+export async function findTournamentRecord(id: number): Promise<Tournament | null> {
+  if (!Number.isSafeInteger(id) || id <= 0) return null
+  return (await listTournamentRecords({ id: `eq.${id}` }))[0] ?? null
 }
 
 export function adminCreateTournament(values: {
@@ -76,18 +98,16 @@ export function adminCreateTournament(values: {
   edition: number
   teamCap: number
 }) {
-  return adminMutation(() =>
-    insertPrivateRows('tournament', {
-      slug: values.slug,
-      title: values.title,
-      game_id: values.gameId,
-      season: values.season,
-      edition: values.edition,
-      team_cap: values.teamCap,
-      status: 'draft',
-      hero_bottom: values.title,
-    }),
-  )
+  return insertPrivateRows('tournament', {
+    slug: values.slug,
+    title: values.title,
+    game_id: values.gameId,
+    season: values.season,
+    edition: values.edition,
+    team_cap: values.teamCap,
+    status: 'draft',
+    hero_bottom: values.title,
+  })
 }
 
 export function adminDeleteTournament(id: number) {
@@ -95,8 +115,6 @@ export function adminDeleteTournament(id: number) {
 }
 
 export async function adminSaveTournament(id: number, values: TournamentUpdateValues) {
-  const rows = await adminMutation(() =>
-    updatePrivateRows('tournament', values, { filters: { id: `eq.${id}` } }),
-  )
+  const rows = await updatePrivateRows('tournament', values, { filters: { id: `eq.${id}` } })
   return rows.length > 0
 }

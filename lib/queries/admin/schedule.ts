@@ -1,5 +1,5 @@
 import 'server-only'
-import { requireAdmin } from '../../auth'
+import { requireTournamentStaffCapability } from '../../auth'
 import { cloudflareBindings } from '../../cloudflare-bindings'
 import type { MatchScheduleInput, MatchScheduleResult } from './matches'
 
@@ -7,7 +7,7 @@ export async function replaceMatchSchedule(
   tournamentId: number,
   matches: MatchScheduleInput[],
 ): Promise<MatchScheduleResult> {
-  await requireAdmin()
+  await requireTournamentStaffCapability(tournamentId, 'tournament.schedule.manage')
   if (!matches.length || new Set(matches.map(match => match.id)).size !== matches.length) {
     throw new Error('赛程场次无效')
   }

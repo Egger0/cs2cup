@@ -49,6 +49,31 @@ try {
     ),
     { ok: false, reason: 'invalid_input' },
   )
+  const projectManagerGrant = await grantManagedRole(
+    db,
+    platformOwner.context,
+    {
+      username: 'staff.user',
+      role: 'project_manager',
+      gameId: 71,
+      tournamentId: null,
+      reason: 'Own the Identity Kernel project',
+    },
+    { now: now + 14 },
+  )
+  assert.equal(projectManagerGrant.ok, true)
+  if (!projectManagerGrant.ok) throw new Error('Expected project manager grant')
+  const projectRoles = await listManagedRoleAssignments(db, platformOwner.context, {
+    now: now + 14,
+  })
+  assert.equal(
+    projectRoles.ok &&
+      projectRoles.assignments.some(
+        assignment =>
+          assignment.id === projectManagerGrant.assignmentId && assignment.gameId === 71,
+      ),
+    true,
+  )
   const ownerGrant = await grantManagedRole(
     db,
     platformOwner.context,

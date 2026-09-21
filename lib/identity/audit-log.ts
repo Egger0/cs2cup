@@ -39,6 +39,7 @@ const REASONED_EVENTS = new Set([
 
 const ROLE_LABELS: Readonly<Record<string, string>> = {
   identity_reviewer: '资格审核员',
+  project_manager: '项目负责人',
   organizer: '赛事组织者',
   referee: '裁判',
   check_in_operator: '签到操作员',
@@ -49,8 +50,13 @@ function eventLabel(eventType: string, role: string | null) {
   return role && ROLE_LABELS[role] ? `${label} · ${ROLE_LABELS[role]}` : label
 }
 
-function resourceLabel(type: string | null, tournamentTitle: string | null) {
+function resourceLabel(
+  type: string | null,
+  tournamentTitle: string | null,
+  gameName: string | null,
+) {
   if (type === 'tournament') return tournamentTitle ? `赛事 · ${tournamentTitle}` : '赛事权限'
+  if (type === 'game') return gameName ? `项目 · ${gameName}` : '项目权限'
   if (type === 'platform') return '平台权限'
   if (type === 'membership') return '成员资格'
   if (type === 'membership_application') return '资格申请'
@@ -106,6 +112,7 @@ export async function listPlatformAuditEvents(
                 COALESCE(actor.display_name, event.actor_type) AS actor,
                 target.display_name AS target, event.resource_type,
                 tournament.title AS tournament_title,
+                game.name AS game_name,
                 json_extract(event.details_json, '$.role') AS role,
                 json_extract(event.details_json, '$.reason') AS reason,
                 event.created_at
@@ -114,6 +121,8 @@ export async function listPlatformAuditEvents(
          LEFT JOIN identity_account AS target ON target.id = event.target_account_id
          LEFT JOIN tournament ON event.resource_type = 'tournament'
            AND tournament.id = CAST(event.resource_id AS INTEGER)
+         LEFT JOIN game ON event.resource_type = 'game'
+           AND game.id = CAST(event.resource_id AS INTEGER)
          ORDER BY event.created_at DESC, event.id DESC LIMIT ? OFFSET ?`,
       )
       .bind(limit, offset)
@@ -124,6 +133,7 @@ export async function listPlatformAuditEvents(
         target: string | null
         resource_type: string | null
         tournament_title: string | null
+        game_name: string | null
         role: string | null
         reason: string | null
         created_at: number
@@ -140,7 +150,7 @@ export async function listPlatformAuditEvents(
           actor:
             row.actor === 'system' ? '系统' : row.actor === 'anonymous' ? '匿名访问' : row.actor,
           subject: row.target,
-          resource: resourceLabel(row.resource_type, row.tournament_title),
+          resource: resourceLabel(row.resource_type, row.tournament_title, row.game_name),
           reason: REASONED_EVENTS.has(row.event_type) ? row.reason : null,
           createdAt: row.created_at,
         }) satisfies PlatformAuditEvent,

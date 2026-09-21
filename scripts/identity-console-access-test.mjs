@@ -43,7 +43,12 @@ try {
   )
   assert.deepEqual(await resolveUnifiedConsolePermissions(db, recentReviewer.context, now), {
     ok: true,
-    permissions: { capabilities: [], hasTournamentWork: true, holdsReviewRole: true },
+    permissions: {
+      capabilities: [],
+      hasProjectWork: false,
+      hasTournamentWork: true,
+      holdsReviewRole: true,
+    },
   })
 
   const staleStaff = await fixture.session(
@@ -63,7 +68,12 @@ try {
   )
   assert.deepEqual(await resolveUnifiedConsolePermissions(db, boundaryStaff.context, now), {
     ok: true,
-    permissions: { capabilities: [], hasTournamentWork: true, holdsReviewRole: false },
+    permissions: {
+      capabilities: [],
+      hasProjectWork: false,
+      hasTournamentWork: true,
+      holdsReviewRole: false,
+    },
   })
 
   const reviewer = await fixture.session(accountIds.reviewer, {
@@ -74,8 +84,29 @@ try {
     ok: true,
     permissions: {
       capabilities: ['platform.identity.review'],
+      hasProjectWork: false,
       hasTournamentWork: true,
       holdsReviewRole: true,
+    },
+  })
+
+  fixture.execute(
+    `INSERT INTO identity_role_assignment
+      (id, account_id, role, scope_type, scope_game_id, grant_reason, granted_at)
+     VALUES (?, ?, 'project_manager', 'game', 71, 'Project workspace test', ?)`,
+    [opaque('Y'), accountIds.manager, now - 1_000],
+  )
+  const projectManager = await fixture.session(accountIds.manager, {
+    method: 'passkey',
+    authenticatorCredentialId: credentialIds.manager,
+  })
+  assert.deepEqual(await resolveUnifiedConsolePermissions(db, projectManager.context, now), {
+    ok: true,
+    permissions: {
+      capabilities: [],
+      hasProjectWork: true,
+      hasTournamentWork: true,
+      holdsReviewRole: false,
     },
   })
 

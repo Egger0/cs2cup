@@ -266,3 +266,16 @@ export async function requirePlatformConsole(): Promise<PlatformConsoleAccess> {
   }
   return requireUnifiedSignIn()
 }
+
+export async function canCreateTournamentForGame(gameId: number) {
+  if (!Number.isSafeInteger(gameId) || gameId <= 0) return false
+  const context = await getAuthContext()
+  if (context.kind === 'anonymous') return false
+  const decision = await authorizeIdentity(
+    context,
+    'tournament.create',
+    { kind: 'game', gameId },
+    { database: cloudflareBindings().db },
+  )
+  return decision.ok
+}

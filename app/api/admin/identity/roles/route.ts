@@ -16,6 +16,7 @@ const FIELDS = [
   'operation',
   'username',
   'role',
+  'gameId',
   'tournamentId',
   'assignmentId',
   'revision',
@@ -58,16 +59,19 @@ export async function POST(request: NextRequest) {
     if (context.kind === 'anonymous') return response(401, '请先登录工作台。', true)
     const database = cloudflareBindings().db
     if (fields.operation === 'grant') {
+      const gameId = fields.gameId ? Number(fields.gameId) : null
       const tournamentId = fields.tournamentId ? Number(fields.tournamentId) : null
       if (
         !MANAGED_IDENTITY_ROLES.includes(fields.role as ManagedIdentityRole) ||
+        (fields.gameId !== '' && !/^\d{1,10}$/.test(fields.gameId)) ||
         (fields.tournamentId !== '' && !/^\d{1,10}$/.test(fields.tournamentId))
       ) {
-        return response(400, '请选择有效角色和赛事。')
+        return response(400, '请选择有效角色和授权范围。')
       }
       const result = await grantManagedRole(database, context, {
         username: fields.username,
         role: fields.role as ManagedIdentityRole,
+        gameId,
         tournamentId,
         reason: fields.reason,
       })

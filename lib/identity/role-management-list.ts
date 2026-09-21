@@ -9,7 +9,7 @@ import {
 import type { ManagedIdentityRole, ManagedRoleAssignment } from './role-contract.ts'
 
 const ACTIVE_MANAGED_ROLES = `assignment.role IN
-  ('platform_owner','identity_reviewer','organizer','referee','check_in_operator')
+  ('platform_owner','identity_reviewer','project_manager','organizer','referee','check_in_operator')
   AND assignment.revoked_at IS NULL AND assignment.granted_at <= ?
   AND (assignment.expires_at IS NULL OR assignment.expires_at > ?)`
 
@@ -32,7 +32,7 @@ export async function listManagedRoleAssignments(
   }
   const denied = await roleAccessFailure(database, context, current.now)
   if (denied) return { ok: false, reason: denied } as const
-  const [count, roles, tournaments] = await Promise.all([
+  const [count, roles, games, tournaments] = await Promise.all([
     database
       .prepare(
         `SELECT COUNT(*) AS total FROM identity_role_assignment AS assignment
@@ -44,6 +44,7 @@ export async function listManagedRoleAssignments(
       .prepare(
         `SELECT assignment.id, assignment.revision, assignment.account_id,
                 account.display_name, password.username, assignment.role,
+                assignment.scope_game_id, game.name AS game_name,
                 assignment.scope_tournament_id, tournament.title AS tournament_title,
                 assignment.granted_at
          FROM identity_role_assignment AS assignment
@@ -51,6 +52,7 @@ export async function listManagedRoleAssignments(
          LEFT JOIN identity_password_credential AS password
            ON password.account_id = account.id AND password.status = 'active'
          LEFT JOIN tournament ON tournament.id = assignment.scope_tournament_id
+         LEFT JOIN game ON game.id = assignment.scope_game_id
          WHERE ${ACTIVE_MANAGED_ROLES}
          ORDER BY CASE assignment.role WHEN 'platform_owner' THEN 0 WHEN 'identity_reviewer' THEN 1 ELSE 2 END,
                   account.display_name, assignment.id LIMIT ? OFFSET ?`,
@@ -63,10 +65,16 @@ export async function listManagedRoleAssignments(
         display_name: string
         username: string | null
         role: ManagedIdentityRole
+        scope_game_id: number | null
+        game_name: string | null
         scope_tournament_id: number | null
         tournament_title: string | null
         granted_at: number
       }>(),
+    database
+      .prepare('SELECT id, name FROM game ORDER BY name COLLATE NOCASE ASC, id ASC LIMIT 100')
+      .bind()
+      .all<{ id: number; name: string }>(),
     database
       .prepare(
         `SELECT id, title FROM tournament
@@ -88,11 +96,14 @@ export async function listManagedRoleAssignments(
           displayName: row.display_name,
           username: row.username,
           role: row.role,
+          gameId: row.scope_game_id,
+          gameName: row.game_name,
           tournamentId: row.scope_tournament_id,
           tournamentTitle: row.tournament_title,
           grantedAt: row.granted_at,
         }) satisfies ManagedRoleAssignment,
     ),
+    games: games.results,
     tournaments: tournaments.results,
     pagination: {
       offset,

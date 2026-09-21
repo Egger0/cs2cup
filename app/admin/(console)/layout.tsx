@@ -33,6 +33,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className={styles.sheet}>
         <AdminNav
           capabilities={admin.capabilities}
+          hasProjectWork={admin.hasProjectWork}
           hasTournamentWork={admin.hasTournamentWork}
           holdsReviewRole={admin.holdsReviewRole}
           trailing={

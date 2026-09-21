@@ -1,15 +1,15 @@
 'use server'
 
 import { updateTag } from 'next/cache'
-import { requireAdmin } from '@/lib/auth'
+import { canCreateTournamentForGame, requireAdmin } from '@/lib/auth'
 import { deleteRecordThenObjects } from '@/lib/object-cleanup'
 import {
   adminCreateTournament,
   adminDeleteTournament,
   adminListPhotos,
-  adminListTournaments,
   adminSaveTournament,
 } from '@/lib/queries/content'
+import { findTournamentRecord } from '@/lib/queries/content/tournaments'
 import { removeObject } from '@/lib/storage'
 import { parseTournamentCreate, parseTournamentUpdate } from '@/lib/tournament-form'
 import { writeError } from './_errors'
@@ -22,13 +22,21 @@ export type TournamentCreateResult =
     }
 
 export async function updateTournament(id: number, form: FormData) {
-  await requireAdmin()
   if (!Number.isSafeInteger(id) || id <= 0) {
     return { ok: false as const, error: '赛事编号无效' }
   }
 
   const parsed = parseTournamentUpdate(form)
   if (!parsed.ok) return parsed
+  const current = await findTournamentRecord(id)
+  if (!current || current.gameId === null)
+    return { ok: false as const, error: '赛事不存在或已删除' }
+  if (
+    !(await canCreateTournamentForGame(current.gameId)) ||
+    !(await canCreateTournamentForGame(parsed.value.game_id))
+  ) {
+    return { ok: false as const, error: '当前账号没有维护该项目赛事的权限' }
+  }
 
   try {
     const saved = await adminSaveTournament(id, parsed.value)
@@ -41,9 +49,11 @@ export async function updateTournament(id: number, form: FormData) {
 }
 
 export async function createTournament(form: FormData): Promise<TournamentCreateResult> {
-  await requireAdmin()
   const parsed = parseTournamentCreate(form)
   if (!parsed.ok) return parsed
+  if (!(await canCreateTournamentForGame(parsed.value.gameId))) {
+    return { ok: false, error: '当前账号没有为该项目创建赛事的权限' }
+  }
 
   try {
     await adminCreateTournament(parsed.value)
@@ -60,8 +70,7 @@ export async function removeTournament(id: number) {
     return { ok: false as const, error: '赛事编号无效。' }
   }
 
-  const tournaments = await adminListTournaments()
-  const tournament = tournaments.find(entry => entry.id === id)
+  const tournament = await findTournamentRecord(id)
   if (!tournament) return { ok: false as const, error: '赛事不存在或已删除。' }
 
   const photos = (await adminListPhotos()).filter(photo => photo.tournamentId === id)

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import {
   GRANTABLE_IDENTITY_ROLES,
+  isGameRole,
   isPlatformRole,
   type ManagedIdentityRole,
   type ManagedRoleAssignment,
@@ -25,6 +26,7 @@ const emptyFields = {
 const ROLE_LABEL: Record<ManagedIdentityRole, string> = {
   platform_owner: '平台所有者',
   identity_reviewer: '资格审核员',
+  project_manager: '项目负责人',
   organizer: '赛事组织者',
   referee: '裁判',
   check_in_operator: '签到操作员',
@@ -32,16 +34,19 @@ const ROLE_LABEL: Record<ManagedIdentityRole, string> = {
 
 export function ReviewerAccess({
   assignments,
+  games,
   tournaments,
   total,
 }: {
   assignments: readonly ManagedRoleAssignment[]
+  games: readonly { id: number; name: string }[]
   tournaments: readonly { id: number; title: string }[]
   total: number
 }) {
   const router = useRouter()
   const [username, setUsername] = useState('')
   const [role, setRole] = useState<ManagedIdentityRole>('identity_reviewer')
+  const [gameId, setGameId] = useState('')
   const [tournamentId, setTournamentId] = useState('')
   const [grantReason, setGrantReason] = useState('负责赛事运营工作')
   const [revokeId, setRevokeId] = useState('')
@@ -94,7 +99,8 @@ export function ReviewerAccess({
             operation: 'grant',
             username,
             role,
-            tournamentId: isPlatformRole(role) ? '' : tournamentId,
+            gameId: isGameRole(role) ? gameId : '',
+            tournamentId: isPlatformRole(role) || isGameRole(role) ? '' : tournamentId,
             reason: grantReason,
           })
         }}
@@ -124,7 +130,23 @@ export function ReviewerAccess({
             ))}
           </select>
         </label>
-        {isPlatformRole(role) ? null : (
+        {isGameRole(role) ? (
+          <label>
+            <span>项目</span>
+            <select
+              value={gameId}
+              required
+              onChange={event => setGameId(event.currentTarget.value)}
+            >
+              <option value="">选择项目</option>
+              {games.map(item => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : isPlatformRole(role) ? null : (
           <label>
             <span>赛事</span>
             <select
@@ -160,6 +182,7 @@ export function ReviewerAccess({
               <strong>{item.displayName}</strong>
               <span>
                 @{item.username ?? '无用户名'} · {ROLE_LABEL[item.role]}
+                {item.gameName ? ` · ${item.gameName}` : ''}
                 {item.tournamentTitle ? ` · ${item.tournamentTitle}` : ''}
               </span>
             </div>

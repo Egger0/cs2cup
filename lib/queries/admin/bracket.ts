@@ -1,5 +1,5 @@
 import 'server-only'
-import { requireAdmin } from '../../auth'
+import { requireTournamentStaffCapability } from '../../auth'
 import { cloudflareBindings } from '../../cloudflare-bindings'
 import type { TeamStatus } from '../../types'
 import type { BracketReplaceResult, TeamSeedResult } from './matches'
@@ -9,7 +9,7 @@ export async function replaceBracket(
   teamIds: number[],
   seedPositions: number[],
 ): Promise<BracketReplaceResult> {
-  await requireAdmin()
+  await requireTournamentStaffCapability(tournamentId, 'tournament.bracket.manage')
   const { db } = cloudflareBindings()
   const approved = await db
     .prepare("SELECT id FROM team WHERE tournament_id = ? AND status = 'approved' ORDER BY id")
@@ -126,7 +126,7 @@ export async function assignTeamSeed(
   teamId: number,
   seed: number | null,
 ): Promise<TeamSeedResult> {
-  await requireAdmin()
+  await requireTournamentStaffCapability(tournamentId, 'tournament.bracket.manage')
   const { db } = cloudflareBindings()
   const team = await db
     .prepare('SELECT status, seed FROM team WHERE id = ? AND tournament_id = ?')

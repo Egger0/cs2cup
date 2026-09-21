@@ -1,5 +1,5 @@
 import 'server-only'
-import { requireAdmin } from '../../auth'
+import { requireTournamentStaffCapability } from '../../auth'
 import { selectPrivateRows } from '../../rdb'
 import type { Match, MatchMap, VetoAction } from '../../types'
 
@@ -85,7 +85,7 @@ export interface MatchScheduleResult {
 }
 
 export async function listAdminMatches(tournamentId: number): Promise<Match[]> {
-  await requireAdmin()
+  await requireTournamentStaffCapability(tournamentId, 'tournament.view')
 
   const rows = await selectPrivateRows<MatchRow>('match', {
     filters: { tournament_id: `eq.${tournamentId}` },
@@ -110,8 +110,11 @@ export async function listAdminMatches(tournamentId: number): Promise<Match[]> {
   }))
 }
 
-export async function listAdminMatchMaps(matchIds: number[]): Promise<MatchMap[]> {
-  await requireAdmin()
+export async function listAdminMatchMaps(
+  matchIds: number[],
+  tournamentId: number,
+): Promise<MatchMap[]> {
+  await requireTournamentStaffCapability(tournamentId, 'tournament.results.write')
 
   if (matchIds.length === 0) return []
 

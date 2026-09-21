@@ -1,7 +1,9 @@
 import { ButtonLink, Empty, Field } from '@/components/ui'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
-import { requireAdmin } from '@/lib/auth'
+import { canCreateTournamentForGame, requirePlatformConsole } from '@/lib/auth'
 import { adminListGames, adminListTournaments } from '@/lib/queries/content'
+import { listTournamentRecordsForGames } from '@/lib/queries/content/tournaments'
+import { listGames } from '@/lib/queries/public/games'
 import { TOURNAMENT_FORM_LIMITS } from '@/lib/tournament-form-validation'
 import { TournamentCreateForm } from './TournamentCreateForm'
 import { TournamentDeleteButton } from './TournamentDeleteButton'
@@ -18,9 +20,23 @@ const STATE: Record<string, string> = {
 }
 
 export default async function AdminTournamentsPage() {
-  await requireAdmin()
-
-  const [tournaments, games] = await Promise.all([adminListTournaments(), adminListGames()])
+  const access = await requirePlatformConsole()
+  const isPlatformOwner = access.capabilities.includes('platform.configure')
+  const games = isPlatformOwner ? await adminListGames() : await listGames()
+  const allowedGameIds = new Set(
+    (
+      await Promise.all(
+        games.map(async game => ((await canCreateTournamentForGame(game.id)) ? game.id : null)),
+      )
+    ).filter((id): id is number => id !== null),
+  )
+  if (!isPlatformOwner && !allowedGameIds.size) return null
+  const visibleGames = games.filter(game => allowedGameIds.has(game.id))
+  const visibleTournaments = isPlatformOwner
+    ? (await adminListTournaments()).filter(
+        tournament => tournament.gameId !== null && allowedGameIds.has(tournament.gameId),
+      )
+    : await listTournamentRecordsForGames([...allowedGameIds])
   const gameName = (id: number | null) => games.find(game => game.id === id)?.name ?? '未关联'
 
   return (
@@ -57,7 +73,7 @@ export default async function AdminTournamentsPage() {
             <label className={styles.controlLabel}>
               项目
               <select name="gameId" required className={styles.select}>
-                {games.map(game => (
+                {visibleGames.map(game => (
                   <option key={game.id} value={game.id}>
                     {game.name}
                   </option>
@@ -100,12 +116,12 @@ export default async function AdminTournamentsPage() {
       </section>
 
       <section className={styles.panel}>
-        <h2 className={styles.panelHead}>全部赛事 · {tournaments.length} 届</h2>
-        {tournaments.length === 0 ? (
+        <h2 className={styles.panelHead}>全部赛事 · {visibleTournaments.length} 届</h2>
+        {visibleTournaments.length === 0 ? (
           <Empty>还没有赛事</Empty>
         ) : (
           <div className={styles.list}>
-            {tournaments.map(tournament => (
+            {visibleTournaments.map(tournament => (
               <div key={tournament.id} className={styles.listRow}>
                 <div>
                   <div className={styles.listTitle}>{tournament.title}</div>
@@ -121,7 +137,9 @@ export default async function AdminTournamentsPage() {
                   <ButtonLink href={`/tournaments/${tournament.slug}`} size="mini">
                     查看
                   </ButtonLink>
-                  <TournamentDeleteButton id={tournament.id} title={tournament.title} />
+                  {isPlatformOwner ? (
+                    <TournamentDeleteButton id={tournament.id} title={tournament.title} />
+                  ) : null}
                 </div>
               </div>
             ))}

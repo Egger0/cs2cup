@@ -1,9 +1,11 @@
 import { notFound } from 'next/navigation'
 import { ButtonLink, Empty } from '@/components/ui'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
-import { requireAdmin } from '@/lib/auth'
-import { adminListGames, adminListTournaments } from '@/lib/queries/content'
+import { canCreateTournamentForGame, requirePlatformConsole } from '@/lib/auth'
+import { adminListGames } from '@/lib/queries/content'
+import { findTournamentRecord } from '@/lib/queries/content/tournaments'
 import { listAdminMatches, listTeamsWithContact } from '@/lib/queries/admin'
+import { listGames } from '@/lib/queries/public/games'
 import { TournamentEditor } from './TournamentEditor'
 import { BracketBuilder } from './BracketBuilder'
 import { Scheduler } from './Scheduler'
@@ -12,15 +14,25 @@ import styles from '../../admin.module.css'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminTournamentPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin()
-
   const { id } = await params
   const tournamentId = Number(id)
   if (!Number.isInteger(tournamentId)) notFound()
 
-  const [tournaments, games] = await Promise.all([adminListTournaments(), adminListGames()])
-  const tournament = tournaments.find(entry => entry.id === tournamentId)
+  const access = await requirePlatformConsole()
+  const isPlatformOwner = access.capabilities.includes('platform.configure')
+  const [tournament, games] = await Promise.all([
+    findTournamentRecord(tournamentId),
+    isPlatformOwner ? adminListGames() : listGames(),
+  ])
   if (!tournament) notFound()
+  if (tournament.gameId === null || !(await canCreateTournamentForGame(tournament.gameId))) {
+    notFound()
+  }
+  const editableGames = (
+    await Promise.all(
+      games.map(async game => ((await canCreateTournamentForGame(game.id)) ? game : null)),
+    )
+  ).filter((game): game is (typeof games)[number] => game !== null)
 
   const [teams, matches] = await Promise.all([
     listTeamsWithContact(tournamentId),
@@ -39,20 +51,22 @@ export default async function AdminTournamentPage({ params }: { params: Promise<
       <section className={styles.panel}>
         <div className={styles.panelHeading}>
           <h2 className={styles.panelHead}>赛事设置</h2>
-          <div className={styles.panelActions}>
-            <ButtonLink href={`/admin/tournaments/${tournamentId}/staff`} size="mini">
-              签到权限
-            </ButtonLink>
-            <a
-              className={styles.panelAction}
-              href={`/admin/tournaments/${tournamentId}/teams.csv`}
-              download
-            >
-              导出战队 CSV
-            </a>
-          </div>
+          {isPlatformOwner ? (
+            <div className={styles.panelActions}>
+              <ButtonLink href={`/admin/tournaments/${tournamentId}/staff`} size="mini">
+                签到权限
+              </ButtonLink>
+              <a
+                className={styles.panelAction}
+                href={`/admin/tournaments/${tournamentId}/teams.csv`}
+                download
+              >
+                导出战队 CSV
+              </a>
+            </div>
+          ) : null}
         </div>
-        <TournamentEditor tournament={tournament} games={games} />
+        <TournamentEditor tournament={tournament} games={editableGames} />
       </section>
 
       <section className={styles.panel}>

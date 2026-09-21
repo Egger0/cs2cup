@@ -19,6 +19,7 @@ import {
 import { isCanonicalStoredUsername, normalizeUsername } from './internal/username-policy.ts'
 import {
   GRANTABLE_IDENTITY_ROLES,
+  isGameRole,
   isPlatformRole,
   type ManagedIdentityRole,
 } from './role-contract.ts'
@@ -33,6 +34,7 @@ export async function grantManagedRole(
   input: {
     readonly username: string
     readonly role: ManagedIdentityRole
+    readonly gameId?: number | null
     readonly tournamentId: number | null
     readonly reason: string
   },
@@ -41,11 +43,17 @@ export async function grantManagedRole(
   const current = roleOperation(options)
   const username = normalizeUsername(input.username)
   const reason = input.reason.trim()
+  const gameId = input.gameId ?? null
   const platformRole = isPlatformRole(input.role)
+  const gameRole = isGameRole(input.role)
   if (
     !isCanonicalStoredUsername(username) ||
     !GRANTABLE_IDENTITY_ROLES.some(role => role === input.role) ||
-    (platformRole ? input.tournamentId !== null : !validPositiveId(input.tournamentId ?? 0)) ||
+    (platformRole
+      ? gameId !== null || input.tournamentId !== null
+      : gameRole
+        ? !validPositiveId(gameId ?? 0) || input.tournamentId !== null
+        : gameId !== null || !validPositiveId(input.tournamentId ?? 0)) ||
     reason.length < 3 ||
     reason.length > 500
   ) {
@@ -66,14 +74,20 @@ export async function grantManagedRole(
     .bind(username)
     .first<{ id: string; display_name: string }>()
   if (!target) return { ok: false, reason: 'not_found' } as const
-  if (!platformRole) {
+  if (gameRole) {
+    const game = await database
+      .prepare('SELECT 1 AS present FROM game WHERE id = ? LIMIT 1')
+      .bind(gameId)
+      .first<{ present: number }>()
+    if (!game) return { ok: false, reason: 'not_found' } as const
+  } else if (!platformRole) {
     const tournament = await database
       .prepare('SELECT 1 AS present FROM tournament WHERE id = ? LIMIT 1')
       .bind(input.tournamentId)
       .first<{ present: number }>()
     if (!tournament) return { ok: false, reason: 'not_found' } as const
   }
-  const scopeType = platformRole ? 'platform' : 'tournament'
+  const scopeType = platformRole ? 'platform' : gameRole ? 'game' : 'tournament'
   const id = createOpaqueToken()
   const writeNonce = createOpaqueToken()
   const mutation = {
@@ -83,6 +97,7 @@ export async function grantManagedRole(
     assignmentRevision: 0,
     targetAccountId: target.id,
     role: input.role,
+    gameId,
     tournamentId: input.tournamentId,
     reason,
     context,
@@ -94,20 +109,21 @@ export async function grantManagedRole(
       database
         .prepare(
           `INSERT INTO identity_role_assignment
-            (id, account_id, role, scope_type, scope_tournament_id,
+            (id, account_id, role, scope_type, scope_game_id, scope_tournament_id,
              granted_by_account_id, grant_reason, granted_at, write_nonce)
-           SELECT ?, target.id, ?, ?, ?, ?, ?, ?, ?
+             SELECT ?, target.id, ?, ?, ?, ?, ?, ?, ?, ?
            FROM identity_password_credential AS password
            JOIN identity_account AS target ON target.id = password.account_id
            WHERE password.username = ? AND password.status = 'active'
              AND target.id = ? AND target.status = 'active'
-             ${platformRole ? '' : 'AND EXISTS (SELECT 1 FROM tournament WHERE id = ?)'}
+             ${gameRole ? 'AND EXISTS (SELECT 1 FROM game WHERE id = ?)' : platformRole ? '' : 'AND EXISTS (SELECT 1 FROM tournament WHERE id = ?)'}
              AND ${ACTIVE_ROLE_OPERATOR}`,
         )
         .bind(
           id,
           input.role,
           scopeType,
+          gameId,
           input.tournamentId,
           context.account.id,
           reason,
@@ -115,7 +131,7 @@ export async function grantManagedRole(
           writeNonce,
           username,
           target.id,
-          ...(!platformRole ? [input.tournamentId] : []),
+          ...(gameRole ? [gameId] : !platformRole ? [input.tournamentId] : []),
           ...operatorProof,
         ),
       await roleMutationAuditStatement(database, mutation),
@@ -155,9 +171,9 @@ export async function revokeManagedRole(
   if (!operatorProof) return { ok: false, reason: 'session_invalid' } as const
   const role = await database
     .prepare(
-      `SELECT id, account_id, role, scope_tournament_id, revision
+      `SELECT id, account_id, role, scope_game_id, scope_tournament_id, revision
        FROM identity_role_assignment WHERE id = ?
-         AND role IN ('platform_owner','identity_reviewer','organizer','referee','check_in_operator')
+         AND role IN ('platform_owner','identity_reviewer','project_manager','organizer','referee','check_in_operator')
          AND revoked_at IS NULL LIMIT 1`,
     )
     .bind(input.assignmentId)
@@ -165,6 +181,7 @@ export async function revokeManagedRole(
       id: string
       account_id: string
       role: ManagedIdentityRole
+      scope_game_id: number | null
       scope_tournament_id: number | null
       revision: number
     }>()
@@ -189,6 +206,7 @@ export async function revokeManagedRole(
     assignmentRevision: input.revision + 1,
     targetAccountId: role.account_id,
     role: role.role,
+    gameId: role.scope_game_id,
     tournamentId: role.scope_tournament_id,
     reason,
     context,
@@ -202,7 +220,7 @@ export async function revokeManagedRole(
           `UPDATE identity_role_assignment SET revoked_by_account_id = ?, revoke_reason = ?,
                 revoked_at = ?, revision = ?, write_nonce = ?
            WHERE id = ? AND revision = ? AND revoked_at IS NULL
-             AND role IN ('platform_owner','identity_reviewer','organizer','referee','check_in_operator')
+             AND role IN ('platform_owner','identity_reviewer','project_manager','organizer','referee','check_in_operator')
              AND ${ACTIVE_ROLE_OPERATOR}`,
         )
         .bind(

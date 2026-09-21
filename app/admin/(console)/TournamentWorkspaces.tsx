@@ -4,6 +4,7 @@ import type { UnifiedTournamentWorkspace } from '@/lib/queries/staff-check-in'
 import styles from './workspaces.module.css'
 
 const ROLE_LABEL = {
+  project_manager: '项目负责人',
   organizer: '赛事组织者',
   referee: '裁判',
   check_in_operator: '签到操作员',

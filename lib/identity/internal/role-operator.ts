@@ -86,6 +86,7 @@ interface RoleMutationAudit {
   readonly assignmentRevision: number
   readonly targetAccountId: string
   readonly role: string
+  readonly gameId: number | null
   readonly tournamentId: number | null
   readonly reason: string
   readonly context: AuthenticatedAuthContext
@@ -101,7 +102,7 @@ function mutationProof(input: RoleMutationAudit, alias = 'assignment') {
     input.action === 'granted' ? `${alias}.revoked_at IS NULL` : `${alias}.revoked_at = ?`
   return {
     sql: `${alias}.id = ? AND ${alias}.write_nonce = ? AND ${alias}.account_id = ?
-      AND ${alias}.role = ? AND ${alias}.scope_tournament_id IS ?
+      AND ${alias}.role = ? AND ${alias}.scope_game_id IS ? AND ${alias}.scope_tournament_id IS ?
       AND ${alias}.${actorColumn} = ? AND ${alias}.${reasonColumn} = ?
       AND ${alias}.${timeColumn} = ? AND ${alias}.revision = ? AND ${status}`,
     bindings: [
@@ -109,6 +110,7 @@ function mutationProof(input: RoleMutationAudit, alias = 'assignment') {
       input.assignmentNonce,
       input.targetAccountId,
       input.role,
+      input.gameId,
       input.tournamentId,
       input.context.account.id,
       input.reason,
@@ -143,8 +145,16 @@ export async function roleMutationAuditStatement(
       input.context.account.id,
       input.targetAccountId,
       input.context.session.id,
-      input.tournamentId === null ? 'platform' : 'tournament',
-      input.tournamentId === null ? null : String(input.tournamentId),
+      input.gameId === null && input.tournamentId === null
+        ? 'platform'
+        : input.gameId === null
+          ? 'tournament'
+          : 'game',
+      input.gameId === null
+        ? input.tournamentId === null
+          ? null
+          : String(input.tournamentId)
+        : String(input.gameId),
       input.correlationId,
       await hashOpaqueToken(
         `role-${input.action}\0${input.assignmentId}\0${input.assignmentNonce}`,

@@ -33,7 +33,7 @@ interface TeamPlayerRow extends TeamRow {
 }
 
 export async function listTeamsWithContact(tournamentId: number): Promise<Team[]> {
-  await requireAdmin()
+  await requireTournamentStaffCapability(tournamentId, 'tournament.entries.review')
 
   const rows = (
     await cloudflareBindings()

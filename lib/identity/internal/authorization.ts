@@ -6,6 +6,7 @@ import {
   type AuthContext,
   type IdentityDatabase,
 } from './contracts.ts'
+import { authorizationResourceCte } from './authorization-resource.ts'
 import {
   effectiveAssurance,
   isIdentityCapability,
@@ -26,12 +27,16 @@ interface AuthorizationRow {
   assurance_valid: number
   allowed: number
   tournament_id: number | null
+  game_id: number | null
 }
 
 interface AuthorizationPlan {
   query: string
   bindings: unknown[]
-  resolveResource(tournamentId: number | null): ResolvedAuthorizationResource | null
+  resolveResource(
+    tournamentId: number | null,
+    gameId: number | null,
+  ): ResolvedAuthorizationResource | null
 }
 
 const validSessionCte = `valid_session AS (
@@ -94,7 +99,8 @@ function resultSql() {
     COALESCE((SELECT recovery_restricted FROM valid_session LIMIT 1), 0) AS recovery_restricted,
     EXISTS(SELECT 1 FROM assured_session) AS assurance_valid,
     EXISTS(SELECT 1 FROM allowed_access) AS allowed,
-    (SELECT tournament_id FROM concrete_resource LIMIT 1) AS tournament_id`
+    (SELECT tournament_id FROM concrete_resource LIMIT 1) AS tournament_id,
+    (SELECT game_id FROM concrete_resource LIMIT 1) AS game_id`
 }
 
 function commonBindings(
@@ -103,35 +109,6 @@ function commonBindings(
   now: number,
 ) {
   return [hash, context.session.id, context.account.id, now, now, now, now, now]
-}
-
-function resourceCte(resource: Exclude<AuthorizationResource, { kind: 'platform' }>) {
-  if (resource.kind === 'tournament') {
-    return {
-      sql: 'concrete_resource AS (SELECT id AS tournament_id FROM tournament WHERE id = ?)',
-      binding: resource.tournamentId,
-      resolve: (tournamentId: number | null) =>
-        tournamentId === resource.tournamentId
-          ? ({ kind: 'tournament', tournamentId } as const)
-          : null,
-    }
-  }
-  return {
-    sql: `concrete_resource AS (
-      SELECT team.tournament_id
-      FROM team JOIN tournament ON tournament.id = team.tournament_id
-      WHERE team.id = ?
-    )`,
-    binding: resource.registrationId,
-    resolve: (tournamentId: number | null) => {
-      if (!validPositiveId(tournamentId ?? 0) || tournamentId === null) return null
-      return {
-        kind: 'registration',
-        registrationId: resource.registrationId,
-        tournamentId,
-      } as const
-    },
-  }
 }
 
 function platformPlan(
@@ -146,7 +123,7 @@ function platformPlan(
   const placeholders = roles.map(() => '?').join(', ')
   const query = `WITH ${validSessionCte},
     assured_session AS (SELECT * FROM valid_session WHERE ${assurance.condition}),
-    concrete_resource AS (SELECT NULL AS tournament_id),
+    concrete_resource AS (SELECT NULL AS tournament_id, NULL AS game_id),
     allowed_access AS (
       SELECT 1 FROM assured_session
       JOIN identity_role_assignment AS assignment
@@ -173,13 +150,20 @@ function tournamentPlan(
   now: number,
 ): AuthorizationPlan {
   const assurance = assuranceSql(requirement, now)
-  const concrete = resourceCte(resource)
+  const concrete = authorizationResourceCte(resource)
   const scopedRoles = rolesForCapability(capability).filter(role => role !== 'platform_owner')
-  const placeholders = scopedRoles.map(() => '?').join(', ')
-  const scopedClause = scopedRoles.length
+  const tournamentRoles = scopedRoles.filter(role => role !== 'project_manager')
+  const gameRoles = scopedRoles.filter(role => role === 'project_manager')
+  const tournamentPlaceholders = tournamentRoles.map(() => '?').join(', ')
+  const gamePlaceholders = gameRoles.map(() => '?').join(', ')
+  const tournamentClause = tournamentRoles.length
     ? `(assignment.scope_type = 'tournament'
        AND assignment.scope_tournament_id = concrete_resource.tournament_id
-       AND assignment.role IN (${placeholders}))`
+       AND assignment.role IN (${tournamentPlaceholders}))`
+    : '0 = 1'
+  const gameClause = gameRoles.length
+    ? `(assignment.scope_type = 'game' AND assignment.scope_game_id = concrete_resource.game_id
+       AND assignment.role IN (${gamePlaceholders}))`
     : '0 = 1'
   const query = `WITH ${validSessionCte},
     assured_session AS (SELECT * FROM valid_session WHERE ${assurance.condition}),
@@ -192,7 +176,8 @@ function tournamentPlan(
       WHERE assignment.revoked_at IS NULL AND assignment.granted_at <= ?
         AND (assignment.expires_at IS NULL OR assignment.expires_at > ?)
         AND ((assignment.role = 'platform_owner' AND assignment.scope_type = 'platform'
-          AND assignment.scope_tournament_id IS NULL) OR ${scopedClause})
+          AND assignment.scope_tournament_id IS NULL AND assignment.scope_game_id IS NULL)
+          OR ${tournamentClause} OR ${gameClause})
       LIMIT 1
     ) ${resultSql()}`
   return {
@@ -203,7 +188,8 @@ function tournamentPlan(
       concrete.binding,
       now,
       now,
-      ...scopedRoles,
+      ...tournamentRoles,
+      ...gameRoles,
     ],
     resolveResource: concrete.resolve,
   }
@@ -218,7 +204,7 @@ function registrationPlan(
   now: number,
 ): AuthorizationPlan {
   const assurance = assuranceSql(requirement, now)
-  const concrete = resourceCte(resource)
+  const concrete = authorizationResourceCte(resource)
   const relationships = relationshipsForCapability(capability)
   const placeholders = relationships.map(() => '?').join(', ')
   const query = `WITH ${validSessionCte},
@@ -267,6 +253,7 @@ export async function authorize(
   const validResource =
     resource &&
     (resource.kind === 'platform' ||
+      (resource.kind === 'game' && validPositiveId(resource.gameId)) ||
       (resource.kind === 'tournament' && validPositiveId(resource.tournamentId)) ||
       (resource.kind === 'registration' && validPositiveId(resource.registrationId)))
   if (!validResource) return { ok: false, reason: 'invalid_request' }
@@ -279,8 +266,21 @@ export async function authorize(
     if (resource.kind !== 'registration') return { ok: false, reason: 'invalid_request' }
     plan = registrationPlan(context, tokenHash, capability, resource, assurance, now)
   } else {
-    if (resource.kind === 'platform') return { ok: false, reason: 'invalid_request' }
-    plan = tournamentPlan(context, tokenHash, capability, resource, assurance, now)
+    const resourceMatchesCapability =
+      capability === 'tournament.create'
+        ? resource.kind === 'game'
+        : resource.kind === 'tournament' || resource.kind === 'registration'
+    if (!resourceMatchesCapability) {
+      return { ok: false, reason: 'invalid_request' }
+    }
+    plan = tournamentPlan(
+      context,
+      tokenHash,
+      capability,
+      resource as Exclude<AuthorizationResource, { kind: 'platform' }>,
+      assurance,
+      now,
+    )
   }
 
   const row = await database
@@ -290,7 +290,7 @@ export async function authorize(
   if (row?.session_valid !== 1) return { ok: false, reason: 'session_invalid' }
   if (row.recovery_restricted === 1) return { ok: false, reason: 'recovery_restricted' }
   if (row.assurance_valid !== 1) return { ok: false, reason: 'assurance_required' }
-  const resolvedResource = plan.resolveResource(row.tournament_id)
+  const resolvedResource = plan.resolveResource(row.tournament_id, row.game_id)
   if (row.allowed !== 1 || !resolvedResource) return { ok: false, reason: 'forbidden' }
   return {
     ok: true,

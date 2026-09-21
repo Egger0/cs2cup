@@ -5,6 +5,7 @@ export const IDENTITY_CAPABILITIES = [
   'platform.access.manage',
   'platform.audit.view',
   'platform.identity.review',
+  'tournament.create',
   'tournament.view',
   'tournament.configure',
   'tournament.entries.review',
@@ -28,6 +29,7 @@ export type IdentityCapability = (typeof IDENTITY_CAPABILITIES)[number]
 export type IdentityRole =
   | 'platform_owner'
   | 'identity_reviewer'
+  | 'project_manager'
   | 'organizer'
   | 'referee'
   | 'check_in_operator'
@@ -46,11 +48,13 @@ export interface EffectiveAssurancePolicy {
 
 export type AuthorizationResource =
   | { kind: 'platform' }
+  | { kind: 'game'; gameId: number }
   | { kind: 'tournament'; tournamentId: number }
   | { kind: 'registration'; registrationId: number }
 
 export type ResolvedAuthorizationResource =
   | { kind: 'platform' }
+  | { kind: 'game'; gameId: number }
   | { kind: 'tournament'; tournamentId: number }
   | { kind: 'registration'; registrationId: number; tournamentId: number }
 
@@ -73,8 +77,8 @@ export type AuthorizationDecision =
         | 'forbidden'
     }
 
-const TOURNAMENT_CAPABILITIES = IDENTITY_CAPABILITIES.filter(capability =>
-  capability.startsWith('tournament.'),
+const TOURNAMENT_CAPABILITIES = IDENTITY_CAPABILITIES.filter(
+  capability => capability.startsWith('tournament.') && capability !== 'tournament.create',
 )
 
 const ROLE_CAPABILITIES: Record<IdentityRole, readonly IdentityCapability[]> = {
@@ -82,6 +86,7 @@ const ROLE_CAPABILITIES: Record<IdentityRole, readonly IdentityCapability[]> = {
     capability => capability.startsWith('platform.') || capability.startsWith('tournament.'),
   ),
   identity_reviewer: ['platform.identity.review'],
+  project_manager: ['tournament.create', ...TOURNAMENT_CAPABILITIES],
   organizer: TOURNAMENT_CAPABILITIES,
   referee: ['tournament.view', 'tournament.results.write'],
   check_in_operator: ['tournament.view', 'tournament.check_in.read', 'tournament.check_in.write'],
