@@ -17,6 +17,7 @@ const emptyFields = {
   operation: '',
   username: '',
   role: '',
+  gameId: '',
   tournamentId: '',
   assignmentId: '',
   revision: '',

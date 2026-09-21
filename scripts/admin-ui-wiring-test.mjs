@@ -68,6 +68,7 @@ assert.match(await read('components/account/AccountSignOut.tsx'), /role=["']aler
 const identityStyles = await read('app/admin/(console)/identity/identity.module.css')
 const identityOperations = await read('app/admin/(console)/identity/operations.module.css')
 const auditLog = await read('app/admin/(console)/identity/AuditLog.tsx')
+const reviewerAccess = await read('app/admin/(console)/identity/ReviewerAccess.tsx')
 assert.match(identityStyles, /\.card h2[\s\S]+?overflow-wrap: anywhere/)
 assert.match(
   identityStyles,
@@ -75,5 +76,6 @@ assert.match(
 )
 assert.match(identityOperations, /\.auditReason[\s\S]+?grid-column: 2 \/ -1/)
 assert.match(auditLog, /className=\{styles\.auditReason\}/)
+assert.match(reviewerAccess, /gameId: ''/)
 
 console.log('admin UI wiring tests passed')
