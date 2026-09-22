@@ -27,7 +27,7 @@
     "test:schedule": "node --experimental-strip-types scripts/schedule-test.mjs",
     "test:icalendar": "node --experimental-strip-types scripts/icalendar-test.mjs && node --experimental-strip-types scripts/tournament-calendar-test.mjs",
     "test:score-correction": "node --experimental-strip-types scripts/score-correction-test.mjs",
-    "test:tournament-form": "node --experimental-strip-types scripts/tournament-form-test.mjs",
+    "test:tournament-form": "node --experimental-strip-types scripts/tournament-form-test.mjs && npm run test:rule-links",
     "test:home-tournament-signal": "node --experimental-strip-types scripts/home-tournament-signal-test.mjs",
     "test:csv": "node --experimental-strip-types scripts/csv-test.mjs",
     "test:team-check-in": "node --experimental-strip-types scripts/team-check-in-test.mjs",
@@ -104,7 +104,8 @@
     "solar:browser": "node scripts/solar-browser.mjs",
     "solar:textures": "node --experimental-strip-types scripts/generate-solar-textures.mjs",
     "test:account-navigation": "node --experimental-strip-types scripts/account-navigation-test.mjs",
-    "test:role-management": "node --conditions=react-server --experimental-strip-types scripts/identity-role-management-test.mjs"
+    "test:role-management": "node --conditions=react-server --experimental-strip-types scripts/identity-role-management-test.mjs",
+    "test:rule-links": "node --experimental-strip-types scripts/rule-link-test.mjs"
   },
   "dependencies": {
     "@fontsource-variable/big-shoulders": "5.3.0",

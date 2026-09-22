@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import theme from '@/app/site-theme.module.css'
+import { ruleBodySegments } from '@/lib/rule-links'
 import type { FaqItem, RuleItem } from '@/lib/types'
 import arrival from './Arrival.module.css'
 import styles from './Sections.module.css'
@@ -104,7 +105,22 @@ export function RuleGrid({ rules }: { rules: RuleItem[] }) {
         <article key={rule.title} className={styles.rule}>
           <div className={styles.ruleLabel}>{rule.label}</div>
           <h3 className={styles.ruleTitle}>{rule.title}</h3>
-          <p className={styles.ruleBody}>{rule.body}</p>
+          <p className={styles.ruleBody}>
+            {ruleBodySegments(rule.body).map((segment, index) =>
+              segment.kind === 'link' ? (
+                <a
+                  key={`${segment.href}-${index}`}
+                  href={segment.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {segment.value}
+                </a>
+              ) : (
+                segment.value
+              ),
+            )}
+          </p>
         </article>
       ))}
     </div>

@@ -186,6 +186,13 @@
   color: var(--muted);
   font-size: 0.9375rem;
   line-height: 1.8;
+  white-space: pre-line;
+}
+
+.ruleBody a {
+  color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
 
 .faq {
