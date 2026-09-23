@@ -38,16 +38,22 @@ export default async function AdminTournamentsPage() {
       )
     : await listTournamentRecordsForGames([...allowedGameIds])
   const gameName = (id: number | null) => games.find(game => game.id === id)?.name ?? '未关联'
+  const projectWorkspace = !isPlatformOwner
+  const projectName = visibleGames.length === 1 ? (visibleGames[0]?.name ?? '我的项目') : '我的项目'
 
   return (
     <>
       <AdminPageHeader
         index="03"
-        title="赛事档案"
-        description="创建赛季、调整公开状态，并进入每届赛事的赛程工作台。"
+        title={projectWorkspace ? `${projectName}项目工作台` : '赛事档案'}
+        description={
+          projectWorkspace
+            ? '管理本项目赛事，并从下方进入报名审核、签到、对阵、赛程与赛果。'
+            : '创建赛季、调整公开状态，并进入每届赛事的赛程工作台。'
+        }
       />
       <section className={styles.panel}>
-        <h2 className={styles.panelHead}>开一届新赛事</h2>
+        <h2 className={styles.panelHead}>{projectWorkspace ? '创建本项目赛事' : '开一届新赛事'}</h2>
         <TournamentCreateForm>
           <div className={styles.pair}>
             <Field
@@ -116,7 +122,9 @@ export default async function AdminTournamentsPage() {
       </section>
 
       <section className={styles.panel}>
-        <h2 className={styles.panelHead}>全部赛事 · {visibleTournaments.length} 届</h2>
+        <h2 className={styles.panelHead}>
+          {projectWorkspace ? '本项目赛事' : '全部赛事'} · {visibleTournaments.length} 届
+        </h2>
         {visibleTournaments.length === 0 ? (
           <Empty>还没有赛事</Empty>
         ) : (
@@ -132,7 +140,7 @@ export default async function AdminTournamentsPage() {
                 </div>
                 <div className={styles.rowActions}>
                   <ButtonLink href={`/admin/tournaments/${tournament.id}`} size="mini">
-                    编辑
+                    {projectWorkspace ? '报名审核与赛事工作台' : '编辑'}
                   </ButtonLink>
                   <ButtonLink href={`/tournaments/${tournament.slug}`} size="mini">
                     查看

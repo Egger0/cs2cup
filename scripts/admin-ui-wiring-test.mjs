@@ -70,6 +70,14 @@ assert.match(tournamentWorkspace, /<TeamTable teams=\{teams\} tournamentId=\{tou
 assert.match(tournamentWorkspace, /href=\{`\/admin\/tournaments\/\$\{tournamentId\}\/check-in`\}/)
 assert.match(tournamentWorkspace, /<ScheduleEditor matches=\{matches\} teams=\{publicTeams\}/)
 
+const tournamentArchive = await read('app/admin/(console)/tournaments/page.tsx')
+assert.match(tournamentArchive, /项目工作台/)
+assert.match(tournamentArchive, /报名审核与赛事工作台/)
+assert.match(tournamentArchive, /href=\{`\/admin\/tournaments\/\$\{tournament\.id\}`\}/)
+
+const adminNavigation = await read('app/admin/(console)/AdminNav.tsx')
+assert.match(adminNavigation, /项目工作台/)
+
 const identityStyles = await read('app/admin/(console)/identity/identity.module.css')
 const identityOperations = await read('app/admin/(console)/identity/operations.module.css')
 const auditLog = await read('app/admin/(console)/identity/AuditLog.tsx')

@@ -58,7 +58,11 @@ export function AdminNav({
     label:
       link.href === '/admin' && !capabilities.includes('platform.configure')
         ? '我的工作区'
-        : link.label,
+        : link.href === '/admin/tournaments' &&
+            hasProjectWork &&
+            !capabilities.includes('platform.configure')
+          ? '项目工作台'
+          : link.label,
   }))
 
   return <SectionTabs tabs={tabs} label="后台导航" trailing={trailing} />
