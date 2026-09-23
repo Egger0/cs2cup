@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { indexMatches, indexTeams, resolveMatch } from '@/lib/bracket'
 import { formatSiteDateTime } from '@/lib/datetime'
-import { requirePlatformConsole } from '@/lib/auth'
+import { requireTournamentStaffCapability } from '@/lib/auth'
 import { listAdminMatchMaps, listAdminMatches, listTeamsWithContact } from '@/lib/queries/admin'
 import { findTournamentRecord } from '@/lib/queries/content/tournaments'
 import { MatchReportEditor } from './MatchReportEditor'
@@ -16,12 +16,11 @@ export default async function AdminMatchReportPage({
 }: {
   params: Promise<{ id: string; matchId: string }>
 }) {
-  await requirePlatformConsole()
-
   const { id, matchId: rawMatchId } = await params
   const tournamentId = Number(id)
   const matchId = Number(rawMatchId)
   if (!Number.isInteger(tournamentId) || !Number.isInteger(matchId)) notFound()
+  await requireTournamentStaffCapability(tournamentId, 'tournament.results.write')
 
   const [tournament, matches, teams] = await Promise.all([
     findTournamentRecord(tournamentId),
@@ -35,8 +34,8 @@ export default async function AdminMatchReportPage({
   const maps = await listAdminMatchMaps([match.id], tournamentId)
   return (
     <div className={styles.page}>
-      <Link href="/admin" className={styles.back}>
-        ← 返回报名与赛果
+      <Link href={`/admin/tournaments/${tournamentId}`} className={styles.back}>
+        ← 返回赛事工作台
       </Link>
 
       <header className={styles.header}>

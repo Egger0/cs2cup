@@ -21,13 +21,15 @@ function validId(value: number) {
 }
 
 export async function updateTeamStatus(id: number, status: TeamStatus, tournamentId: number) {
-  await requireAdmin()
   if (!validId(id) || !validId(tournamentId)) {
     return { ok: false as const, error: '战队或赛事编号无效' }
   }
   if (!TEAM_STATUSES.includes(status)) {
     return { ok: false as const, error: '战队状态无效' }
   }
+
+  const access = await getCurrentTournamentStaffAccess(tournamentId, 'tournament.entries.review')
+  if (!access.ok) return { ok: false as const, error: '没有本赛事的报名审核权限。' }
 
   try {
     const rows = await setTeamStatus(id, tournamentId, status)
@@ -40,8 +42,6 @@ export async function updateTeamStatus(id: number, status: TeamStatus, tournamen
 }
 
 export async function updateTeamSeed(id: number, seed: number | null, tournamentId: number) {
-  await requireAdmin()
-
   if (!validId(id) || !validId(tournamentId)) {
     return { ok: false as const, error: '战队或赛事编号无效' }
   }

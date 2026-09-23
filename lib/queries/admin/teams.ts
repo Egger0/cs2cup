@@ -101,13 +101,12 @@ export async function listTeamsWithContact(tournamentId: number): Promise<Team[]
   return [...teams.values()]
 }
 
-export function setTeamStatus(id: number, tournamentId: number, status: TeamStatus) {
-  return adminMutation(() =>
-    updatePrivateRows<TeamRow>(
-      'team',
-      status === 'approved' ? { status } : { status, seed: null, checked_in_at: null },
-      { filters: { id: `eq.${id}`, tournament_id: `eq.${tournamentId}` } },
-    ),
+export async function setTeamStatus(id: number, tournamentId: number, status: TeamStatus) {
+  await requireTournamentStaffCapability(tournamentId, 'tournament.entries.review')
+  return updatePrivateRows<TeamRow>(
+    'team',
+    status === 'approved' ? { status } : { status, seed: null, checked_in_at: null },
+    { filters: { id: `eq.${id}`, tournament_id: `eq.${tournamentId}` } },
   )
 }
 

@@ -7,7 +7,7 @@ import { RecordingD1Database } from './recording-d1-fixture.mjs'
 const source = path => new URL(path, import.meta.url).href
 const dataModule = code => `data:text/javascript,${encodeURIComponent(code)}`
 const authModule = dataModule(`
-  export async function requireAdmin() {
+  export async function requireTournamentStaffCapability() {
     globalThis.__staffManagerAuthCalls += 1
     if (globalThis.__staffManagerAuthError) throw globalThis.__staffManagerAuthError
     return { adminId: 1, uid: 'owner' }

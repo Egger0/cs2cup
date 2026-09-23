@@ -1,9 +1,9 @@
-import { requireAdmin } from '@/lib/auth'
+import { requireTournamentStaffCapability } from '@/lib/auth'
 import { encodeCsv, type CsvValue } from '@/lib/csv'
 import { d1UtcTimestampToIso, formatSiteNumericDateTime } from '@/lib/datetime'
 import { PRIVATE_NO_STORE_HEADERS } from '@/lib/http-cache'
 import { listTeamsWithContact } from '@/lib/queries/admin'
-import { adminListTournaments } from '@/lib/queries/content'
+import { findTournamentRecord } from '@/lib/queries/content'
 import type { TeamStatus } from '@/lib/types'
 
 const STATUS_LABEL: Record<TeamStatus, string> = {
@@ -18,15 +18,13 @@ const RESPONSE_HEADERS = {
 }
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin()
-
   const tournamentId = Number((await params).id)
   if (!Number.isSafeInteger(tournamentId) || tournamentId <= 0) {
     return new Response('Invalid tournament', { status: 400, headers: RESPONSE_HEADERS })
   }
 
-  const tournaments = await adminListTournaments()
-  if (!tournaments.some(tournament => tournament.id === tournamentId)) {
+  await requireTournamentStaffCapability(tournamentId, 'tournament.entries.export')
+  if (!(await findTournamentRecord(tournamentId))) {
     return new Response('Tournament not found', { status: 404, headers: RESPONSE_HEADERS })
   }
 

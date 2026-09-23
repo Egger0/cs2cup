@@ -1,7 +1,7 @@
 'use server'
 
 import { updateTag } from 'next/cache'
-import { requireAdmin } from '@/lib/auth'
+import { requireTournamentStaffCapability } from '@/lib/auth'
 import {
   grantCheckInOperatorAssignment,
   revokeCheckInOperatorAssignment,
@@ -24,7 +24,7 @@ export async function grantCheckInOperator(
   durationHours: number,
   expectedSnapshot: CheckInOperatorAssignmentSnapshot | null,
 ) {
-  await requireAdmin()
+  await requireTournamentStaffCapability(tournamentId, 'tournament.access.manage')
   if (
     invalidRequest(tournamentId, principalId) ||
     !isCheckInOperatorDuration(durationHours) ||
@@ -64,7 +64,7 @@ export async function revokeCheckInOperator(
   principalId: string,
   expectedSnapshot: CheckInOperatorAssignmentSnapshot,
 ) {
-  await requireAdmin()
+  await requireTournamentStaffCapability(tournamentId, 'tournament.access.manage')
   if (invalidRequest(tournamentId, principalId) || !isCheckInOperatorSnapshot(expectedSnapshot)) {
     return { ok: false as const, code: 'invalid' as const, error: '撤权请求无效。' }
   }

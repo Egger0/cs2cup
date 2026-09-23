@@ -5,7 +5,10 @@ import { canCreateTournamentForGame, requirePlatformConsole } from '@/lib/auth'
 import { adminListGames } from '@/lib/queries/content'
 import { findTournamentRecord } from '@/lib/queries/content/tournaments'
 import { listAdminMatches, listTeamsWithContact } from '@/lib/queries/admin'
+import { getPublicTeams } from '@/lib/queries/public'
 import { listGames } from '@/lib/queries/public/games'
+import { TeamTable } from '../../TeamTable'
+import { ScheduleEditor } from '../../ScheduleEditor'
 import { TournamentEditor } from './TournamentEditor'
 import { BracketBuilder } from './BracketBuilder'
 import { Scheduler } from './Scheduler'
@@ -34,9 +37,10 @@ export default async function AdminTournamentPage({ params }: { params: Promise<
     )
   ).filter((game): game is (typeof games)[number] => game !== null)
 
-  const [teams, matches] = await Promise.all([
+  const [teams, matches, publicTeams] = await Promise.all([
     listTeamsWithContact(tournamentId),
     listAdminMatches(tournamentId),
+    getPublicTeams(tournamentId),
   ])
 
   const approved = teams.filter(team => team.status === 'approved')
@@ -51,22 +55,28 @@ export default async function AdminTournamentPage({ params }: { params: Promise<
       <section className={styles.panel}>
         <div className={styles.panelHeading}>
           <h2 className={styles.panelHead}>赛事设置</h2>
-          {isPlatformOwner ? (
-            <div className={styles.panelActions}>
-              <ButtonLink href={`/admin/tournaments/${tournamentId}/staff`} size="mini">
-                签到权限
-              </ButtonLink>
-              <a
-                className={styles.panelAction}
-                href={`/admin/tournaments/${tournamentId}/teams.csv`}
-                download
-              >
-                导出战队 CSV
-              </a>
-            </div>
-          ) : null}
+          <div className={styles.panelActions}>
+            <ButtonLink href={`/admin/tournaments/${tournamentId}/check-in`} size="mini">
+              签到台
+            </ButtonLink>
+            <ButtonLink href={`/admin/tournaments/${tournamentId}/staff`} size="mini">
+              签到权限
+            </ButtonLink>
+            <a
+              className={styles.panelAction}
+              href={`/admin/tournaments/${tournamentId}/teams.csv`}
+              download
+            >
+              导出战队 CSV
+            </a>
+          </div>
         </div>
         <TournamentEditor tournament={tournament} games={editableGames} />
+      </section>
+
+      <section className={styles.panel}>
+        <h2 className={styles.panelHead}>报名审核 · 共 {teams.length} 支</h2>
+        <TeamTable teams={teams} tournamentId={tournamentId} canDelete={isPlatformOwner} />
       </section>
 
       <section className={styles.panel}>
@@ -85,15 +95,21 @@ export default async function AdminTournamentPage({ params }: { params: Promise<
       </section>
 
       {matches.length > 0 ? (
-        <section className={styles.panel}>
-          <h2 className={styles.panelHead}>赛程时间</h2>
-          <Scheduler
-            key={matches.map(match => `${match.id}:${match.scheduledAt ?? ''}`).join('|')}
-            tournamentId={tournamentId}
-            matches={matches}
-            teams={teams}
-          />
-        </section>
+        <>
+          <section className={styles.panel}>
+            <h2 className={styles.panelHead}>赛程时间</h2>
+            <Scheduler
+              key={matches.map(match => `${match.id}:${match.scheduledAt ?? ''}`).join('|')}
+              tournamentId={tournamentId}
+              matches={matches}
+              teams={teams}
+            />
+          </section>
+          <section className={styles.panel}>
+            <h2 className={styles.panelHead}>赛果录入</h2>
+            <ScheduleEditor matches={matches} teams={publicTeams} tournamentId={tournamentId} />
+          </section>
+        </>
       ) : null}
     </>
   )

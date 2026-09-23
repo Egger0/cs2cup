@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { requireAdmin } from '../../auth'
+import { requireTournamentStaffCapability } from '../../auth'
 import { cloudflareBindings } from '../../cloudflare-bindings'
 import {
   isValidTournamentStaffId,
@@ -105,7 +105,7 @@ function mapCandidates(rows: CandidateRow[]) {
 export async function getTournamentCheckInOperatorManager(
   tournamentId: number,
 ): Promise<TournamentCheckInOperatorManager | null> {
-  await requireAdmin()
+  await requireTournamentStaffCapability(tournamentId, 'tournament.access.manage')
   if (!isValidTournamentStaffId(tournamentId)) return null
 
   const now = Date.now()

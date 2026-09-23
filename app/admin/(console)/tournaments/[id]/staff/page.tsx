@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { ButtonLink } from '@/components/ui'
-import { requireAdmin } from '@/lib/auth'
+import { requirePlatformConsole } from '@/lib/auth'
 import { getTournamentCheckInOperatorManager } from '@/lib/queries/admin/tournament-staff'
 import { CheckInOperatorManager } from './CheckInOperatorManager'
 import styles from './staff.module.css'
@@ -21,7 +21,7 @@ function tournamentIdFromParam(value: string) {
 }
 
 export default async function TournamentStaffPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin()
+  const access = await requirePlatformConsole()
   const tournamentId = tournamentIdFromParam((await params).id)
   if (tournamentId === null) notFound()
 
@@ -44,9 +44,11 @@ export default async function TournamentStaffPage({ params }: { params: Promise<
           </strong>
         </div>
         <div className={styles.contextActions}>
-          <ButtonLink href="/admin/identity#role-access-title" size="mini">
-            管理统一账号权限
-          </ButtonLink>
+          {access.capabilities.includes('platform.access.manage') ? (
+            <ButtonLink href="/admin/identity#role-access-title" size="mini">
+              管理统一账号权限
+            </ButtonLink>
+          ) : null}
           <ButtonLink href={`/admin/tournaments/${tournamentId}/check-in`} size="mini">
             查看签到台
           </ButtonLink>

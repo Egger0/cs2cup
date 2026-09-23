@@ -12,6 +12,7 @@ export const STAFF_CAPABILITIES = [
   'tournament.schedule.manage',
   'tournament.results.write',
   'tournament.media.manage',
+  'tournament.access.manage',
 ] as const
 
 export type StaffCapability = (typeof STAFF_CAPABILITIES)[number]

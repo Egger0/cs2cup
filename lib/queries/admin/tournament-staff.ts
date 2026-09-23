@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { requireAdmin } from '../../auth'
+import { requireTournamentStaffCapability } from '../../auth'
 import { cloudflareBindings } from '../../cloudflare-bindings'
 import {
   isCheckInOperatorDuration,
@@ -59,7 +59,7 @@ export async function grantCheckInOperatorAssignment(
   durationHours: number,
   expectedSnapshot: CheckInOperatorAssignmentSnapshot | null,
 ): Promise<TournamentCheckInOperatorAssignment | null> {
-  await requireAdmin()
+  await requireTournamentStaffCapability(tournamentId, 'tournament.access.manage')
   if (
     !isValidTournamentStaffId(tournamentId) ||
     !isValidParticipantPrincipalId(principalId) ||
@@ -180,7 +180,7 @@ export async function revokeCheckInOperatorAssignment(
   principalId: string,
   expectedSnapshot: CheckInOperatorAssignmentSnapshot,
 ): Promise<TournamentCheckInOperatorAssignment | null> {
-  await requireAdmin()
+  await requireTournamentStaffCapability(tournamentId, 'tournament.access.manage')
   if (
     !isValidTournamentStaffId(tournamentId) ||
     !isValidParticipantPrincipalId(principalId) ||

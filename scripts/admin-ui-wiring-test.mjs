@@ -65,6 +65,11 @@ const adminLayout = await read('app/admin/(console)/layout.tsx')
 assert.match(adminLayout, /AccountSignOut/)
 assert.match(await read('components/account/AccountSignOut.tsx'), /role=["']alert["']/)
 
+const tournamentWorkspace = await read('app/admin/(console)/tournaments/[id]/page.tsx')
+assert.match(tournamentWorkspace, /<TeamTable teams=\{teams\} tournamentId=\{tournamentId\}/)
+assert.match(tournamentWorkspace, /href=\{`\/admin\/tournaments\/\$\{tournamentId\}\/check-in`\}/)
+assert.match(tournamentWorkspace, /<ScheduleEditor matches=\{matches\} teams=\{publicTeams\}/)
+
 const identityStyles = await read('app/admin/(console)/identity/identity.module.css')
 const identityOperations = await read('app/admin/(console)/identity/operations.module.css')
 const auditLog = await read('app/admin/(console)/identity/AuditLog.tsx')

@@ -2,11 +2,12 @@ import assert from 'node:assert/strict'
 import { registerHooks } from 'node:module'
 
 const source = path => new URL(path, import.meta.url).href
-const authModule = 'data:text/javascript,export async function requireAdmin(){return {uid:"test"}}'
+const authModule =
+  'data:text/javascript,export async function requireTournamentStaffCapability(){return {uid:"test"}}'
 const adminQueriesModule =
   'data:text/javascript,export async function listTeamsWithContact(){return globalThis.__teamCsvTeams}'
 const contentQueriesModule =
-  'data:text/javascript,export async function adminListTournaments(){return globalThis.__teamCsvTournaments}'
+  'data:text/javascript,export async function findTournamentRecord(id){return globalThis.__teamCsvTournaments.find(tournament=>tournament.id===id)??null}'
 
 registerHooks({
   resolve(specifier, context, nextResolve) {

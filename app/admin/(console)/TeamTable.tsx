@@ -82,7 +82,15 @@ function TeamSeedInput({
   )
 }
 
-export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId: number }) {
+export function TeamTable({
+  teams,
+  tournamentId,
+  canDelete = true,
+}: {
+  teams: Team[]
+  tournamentId: number
+  canDelete?: boolean
+}) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [keyword, setKeyword] = useState('')
@@ -151,7 +159,7 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
               <th>联系方式</th>
               <th>学院</th>
               <th>队员</th>
-              <th />
+              {canDelete ? <th /> : null}
             </tr>
           </thead>
           <tbody>
@@ -224,17 +232,19 @@ export function TeamTable({ teams, tournamentId }: { teams: Team[]; tournamentId
                 <td className={styles.roster}>
                   {team.players.map(player => player.nickname).join('、') || '—'}
                 </td>
-                <td>
-                  <ConfirmButton
-                    question={`删除「${team.name}」？不可撤销。`}
-                    confirmLabel="删除"
-                    disabled={mutationPending}
-                    aria-label={`删除 ${team.name}`}
-                    onConfirm={() => mutate(() => deleteTeam(team.id, tournamentId))}
-                  >
-                    删除
-                  </ConfirmButton>
-                </td>
+                {canDelete ? (
+                  <td>
+                    <ConfirmButton
+                      question={`删除「${team.name}」？不可撤销。`}
+                      confirmLabel="删除"
+                      disabled={mutationPending}
+                      aria-label={`删除 ${team.name}`}
+                      onConfirm={() => mutate(() => deleteTeam(team.id, tournamentId))}
+                    >
+                      删除
+                    </ConfirmButton>
+                  </td>
+                ) : null}
               </tr>
             ))}
           </tbody>
