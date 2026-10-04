@@ -26,7 +26,15 @@ import { clearParticipantSessionCookie } from '@/lib/participant-auth'
 import { resolveSiteOrigin } from '@/lib/site-config'
 import { registrationAccountHref, registrationAuthHref } from '@/lib/registration-navigation'
 
-const FIELDS = ['username', 'displayName', 'password', 'passwordConfirmation'] as const
+const FIELDS = [
+  'username',
+  'displayName',
+  'password',
+  'passwordConfirmation',
+  'identityClaim',
+  'contact',
+  'applicationReason',
+] as const
 
 interface Failure {
   status: number
@@ -50,6 +58,13 @@ function failureResponse(request: NextRequest, failure: Failure) {
 }
 
 function policyMessage(field: string, reason: string) {
+  if (['identityClaim', 'contact', 'applicationReason'].includes(field)) {
+    const label =
+      field === 'identityClaim' ? '身份与参与依据' : field === 'contact' ? '联系信息' : '补充说明'
+    return reason === 'invalid_characters'
+      ? `${label}含有不支持的字符，请删除后重试。`
+      : `${label}请填写 ${field === 'applicationReason' ? '1–500' : '3–160'} 个字符。`
+  }
   if (field === 'username') {
     return reason === 'reserved'
       ? '这个用户名不可用，请换一个再试。'
@@ -96,6 +111,11 @@ export async function POST(request: NextRequest) {
     }
     const result = await registerAccount(database, registrationFields, await passwordPepperSet(), {
       clientLabel: clientSessionLabel(request.headers),
+      membership: {
+        identityClaim: fields.identityClaim,
+        contact: fields.contact,
+        applicationReason: fields.applicationReason,
+      },
     })
 
     if (!result.ok) {

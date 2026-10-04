@@ -21,7 +21,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: '创建账号',
-  description: '创建账号后即可登录、保存资料并申请成员资格。',
+  description: '一次填写账号信息和成员资料，创建账号时同步提交成员资格申请。',
   robots: { index: false, follow: false },
   referrer: 'no-referrer',
 }
@@ -63,15 +63,15 @@ export default async function RegisterPage({
         </div>
         <p className={loginStyles.assurances}>
           <span>01 / ACCOUNT FIRST</span>
-          先拥有账号，再找到你的队伍
+          一次注册，成员申请同步提交
         </p>
       </section>
 
       <section className={bandStyles.passBand} aria-labelledby="create-account-title">
         <header className={bandStyles.passHeader}>
           <p className={bandStyles.serial}>SELF REGISTRATION / NLC—01</p>
-          <h2 id="create-account-title">创建你的账号</h2>
-          <p>创建后即可登录并保存报名资料。</p>
+          <h2 id="create-account-title">注册账号与成员申请</h2>
+          <p>填写一次，创建账号并提交成员资格审核。</p>
         </header>
         {entrySlug ? <RegistrationJourney slug={entrySlug} /> : null}
         <div className={bandStyles.loginControl}>

@@ -4,6 +4,13 @@ Tournament and club website for the NingboTech Esports Club.
 
 Production: <https://cn.nbtesportsclub.online>
 
+## Member registration
+
+Public signup collects account credentials, identity evidence, contact information, and an
+optional application note. Account creation and membership submission share one atomic D1
+batch. Successful signup signs the user in with a pending application; staff approval is
+still required for membership. Existing accounts can submit or update applications in `/account`.
+
 ## Stack
 
 - Next.js 16 and React 19

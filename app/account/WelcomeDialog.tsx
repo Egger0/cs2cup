@@ -47,12 +47,13 @@ export function WelcomeDialog({ children }: { children: ReactNode }) {
           </button>
         </header>
         <h2 id={heading} className={styles.title}>
-          账号已创建，
+          账号已创建，申请已提交。
           <br />
-          欢迎加入宁理电竞。
+          等待审核，先认识队友。
         </h2>
         <p id={description} className={styles.lede}>
-          赛事通知、组队开黑和新人活动都在社群里。先进群打个招呼，下一场比赛就不会错过。
+          成员申请已进入审核队列，通常在 24
+          小时内处理。赛事通知、组队开黑和新人活动都在社群里，可以先进群打个招呼。
         </p>
         <div className={styles.channels}>
           <span className={styles.label}>先进群 / JOIN THE SQUAD</span>
@@ -60,7 +61,7 @@ export function WelcomeDialog({ children }: { children: ReactNode }) {
         </div>
         <footer className={styles.actions}>
           <a href="#membership" className={styles.primary} onClick={close}>
-            申请成员资格 <span aria-hidden="true">→</span>
+            查看审核进度 <span aria-hidden="true">→</span>
           </a>
           <button type="button" className={styles.later} onClick={close} autoFocus>
             稍后再说

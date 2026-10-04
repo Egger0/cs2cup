@@ -133,11 +133,13 @@ try {
   await page.getByLabel('显示名称', { exact: true }).fill('交互校验')
   await page.locator('[name="password"]').fill('Unmatched-password-1')
   await page.locator('[name="passwordConfirmation"]').fill('Unmatched-password-2')
+  await page.getByLabel('身份与参与依据').fill('浏览器测试学院 20260001')
+  await page.getByLabel('联系信息').fill('frontend@example.test')
   let submitted = false
   page.on('request', request => {
     if (request.method() === 'POST') submitted = true
   })
-  await page.getByRole('button', { name: '创建账号', exact: true }).click()
+  await page.getByRole('button', { name: '创建账号并提交申请', exact: true }).click()
   await page.getByRole('alert').getByText('两次输入的密码不一致。').waitFor()
   assert.equal(submitted, false, 'Mismatched confirmation must not submit')
   assert.equal(

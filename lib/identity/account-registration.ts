@@ -10,6 +10,13 @@ import {
 import type { PasswordPepperSet } from './internal/password-config.ts'
 import { securityEventStatement } from './internal/security-event.ts'
 import {
+  membershipFieldsAreSubmittable,
+  membershipSubmissionDigest,
+  normalizeMembershipApplicationFields,
+  type MembershipApplicationFields,
+  type MembershipFieldIssue,
+} from './internal/membership-policy.ts'
+import {
   evaluateSelfRegistration,
   type SelfRegistrationFailure,
   type SelfRegistrationFields,
@@ -29,7 +36,7 @@ export type AccountRegistrationResult =
   | {
       readonly ok: false
       readonly reason: 'invalid_input'
-      readonly issue: SelfRegistrationFailure
+      readonly issue: SelfRegistrationFailure | MembershipFieldIssue
     }
   | { readonly ok: false; readonly reason: 'username_unavailable' }
   | { readonly ok: false; readonly reason: 'password_compromised' }
@@ -37,6 +44,7 @@ export type AccountRegistrationResult =
 export interface RegisterAccountOptions {
   readonly now?: number
   readonly clientLabel?: string
+  readonly membership?: MembershipApplicationFields
 }
 
 async function usernameAvailable(database: IdentityDatabase, username: string) {
@@ -69,6 +77,26 @@ export async function registerAccount(
 ): Promise<AccountRegistrationResult> {
   const policy = evaluateSelfRegistration(fields)
   if (!policy.ok) return { ok: false, reason: 'invalid_input', issue: policy.issue }
+  const membership = options.membership
+    ? normalizeMembershipApplicationFields(options.membership)
+    : null
+  if (membership && !membership.ok) {
+    return {
+      ok: false,
+      reason: 'invalid_input',
+      issue: { field: membership.field, reason: membership.reason },
+    }
+  }
+  if (membership?.ok && !membershipFieldsAreSubmittable(membership.value)) {
+    return {
+      ok: false,
+      reason: 'invalid_input',
+      issue: {
+        field: membership.value.identityClaim === null ? 'identityClaim' : 'contact',
+        reason: 'too_short',
+      },
+    }
+  }
   if (!(await usernameAvailable(database, policy.value.username))) {
     return { ok: false, reason: 'username_unavailable' }
   }
@@ -94,6 +122,49 @@ export async function registerAccount(
     now,
   })
   const requestProof = createOpaqueToken()
+  const applicationId = createOpaqueToken()
+  const membershipStatements = []
+  if (membership?.ok) {
+    const digest = await membershipSubmissionDigest(membership.value)
+    membershipStatements.push(
+      database
+        .prepare(
+          `INSERT INTO identity_membership_application
+            (id, account_id, identity_claim, contact, application_reason,
+             last_applicant_update_at, last_applicant_session_id, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          applicationId,
+          accountId,
+          membership.value.identityClaim,
+          membership.value.contact,
+          membership.value.applicationReason,
+          now,
+          session.record.id,
+          now,
+          now,
+        ),
+      database
+        .prepare(
+          `UPDATE identity_membership_application
+           SET status = 'pending', submission_version = 1, submission_digest = ?,
+               submitted_at = ?, revision = 1, write_nonce = ? WHERE id = ?`,
+        )
+        .bind(digest, now, createOpaqueToken(), applicationId),
+      await securityEventStatement(database, {
+        eventType: 'membership.application.submitted',
+        actor: { type: 'account', accountId, sessionId: session.record.id },
+        targetAccountId: accountId,
+        resource: { type: 'membership_application', id: applicationId },
+        correlationId: session.record.id,
+        deduplicationScope: `membership.application.submitted:${applicationId}`,
+        details: { submissionVersion: 1, submissionDigest: digest },
+        retentionClass: 'access_control',
+        createdAt: now,
+      }),
+    )
+  }
 
   try {
     await database.batch([
@@ -157,6 +228,7 @@ export async function registerAccount(
         )
         .bind(now, now, verificationNonce, passwordCredentialId),
       prepareSessionInsert(database, session),
+      ...membershipStatements,
       await securityEventStatement(database, {
         eventType: 'account.created',
         actor: { type: 'account', accountId, sessionId: session.record.id },

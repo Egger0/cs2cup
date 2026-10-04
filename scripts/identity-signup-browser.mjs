@@ -31,6 +31,8 @@ async function fillSignup(page) {
   await page.getByLabel('显示名称').fill(USER.displayName)
   await page.locator('[name="password"]').fill(USER.password)
   await page.locator('[name="passwordConfirmation"]').fill(USER.password)
+  await page.getByLabel('身份与参与依据').fill('浏览器测试学院 20260001')
+  await page.getByLabel('联系信息').fill('signup@example.test')
 }
 
 async function registrationResponse(page) {
@@ -60,7 +62,7 @@ try {
   await assertAccessible(page, 'account signup')
   await fillSignup(page)
   const createdResponse = registrationResponse(page)
-  await page.getByRole('button', { name: '创建账号' }).click()
+  await page.getByRole('button', { name: '创建账号并提交申请' }).click()
   const created = await createdResponse
   assert.equal(created.status(), 200)
   await page.waitForURL(
@@ -94,6 +96,8 @@ try {
   assert.equal(await page.evaluate(() => document.activeElement?.closest('#main') !== null), true)
 
   const membership = page.getByRole('region', { name: '成员资格' })
+  await membership.getByText('等待审核', { exact: true }).waitFor()
+  assert.equal(await membership.getByRole('button', { name: '提交资格申请' }).count(), 0)
   const security = page.getByRole('region', { name: '登录与安全' })
   await assertLightSurface(security, 'account security card')
   await page.setViewportSize({ width: 781, height: 900 })
@@ -158,7 +162,7 @@ try {
   await page.goto(`${BASE}/register`)
   await fillSignup(page)
   const duplicateResponse = registrationResponse(page)
-  await page.getByRole('button', { name: '创建账号' }).click()
+  await page.getByRole('button', { name: '创建账号并提交申请' }).click()
   const duplicate = await duplicateResponse
   assert.equal(duplicate.status(), 409)
   await page.getByText('这个用户名不可用，请换一个再试。').waitFor()

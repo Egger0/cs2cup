@@ -43,7 +43,7 @@ export function RegisterForm({
   const [uncertain, setUncertain] = useState(false)
   const [error, setError] = useState(
     initialError
-      ? (FAILURE_COPY[initialError] ?? '请检查用户名、显示名称和密码后重试。本次未创建账号。')
+      ? (FAILURE_COPY[initialError] ?? '请检查账号信息和成员资料后重试。本次未创建账号。')
       : '',
   )
   const [errorField, setErrorField] = useState('')
@@ -60,7 +60,8 @@ export function RegisterForm({
   }
 
   function clearChangedError(event: FormEvent<HTMLFormElement>) {
-    if (!(event.target instanceof HTMLInputElement)) return
+    if (!(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement))
+      return
     const name = event.target.name
     const confirmationChanged =
       errorField === 'passwordConfirmation' &&
@@ -127,6 +128,7 @@ export function RegisterForm({
       onChange={clearChangedError}
       aria-busy={working}
     >
+      <h3 className={styles.sectionTitle}>账号信息</h3>
       <div className={styles.nameGrid}>
         <label className={formStyles.field}>
           <span>用户名</span>
@@ -199,6 +201,49 @@ export function RegisterForm({
           required
         />
       </label>
+      <h3 className={styles.sectionTitle}>成员申请资料</h3>
+      <p className={styles.after}>资料会随账号一起提交审核，通过后即可获得正式成员资格。</p>
+      <label className={formStyles.field}>
+        <span>身份与参与依据</span>
+        <input
+          name="identityClaim"
+          minLength={3}
+          maxLength={160}
+          placeholder="例如：学号、院系或与社团的关系"
+          aria-invalid={errorField === 'identityClaim'}
+          aria-describedby={errorField === 'identityClaim' ? 'signup-error' : undefined}
+          disabled={working}
+          required
+        />
+      </label>
+      <label className={formStyles.field}>
+        <span>联系信息</span>
+        <input
+          name="contact"
+          minLength={3}
+          maxLength={160}
+          placeholder="例如：QQ 号或其他便于审核联系的方式"
+          aria-invalid={errorField === 'contact'}
+          aria-describedby={
+            errorField === 'contact' ? 'contact-guidance signup-error' : 'contact-guidance'
+          }
+          disabled={working}
+          required
+        />
+        <small id="contact-guidance">仅用于审核联系，不会自动绑定 QQ 或成为账号恢复方式。</small>
+      </label>
+      <label className={formStyles.field}>
+        <span>补充说明（选填）</span>
+        <textarea
+          className={styles.reason}
+          name="applicationReason"
+          maxLength={500}
+          rows={3}
+          aria-invalid={errorField === 'applicationReason'}
+          aria-describedby={errorField === 'applicationReason' ? 'signup-error' : undefined}
+          disabled={working}
+        />
+      </label>
       {error ? (
         <p
           id="signup-error"
@@ -214,10 +259,12 @@ export function RegisterForm({
         </p>
       ) : null}
       <button className={formStyles.passwordButton} type="submit" disabled={working}>
-        <span>{working ? '正在创建…' : '创建账号'}</span>
+        <span>{working ? '正在创建并提交…' : '创建账号并提交申请'}</span>
         <span aria-hidden="true">↗</span>
       </button>
-      <p className={styles.after}>创建后会自动登录，报名资料可以稍后填写。</p>
+      <p className={styles.after}>
+        完成后自动登录，成员申请进入审核队列；赛事报名资料可以稍后填写。
+      </p>
     </form>
   )
 }

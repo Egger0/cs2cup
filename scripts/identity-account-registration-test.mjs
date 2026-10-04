@@ -58,6 +58,11 @@ const fields = {
   password: '一段不会重复使用的安全长密码 2026',
   passwordConfirmation: '一段不会重复使用的安全长密码 2026',
 }
+const membership = {
+  identityClaim: '学院与学号 20260001',
+  contact: 'QQ 123456789',
+  applicationReason: '希望参加社团活动',
+}
 
 try {
   const created = await registerAccount(db, fields, peppers, {
@@ -110,6 +115,94 @@ try {
     reason: 'invalid_input',
     issue: { field: 'password', reason: 'contains_account_context' },
   })
+
+  const member = await registerAccount(db, { ...fields, username: 'new.member' }, peppers, {
+    now: Date.now() + 3,
+    membership,
+  })
+  assert.equal(member.ok, true)
+  const application = database
+    .prepare(
+      `SELECT status, identity_claim, contact, application_reason,
+              submission_version, submission_digest, submitted_at
+       FROM identity_membership_application WHERE account_id = ?`,
+    )
+    .get(member.accountId)
+  assert.equal(application.status, 'pending')
+  assert.equal(application.identity_claim, membership.identityClaim)
+  assert.equal(application.contact, membership.contact)
+  assert.equal(application.application_reason, membership.applicationReason)
+  assert.equal(application.submission_version, 1)
+  assert.match(application.submission_digest, /^[0-9a-f]{64}$/)
+  assert.equal(typeof application.submitted_at, 'number')
+  assert.equal(database.prepare('SELECT COUNT(*) AS count FROM identity_membership').get().count, 0)
+  assert.equal(
+    database
+      .prepare(
+        `SELECT COUNT(*) AS count FROM identity_security_event
+      WHERE target_account_id = ? AND event_type = 'membership.application.submitted'`,
+      )
+      .get(member.accountId).count,
+    1,
+  )
+  const before = database.prepare('SELECT COUNT(*) AS count FROM identity_account').get().count
+  for (const missing of ['identityClaim', 'contact']) {
+    const rejected = await registerAccount(db, { ...fields, username: 'invalid.member' }, peppers, {
+      membership: { ...membership, [missing]: '' },
+    })
+    assert.deepEqual(rejected, {
+      ok: false,
+      reason: 'invalid_input',
+      issue: { field: missing, reason: 'too_short' },
+    })
+    assert.equal(
+      database.prepare('SELECT COUNT(*) AS count FROM identity_account').get().count,
+      before,
+    )
+  }
+  const duplicateMember = await registerAccount(
+    db,
+    { ...fields, username: 'new.member' },
+    peppers,
+    {
+      membership,
+    },
+  )
+  assert.deepEqual(duplicateMember, { ok: false, reason: 'username_unavailable' })
+  assert.equal(
+    database
+      .prepare(
+        `SELECT COUNT(*) AS count FROM identity_membership_application
+    WHERE account_id = ?`,
+      )
+      .get(member.accountId).count,
+    1,
+  )
+
+  const tables = [
+    'identity_account',
+    'identity_password_credential',
+    'identity_self_registration',
+    'identity_session',
+    'identity_membership_application',
+    'identity_security_event',
+  ]
+  const counts = () =>
+    tables.map(table => database.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get().count)
+  const beforeFailure = counts()
+  database.exec(`CREATE TRIGGER test_membership_failure BEFORE INSERT ON identity_membership_application
+    WHEN NEW.contact = 'forced failure' BEGIN SELECT RAISE(ABORT, 'test membership write failed'); END`)
+  await assert.rejects(
+    registerAccount(db, { ...fields, username: 'rollback.member' }, peppers, {
+      membership: { ...membership, contact: 'forced failure' },
+    }),
+    /test membership write failed/,
+  )
+  assert.deepEqual(
+    counts(),
+    beforeFailure,
+    'A failed application must roll back the account and session',
+  )
 
   console.log('identity account self-registration command passed')
 } finally {
