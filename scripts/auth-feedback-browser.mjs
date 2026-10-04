@@ -17,6 +17,10 @@ const page = await context.newPage()
 const errors = []
 page.on('pageerror', error => errors.push(error.message))
 
+async function documentPosition(field) {
+  return field.evaluate(element => ({ y: element.getBoundingClientRect().top + window.scrollY }))
+}
+
 async function assertReasonBeforeAction(field, action, fieldBefore) {
   const [fieldBox, alertBox, actionBox] = await Promise.all([
     field.boundingBox(),
@@ -24,7 +28,7 @@ async function assertReasonBeforeAction(field, action, fieldBefore) {
     action.boundingBox(),
   ])
   assert.ok(
-    Math.abs(fieldBefore.y - fieldBox.y) <= 1,
+    Math.abs(fieldBefore.y - (await documentPosition(field)).y) <= 1,
     'An error does not move the field in question',
   )
   assert.ok(
@@ -47,7 +51,7 @@ try {
   await page.getByLabel('身份与参与依据').fill('浏览器测试学院 20260001')
   await page.getByLabel('联系信息').fill('feedback@example.test')
   await page.evaluate(() => document.fonts.ready)
-  const before = await password.boundingBox()
+  const before = await documentPosition(password)
   const responsePromise = page.waitForResponse(
     response =>
       response.url().includes('/api/auth/register') && response.request().method() === 'POST',
@@ -62,6 +66,25 @@ try {
     'An omitted display name defaults on the server',
   )
   assert.equal(result.field, 'password')
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const retried = await page.evaluate(async () => {
+      const form = document.querySelector('form')
+      const body = new URLSearchParams()
+      for (const [key, value] of new FormData(form)) body.append(key, value)
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body,
+        headers: { Accept: 'application/json' },
+      })
+      return { status: response.status, result: await response.json() }
+    })
+    assert.equal(
+      retried.status,
+      400,
+      'Signup retries must return validation errors, not a rate limit',
+    )
+    assert.equal(retried.result.field, 'password')
+  }
   await page.locator('#signup-error').getByText(CONTEXT_PASSWORD_MESSAGE).waitFor()
   await page.waitForFunction(() => document.activeElement?.getAttribute('name') === 'password')
   assert.equal(await username.inputValue(), probeName, 'Failed signup preserves other inputs')
@@ -125,7 +148,7 @@ try {
       })
     })
     const button = page.getByRole('button', { name: flow.button, exact: true })
-    const position = await page.locator(`[name="${flow.field}"]`).boundingBox()
+    const position = await documentPosition(page.locator(`[name="${flow.field}"]`))
     await button.click()
     assert.equal(await page.locator('form').getAttribute('aria-busy'), 'true')
     assert.equal(await page.locator(`[name="${flow.field}"]`).isDisabled(), true)

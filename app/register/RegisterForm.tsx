@@ -10,7 +10,6 @@ import styles from './register.module.css'
 const SETUP_FAILURE = '注册暂时不可用，请稍后重试。'
 
 const FAILURE_COPY: Record<string, string> = {
-  rate: '创建尝试过于频繁，请稍后再试。',
   request: '这次提交未完成，请刷新页面后重试。',
   screening_unavailable: SETUP_FAILURE,
   setup: SETUP_FAILURE,

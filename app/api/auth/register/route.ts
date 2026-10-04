@@ -5,13 +5,6 @@ import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { assertCsrfRequest, CsrfError } from '@/lib/csrf'
 import { withPrivateNoStore } from '@/lib/http-cache'
 import { registerAccount } from '@/lib/identity/account-registration'
-import { activeAuthFingerprintKey } from '@/lib/identity/internal/auth-fingerprint-config'
-import { createAuthAttemptFingerprint } from '@/lib/identity/internal/auth-fingerprint'
-import {
-  AuthAttemptRateLimitError,
-  chargeAuthAttempts,
-} from '@/lib/identity/internal/auth-attempts'
-import { networkAuthAttemptCharge } from '@/lib/identity/internal/auth-network'
 import {
   IdentityRequestError,
   identityWantsJson,
@@ -19,7 +12,6 @@ import {
 } from '@/lib/identity/internal/http'
 import { passwordPepperSet } from '@/lib/identity/internal/password-config'
 import { clientSessionLabel } from '@/lib/identity/internal/session-display'
-import { normalizeUsername } from '@/lib/identity/internal/username-policy'
 import { getAuthContext, setIdentitySessionCookie } from '@/lib/identity/kernel'
 import { legacySessionStateFromRequest } from '@/lib/legacy-session-state'
 import { clearParticipantSessionCookie } from '@/lib/participant-auth'
@@ -41,7 +33,6 @@ interface Failure {
   code: string
   error: string
   field?: string
-  retryAfter?: number
 }
 
 function failureResponse(request: NextRequest, failure: Failure) {
@@ -53,7 +44,6 @@ function failureResponse(request: NextRequest, failure: Failure) {
   const response = identityWantsJson(request)
     ? NextResponse.json({ ok: false, ...failure }, { status: failure.status })
     : NextResponse.redirect(retry, 303)
-  if (failure.retryAfter) response.headers.set('Retry-After', String(failure.retryAfter))
   return withPrivateNoStore(response)
 }
 
@@ -95,16 +85,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    const fingerprintKey = await activeAuthFingerprintKey()
-    const username = normalizeUsername(fields.username) ?? fields.username.trim().toLowerCase()
-    const [networkCharge, usernameCharge] = await Promise.all([
-      networkAuthAttemptCharge(request.headers, 'enrollment', fingerprintKey, 8),
-      createAuthAttemptFingerprint(fingerprintKey, 'enrollment', 'identity', username).then(
-        value => ({ dimension: 'identity' as const, ...value, limit: 3 }),
-      ),
-    ])
     const database = cloudflareBindings().db
-    await chargeAuthAttempts(database, 'enrollment', [networkCharge, usernameCharge])
     const registrationFields = {
       ...fields,
       displayName: fields.displayName.trim() || fields.username.trim(),
@@ -159,14 +140,6 @@ export async function POST(request: NextRequest) {
         status: 403,
         code: 'request',
         error: '这次提交未完成，请刷新页面后重试。',
-      })
-    }
-    if (error instanceof AuthAttemptRateLimitError) {
-      return failureResponse(request, {
-        status: 429,
-        code: 'rate',
-        error: '创建尝试过于频繁，请稍后再试。',
-        retryAfter: error.retryAfterSeconds,
       })
     }
     console.error('[identity] account registration unavailable', error)
