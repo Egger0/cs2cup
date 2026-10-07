@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
+import { spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 
 import { fittedImageSize, scaledImageSize } from '../lib/client-image.ts'
 
@@ -64,3 +66,12 @@ assert.match(photoRow, /window\.alert\(result\.warning\)/)
 assert.match(photoRow, /role=\{feedback\.tone === 'success' \? 'status' : 'alert'\}/)
 
 console.log('image upload tests passed')
+const access = spawnSync(
+  process.execPath,
+  [
+    '--experimental-strip-types',
+    fileURLToPath(new URL('./project-media-access-test.mjs', import.meta.url)),
+  ],
+  { stdio: 'inherit' },
+)
+assert.equal(access.status, 0, 'project media access must pass')

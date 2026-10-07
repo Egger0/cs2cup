@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { requireAdmin } from '../../auth'
+import { requireAdmin, requireTournamentStaffCapability } from '../../auth'
 import {
   deletePrivateRows,
   insertPrivateRows,
@@ -8,7 +8,6 @@ import {
   selectPrivateRows,
   updatePrivateRows,
 } from '../../rdb'
-import { adminMutation } from './shared'
 
 interface PhotoRow {
   id: number
@@ -42,7 +41,7 @@ const toAdminPhoto = (row: PhotoRow) => ({
   variantWidths: parseVariantWidths(row.variant_widths),
 })
 
-export async function adminListPhotos(): Promise<
+export async function adminListPhotos(tournamentIds?: readonly number[]): Promise<
   {
     id: number
     tournamentId: number
@@ -54,24 +53,31 @@ export async function adminListPhotos(): Promise<
     variantWidths: number[]
   }[]
 > {
-  await requireAdmin()
+  if (tournamentIds === undefined) {
+    await requireAdmin()
+  } else {
+    if (!tournamentIds.length) return []
+    await Promise.all(
+      tournamentIds.map(id => requireTournamentStaffCapability(id, 'tournament.media.manage')),
+    )
+  }
 
   const rows = await selectPrivateRows<PhotoRow>('photo', {
+    filters: tournamentIds ? { tournament_id: `in.(${tournamentIds.join(',')})` } : undefined,
     order: 'tournament_id.desc,sort_order.asc',
   })
   return rows.map(toAdminPhoto)
 }
 
 export async function adminGetPhoto(id: number) {
-  await requireAdmin()
-
   const row = await selectPrivateRow<PhotoRow>('photo', {
     filters: { id: `eq.${id}` },
   })
+  if (row) await requireTournamentStaffCapability(row.tournament_id, 'tournament.media.manage')
   return row ? toAdminPhoto(row) : null
 }
 
-export function adminInsertPhoto(values: {
+export async function adminInsertPhoto(values: {
   tournamentId: number
   storageKey: string
   width: number
@@ -81,37 +87,40 @@ export function adminInsertPhoto(values: {
   blurDataUrl: string | null
   variantWidths: number[]
 }) {
-  return adminMutation(() =>
-    insertPrivateRows('photo', {
-      tournament_id: values.tournamentId,
-      storage_key: values.storageKey,
-      width: values.width,
-      height: values.height,
-      caption: values.caption,
-      sort_order: values.sortOrder,
-      blur_data_url: values.blurDataUrl,
-      variant_widths: JSON.stringify(values.variantWidths),
-    }),
-  )
+  await requireTournamentStaffCapability(values.tournamentId, 'tournament.media.manage')
+  return insertPrivateRows('photo', {
+    tournament_id: values.tournamentId,
+    storage_key: values.storageKey,
+    width: values.width,
+    height: values.height,
+    caption: values.caption,
+    sort_order: values.sortOrder,
+    blur_data_url: values.blurDataUrl,
+    variant_widths: JSON.stringify(values.variantWidths),
+  })
 }
 
-export function adminAttachPhotoVariants(values: {
+export async function adminAttachPhotoVariants(values: {
   id: number
   blurDataUrl: string | null
   variantWidths: number[]
 }) {
-  return adminMutation(() =>
-    updatePrivateRows(
-      'photo',
-      {
-        blur_data_url: values.blurDataUrl,
-        variant_widths: JSON.stringify(values.variantWidths),
-      },
-      { filters: { id: `eq.${values.id}` } },
-    ),
+  const photo = await adminGetPhoto(values.id)
+  if (!photo) throw new Error('照片不存在或已被删除')
+  return updatePrivateRows(
+    'photo',
+    {
+      blur_data_url: values.blurDataUrl,
+      variant_widths: JSON.stringify(values.variantWidths),
+    },
+    { filters: { id: `eq.${values.id}`, tournament_id: `eq.${photo.tournamentId}` } },
   )
 }
 
-export function adminDeletePhoto(id: number) {
-  return adminMutation(() => deletePrivateRows('photo', { filters: { id: `eq.${id}` } }))
+export async function adminDeletePhoto(id: number) {
+  const photo = await adminGetPhoto(id)
+  if (!photo) throw new Error('照片不存在或已被删除')
+  return deletePrivateRows('photo', {
+    filters: { id: `eq.${id}`, tournament_id: `eq.${photo.tournamentId}` },
+  })
 }

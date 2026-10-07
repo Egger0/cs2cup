@@ -16,7 +16,7 @@ registerHooks({
     }
     if (specifier === '../../auth') {
       return {
-        url: 'data:text/javascript,export async function requireAdmin(){}',
+        url: 'data:text/javascript,export async function requireTournamentStaffCapability(id, capability){if(globalThis.__deniedScoreTournament === id)throw new Error("forbidden");if(capability !== "tournament.results.write")throw new Error("wrong capability")}',
         shortCircuit: true,
       }
     }
@@ -74,6 +74,20 @@ const winnerBMaps = [
     played: true,
   },
 ]
+
+{
+  const database = scoreCorrectionFixture()
+  const before = scoreCorrectionState(database)
+  const { tournament_id: tournamentId } = database
+    .prepare('SELECT tournament_id FROM match WHERE id = 10')
+    .get()
+  globalThis.__deniedScoreTournament = tournamentId
+  await assert.rejects(saveAdminMatchScore(10, 1, 2, 2, 0), /forbidden/)
+  await assert.rejects(saveAdminMatchReport(10, 1, 2, winnerBMaps), /forbidden/)
+  assert.deepEqual(scoreCorrectionState(database), before)
+  globalThis.__deniedScoreTournament = undefined
+  database.close()
+}
 
 {
   const database = scoreCorrectionFixture()

@@ -51,6 +51,7 @@ export function AdminNav({
       capabilities.includes(link.capability) ||
       (link.href === '/admin' && hasTournamentWork) ||
       (link.href === '/admin/tournaments' && hasProjectWork) ||
+      (link.href === '/admin/photos' && hasProjectWork) ||
       (link.capability === 'platform.identity.review' && holdsReviewRole),
   ).map(link => ({
     href: link.href,

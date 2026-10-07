@@ -1,8 +1,17 @@
 import 'server-only'
-import { requireAdmin } from '../../auth'
+import { requireTournamentStaffCapability } from '../../auth'
 import { cloudflareBindings } from '../../cloudflare-bindings'
 import type { MatchMapInput, MatchReportResult, MatchWriteResult } from './matches'
 import { prepareAdminMatchScore } from './score-write'
+
+async function requireMatchResults(matchId: number) {
+  const match = await cloudflareBindings()
+    .db.prepare('SELECT tournament_id FROM match WHERE id = ?')
+    .bind(matchId)
+    .first<{ tournament_id: number }>()
+  if (!match) throw new Error('比赛不存在')
+  await requireTournamentStaffCapability(match.tournament_id, 'tournament.results.write')
+}
 
 export async function saveAdminMatchScore(
   matchId: number,
@@ -12,7 +21,7 @@ export async function saveAdminMatchScore(
   scoreB: number | null,
   confirmationToken: string | null = null,
 ): Promise<MatchWriteResult> {
-  await requireAdmin()
+  await requireMatchResults(matchId)
   const change = await prepareAdminMatchScore(matchId, teamAId, teamBId, scoreA, scoreB, {
     confirmationToken,
   })
@@ -27,7 +36,7 @@ export async function saveAdminMatchReport(
   maps: MatchMapInput[],
   confirmationToken: string | null = null,
 ): Promise<MatchReportResult> {
-  await requireAdmin()
+  await requireMatchResults(matchId)
   const { db } = cloudflareBindings()
   const match = await db
     .prepare(

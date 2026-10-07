@@ -1,7 +1,7 @@
 'use server'
 
 import { updateTag } from 'next/cache'
-import { requireAdmin } from '@/lib/auth'
+import { requirePlatformConsole, requireTournamentStaffCapability } from '@/lib/auth'
 import { MIME_TO_EXT, imageSize, sniffMime } from '@/lib/image'
 import { createPhotoStorageKey } from '@/lib/photo-storage-key'
 import { VARIANT_WIDTHS, variantStorageKey } from '@/lib/photo-variants'
@@ -11,12 +11,12 @@ import {
   adminGetPhoto,
   adminInsertPhoto,
   adminListPhotos,
-  adminListTournaments,
 } from '@/lib/queries/content'
+import { findTournamentRecord } from '@/lib/queries/content/tournaments'
 import { putObject, removeObject, uploadsEnabled } from '@/lib/storage'
 
 export async function uploadPhoto(form: FormData) {
-  await requireAdmin()
+  await requirePlatformConsole()
 
   if (!uploadsEnabled()) {
     return { ok: false as const, error: '没有配置上传存储' }
@@ -31,9 +31,10 @@ export async function uploadPhoto(form: FormData) {
   }
 
   const tournamentId = Number(form.get('tournamentId'))
-  if (!Number.isInteger(tournamentId)) {
+  if (!Number.isSafeInteger(tournamentId) || tournamentId <= 0) {
     return { ok: false as const, error: '请选择赛事' }
   }
+  await requireTournamentStaffCapability(tournamentId, 'tournament.media.manage')
 
   const buffer = Buffer.from(await file.arrayBuffer())
   const mime = sniffMime(buffer)
@@ -42,12 +43,10 @@ export async function uploadPhoto(form: FormData) {
   const size = imageSize(mime, buffer)
   if (!size) return { ok: false as const, error: '无法读取图片尺寸' }
 
-  const tournaments = await adminListTournaments()
-  const tournament = tournaments.find(entry => entry.id === tournamentId)
+  const tournament = await findTournamentRecord(tournamentId)
   if (!tournament) return { ok: false as const, error: '赛事不存在' }
 
-  const existing = await adminListPhotos()
-  const mine = existing.filter(photo => photo.tournamentId === tournamentId)
+  const mine = await adminListPhotos([tournamentId])
   let key: string | null = null
   const writtenKeys: string[] = []
 
@@ -92,7 +91,7 @@ export async function uploadPhoto(form: FormData) {
 }
 
 export async function attachPhotoVariants(id: number, form: FormData) {
-  await requireAdmin()
+  await requirePlatformConsole()
 
   if (!uploadsEnabled()) {
     return { ok: false as const, error: '没有配置上传存储' }
@@ -140,7 +139,7 @@ export async function attachPhotoVariants(id: number, form: FormData) {
 }
 
 export async function deletePhotoAndFile(id: number) {
-  await requireAdmin()
+  await requirePlatformConsole()
   if (!Number.isSafeInteger(id) || id <= 0) {
     return { ok: false as const, error: '照片编号无效' }
   }

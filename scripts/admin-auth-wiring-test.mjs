@@ -31,6 +31,9 @@ const identityKernelModule = dataModule(`
   }
 `)
 const mediaAuthModule = dataModule(`
+  export async function getCurrentTournamentStaffAccess(id, capability) {
+    return { ok: globalThis.__mediaStaffTournament === id && capability === 'tournament.media.manage' }
+  }
   export async function getCurrentUnifiedPlatformOwner() {
     return globalThis.__mediaUnifiedPlatformOwner
   }
@@ -40,7 +43,7 @@ const rdbModule = dataModule(`
     return globalThis.__mediaPublished ? { id: 1 } : null
   }
   export async function selectPrivateRow() {
-    return globalThis.__mediaPrivate ? { id: 1 } : null
+    return globalThis.__mediaPrivate ? { id: 1, tournament_id: 6 } : null
   }
   export async function selectPublicRows() {
     return globalThis.__mediaPublishedRows ?? []
@@ -206,6 +209,15 @@ try {
   globalThis.__mediaPublished = false
   globalThis.__mediaPrivate = true
   globalThis.__mediaUnifiedPlatformOwner = null
+  globalThis.__mediaReads = 0
+
+  globalThis.__mediaStaffTournament = 6
+  const projectPhoto = await GET(request, mediaParams)
+  assert.equal(projectPhoto.status, 200)
+  assert.match(projectPhoto.headers.get('cache-control') ?? '', /no-store/)
+  globalThis.__mediaStaffTournament = 7
+  assert.equal((await GET(request, mediaParams)).status, 404)
+  globalThis.__mediaStaffTournament = undefined
   globalThis.__mediaReads = 0
 
   const denied = await GET(request, mediaParams)

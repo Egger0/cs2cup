@@ -26,12 +26,16 @@ export async function assertProjectManagerScope({
     decision(manager.context, 'tournament.create', { kind: 'game', gameId: 73 }),
     decision(manager.context, 'tournament.configure', { kind: 'tournament', tournamentId: 72 }),
     decision(manager.context, 'tournament.configure', { kind: 'tournament', tournamentId: 73 }),
+    decision(manager.context, 'tournament.results.write', { kind: 'tournament', tournamentId: 72 }),
+    decision(manager.context, 'tournament.results.write', { kind: 'tournament', tournamentId: 73 }),
+    decision(manager.context, 'tournament.media.manage', { kind: 'tournament', tournamentId: 72 }),
+    decision(manager.context, 'tournament.media.manage', { kind: 'tournament', tournamentId: 73 }),
     decision(owner.context, 'tournament.create', { kind: 'game', gameId: 71 }),
     decision(platformOwner.context, 'tournament.create', { kind: 'game', gameId: 73 }),
   ])
   assert.deepEqual(
     results.map(result => result.ok),
-    [true, false, true, false, false, true],
+    [true, false, true, false, true, false, true, false, false, true],
     'a project manager must only create and configure tournaments within its own project',
   )
 }

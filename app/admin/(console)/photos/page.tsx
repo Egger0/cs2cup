@@ -1,7 +1,9 @@
 import { Empty } from '@/components/ui'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
-import { requireAdmin } from '@/lib/auth'
+import { canCreateTournamentForGame, requirePlatformConsole } from '@/lib/auth'
 import { adminListPhotos, adminListTournaments } from '@/lib/queries/content'
+import { listTournamentRecordsForGames } from '@/lib/queries/content/tournaments'
+import { listGames } from '@/lib/queries/public/games'
 import { Backfill } from './Backfill'
 import { PhotoRow } from './PhotoRow'
 import { Uploader } from './Uploader'
@@ -10,9 +12,19 @@ import styles from '../admin.module.css'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminPhotosPage() {
-  await requireAdmin()
-
-  const [photos, tournaments] = await Promise.all([adminListPhotos(), adminListTournaments()])
+  const access = await requirePlatformConsole()
+  const isPlatformOwner = access.capabilities.includes('platform.configure')
+  const gameIds = (
+    await Promise.all(
+      (await listGames()).map(async game =>
+        (await canCreateTournamentForGame(game.id)) ? game.id : null,
+      ),
+    )
+  ).filter((id): id is number => id !== null)
+  const tournaments = isPlatformOwner
+    ? await adminListTournaments()
+    : await listTournamentRecordsForGames(gameIds)
+  const photos = await adminListPhotos(tournaments.map(tournament => tournament.id))
   const label = (id: number) => {
     const found = tournaments.find(entry => entry.id === id)
     return found ? `${found.season} · ${found.title}` : '未知赛事'

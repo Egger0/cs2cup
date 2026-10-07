@@ -1,5 +1,5 @@
 import { posix } from 'node:path'
-import { getCurrentUnifiedPlatformOwner } from '@/lib/auth'
+import { getCurrentTournamentStaffAccess, getCurrentUnifiedPlatformOwner } from '@/lib/auth'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { getAuthContext } from '@/lib/identity/kernel'
 import { loadoutShotAccess } from '@/lib/loadout-shots'
@@ -10,6 +10,7 @@ import { getObject } from '@/lib/storage'
 
 interface StorageKeyRow {
   storage_key: string
+  tournament_id: number
 }
 
 const PUBLIC_IMMUTABLE_HEADERS = Object.freeze({
@@ -28,10 +29,10 @@ async function findPhoto(published: boolean, storageKey: string) {
   const direct = published
     ? await selectPublicRow<StorageKeyRow>('photo_public', { filters }).catch(() => null)
     : await selectPrivateRow<StorageKeyRow>('photo', { filters }).catch(() => null)
-  if (direct) return true
+  if (direct) return direct
 
   const variant = parseVariantKey(storageKey)
-  if (!variant) return false
+  if (!variant) return null
 
   const variantFilters = { storage_key: `ilike.${variant.stem}.*` }
   const candidates = published
@@ -39,7 +40,7 @@ async function findPhoto(published: boolean, storageKey: string) {
         () => [],
       )
     : await selectPrivateRows<StorageKeyRow>('photo', { filters: variantFilters }).catch(() => [])
-  return candidates.some(row => variantStemMatches(row.storage_key, variant.stem))
+  return candidates.find(row => variantStemMatches(row.storage_key, variant.stem)) ?? null
 }
 
 async function canReadLoadoutShot(storageKey: string) {
@@ -58,9 +59,14 @@ async function canReadPhoto(storageKey: string) {
   if (await findPhoto(true, storageKey)) return 'published' as const
 
   const unifiedOwner = await getCurrentUnifiedPlatformOwner().catch(() => null)
-  if (!unifiedOwner) return null
-
-  return (await findPhoto(false, storageKey)) ? ('private' as const) : null
+  const photo = await findPhoto(false, storageKey)
+  if (!photo) return null
+  if (unifiedOwner) return 'private' as const
+  const access = await getCurrentTournamentStaffAccess(
+    photo.tournament_id,
+    'tournament.media.manage',
+  ).catch(() => null)
+  return access?.ok ? ('private' as const) : null
 }
 
 export async function GET(_request: Request, { params }: { params: Promise<{ key: string[] }> }) {
