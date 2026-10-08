@@ -40,19 +40,16 @@ jobs:
         run: npm run check
 
       - name: Build Cloudflare Worker
-        if: github.event_name != 'push'
         run: npm run cf:build
 
       - name: Enforce Worker size budget
-        if: github.event_name != 'push'
         run: npm run cf:size
 
       - name: Install browser
-        if: github.event_name != 'push'
         run: npx --no-install playwright install --with-deps chromium
 
       - name: Run frontend smoke checks
-        if: github.event_name == 'pull_request'
+        if: github.event_name != 'workflow_dispatch'
         run: npm run browser:smoke -- --skip-build
 
       - name: Run full browser checks
