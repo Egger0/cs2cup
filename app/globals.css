@@ -267,7 +267,8 @@ button {
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-::view-transition-group(site-header) {
+::view-transition-group(site-header-brand),
+::view-transition-group(site-header-actions) {
   z-index: 100;
   animation: none;
 }
