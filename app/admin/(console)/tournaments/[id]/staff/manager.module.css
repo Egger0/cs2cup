@@ -103,7 +103,6 @@
   min-height: 48px;
   padding: 10px 36px 10px 12px;
   border: 1px solid var(--admin-line-strong);
-  border-radius: 10px;
   background: #101211;
   color: var(--ink);
   font-family: var(--font-body), sans-serif;
