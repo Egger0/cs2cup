@@ -17,6 +17,13 @@
   scroll-margin-top: 148px;
 }
 
+@media (min-width: 901px) {
+  .discussion {
+    position: sticky;
+    top: calc(var(--header-height) + 24px);
+  }
+}
+
 .comments {
   display: grid;
   gap: 24px;
