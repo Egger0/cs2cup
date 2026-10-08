@@ -57,12 +57,27 @@ export function PageMasthead({
       ) : null}
       <div className={`wrap ${theme.dark} ${arrival.copy}`}>
         {eyebrow ? <span className={arrival.eyebrow}>{eyebrow}</span> : null}
-        <h1 className={arrival.title}>{title}</h1>
+        <h1 className={arrival.title}>{scriptRuns(title)}</h1>
         {lede ? <p className={arrival.lede}>{lede}</p> : null}
         {children ? <div className={arrival.aside}>{children}</div> : null}
       </div>
       <div className={arrival.horizon} aria-hidden="true" />
     </header>
+  )
+}
+
+function scriptRuns(title: ReactNode) {
+  if (typeof title !== 'string') return title
+  const runs = title.match(/\s+|[\x21-\x7e]+|[^\s\x21-\x7e]+/g) ?? []
+  if (runs.filter(run => run.trim()).length < 2) return title
+  return runs.map((run, index) =>
+    run.trim() ? (
+      <span key={index} className={arrival.run}>
+        {run}
+      </span>
+    ) : (
+      run
+    ),
   )
 }
 
