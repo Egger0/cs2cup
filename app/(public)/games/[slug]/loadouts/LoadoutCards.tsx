@@ -11,7 +11,7 @@ import {
 import { siteDayKey } from '@/lib/datetime'
 import type { LoadoutCode } from '@/lib/loadout-queries'
 import type { LoadoutMarks } from '@/lib/loadout-community'
-import { photoUrl } from '@/lib/media'
+import { officialImageUrl, photoUrl } from '@/lib/media'
 import { LoadoutCardActions } from './LoadoutCardActions'
 import { LoadoutReportButton } from './LoadoutReportButton'
 import { LoadoutShotUpload } from './LoadoutShotUpload'
@@ -80,7 +80,7 @@ export function LoadoutCard({
             </a>
           ) : code.renderUrl ? (
             <img
-              src={code.renderUrl}
+              src={officialImageUrl(code.renderUrl)}
               alt={`「${code.title}」改装效果`}
               loading="lazy"
               decoding="async"

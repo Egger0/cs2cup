@@ -1,5 +1,6 @@
 import { formatPrice } from '@/lib/delta-loadouts'
 import type { listLoadoutAccessories } from '@/lib/loadout-queries'
+import { officialImageUrl } from '@/lib/media'
 import styles from './accessories.module.css'
 
 export function LoadoutAccessories({
@@ -23,7 +24,7 @@ export function LoadoutAccessories({
           <li key={item.id} className={styles.item} data-grade={item.grade}>
             {item.imageUrl ? (
               <img
-                src={item.imageUrl}
+                src={officialImageUrl(item.imageUrl, 160)}
                 alt=""
                 loading="lazy"
                 decoding="async"

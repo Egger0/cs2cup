@@ -1,3 +1,4 @@
+import { officialImageUrl } from '@/lib/media'
 import styles from './LoadoutHero.module.css'
 
 export function HeroBuild({
@@ -20,7 +21,7 @@ export function HeroBuild({
     return (
       <img
         className={styles.render}
-        src={render}
+        src={officialImageUrl(render)}
         alt=""
         referrerPolicy="no-referrer"
         fetchPriority="high"
