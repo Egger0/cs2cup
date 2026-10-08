@@ -28,12 +28,13 @@
   min-width: 0;
   min-height: 44px;
   border: 1px solid var(--line-strong);
-  border-radius: 0;
+  border-radius: 999px;
 }
 
 .select {
   width: 100%;
   padding: 0 36px 0 12px;
+  border-radius: 10px;
   background-color: var(--surface);
   color: var(--ink);
 }
@@ -60,6 +61,17 @@
 .reset {
   background: transparent;
   color: var(--muted);
+}
+
+.submit:hover {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.reset:hover {
+  border-color: var(--ink);
+  color: var(--ink);
 }
 
 @media (max-width: 720px) {

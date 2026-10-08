@@ -144,6 +144,7 @@
   min-height: 44px;
   align-items: center;
   padding-inline: 16px;
+  border-radius: 999px;
   background: var(--ct);
   color: var(--button-ink, #f1efe8);
   font-weight: 700;

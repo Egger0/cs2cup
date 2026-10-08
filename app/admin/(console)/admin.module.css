@@ -230,6 +230,7 @@
   align-items: center;
   padding: 7px 11px;
   border: 1px solid var(--admin-line-strong, var(--line-strong));
+  border-radius: 999px;
   color: var(--admin-blue-strong, var(--ink));
   font-size: 0.76rem;
 }

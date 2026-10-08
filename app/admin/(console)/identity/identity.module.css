@@ -12,7 +12,7 @@
   border-left: 3px solid var(--admin-blue);
   background: rgba(109, 165, 211, 0.09);
   color: var(--admin-blue-strong);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 
 .welcome span {
@@ -32,15 +32,15 @@
 .card header p {
   color: var(--admin-blue);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.57rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.13em;
 }
 
 .heading h1 {
   margin-top: 7px;
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(2rem, 5vw, 4.4rem);
-  letter-spacing: -0.045em;
+  font-size: clamp(1.4rem, 2.2vw, 1.8rem);
+  letter-spacing: -0.015em;
   line-height: 1;
 }
 
@@ -58,7 +58,7 @@
 
 .heading dt {
   color: var(--admin-muted);
-  font-size: 0.6rem;
+  font-size: 0.6875rem;
 }
 
 .heading dd {
@@ -70,7 +70,7 @@
 .guidance {
   max-width: 780px;
   color: var(--admin-muted);
-  font-size: 0.78rem;
+  font-size: 0.875rem;
 }
 
 .queue {
@@ -106,8 +106,8 @@
 .card h2 {
   margin-top: 5px;
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(1.5rem, 3vw, 2.5rem);
-  letter-spacing: -0.035em;
+  font-size: clamp(1.15rem, 1.6vw, 1.4rem);
+  letter-spacing: -0.015em;
   overflow-wrap: anywhere;
 }
 
@@ -117,7 +117,7 @@
   border: 1px solid var(--admin-line-strong);
   color: var(--admin-blue-strong);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.54rem;
+  font-size: 0.6875rem;
 }
 
 .card dl {
@@ -138,13 +138,13 @@
 
 .card dt {
   color: var(--admin-muted);
-  font-size: 0.6rem;
+  font-size: 0.6875rem;
 }
 
 .card dd {
   margin-top: 5px;
   overflow-wrap: anywhere;
-  font-size: 0.76rem;
+  font-size: 0.875rem;
 }
 
 .card > footer {
@@ -157,7 +157,7 @@
   justify-content: space-between;
   gap: 8px 16px;
   color: var(--admin-muted);
-  font-size: 0.61rem;
+  font-size: 0.6875rem;
 }
 
 .meta strong {
@@ -173,7 +173,7 @@
   padding: 9px 15px;
   color: var(--admin-blue-strong);
   cursor: pointer;
-  font-size: 0.7rem;
+  font-size: 0.8125rem;
   font-weight: 700;
 }
 
@@ -194,7 +194,7 @@
   display: grid;
   gap: 6px;
   color: var(--admin-muted);
-  font-size: 0.61rem;
+  font-size: 0.6875rem;
 }
 
 .decision select,
@@ -208,7 +208,7 @@
   padding: 9px 11px;
   color: var(--ink);
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.8125rem;
 }
 
 .decision textarea {
@@ -228,7 +228,7 @@
 .assigned {
   margin-top: 18px;
   color: var(--admin-muted);
-  font-size: 0.7rem;
+  font-size: 0.8125rem;
 }
 
 .error {
@@ -237,7 +237,7 @@
   border-left: 2px solid var(--c4);
   background: rgba(229, 72, 77, 0.08);
   color: #ef8b8e;
-  font-size: 0.7rem;
+  font-size: 0.8125rem;
 }
 
 .empty {
