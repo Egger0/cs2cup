@@ -101,6 +101,12 @@
   color: var(--bg);
 }
 
+.primaryButton:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--button-ink);
+}
+
 .quietButton {
   border-color: var(--line-strong);
   background: transparent;

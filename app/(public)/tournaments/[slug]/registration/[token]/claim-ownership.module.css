@@ -29,6 +29,7 @@
   gap: 12px;
   padding: 10px 12px;
   border: 1px solid var(--pass-blue);
+  border-radius: 999px;
   color: var(--pass-blue);
   font-size: 0.74rem;
   font-weight: 750;
@@ -91,7 +92,7 @@
   min-height: 42px;
   padding: 8px 11px;
   border: 1px solid var(--pass-blue);
-  border-radius: 0;
+  border-radius: 999px;
   background: transparent;
   color: var(--pass-blue);
   cursor: pointer;
@@ -122,7 +123,7 @@
   padding: 0;
   border: 0;
   border-bottom: 1px solid currentColor;
-  border-radius: 0;
+  border-radius: 999px;
   background: transparent;
   color: var(--pass-blue);
   cursor: pointer;
@@ -142,6 +143,7 @@
   justify-content: space-between;
   padding: 9px 11px;
   border: 1px solid var(--pass-blue);
+  border-radius: 999px;
   background: transparent;
   font-family: 'NLC Role Sans', var(--font-body);
   font-size: 0.7rem;

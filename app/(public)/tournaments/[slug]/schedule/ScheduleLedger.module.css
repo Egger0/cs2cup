@@ -54,6 +54,7 @@
   min-height: 44px;
   padding-inline: 12px;
   border: 1px solid var(--line-strong);
+  border-radius: 999px;
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.68rem;
   letter-spacing: 0.06em;

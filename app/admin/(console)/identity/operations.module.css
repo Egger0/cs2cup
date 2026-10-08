@@ -9,7 +9,7 @@
 .incomingTransfer p {
   flex: 1;
   color: var(--admin-blue-strong);
-  font-size: 0.72rem;
+  font-size: 0.8125rem;
 }
 
 .incomingTransfer button,
@@ -32,7 +32,7 @@
   padding: 9px 11px;
   color: var(--ink);
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.8125rem;
 }
 
 .transferControls select {
@@ -57,7 +57,7 @@
   border-top: 1px solid var(--admin-line);
   padding-top: 14px;
   color: var(--admin-muted);
-  font-size: 0.66rem;
+  font-size: 0.8125rem;
 }
 
 .history summary {
@@ -87,7 +87,7 @@
   align-items: center;
   justify-content: space-between;
   color: var(--admin-muted);
-  font-size: 0.68rem;
+  font-size: 0.8125rem;
 }
 
 .pagination a {
@@ -124,13 +124,13 @@
 .sectionHeading h2 {
   margin-top: 4px;
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  font-size: 1.08rem;
 }
 
 .sectionHeading > span,
 .listNote {
   color: var(--admin-muted);
-  font-size: 0.66rem;
+  font-size: 0.8125rem;
 }
 
 .accessForm {
@@ -144,7 +144,7 @@
   display: grid;
   gap: 6px;
   color: var(--admin-muted);
-  font-size: 0.61rem;
+  font-size: 0.6875rem;
 }
 
 .recoveryForm {
@@ -170,7 +170,7 @@
   padding: 9px 13px;
   color: var(--admin-blue-strong);
   cursor: pointer;
-  font-size: 0.68rem;
+  font-size: 0.8125rem;
   font-weight: 700;
 }
 
@@ -205,7 +205,7 @@
 .accessList span,
 .rosterList span {
   color: var(--admin-muted);
-  font-size: 0.62rem;
+  font-size: 0.6875rem;
 }
 
 .accessList form,
@@ -218,7 +218,7 @@
 .rosterList small {
   max-width: 680px;
   color: #d8a887;
-  font-size: 0.6rem;
+  font-size: 0.6875rem;
 }
 
 .auditList {
@@ -235,7 +235,7 @@
   gap: 12px;
   border-bottom: 1px solid var(--admin-line);
   padding: 10px 0;
-  font-size: 0.64rem;
+  font-size: 0.6875rem;
 }
 
 .auditList time,

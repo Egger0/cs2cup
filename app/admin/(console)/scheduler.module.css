@@ -173,6 +173,7 @@
   min-width: 0;
   padding: 0 10px;
   border: 1px solid var(--admin-line-strong, var(--line-strong));
+  border-radius: 10px;
   background: var(--admin-paper-deep, var(--void));
   color: var(--ink);
   font-family: var(--font-mono), monospace;
