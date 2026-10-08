@@ -11,6 +11,7 @@ import { queryLoadoutCodes } from '@/lib/loadout-queries'
 import { getGame, listHonours, listPosts, listTournaments, safely } from '@/lib/queries/public'
 import styles from './game.module.css'
 import { LoadoutCards } from './loadouts/LoadoutCards'
+import { HeroStats } from './loadouts/LoadoutHero'
 
 export const revalidate = 300
 
@@ -74,16 +75,14 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
         {game.loadoutCodes ? (
           <ButtonLink href={`/games/${game.slug}/maps`}>战术沙盘</ButtonLink>
         ) : null}
-        <span className={styles.stats}>
-          <span className={styles.stat}>
-            <b>{String(mine.length).padStart(2, '0')}</b>
-            <span>届赛事</span>
-          </span>
-          <span className={styles.stat}>
-            <b>{String(news.length).padStart(2, '0')}</b>
-            <span>条动态</span>
-          </span>
-        </span>
+        <HeroStats
+          items={(
+            [
+              ['届赛事', mine.length],
+              ['条动态', news.length],
+            ] as const
+          ).filter(([, value]) => value !== 0)}
+        />
       </PageMasthead>
 
       {game.description ? (
@@ -110,7 +109,10 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
       <section className="section" id="game-tournaments">
         <div className="wrap">
           <div data-rise>
-            <SectionHead eyebrow="赛事" title={`${game.name} 的比赛`} />
+            <SectionHead
+              eyebrow="赛事"
+              title={`${game.name}${/[\x20-\x7e]$/.test(game.name) ? ' ' : ''}的比赛`}
+            />
           </div>
           {mine.length > 0 ? (
             <TournamentList tournaments={mine} />

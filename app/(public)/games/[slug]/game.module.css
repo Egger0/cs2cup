@@ -6,30 +6,6 @@
   view-transition-name: planet-art;
 }
 
-.stats {
-  display: inline-flex;
-  gap: 28px;
-  margin-left: 8px;
-}
-
-.stat {
-  display: grid;
-  gap: 6px;
-  color: var(--muted);
-  font-family: var(--font-mono), monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-}
-
-.stat b {
-  color: var(--ink);
-  font-family: var(--font-display), sans-serif;
-  font-size: 2.25rem;
-  font-weight: 570;
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
-
 .overviewSection {
   padding-block: 32px;
 }

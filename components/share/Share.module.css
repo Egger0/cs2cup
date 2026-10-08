@@ -17,6 +17,10 @@
     background 160ms ease,
     border-color 160ms ease;
 }
+.trigger {
+  border-radius: 999px;
+  padding-inline: 18px;
+}
 .trigger:hover {
   border-color: currentColor;
   background: var(--ct-dim);

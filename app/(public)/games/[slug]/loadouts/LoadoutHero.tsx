@@ -38,6 +38,7 @@ export function HeroBuild({
 }
 
 export function HeroStats({ items }: { items: readonly (readonly [string, string | number])[] }) {
+  if (!items.length) return null
   return (
     <span className={styles.stats}>
       {items.map(([label, value]) => (
