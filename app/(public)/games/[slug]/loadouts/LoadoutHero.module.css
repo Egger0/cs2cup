@@ -121,6 +121,7 @@
 
 @media (max-width: 720px) {
   .stats {
+    flex-basis: 100%;
     margin-inline-start: 0;
   }
 }
