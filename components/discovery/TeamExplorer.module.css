@@ -52,6 +52,7 @@
   min-height: 44px;
   padding: 10px 16px;
   border: 1px solid var(--ct);
+  border-radius: 999px;
   color: var(--ct);
   background: transparent;
   cursor: pointer;

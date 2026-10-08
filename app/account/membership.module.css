@@ -128,7 +128,7 @@
   width: 100%;
   padding: 11px 13px;
   border: 1px solid var(--line-strong);
-  border-radius: 0;
+  border-radius: 10px;
   outline: none;
   background: color-mix(in srgb, var(--surface) 68%, transparent);
   font: inherit;
@@ -151,7 +151,7 @@
   min-height: 46px;
   padding: 10px 20px;
   border: 1px solid var(--line-strong);
-  border-radius: 0;
+  border-radius: 999px;
   background: transparent;
   color: var(--ink);
   cursor: pointer;

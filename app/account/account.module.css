@@ -90,9 +90,9 @@
 
 .rows dd button {
   min-height: 40px;
-  padding: 7px 14px;
+  padding: 7px 18px;
   border: 1px solid var(--line-strong);
-  border-radius: 0;
+  border-radius: 999px;
   background: transparent;
   color: var(--ink);
   cursor: pointer;
@@ -128,7 +128,7 @@
   min-height: 46px;
   padding: 10px 12px;
   border: 1px solid var(--line-strong);
-  border-radius: 0;
+  border-radius: 10px;
   outline: none;
   background: color-mix(in srgb, var(--surface) 68%, transparent);
   font-size: 1rem;

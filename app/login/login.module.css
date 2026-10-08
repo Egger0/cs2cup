@@ -67,6 +67,7 @@
 
 .brandline img {
   border-radius: 50%;
+  filter: brightness(2.05) saturate(0.72);
   background: radial-gradient(circle, rgb(74 163 223 / 34%), rgb(74 163 223 / 0%) 70%);
   box-shadow: 0 0 16px rgb(74 163 223 / 32%);
 }
