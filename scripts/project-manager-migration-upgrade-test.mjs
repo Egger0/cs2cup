@@ -90,6 +90,45 @@ try {
     'identity_role_assignment_before_project_scope',
   )
   assert.deepEqual(database.prepare('PRAGMA foreign_key_check').all(), [])
+
+  database.exec('BEGIN')
+  database.exec(
+    await readFile(new URL('0045_legacy_bootstrap_role_reference.sql', directory), 'utf8'),
+  )
+  database.exec('COMMIT')
+
+  assert.equal(
+    database
+      .prepare('PRAGMA foreign_key_list(identity_legacy_admin_bootstrap)')
+      .all()
+      .find(key => key.from === 'owner_role_assignment_id').table,
+    'identity_role_assignment',
+  )
+  assert.deepEqual(
+    {
+      ...database
+        .prepare(
+          `SELECT status, owner_role_assignment_id, password_credential_id
+           FROM identity_legacy_admin_bootstrap`,
+        )
+        .get(),
+    },
+    { status: 'completed', owner_role_assignment_id: roleId, password_credential_id: credentialId },
+  )
+  assert.equal(
+    database
+      .prepare(
+        `SELECT COUNT(*) AS count FROM sqlite_master
+         WHERE name = 'identity_role_assignment_before_project_scope'`,
+      )
+      .get().count,
+    0,
+  )
+  assert.throws(
+    () => database.exec('DELETE FROM identity_legacy_admin_bootstrap'),
+    /legacy admin bootstrap evidence is retained/,
+  )
+  assert.deepEqual(database.prepare('PRAGMA foreign_key_check').all(), [])
   console.log('project manager migration upgrade tests passed')
 } finally {
   database.close()
