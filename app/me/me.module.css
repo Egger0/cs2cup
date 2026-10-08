@@ -89,6 +89,7 @@
   margin-top: 18px;
   padding: 11px 22px;
   border: 1px solid var(--accent);
+  border-radius: 999px;
   background: var(--accent);
   color: var(--button-ink);
   font-size: 0.9375rem;

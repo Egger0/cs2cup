@@ -118,7 +118,8 @@
   }
 
   .tabs {
-    gap: 28px;
+    margin-inline-start: calc(-1 * var(--pad));
+    padding-inline-start: var(--pad);
   }
 
   .tab {

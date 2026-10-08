@@ -104,7 +104,7 @@
   flex: 1;
   padding: 10px 12px;
   border: 1px solid var(--line-strong);
-  border-radius: 0;
+  border-radius: 10px;
   outline: none;
   background: color-mix(in srgb, var(--surface) 68%, transparent);
   font: inherit;
