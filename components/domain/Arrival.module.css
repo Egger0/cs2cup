@@ -147,6 +147,10 @@
   text-wrap: balance;
 }
 
+.run {
+  display: inline-block;
+}
+
 .arrival[data-density='compact'] .title {
   font-size: clamp(2.6rem, 6.2vw, 6rem);
 }
