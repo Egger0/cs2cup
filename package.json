@@ -134,5 +134,11 @@
     "sharp": "0.35.5",
     "typescript": "^6.0.3",
     "wrangler": "^4.127.0"
+  },
+  "overrides": {
+    "sharp": "$sharp",
+    "@next/eslint-plugin-next": {
+      "fast-glob": "npm:tinyglobby@0.2.17"
+    }
   }
 }
