@@ -16,7 +16,7 @@
   border: 1px solid currentColor;
   color: var(--ct);
   font-family: var(--font-mono), monospace;
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.08em;
 }
 
@@ -42,7 +42,7 @@
 .checkIn > span {
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.58rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.08em;
 }
 
@@ -58,7 +58,7 @@
 .checkIn time {
   color: var(--muted);
   font-family: var(--font-mono), monospace;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
 }
 
 .locked {
@@ -216,7 +216,7 @@
 .accountHandoff > span {
   color: var(--ct);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.56rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.1em;
 }

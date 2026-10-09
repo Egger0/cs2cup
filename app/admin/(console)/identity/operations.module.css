@@ -115,7 +115,7 @@
 .sectionHeading p {
   color: var(--admin-blue);
   font:
-    0.57rem var(--font-mono),
+    0.6875rem var(--font-mono),
     ui-monospace,
     monospace;
   letter-spacing: 0.13em;

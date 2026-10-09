@@ -72,7 +72,7 @@
 .invitation > div > span {
   color: #b2b5ac;
   font:
-    0.6rem var(--font-mono),
+    0.6875rem var(--font-mono),
     monospace;
   letter-spacing: 0.12em;
 }

@@ -246,3 +246,10 @@
     bottom: 96px;
   }
 }
+
+@media (pointer: coarse) {
+  .controls button {
+    width: 44px;
+    height: 44px;
+  }
+}

@@ -158,7 +158,7 @@
 .school {
   color: var(--header-muted);
   font-family: var(--font-mono), monospace;
-  font-size: 0.5rem;
+  font-size: 0.625rem;
   font-weight: 450;
   letter-spacing: 0.2em;
 }

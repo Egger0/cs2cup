@@ -20,7 +20,7 @@
 .serial {
   color: var(--pass-blue);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.18em;
 }
 

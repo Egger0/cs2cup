@@ -34,7 +34,7 @@
 .order {
   color: var(--t);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
 }
 
 .smallButton {
@@ -133,7 +133,7 @@
   padding-inline: 5px;
   color: var(--muted-2);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.66rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.08em;
 }
 

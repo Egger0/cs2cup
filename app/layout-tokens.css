@@ -46,3 +46,11 @@
     --grid-gap: 16px;
   }
 }
+
+@media (hover: none) and (pointer: coarse) {
+  input:not([type='checkbox'], [type='radio'], [type='range']),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}

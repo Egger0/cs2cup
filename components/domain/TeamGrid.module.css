@@ -62,7 +62,7 @@
   color: var(--accent);
   border: 1px solid currentColor;
   font-family: var(--font-mono), monospace;
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.12em;
 }
@@ -109,7 +109,7 @@
 .playerRole {
   flex: none;
   color: var(--muted-2);
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
 }
 
 @media (max-width: 640px) {

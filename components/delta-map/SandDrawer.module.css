@@ -181,3 +181,9 @@
     overflow: visible;
   }
 }
+
+@media (pointer: coarse) {
+  .levels button {
+    min-height: 40px;
+  }
+}

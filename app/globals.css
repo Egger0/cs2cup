@@ -332,7 +332,7 @@ body:has([data-solar-home]) main :focus-visible {
   background: #171817;
   color: #f1efe8;
   font-family: var(--font-mono), monospace;
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   transform: translateY(-160%);

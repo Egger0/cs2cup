@@ -33,7 +33,7 @@
 
 .roundLabel {
   font-family: var(--font-mono), monospace;
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted-2);
@@ -138,7 +138,7 @@
   padding: 5px 12px;
   border-top: 1px solid var(--line);
   font-family: var(--font-mono), monospace;
-  font-size: 0.62rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.1em;
   color: var(--muted-2);
 }
@@ -175,7 +175,7 @@
     margin-bottom: 14px;
     color: var(--muted-2);
     font-family: var(--font-mono), monospace;
-    font-size: 0.62rem;
+    font-size: 0.6875rem;
     letter-spacing: 0.1em;
   }
 

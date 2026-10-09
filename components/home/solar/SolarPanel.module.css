@@ -80,7 +80,7 @@
   border-radius: 4px;
   font: inherit;
   font-family: var(--font-mono);
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.14em;
 }
 @media (hover: none) {
@@ -95,7 +95,7 @@
   margin-bottom: -8px;
   color: var(--space-accent);
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
 }

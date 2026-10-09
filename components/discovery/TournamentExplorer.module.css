@@ -11,7 +11,7 @@
 .heading span {
   color: var(--ct);
   font:
-    0.6rem var(--font-mono),
+    0.6875rem var(--font-mono),
     monospace;
   letter-spacing: 0.13em;
 }

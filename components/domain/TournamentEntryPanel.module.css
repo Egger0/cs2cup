@@ -120,7 +120,7 @@
   left: 0;
   color: var(--ct);
   font:
-    0.66rem var(--font-mono),
+    0.6875rem var(--font-mono),
     monospace;
 }
 .steps a {

@@ -100,7 +100,7 @@
   flex: none;
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.08em;
 }
 
@@ -127,7 +127,7 @@
   border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
   color: var(--accent);
   font-family: var(--font-mono), monospace;
-  font-size: 0.62rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.08em;
 }
 
@@ -137,7 +137,7 @@
   background: var(--accent);
   color: var(--bg);
   font-family: var(--font-mono), monospace;
-  font-size: 0.62rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.08em;
 }
 
@@ -147,6 +147,7 @@
 
 .replyComposer summary {
   display: flex;
+  min-width: 44px;
   min-height: 44px;
   align-items: center;
   width: fit-content;

@@ -18,7 +18,7 @@
 .closed > p {
   color: var(--ops-blue);
   font-family: var(--font-mono), monospace;
-  font-size: 0.56rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.15em;
 }
 
@@ -37,7 +37,7 @@
 
 .summary small {
   color: var(--muted);
-  font-size: 0.66rem;
+  font-size: 0.6875rem;
 }
 
 .progress {
@@ -137,7 +137,7 @@
 
 .teamLead p {
   font-family: var(--font-mono), monospace;
-  font-size: 0.58rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.06em;
 }
 
@@ -165,7 +165,7 @@
 .details dt {
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.52rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.12em;
 }
 
@@ -294,7 +294,7 @@
   background: none;
   color: var(--accent);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.1em;
   cursor: pointer;
 }
@@ -330,7 +330,7 @@
 
 .seatsList small {
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
 }
 
 .seatsList form {

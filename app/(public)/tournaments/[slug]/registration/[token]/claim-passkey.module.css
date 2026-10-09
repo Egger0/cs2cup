@@ -48,7 +48,7 @@
 
 .kicker {
   color: var(--pass-blue);
-  font-size: 0.62rem;
+  font-size: 0.6875rem;
   font-weight: 750;
 }
 
@@ -67,7 +67,7 @@
   padding: 7px 9px;
   border: 1px solid var(--pass-blue);
   color: var(--pass-blue);
-  font-size: 0.54rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   transform: rotate(1.5deg);
 }
@@ -95,7 +95,7 @@
 
 .facts dt {
   color: var(--pass-muted);
-  font-size: 0.56rem;
+  font-size: 0.6875rem;
 }
 
 .facts dd {
@@ -126,7 +126,7 @@
   display: block;
   margin-bottom: 5px;
   color: var(--pass-blue);
-  font-size: 0.55rem;
+  font-size: 0.6875rem;
 }
 
 .action {
@@ -179,7 +179,7 @@
   place-items: center;
   border: 1px solid currentColor;
   font-family: var(--font-mono), monospace;
-  font-size: 0.54rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.08em;
 }
 
@@ -187,7 +187,7 @@
   min-height: 42px;
   margin-top: 11px;
   color: var(--pass-muted);
-  font-size: 0.57rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.03em;
   line-height: 1.5;
 }
@@ -211,7 +211,7 @@
 .recoverySignal {
   color: var(--pass-blue);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.49rem;
+  font-size: 0.6875rem;
   font-weight: 750;
   letter-spacing: 0.09em;
 }
@@ -223,7 +223,7 @@
 
 .recovery p {
   color: #4b595d;
-  font-size: 0.64rem;
+  font-size: 0.6875rem;
   line-height: 1.45;
 }
 
@@ -261,7 +261,7 @@
 .complete p {
   margin-top: 4px;
   color: var(--pass-muted);
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
 }
 
 .complete a {
@@ -269,7 +269,7 @@
   padding-bottom: 3px;
   border-bottom: 1px solid currentColor;
   color: var(--pass-blue);
-  font-size: 0.61rem;
+  font-size: 0.6875rem;
   font-weight: 700;
 }
 

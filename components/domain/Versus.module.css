@@ -22,7 +22,7 @@
 
 .role {
   font-family: var(--font-mono), monospace;
-  font-size: 0.62rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
@@ -91,7 +91,7 @@
 .meta {
   margin-top: 10px;
   font-family: var(--font-mono), monospace;
-  font-size: 0.64rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.14em;
   color: var(--muted-2);
 }
