@@ -94,10 +94,39 @@ try {
   assert.equal(typeof account.consumed_at, 'number')
   assert.equal(database.prepare(`SELECT COUNT(*) AS count FROM identity_membership`).get().count, 0)
 
+  let gated = 0
+  const gate = async () => {
+    gated += 1
+  }
   const duplicate = await registerAccount(db, fields, peppers, {
     now: Date.now() + 1,
+    beforeCreate: gate,
   })
   assert.deepEqual(duplicate, { ok: false, reason: 'username_unavailable' })
+  const invalid = await registerAccount(db, { ...fields, username: 'Not Valid!' }, peppers, {
+    beforeCreate: gate,
+  })
+  assert.equal(invalid.ok, false)
+  assert.deepEqual(
+    await registerAccount(db, { ...fields, username: 'x' }, peppers, { beforeCreate: gate }),
+    { ok: false, reason: 'invalid_input', issue: { field: 'username', reason: 'invalid_format' } },
+  )
+  assert.equal(gated, 0, 'rejected signups must not reach the creation gate')
+  await assert.rejects(
+    registerAccount(db, { ...fields, username: 'gated.player' }, peppers, {
+      beforeCreate: async () => {
+        throw new Error('gate closed')
+      },
+    }),
+    /gate closed/,
+  )
+  assert.equal(
+    database
+      .prepare(`SELECT COUNT(*) AS count FROM identity_password_credential WHERE username = ?`)
+      .get('gated.player').count,
+    0,
+    'a closed gate must stop the account from being created',
+  )
 
   const contextual = await registerAccount(
     db,
