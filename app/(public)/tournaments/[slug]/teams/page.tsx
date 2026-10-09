@@ -21,7 +21,11 @@ export default async function TeamsPage({ params }: { params: Promise<{ slug: st
           <SectionHead
             eyebrow={`${teams.length} / ${tournament.teamCap} 支`}
             title="参赛战队"
-            lede="找到你的队友，也认识下一位对手。点击战队可查看阵容、战绩和比赛日程。"
+            lede={
+              tournament.status === 'finished'
+                ? '点击战队可查看阵容、战绩和比赛日程。'
+                : '找到你的队友，也认识下一位对手。点击战队可查看阵容、战绩和比赛日程。'
+            }
           />
         </div>
         <div data-rise="2">

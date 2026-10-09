@@ -164,11 +164,11 @@
 .accessPanel button,
 .roster button {
   min-height: 44px;
-  border: 1px solid var(--admin-blue);
+  border: 1px solid var(--admin-line-strong);
   border-radius: 999px;
-  background: rgba(109, 165, 211, 0.08);
+  background: transparent;
   padding: 9px 13px;
-  color: var(--admin-blue-strong);
+  color: var(--ink);
   cursor: pointer;
   font-size: 0.8125rem;
   font-weight: 700;
@@ -281,4 +281,9 @@
   .history li {
     gap: 3px;
   }
+}
+
+.accessPanel button:hover:not(:disabled),
+.roster button:hover:not(:disabled) {
+  border-color: var(--ink);
 }

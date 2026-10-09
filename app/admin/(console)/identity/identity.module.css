@@ -167,11 +167,11 @@
 .card button {
   min-height: 44px;
   margin-top: 17px;
-  border: 1px solid var(--admin-blue);
+  border: 1px solid var(--admin-line-strong);
   border-radius: 999px;
-  background: rgba(109, 165, 211, 0.08);
+  background: transparent;
   padding: 9px 15px;
-  color: var(--admin-blue-strong);
+  color: var(--ink);
   cursor: pointer;
   font-size: 0.8125rem;
   font-weight: 700;
@@ -268,4 +268,8 @@
     border-top: 1px solid var(--admin-line);
     border-left: 0;
   }
+}
+
+.card button:hover:not(:disabled) {
+  border-color: var(--ink);
 }

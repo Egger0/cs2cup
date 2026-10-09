@@ -108,7 +108,11 @@ export default async function BracketPage({ params }: { params: Promise<{ slug: 
           <SectionHead
             eyebrow="单败淘汰"
             title="对阵表"
-            lede={`输一场即出局。${structure}点开任意一场查看 Ban/Pick。`}
+            lede={
+              matches.length
+                ? `输一场即出局。${structure}点开任意一场查看 Ban/Pick。`
+                : '输一场即出局。'
+            }
           />
         </div>
         <div data-rise="2">

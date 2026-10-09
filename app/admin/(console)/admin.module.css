@@ -45,7 +45,7 @@
   padding: 11px 13px;
   border: 1px solid var(--admin-line-strong, var(--line-strong));
   border-radius: 10px;
-  background: var(--admin-paper-deep, var(--bg-2));
+  background: color-mix(in srgb, var(--surface) 68%, transparent);
   color: var(--ink);
   font-family: var(--font-body), sans-serif;
   font-size: 0.92rem;

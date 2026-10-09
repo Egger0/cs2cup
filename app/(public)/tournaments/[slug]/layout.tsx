@@ -79,7 +79,10 @@ export default async function TournamentLayout({
 
   const played = matches.filter(isCompletedMatch).length
   const playable = matches.filter(match => !isByeMatch(match)).length
-  const next = selectNextScheduleEntry(buildScheduleEntries(matches, teams))
+  const next =
+    tournament.status === 'finished'
+      ? null
+      : selectNextScheduleEntry(buildScheduleEntries(matches, teams))
   const base = `/tournaments/${slug}`
   const status = STATUS_TEXT[tournament.status]
   const eyebrow = tournament.heroEyebrow ? `${tournament.heroEyebrow} · ${status}` : status
