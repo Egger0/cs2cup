@@ -92,6 +92,11 @@
   .column:nth-child(2) {
     margin-top: 8vh;
   }
+  .column figcaption {
+    flex-direction: column;
+    gap: 2px;
+    letter-spacing: 0.06em;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .column,
