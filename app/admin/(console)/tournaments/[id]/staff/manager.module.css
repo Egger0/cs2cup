@@ -73,7 +73,8 @@
     #151716;
 }
 
-.sectionNumber {
+.sectionNumber,
+.ledgerHeading span {
   color: rgba(109, 165, 211, 0.55);
   font-size: 0.6875rem;
 }
@@ -103,6 +104,7 @@
   min-height: 48px;
   padding: 10px 36px 10px 12px;
   border: 1px solid var(--admin-line-strong);
+  border-radius: 10px;
   background: #101211;
   color: var(--ink);
   font-family: var(--font-body), sans-serif;
@@ -132,11 +134,6 @@
   display: flex;
   align-items: baseline;
   gap: 12px;
-}
-
-.ledgerHeading span {
-  color: rgba(109, 165, 211, 0.55);
-  font-size: 0.6875rem;
 }
 
 .ledgerHeading small {
