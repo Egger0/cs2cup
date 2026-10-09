@@ -36,6 +36,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
   const recent = matches.filter(isCompletedMatch).slice(-5)
   const matchMaps = await safely(() => getMatchMaps(recent.map(match => match.id)), [])
   const base = `/tournaments/${slug}`
+  const finished = tournament.status === 'finished'
   return (
     <section className="section">
       <div className="wrap">
@@ -57,6 +58,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
                   maps={matchMaps}
                   slug={slug}
                   limit={5}
+                  finished={finished}
                 />
                 <p className={styles.more}>
                   <Link href={`${base}/results`}>查看全部战报 →</Link>
@@ -86,9 +88,13 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
                   ))}
                 </div>
               ) : (
-                <p className={styles.note}>等待第一支战队加入。审核通过的队伍会展示在这里。</p>
+                <p className={styles.note}>
+                  {finished
+                    ? '这一届没有留下参赛名单。'
+                    : '等待第一支战队加入。审核通过的队伍会展示在这里。'}
+                </p>
               )}
-              {!recent.length ? (
+              {!recent.length && !finished ? (
                 <p className={styles.note}>
                   战报将在比赛结束后更新。<Link href={`${base}/schedule`}>先查看比赛日程 →</Link>
                 </p>

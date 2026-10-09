@@ -145,7 +145,7 @@ export function TournamentEditor({ tournament, games }: { tournament: Tournament
             id="tch"
             name="championName"
             label="冠军战队"
-            hint="决赛录入后自动填写,可手动覆盖"
+            hint="决赛录入后自动填写，可手动覆盖"
             maxLength={TOURNAMENT_FORM_LIMITS.championName}
             defaultValue={tournament.championName ?? ''}
           />

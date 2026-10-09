@@ -221,7 +221,7 @@ export function CheckInOperatorManager({ manager }: { manager: TournamentCheckIn
 
           {grantableCandidates.length === 0 ? (
             <p className={styles.emptyHint}>
-              暂无可授权报名。持有人需先把报名关联到账号；已有权限者列在右侧。
+              暂无可授权报名。持有人需先把报名关联到账号；已有权限者见「本届授权记录」。
             </p>
           ) : null}
         </form>

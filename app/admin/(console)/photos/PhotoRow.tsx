@@ -35,12 +35,12 @@ export function PhotoRow({
             unoptimized
           />
         </span>
-        <span>
-          <span className={styles.listTitle}>{photo.caption ?? '未命名'}</span>
-          <span className={styles.listMeta}>
+        <div>
+          <div className={styles.listTitle}>{photo.caption ?? '未命名'}</div>
+          <div className={styles.listMeta}>
             {tournamentLabel} · {photo.width}×{photo.height} · {photo.storageKey}
-          </span>
-        </span>
+          </div>
+        </div>
       </div>
       <div className={styles.rowActions}>
         <Button
@@ -49,7 +49,7 @@ export function PhotoRow({
           disabled={pending}
           aria-busy={pending}
           onClick={() => {
-            if (!confirm('删除这张图片?文件也会一并移除。')) return
+            if (!confirm('删除这张图片？文件也会一并移除。')) return
             startTransition(async () => {
               setFeedback(null)
               try {

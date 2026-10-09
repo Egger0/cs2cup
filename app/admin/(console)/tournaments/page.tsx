@@ -64,7 +64,7 @@ export default async function AdminTournamentsPage() {
               maxLength={TOURNAMENT_FORM_LIMITS.slug}
               pattern="[a-z0-9](?:[a-z0-9]|-){0,99}"
               hint="小写字母、数字和连字符"
-              placeholder="例:2027-nlc"
+              placeholder="例：2027-nlc"
             />
             <Field
               id="nt-title"
@@ -72,7 +72,7 @@ export default async function AdminTournamentsPage() {
               label="赛事名称"
               required
               maxLength={TOURNAMENT_FORM_LIMITS.title}
-              placeholder="例:第五届宁理杯"
+              placeholder="例：第五届宁理杯"
             />
           </div>
           <div className={styles.pair}>
@@ -92,7 +92,7 @@ export default async function AdminTournamentsPage() {
               label="赛季"
               required
               maxLength={TOURNAMENT_FORM_LIMITS.season}
-              placeholder="例:2027 春季"
+              placeholder="例：2027 春季"
             />
           </div>
           <div className={styles.pair}>

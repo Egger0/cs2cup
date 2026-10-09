@@ -9,11 +9,16 @@ export function TeamGrid({
   teams,
   slug,
   cap,
+  finished,
 }: {
   teams: PublicTeam[]
   slug?: string
   cap?: number
+  finished?: boolean
 }) {
+  if (teams.length === 0 && finished) {
+    return <GhostStage figure={null}>这一届没有留下参赛名单。</GhostStage>
+  }
   if (teams.length === 0) {
     return (
       <GhostStage

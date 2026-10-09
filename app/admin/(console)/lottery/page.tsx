@@ -25,26 +25,28 @@ export default async function AdminLotteryPage() {
       />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>活动状态</h2>
-        <p className={styles.messageBody}>
-          当前：{status}。临时开启或关闭会覆盖排期；恢复排期后按 9 月 20 日自动开放。
-        </p>
-        <div className={styles.rowActions}>
-          <form action={setRecruitmentLotteryManualStateAction}>
-            <input type="hidden" name="state" value="open" />
-            <Button type="submit" variant="primary">
-              立即开启
-            </Button>
-          </form>
-          <form action={setRecruitmentLotteryManualStateAction}>
-            <input type="hidden" name="state" value="closed" />
-            <Button type="submit" variant="danger">
-              立即关闭
-            </Button>
-          </form>
-          <form action={setRecruitmentLotteryManualStateAction}>
-            <input type="hidden" name="state" value="scheduled" />
-            <Button type="submit">恢复 9 月 20 日排期</Button>
-          </form>
+        <div className={styles.editor}>
+          <p className={styles.messageBody}>
+            当前：{status}。临时开启或关闭会覆盖排期；恢复排期后按 9 月 20 日自动开放。
+          </p>
+          <div className={styles.rowActions}>
+            <form action={setRecruitmentLotteryManualStateAction}>
+              <input type="hidden" name="state" value="open" />
+              <Button type="submit" variant="primary">
+                立即开启
+              </Button>
+            </form>
+            <form action={setRecruitmentLotteryManualStateAction}>
+              <input type="hidden" name="state" value="closed" />
+              <Button type="submit" variant="danger">
+                立即关闭
+              </Button>
+            </form>
+            <form action={setRecruitmentLotteryManualStateAction}>
+              <input type="hidden" name="state" value="scheduled" />
+              <Button type="submit">恢复 9 月 20 日排期</Button>
+            </form>
+          </div>
         </div>
       </section>
       <section className={styles.panel}>

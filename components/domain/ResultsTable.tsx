@@ -12,9 +12,10 @@ interface ResultsTableProps {
   maps: MatchMap[]
   slug: string
   limit?: number
+  finished?: boolean
 }
 
-export function ResultsTable({ matches, teams, maps, slug, limit }: ResultsTableProps) {
+export function ResultsTable({ matches, teams, maps, slug, limit, finished }: ResultsTableProps) {
   const all = matches.filter(isCompletedMatch)
   const decided = limit === undefined ? all : all.slice(-limit)
   if (decided.length === 0) {
@@ -27,7 +28,9 @@ export function ResultsTable({ matches, teams, maps, slug, limit }: ResultsTable
           </ButtonLink>
         }
       >
-        还没有打完的比赛。每场结束后，比分和 Ban/Pick 会记在这里。
+        {finished
+          ? '这一届没有留下比分记录。'
+          : '还没有打完的比赛。每场结束后，比分和 Ban/Pick 会记在这里。'}
       </GhostStage>
     )
   }

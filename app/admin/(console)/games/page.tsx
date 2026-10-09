@@ -30,8 +30,8 @@ export default async function AdminGamesPage() {
           successMessage="项目已创建"
         >
           <div className={styles.pair}>
-            <Field id="ng-slug" name="slug" label="链接标识" required placeholder="例:apex" />
-            <Field id="ng-name" name="name" label="中文名" required placeholder="例:Apex 英雄" />
+            <Field id="ng-slug" name="slug" label="链接标识" required placeholder="例：apex" />
+            <Field id="ng-name" name="name" label="中文名" required placeholder="例：Apex 英雄" />
           </div>
           <div className={styles.pair}>
             <Field id="ng-en" name="nameEn" label="英文名" placeholder="Apex Legends" />

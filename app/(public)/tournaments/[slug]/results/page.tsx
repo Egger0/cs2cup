@@ -41,7 +41,13 @@ export default async function ResultsPage({ params }: { params: Promise<{ slug: 
           />
         </div>
         <div data-rise="2">
-          <ResultsTable matches={matches} teams={teams} maps={maps} slug={slug} />
+          <ResultsTable
+            matches={matches}
+            teams={teams}
+            maps={maps}
+            slug={slug}
+            finished={tournament.status === 'finished'}
+          />
         </div>
 
         {stats.length > 0 ? (

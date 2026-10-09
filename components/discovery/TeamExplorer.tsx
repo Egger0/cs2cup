@@ -10,10 +10,12 @@ export function TeamExplorer({
   teams,
   slug,
   cap,
+  finished,
 }: {
   teams: PublicTeam[]
   slug: string
   cap: number
+  finished?: boolean
 }) {
   const [query, setQuery] = useState('')
   const needle = useDeferredValue(query).normalize('NFKC').toLocaleLowerCase().trim()
@@ -24,7 +26,7 @@ export function TeamExplorer({
       .toLocaleLowerCase()
       .includes(needle),
   )
-  if (!teams.length) return <TeamGrid teams={teams} slug={slug} cap={cap} />
+  if (!teams.length) return <TeamGrid teams={teams} slug={slug} cap={cap} finished={finished} />
   return (
     <div>
       <div className={styles.toolbar}>

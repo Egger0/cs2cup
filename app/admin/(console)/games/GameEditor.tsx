@@ -104,7 +104,7 @@ export function GameEditor({ game }: { game: Game }) {
           id={`ga${game.id}`}
           name="accentColor"
           label="强调色"
-          hint="十六进制,如 #e3a63a"
+          hint="十六进制，如 #e3a63a"
           defaultValue={game.accentColor ?? ''}
         />
         <label className={styles.checkLabel}>

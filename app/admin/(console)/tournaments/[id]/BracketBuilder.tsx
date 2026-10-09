@@ -30,8 +30,8 @@ export function BracketBuilder({
           onClick={() => {
             const warning =
               existingMatches > 0
-                ? `重新抽签会删除 ${existingMatches} 场比赛,连同比分与 Ban/Pick 记录,确定?`
-                : `按 ${approvedCount} 支通过审核的战队生成对阵表?`
+                ? `重新抽签会删除 ${existingMatches} 场比赛，连同比分与 Ban/Pick 记录，确定？`
+                : `按 ${approvedCount} 支通过审核的战队生成对阵表？`
             if (!confirm(warning)) return
             startTransition(async () => {
               const result = await buildBracket(tournamentId)

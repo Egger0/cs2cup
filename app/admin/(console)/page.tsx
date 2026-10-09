@@ -78,7 +78,7 @@ export default async function AdminPage({
       />
       <section className={styles.panel}>
         <div className={styles.panelHeading}>
-          <h2 className={styles.panelHead}>
+          <h2 className={styles.panelHead} style={{ wordBreak: 'keep-all' }}>
             报名审核 · 共 {teams.length} 支 · 待审核 {pending} · 已通过 {approved}/
             {tournament.teamCap} · 已签到 {checkedIn}
           </h2>
