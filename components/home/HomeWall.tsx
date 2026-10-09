@@ -45,7 +45,15 @@ export function HomeWall({ photos, tournaments }: { photos: Photo[]; tournaments
             {column.map(photo => {
               const title = titles.get(photo.tournamentId) ?? 'NINGLI CUP'
               return (
-                <figure key={photo.id} style={{ aspectRatio: `${photo.width} / ${photo.height}` }}>
+                <figure
+                  key={photo.id}
+                  style={{
+                    aspectRatio: `${photo.width} / ${photo.height}`,
+                    background: photo.blurDataUrl
+                      ? `center / cover url("${photo.blurDataUrl}")`
+                      : undefined,
+                  }}
+                >
                   <img
                     data-src={sourceFor(photo)}
                     data-srcset={sourceSetFor(photo)}

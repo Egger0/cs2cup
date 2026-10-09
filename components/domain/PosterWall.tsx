@@ -79,7 +79,12 @@ export function PosterWall({
                     height={poster.height}
                     loading="lazy"
                     decoding="async"
-                    style={{ aspectRatio: `${poster.width} / ${poster.height}` }}
+                    style={{
+                      aspectRatio: `${poster.width} / ${poster.height}`,
+                      background: poster.blurDataUrl
+                        ? `center / cover url("${poster.blurDataUrl}")`
+                        : undefined,
+                    }}
                   />
                   <span className={styles.caption}>
                     <span>{poster.caption ?? edition.name}</span>
