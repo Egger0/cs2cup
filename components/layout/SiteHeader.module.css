@@ -24,7 +24,20 @@
   content: '';
 }
 
-:global(body:has([data-solar-home])) .dock::before,
+:global(body:has([data-solar-home])) .dock::before {
+  background: linear-gradient(rgb(6 7 10 / 88%) 35%, transparent);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  -webkit-mask-image: none;
+  mask-image: none;
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+
+:global(html[data-solar-chapter='far'] body:has([data-solar-home])) .dock::before {
+  opacity: 1;
+}
+
 .dock[data-open]::before {
   display: none;
 }
