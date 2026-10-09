@@ -68,7 +68,9 @@ export function PageMasthead({
 
 function scriptRuns(title: ReactNode) {
   if (typeof title !== 'string') return title
-  const runs = title.match(/\s+|[\x21-\x7e]+|[^\s\x21-\x7e]+/g) ?? []
+  const runs =
+    title.match(/\s+|[\x21-\x7e]+|[^\s\x21-\x7e届杯与，、：]*[届杯与，、：]+|[^\s\x21-\x7e]+/g) ??
+    []
   if (runs.filter(run => run.trim()).length < 2) return title
   return runs.map((run, index) =>
     run.trim() ? (
