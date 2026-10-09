@@ -23,7 +23,7 @@
 }
 
 .uid {
-  max-width: 20ch;
+  max-width: 36ch;
   overflow: hidden;
   color: var(--admin-muted);
   font-family: var(--font-mono), monospace;
@@ -43,7 +43,7 @@
   }
 
   .uid {
-    max-width: 108px;
+    display: none;
   }
 
   .main {

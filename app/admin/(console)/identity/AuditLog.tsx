@@ -32,7 +32,7 @@ export function AuditLog({
             <strong>{event.label}</strong>
             <span>
               {event.actor}
-              {event.subject ? ` → ${event.subject}` : ''}
+              {event.subject && event.subject !== event.actor ? ` → ${event.subject}` : ''}
             </span>
             <small>{event.resource}</small>
             {event.reason ? (
