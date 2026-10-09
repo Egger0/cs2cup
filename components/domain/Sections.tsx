@@ -73,7 +73,7 @@ function scriptRuns(title: ReactNode) {
     []
   if (runs.filter(run => run.trim()).length < 2) return title
   return runs.map((run, index) =>
-    run.trim() ? (
+    run.trim() && run.length <= 7 ? (
       <span key={index} className={arrival.run}>
         {run}
       </span>

@@ -148,7 +148,7 @@
 }
 
 .run {
-  display: inline-block;
+  white-space: nowrap;
 }
 
 .arrival[data-density='compact'] .title {
