@@ -37,7 +37,11 @@ export default async function ResultsPage({ params }: { params: Promise<{ slug: 
           <SectionHead
             eyebrow={`${decided.length} 场已完赛`}
             title="战报"
-            lede="点开任意一场，可以看到完整的 Ban/Pick 过程与每张图的比分。"
+            lede={
+              decided.length
+                ? '点开任意一场，可以看到完整的 Ban/Pick 过程与每张图的比分。'
+                : undefined
+            }
           />
         </div>
         <div data-rise="2">
