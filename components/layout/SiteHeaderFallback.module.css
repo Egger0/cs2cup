@@ -46,12 +46,12 @@
 .meta span,
 .links a > span {
   font-family: var(--font-mono), monospace;
-  font-size: 0.52rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.1em;
 }
 
 .meta small {
-  font-size: 0.66rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.02em;
 }
 

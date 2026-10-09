@@ -14,7 +14,7 @@
 .eyebrow {
   color: var(--ct);
   font:
-    600 0.66rem var(--font-mono),
+    600 0.6875rem var(--font-mono),
     monospace;
   letter-spacing: 0.16em;
 }

@@ -222,7 +222,7 @@ g[data-lit] .tick {
   gap: 5px;
   color: #8c9aa0;
   font-family: var(--font-mono), monospace;
-  font-size: 0.56rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.18em;
 }
 

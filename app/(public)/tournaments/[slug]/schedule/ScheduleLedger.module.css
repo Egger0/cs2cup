@@ -33,7 +33,7 @@
 
 .dayCount {
   flex: 0 0 auto;
-  font-size: 0.64rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.08em;
   color: var(--muted-2);
 }
@@ -56,7 +56,7 @@
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.06em;
   color: var(--ct);
 }

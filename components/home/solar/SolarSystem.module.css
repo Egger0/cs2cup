@@ -100,7 +100,7 @@
 .anchor small {
   color: #9bcaeb;
   font-family: var(--font-mono);
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
 }
@@ -147,7 +147,7 @@
     font-size: 0.8rem;
   }
   .anchor small {
-    font-size: 0.5rem;
+    font-size: 0.6875rem;
   }
   .hint {
     bottom: 10px;

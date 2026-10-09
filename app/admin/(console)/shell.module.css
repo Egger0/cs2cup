@@ -27,7 +27,7 @@
   overflow: hidden;
   color: var(--admin-muted);
   font-family: var(--font-mono), monospace;
-  font-size: 0.58rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.14em;
   text-overflow: ellipsis;
   white-space: nowrap;

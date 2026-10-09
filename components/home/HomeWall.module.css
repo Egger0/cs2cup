@@ -17,7 +17,7 @@
 .head p {
   color: #9bcaeb;
   font-family: var(--font-mono), monospace;
-  font-size: 0.65rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.22em;
 }
 .head h2 {
@@ -79,7 +79,7 @@
   color: #d6e1e6;
   background: linear-gradient(rgb(6 7 10 / 0%), rgb(6 7 10 / 72%));
   font-family: var(--font-mono), monospace;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.14em;
 }
 @media (max-width: 700px) {

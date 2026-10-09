@@ -64,7 +64,7 @@
   margin-top: 2px;
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.52rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.14em;
 }
@@ -142,7 +142,7 @@
 .eyebrow,
 .event > span {
   color: var(--ops-blue);
-  font-size: 0.58rem;
+  font-size: 0.6875rem;
 }
 
 .masthead h1 {
@@ -182,7 +182,7 @@
   padding-top: 18px;
   border-top: 1px solid var(--ops-line);
   color: var(--muted-2);
-  font-size: 0.52rem;
+  font-size: 0.6875rem;
 }
 
 @keyframes ops-enter {

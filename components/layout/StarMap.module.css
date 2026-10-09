@@ -50,7 +50,7 @@
   gap: 24px;
   color: #8c9aa0;
   font-family: var(--font-mono), monospace;
-  font-size: 0.56rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.18em;
 }
 
@@ -100,7 +100,7 @@
 .number {
   color: #8c9aa0;
   font-family: var(--font-mono), monospace;
-  font-size: 0.62rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.1em;
   transition: color 180ms ease;
 }
@@ -125,7 +125,7 @@
   overflow: hidden;
   color: #8c9aa0;
   font-family: var(--font-mono), monospace;
-  font-size: 0.5rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.16em;
   text-overflow: ellipsis;
   white-space: nowrap;

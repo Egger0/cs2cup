@@ -28,7 +28,7 @@
 
 .title {
   font-family: var(--font-mono), monospace;
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
   font-weight: 650;
   letter-spacing: 0.08em;
   color: var(--accent);

@@ -23,7 +23,7 @@
 
 .contextNav span {
   color: var(--admin-blue);
-  font-size: 0.52rem;
+  font-size: 0.6875rem;
 }
 
 .contextNav strong {
@@ -53,7 +53,7 @@
 
 .boundary header p {
   color: var(--admin-blue);
-  font-size: 0.56rem;
+  font-size: 0.6875rem;
 }
 
 .boundary h2 {

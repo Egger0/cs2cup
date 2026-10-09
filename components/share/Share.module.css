@@ -58,7 +58,7 @@
 .eyebrow {
   color: #0b4d87;
   font:
-    0.62rem var(--font-mono),
+    0.6875rem var(--font-mono),
     monospace;
   letter-spacing: 0.13em;
 }

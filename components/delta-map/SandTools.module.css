@@ -255,3 +255,11 @@
   background: none;
   cursor: pointer;
 }
+
+@media (pointer: coarse) {
+  .buildings button,
+  .floors button,
+  .actions button {
+    min-height: 40px;
+  }
+}

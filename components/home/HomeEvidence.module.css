@@ -26,7 +26,7 @@
 .head p {
   color: #9fb3bb;
   font-family: var(--font-mono), monospace;
-  font-size: 0.62rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.24em;
 }
 .head h2 {
@@ -170,7 +170,7 @@
 .stages span {
   color: #8c9aa0;
   font-family: var(--font-mono), monospace;
-  font-size: 0.56rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.16em;
 }
 .stages strong {

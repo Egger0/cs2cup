@@ -21,7 +21,7 @@
 
 .managerHeader p {
   color: var(--admin-blue);
-  font-size: 0.56rem;
+  font-size: 0.6875rem;
 }
 
 .managerHeader h2 {
@@ -48,7 +48,7 @@
 
 .count span {
   color: var(--admin-muted);
-  font-size: 0.47rem;
+  font-size: 0.6875rem;
   line-height: 1.55;
 }
 
@@ -73,9 +73,10 @@
     #151716;
 }
 
-.sectionNumber {
+.sectionNumber,
+.ledgerHeading span {
   color: rgba(109, 165, 211, 0.55);
-  font-size: 0.58rem;
+  font-size: 0.6875rem;
 }
 
 .grant h3,
@@ -103,6 +104,7 @@
   min-height: 48px;
   padding: 10px 36px 10px 12px;
   border: 1px solid var(--admin-line-strong);
+  border-radius: 10px;
   background: #101211;
   color: var(--ink);
   font-family: var(--font-body), sans-serif;
@@ -134,14 +136,9 @@
   gap: 12px;
 }
 
-.ledgerHeading span {
-  color: rgba(109, 165, 211, 0.55);
-  font-size: 0.58rem;
-}
-
 .ledgerHeading small {
   color: #747975;
-  font-size: 0.45rem;
+  font-size: 0.6875rem;
 }
 
 .assignmentList {
@@ -180,7 +177,7 @@
   border: 1px solid var(--admin-line-strong);
   color: var(--admin-blue-strong);
   font-family: var(--font-mono), monospace;
-  font-size: 0.54rem;
+  font-size: 0.6875rem;
 }
 
 .person > div {
@@ -199,7 +196,7 @@
   display: block;
   overflow: hidden;
   color: var(--admin-muted);
-  font-size: 0.66rem;
+  font-size: 0.6875rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -209,7 +206,7 @@
   align-items: center;
   gap: 7px;
   color: var(--admin-muted);
-  font-size: 0.62rem;
+  font-size: 0.6875rem;
 }
 
 .state i {
@@ -247,13 +244,13 @@
 
 .assignmentMeta dt {
   color: #737b77;
-  font-size: 0.44rem;
+  font-size: 0.6875rem;
 }
 
 .assignmentMeta dd {
   margin-top: 4px;
   color: #b8bdb9;
-  font-size: 0.62rem;
+  font-size: 0.6875rem;
   overflow-wrap: anywhere;
 }
 

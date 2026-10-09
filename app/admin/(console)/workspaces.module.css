@@ -42,7 +42,7 @@
 .grid article > p {
   color: var(--admin-blue);
   font:
-    0.58rem var(--font-mono),
+    0.6875rem var(--font-mono),
     ui-monospace,
     monospace;
   letter-spacing: 0.1em;
@@ -66,7 +66,7 @@
   border: 1px solid var(--admin-line-strong);
   padding: 5px 8px;
   color: var(--admin-blue-strong);
-  font-size: 0.62rem;
+  font-size: 0.6875rem;
 }
 
 .capabilities span {
@@ -91,7 +91,7 @@
   justify-content: space-between;
   margin-top: 20px;
   color: var(--admin-muted);
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
 }
 
 @media (max-width: 640px) {

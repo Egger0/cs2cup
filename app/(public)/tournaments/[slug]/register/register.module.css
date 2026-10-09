@@ -114,7 +114,7 @@
   background: var(--ct);
   color: var(--button-ink, #f1efe8);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.62rem;
+  font-size: 0.6875rem;
   font-weight: 750;
   letter-spacing: 0.08em;
 }
