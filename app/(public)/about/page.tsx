@@ -11,6 +11,7 @@ import {
   listTournaments,
   safely,
 } from '@/lib/queries/public'
+import { qqGroupContact } from '@/lib/qq-group'
 import styles from './page.module.css'
 
 export const revalidate = 300
@@ -29,6 +30,13 @@ export default async function ClubPage() {
   if (!setting) notFound()
 
   const finished = tournaments.filter(tournament => tournament.status === 'finished')
+  const qqGroup = qqGroupContact(setting.contactQq)
+  const cupEdition = Math.max(
+    0,
+    ...tournaments
+      .filter(tournament => tournament.title.includes('宁理杯'))
+      .map(tournament => tournament.edition),
+  )
 
   return (
     <>
@@ -47,12 +55,12 @@ export default async function ClubPage() {
                   的学生电竞社团。日常做两件事：把校内比赛办起来，以及让想打比赛的人能找到队友。
                 </p>
                 <p className={styles.paragraph}>
-                  宁理杯是社团每年的主赛事，到今年已经办到第 {tournaments.length} 届。除了 CS2，
-                  社团也组织其他项目的内部赛和观赛活动。
+                  {`宁理杯是社团每年的主赛事${cupEdition ? `，到今年已经办到第 ${cupEdition} 届` : ''}。除了 CS2，社团也组织其他项目的内部赛和观赛活动。`}
                 </p>
                 <p className={styles.paragraph}>
-                  一场比赛跑起来需要的远不止十个人——解说、OB 导播、现场摄影、海报设计、赛程编排，
-                  每个位置都缺人。不打比赛也能加入。
+                  {
+                    '一场比赛跑起来需要的远不止十个人——解说、OB 导播、现场摄影、海报设计、赛程编排，每个位置都缺人。不打比赛也能加入。'
+                  }
                 </p>
                 <div className={styles.joinLink}>
                   <ButtonLink href="#join" variant="primary">
@@ -96,11 +104,18 @@ export default async function ClubPage() {
                 <p>选手、解说、导播、摄影、设计、赛事运营——都缺人。先进群聊聊。</p>
               </div>
               <div className={styles.contacts}>
-                {setting.contactQq ? (
+                {qqGroup ? (
                   <div className={styles.contact}>
                     <span>QQ 群</span>
-                    {setting.contactQq}
-                    <CopyTextButton value={setting.contactQq} label="复制群号" />
+                    {qqGroup.number}
+                    {qqGroup.number ? (
+                      <CopyTextButton value={qqGroup.number} label="复制群号" />
+                    ) : null}
+                    {qqGroup.kind === 'invite' ? (
+                      <a href={qqGroup.href} target="_blank" rel="noreferrer">
+                        一键加群 ↗
+                      </a>
+                    ) : null}
                   </div>
                 ) : null}
                 {setting.contactWechat && setting.contactWechat !== '无' ? (

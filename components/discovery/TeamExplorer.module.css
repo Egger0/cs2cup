@@ -13,6 +13,7 @@
   width: min(100%, 480px);
   padding-inline: 16px;
   border: 1px solid var(--line-strong);
+  border-radius: 10px;
   background: var(--surface);
   color: var(--muted);
 }

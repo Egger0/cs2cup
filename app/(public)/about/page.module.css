@@ -155,6 +155,15 @@
   color: var(--bg);
 }
 
+.contact a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  color: var(--space-accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .contact span {
   color: #b9c1bf;
   letter-spacing: 0.04em;

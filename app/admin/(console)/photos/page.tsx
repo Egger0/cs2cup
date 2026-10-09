@@ -40,7 +40,7 @@ export default async function AdminPhotosPage() {
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>上传素材</h2>
         {tournaments.length === 0 ? (
-          <Empty>先创建一届赛事,图片需要归属</Empty>
+          <Empty>先创建一届赛事，图片需要归属</Empty>
         ) : (
           <Uploader tournaments={tournaments} />
         )}

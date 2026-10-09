@@ -31,7 +31,7 @@ export default async function AdminMembersPage() {
         >
           <div className={styles.pair}>
             <Field id="new-member-name" name="name" label="姓名" required />
-            <Field id="new-member-role" name="role" label="职务" required placeholder="例:社长" />
+            <Field id="new-member-role" name="role" label="职务" required placeholder="例：社长" />
           </div>
           <div className={styles.pair}>
             <Field id="new-member-handle" name="handle" label="联系方式" />

@@ -35,7 +35,7 @@ export default async function AdminPostsPage() {
               name="slug"
               label="链接标识"
               required
-              placeholder="例:recruit-2026"
+              placeholder="例：recruit-2026"
             />
             <Field id="np-title" name="title" label="标题" required />
           </div>

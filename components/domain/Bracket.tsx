@@ -12,9 +12,10 @@ interface BracketProps {
   teams: PublicTeam[]
   slug: string
   cap: number
+  finished?: boolean
 }
 
-export function Bracket({ matches, teams, slug, cap }: BracketProps) {
+export function Bracket({ matches, teams, slug, cap, finished }: BracketProps) {
   if (matches.length === 0) {
     return (
       <GhostStage
@@ -25,7 +26,7 @@ export function Bracket({ matches, teams, slug, cap }: BracketProps) {
           </ButtonLink>
         }
       >
-        报名满员后统一抽签，这张对阵表会在这里展开。
+        {finished ? '这一届没有留下对阵记录。' : '报名满员后统一抽签，这张对阵表会在这里展开。'}
       </GhostStage>
     )
   }
