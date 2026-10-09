@@ -119,7 +119,9 @@
 
   .tabs {
     margin-inline-start: calc(-1 * var(--pad));
-    padding-inline-start: var(--pad);
+    padding-inline: var(--pad) 28px;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
   }
 
   .tab {

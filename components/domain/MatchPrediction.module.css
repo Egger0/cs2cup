@@ -296,6 +296,14 @@
   .pool {
     gap: 12px;
   }
+
+  .stake label {
+    flex-basis: 100%;
+  }
+
+  .stake input {
+    inline-size: 100%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

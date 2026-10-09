@@ -115,7 +115,7 @@ export function SessionManager() {
             ? loading
               ? '读取中…'
               : '状态不可用'
-            : `${sessions.length} 个有效状态`}
+            : `${sessions.length} 个有效会话`}
         </span>
       </header>
       <p className={styles.explanation}>最多显示最近 20 个有效会话。当前设备始终排在第一位。</p>

@@ -14,8 +14,10 @@
 }
 
 .vestibule {
-  position: relative;
+  position: sticky;
+  top: 0;
   display: grid;
+  height: 100svh;
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
   padding: clamp(28px, 3.4vw, 54px) clamp(30px, 3.8vw, 72px);
@@ -184,6 +186,8 @@
   }
 
   .vestibule {
+    position: relative;
+    height: auto;
     display: block;
     padding: clamp(18px, 4vw, 26px) var(--pad) 52px;
   }

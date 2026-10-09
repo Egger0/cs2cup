@@ -288,10 +288,10 @@ try {
   const sessions = applicant.page
     .locator('section')
     .filter({ has: applicant.page.getByRole('heading', { name: '已登录的设备', exact: true }) })
-  await sessions.getByText(/2 个有效状态/).waitFor()
+  await sessions.getByText(/2 个有效会话/).waitFor()
   await sessions.getByRole('button', { name: '退出所有其他设备' }).click()
   await sessions.getByRole('button', { name: /确认退出其他/ }).click()
-  await sessions.getByText('1 个有效状态').waitFor()
+  await sessions.getByText('1 个有效会话').waitFor()
   secondary.guard.assertSafe()
   secondary.runtimeErrors.assertClean('secondary identity session')
   await secondary.value.close()
