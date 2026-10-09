@@ -1,4 +1,4 @@
-const USERNAME_PATTERN = /^[a-z0-9](?:[a-z0-9_.-]{1,30}[a-z0-9])?$/
+const USERNAME_PATTERN = /^[a-z0-9][a-z0-9_.-]{1,30}[a-z0-9]$/
 const RESERVED_USERNAMES = new Set([
   'account',
   'admin',

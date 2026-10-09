@@ -6,6 +6,12 @@ import { assertCsrfRequest, CsrfError } from '@/lib/csrf'
 import { withPrivateNoStore } from '@/lib/http-cache'
 import { registerAccount } from '@/lib/identity/account-registration'
 import {
+  AuthAttemptRateLimitError,
+  chargeAuthAttempts,
+} from '@/lib/identity/internal/auth-attempts'
+import { activeAuthFingerprintKey } from '@/lib/identity/internal/auth-fingerprint-config'
+import { networkAuthAttemptCharge } from '@/lib/identity/internal/auth-network'
+import {
   IdentityRequestError,
   identityWantsJson,
   readIdentityForm,
@@ -17,6 +23,8 @@ import { legacySessionStateFromRequest } from '@/lib/legacy-session-state'
 import { clearParticipantSessionCookie } from '@/lib/participant-auth'
 import { resolveSiteOrigin } from '@/lib/site-config'
 import { registrationAccountHref, registrationAuthHref } from '@/lib/registration-navigation'
+
+const ACCOUNTS_PER_NETWORK_WINDOW = 40
 
 const FIELDS = [
   'username',
@@ -33,6 +41,7 @@ interface Failure {
   code: string
   error: string
   field?: string
+  retryAfter?: number
 }
 
 function failureResponse(request: NextRequest, failure: Failure) {
@@ -44,6 +53,7 @@ function failureResponse(request: NextRequest, failure: Failure) {
   const response = identityWantsJson(request)
     ? NextResponse.json({ ok: false, ...failure }, { status: failure.status })
     : NextResponse.redirect(retry, 303)
+  if (failure.retryAfter) response.headers.set('Retry-After', String(failure.retryAfter))
   return withPrivateNoStore(response)
 }
 
@@ -92,6 +102,15 @@ export async function POST(request: NextRequest) {
     }
     const result = await registerAccount(database, registrationFields, await passwordPepperSet(), {
       clientLabel: clientSessionLabel(request.headers),
+      beforeCreate: async () =>
+        chargeAuthAttempts(database, 'enrollment', [
+          await networkAuthAttemptCharge(
+            request.headers,
+            'enrollment',
+            await activeAuthFingerprintKey(),
+            ACCOUNTS_PER_NETWORK_WINDOW,
+          ),
+        ]),
       membership: {
         identityClaim: fields.identityClaim,
         contact: fields.contact,
@@ -135,6 +154,14 @@ export async function POST(request: NextRequest) {
     clearParticipantSessionCookie(clearAdminSessionCookie(response))
     return setIdentitySessionCookie(response, result.token, result.absoluteExpiresAt)
   } catch (error) {
+    if (error instanceof AuthAttemptRateLimitError) {
+      return failureResponse(request, {
+        status: 429,
+        code: 'rate',
+        error: '这个网络刚刚创建了太多账号，请稍后再试。',
+        retryAfter: error.retryAfterSeconds,
+      })
+    }
     if (error instanceof CsrfError || error instanceof IdentityRequestError) {
       return failureResponse(request, {
         status: 403,

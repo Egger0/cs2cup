@@ -45,6 +45,7 @@ export interface RegisterAccountOptions {
   readonly now?: number
   readonly clientLabel?: string
   readonly membership?: MembershipApplicationFields
+  readonly beforeCreate?: () => Promise<void>
 }
 
 async function usernameAvailable(database: IdentityDatabase, username: string) {
@@ -100,6 +101,7 @@ export async function registerAccount(
   if (!(await usernameAvailable(database, policy.value.username))) {
     return { ok: false, reason: 'username_unavailable' }
   }
+  await options.beforeCreate?.()
 
   const now = options.now ?? Date.now()
   if (!Number.isSafeInteger(now) || now < 0) throw new TypeError('Invalid registration time')
