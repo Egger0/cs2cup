@@ -24,8 +24,10 @@ export default async function AdminPhotosPage() {
   const tournaments = isPlatformOwner
     ? await adminListTournaments()
     : await listTournamentRecordsForGames(gameIds)
-  const photos = await adminListPhotos(tournaments.map(tournament => tournament.id))
-  const label = (id: number) => {
+  const photos = await adminListPhotos(
+    isPlatformOwner ? undefined : tournaments.map(tournament => tournament.id),
+  )
+  const label = (id: number | null) => {
     const found = tournaments.find(entry => entry.id === id)
     return found ? `${found.season} · ${found.title}` : '未知赛事'
   }
@@ -35,14 +37,14 @@ export default async function AdminPhotosPage() {
       <AdminPageHeader
         index="06"
         title="素材库"
-        description="上传赛事影像，并核对素材归属与文件信息。"
+        description="上传赛事与社团活动影像，并核对素材归属与文件信息。"
       />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>上传素材</h2>
-        {tournaments.length === 0 ? (
+        {!isPlatformOwner && tournaments.length === 0 ? (
           <Empty>先创建一届赛事，图片需要归属</Empty>
         ) : (
-          <Uploader tournaments={tournaments} />
+          <Uploader tournaments={tournaments} canUploadActivities={isPlatformOwner} />
         )}
       </section>
 
@@ -59,7 +61,11 @@ export default async function AdminPhotosPage() {
         ) : (
           <div className={styles.list}>
             {photos.map(photo => (
-              <PhotoRow key={photo.id} photo={photo} tournamentLabel={label(photo.tournamentId)} />
+              <PhotoRow
+                key={photo.id}
+                photo={photo}
+                tournamentLabel={photo.activityName ?? label(photo.tournamentId)}
+              />
             ))}
           </div>
         )}

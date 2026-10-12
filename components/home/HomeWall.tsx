@@ -43,7 +43,10 @@ export function HomeWall({ photos, tournaments }: { photos: Photo[]; tournaments
             style={{ '--rate': RATES[index] } as CSSProperties}
           >
             {column.map(photo => {
-              const title = titles.get(photo.tournamentId) ?? 'NINGLI CUP'
+              const title =
+                photo.activityName ??
+                (photo.tournamentId === null ? null : titles.get(photo.tournamentId)) ??
+                'NINGLI CUP'
               return (
                 <figure
                   key={photo.id}

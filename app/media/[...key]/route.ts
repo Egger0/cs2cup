@@ -10,7 +10,7 @@ import { getObject } from '@/lib/storage'
 
 interface StorageKeyRow {
   storage_key: string
-  tournament_id: number
+  tournament_id: number | null
 }
 
 const PUBLIC_IMMUTABLE_HEADERS = Object.freeze({
@@ -62,6 +62,7 @@ async function canReadPhoto(storageKey: string) {
   const photo = await findPhoto(false, storageKey)
   if (!photo) return null
   if (unifiedOwner) return 'private' as const
+  if (photo.tournament_id === null) return null
   const access = await getCurrentTournamentStaffAccess(
     photo.tournament_id,
     'tournament.media.manage',

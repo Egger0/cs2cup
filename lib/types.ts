@@ -111,7 +111,8 @@ export interface Match {
 
 export interface Photo {
   id: number
-  tournamentId: number
+  tournamentId: number | null
+  activityName: string | null
   storageKey: string
   width: number
   height: number

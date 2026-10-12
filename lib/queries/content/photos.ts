@@ -11,7 +11,8 @@ import {
 
 interface PhotoRow {
   id: number
-  tournament_id: number
+  tournament_id: number | null
+  activity_name: string | null
   storage_key: string
   width: number
   height: number
@@ -33,6 +34,7 @@ function parseVariantWidths(value: string) {
 const toAdminPhoto = (row: PhotoRow) => ({
   id: row.id,
   tournamentId: row.tournament_id,
+  activityName: row.activity_name,
   storageKey: row.storage_key,
   width: row.width,
   height: row.height,
@@ -44,7 +46,8 @@ const toAdminPhoto = (row: PhotoRow) => ({
 export async function adminListPhotos(tournamentIds?: readonly number[]): Promise<
   {
     id: number
-    tournamentId: number
+    tournamentId: number | null
+    activityName: string | null
     storageKey: string
     width: number
     height: number
@@ -73,12 +76,16 @@ export async function adminGetPhoto(id: number) {
   const row = await selectPrivateRow<PhotoRow>('photo', {
     filters: { id: `eq.${id}` },
   })
-  if (row) await requireTournamentStaffCapability(row.tournament_id, 'tournament.media.manage')
+  if (row) {
+    if (row.tournament_id === null) await requireAdmin()
+    else await requireTournamentStaffCapability(row.tournament_id, 'tournament.media.manage')
+  }
   return row ? toAdminPhoto(row) : null
 }
 
 export async function adminInsertPhoto(values: {
-  tournamentId: number
+  tournamentId: number | null
+  activityName: string | null
   storageKey: string
   width: number
   height: number
@@ -87,9 +94,11 @@ export async function adminInsertPhoto(values: {
   blurDataUrl: string | null
   variantWidths: number[]
 }) {
-  await requireTournamentStaffCapability(values.tournamentId, 'tournament.media.manage')
+  if (values.tournamentId === null) await requireAdmin()
+  else await requireTournamentStaffCapability(values.tournamentId, 'tournament.media.manage')
   return insertPrivateRows('photo', {
     tournament_id: values.tournamentId,
+    activity_name: values.activityName,
     storage_key: values.storageKey,
     width: values.width,
     height: values.height,
@@ -113,7 +122,12 @@ export async function adminAttachPhotoVariants(values: {
       blur_data_url: values.blurDataUrl,
       variant_widths: JSON.stringify(values.variantWidths),
     },
-    { filters: { id: `eq.${values.id}`, tournament_id: `eq.${photo.tournamentId}` } },
+    {
+      filters: {
+        id: `eq.${values.id}`,
+        tournament_id: photo.tournamentId === null ? 'is.null' : `eq.${photo.tournamentId}`,
+      },
+    },
   )
 }
 
@@ -121,6 +135,9 @@ export async function adminDeletePhoto(id: number) {
   const photo = await adminGetPhoto(id)
   if (!photo) throw new Error('照片不存在或已被删除')
   return deletePrivateRows('photo', {
-    filters: { id: `eq.${id}`, tournament_id: `eq.${photo.tournamentId}` },
+    filters: {
+      id: `eq.${id}`,
+      tournament_id: photo.tournamentId === null ? 'is.null' : `eq.${photo.tournamentId}`,
+    },
   })
 }

@@ -40,7 +40,8 @@ interface MatchRow {
 
 interface PhotoRow {
   id: number
-  tournament_id: number
+  tournament_id: number | null
+  activity_name: string | null
   storage_key: string
   width: number
   height: number
@@ -149,6 +150,7 @@ export async function getPhotos(tournamentId?: number): Promise<Photo[]> {
   return rows.map(row => ({
     id: row.id,
     tournamentId: row.tournament_id,
+    activityName: row.activity_name,
     storageKey: row.storage_key,
     width: row.width,
     height: row.height,

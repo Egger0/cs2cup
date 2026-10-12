@@ -23,6 +23,15 @@ export default async function ArchivePage() {
       posters: photos.filter(photo => photo.tournamentId === tournament.id),
     }))
   const archivedCount = editions.filter(edition => edition.posters.length > 0).length
+  const activityNames = [
+    ...new Set(photos.flatMap(photo => (photo.activityName ? [photo.activityName] : []))),
+  ]
+  const activities: Edition[] = activityNames.map(name => ({
+    key: `activity:${name}`,
+    year: '活动',
+    name,
+    posters: photos.filter(photo => photo.activityName === name),
+  }))
 
   return (
     <>
@@ -32,8 +41,8 @@ export default async function ArchivePage() {
         eyebrow="视觉档案"
         title="往届存档"
         lede={
-          archivedCount > 0
-            ? `已归档 ${archivedCount} 届赛事的海报、奖品与现场影像。`
+          archivedCount > 0 || activities.length > 0
+            ? `已归档 ${archivedCount} 届赛事、${activities.length} 次社团活动的海报、奖品与现场影像。`
             : '赛事影像正在逐项核对，整理完成后会按赛季在这里归档。'
         }
         density="compact"
@@ -41,8 +50,8 @@ export default async function ArchivePage() {
       <ArchiveSheet>
         <section className="section">
           <div className="wrap">
-            {editions.length ? (
-              <PosterWall editions={editions} />
+            {editions.length || activities.length ? (
+              <PosterWall editions={[...activities, ...editions]} />
             ) : (
               <Empty
                 action={

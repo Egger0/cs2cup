@@ -36,12 +36,13 @@ registerHooks({
 const photos = await import('../lib/queries/content/photos.ts')
 const database = scoreCorrectionFixture()
 database.exec(`CREATE TABLE photo (
-  id INTEGER PRIMARY KEY, tournament_id INTEGER NOT NULL, storage_key TEXT NOT NULL,
+  id INTEGER PRIMARY KEY, tournament_id INTEGER, activity_name TEXT, storage_key TEXT NOT NULL,
   width INTEGER, height INTEGER, caption TEXT, sort_order INTEGER,
   blur_data_url TEXT, variant_widths TEXT
 )`)
 const values = tournamentId => ({
   tournamentId,
+  activityName: null,
   storageKey: `event-${tournamentId}/photo.webp`,
   width: 100,
   height: 100,
@@ -53,6 +54,8 @@ const values = tournamentId => ({
 
 try {
   globalThis.__photoOwner = true
+  await photos.adminInsertPhoto({ ...values(null), activityName: '2026年9月线下招新' })
+  const activityId = database.prepare('SELECT id FROM photo WHERE tournament_id IS NULL').get().id
   await photos.adminInsertPhoto(values(2))
   const foreignId = database.prepare('SELECT id FROM photo WHERE tournament_id = 2').get().id
   globalThis.__photoOwner = false
@@ -70,13 +73,26 @@ try {
     /forbidden/,
   )
   await assert.rejects(photos.adminDeletePhoto(foreignId), /forbidden/)
+  await assert.rejects(photos.adminGetPhoto(activityId), /forbidden/)
+  await assert.rejects(
+    photos.adminInsertPhoto({ ...values(null), activityName: 'Club Event' }),
+    /forbidden/,
+  )
+  await assert.rejects(
+    photos.adminAttachPhotoVariants({ id: activityId, blurDataUrl: null, variantWidths: [480] }),
+    /forbidden/,
+  )
+  await assert.rejects(photos.adminDeletePhoto(activityId), /forbidden/)
   await photos.adminAttachPhotoVariants({ id: own[0].id, blurDataUrl: null, variantWidths: [480] })
   assert.deepEqual((await photos.adminGetPhoto(own[0].id)).variantWidths, [480])
   await photos.adminDeletePhoto(own[0].id)
   assert.equal(await photos.adminGetPhoto(own[0].id), null)
-  assert.equal(database.prepare('SELECT COUNT(*) AS n FROM photo').get().n, 1)
+  assert.equal(database.prepare('SELECT COUNT(*) AS n FROM photo').get().n, 2)
   globalThis.__photoOwner = true
-  assert.equal((await photos.adminListPhotos()).length, 1)
+  assert.equal((await photos.adminListPhotos()).length, 2)
+  await photos.adminAttachPhotoVariants({ id: activityId, blurDataUrl: null, variantWidths: [480] })
+  assert.deepEqual((await photos.adminGetPhoto(activityId)).variantWidths, [480])
+  await photos.adminDeletePhoto(activityId)
   await photos.adminDeletePhoto(foreignId)
   console.log('project media access tests passed')
 } finally {

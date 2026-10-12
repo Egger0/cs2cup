@@ -1,7 +1,7 @@
 'use server'
 
 import { updateTag } from 'next/cache'
-import { requirePlatformConsole, requireTournamentStaffCapability } from '@/lib/auth'
+import { requireAdmin, requirePlatformConsole, requireTournamentStaffCapability } from '@/lib/auth'
 import { MIME_TO_EXT, imageSize, sniffMime } from '@/lib/image'
 import { createPhotoStorageKey } from '@/lib/photo-storage-key'
 import { VARIANT_WIDTHS, variantStorageKey } from '@/lib/photo-variants'
@@ -30,11 +30,19 @@ export async function uploadPhoto(form: FormData) {
     return { ok: false as const, error: '单张图片不要超过 10 MB' }
   }
 
-  const tournamentId = Number(form.get('tournamentId'))
-  if (!Number.isSafeInteger(tournamentId) || tournamentId <= 0) {
+  const isActivity = form.get('tournamentId') === 'activity'
+  const tournamentId = isActivity ? null : Number(form.get('tournamentId'))
+  const activityName = isActivity ? String(form.get('activityName') ?? '').trim() : null
+  if (isActivity) {
+    await requireAdmin()
+    if (!activityName || activityName.length > 100) {
+      return { ok: false as const, error: '请填写活动名称，最多 100 字' }
+    }
+  } else if (tournamentId === null || !Number.isSafeInteger(tournamentId) || tournamentId <= 0) {
     return { ok: false as const, error: '请选择赛事' }
+  } else {
+    await requireTournamentStaffCapability(tournamentId, 'tournament.media.manage')
   }
-  await requireTournamentStaffCapability(tournamentId, 'tournament.media.manage')
 
   const buffer = Buffer.from(await file.arrayBuffer())
   const mime = sniffMime(buffer)
@@ -43,15 +51,18 @@ export async function uploadPhoto(form: FormData) {
   const size = imageSize(mime, buffer)
   if (!size) return { ok: false as const, error: '无法读取图片尺寸' }
 
-  const tournament = await findTournamentRecord(tournamentId)
-  if (!tournament) return { ok: false as const, error: '赛事不存在' }
+  const tournament = tournamentId === null ? null : await findTournamentRecord(tournamentId)
+  if (tournamentId !== null && !tournament) return { ok: false as const, error: '赛事不存在' }
 
-  const mine = await adminListPhotos([tournamentId])
+  const mine =
+    tournamentId === null
+      ? (await adminListPhotos()).filter(photo => photo.activityName === activityName)
+      : await adminListPhotos([tournamentId])
   let key: string | null = null
   const writtenKeys: string[] = []
 
   try {
-    key = createPhotoStorageKey(tournament.slug, MIME_TO_EXT[mime] ?? 'bin')
+    key = createPhotoStorageKey(tournament?.slug ?? 'activity', MIME_TO_EXT[mime] ?? 'bin')
     await putObject(key, buffer, mime)
     writtenKeys.push(key)
 
@@ -68,6 +79,7 @@ export async function uploadPhoto(form: FormData) {
     const blur = String(form.get('blurDataUrl') ?? '')
     await adminInsertPhoto({
       tournamentId,
+      activityName,
       storageKey: key,
       width: size.width,
       height: size.height,

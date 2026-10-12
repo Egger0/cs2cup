@@ -10,7 +10,13 @@ import styles from '../admin.module.css'
 
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024
 
-export function Uploader({ tournaments }: { tournaments: Tournament[] }) {
+export function Uploader({
+  tournaments,
+  canUploadActivities,
+}: {
+  tournaments: Tournament[]
+  canUploadActivities: boolean
+}) {
   const router = useRouter()
   const formRef = useRef<HTMLFormElement>(null)
   const [pending, startTransition] = useTransition()
@@ -18,6 +24,7 @@ export function Uploader({ tournaments }: { tournaments: Tournament[] }) {
   const [feedback, setFeedback] = useState<{ ok: boolean; message: string } | null>(null)
   const [tooLarge, setTooLarge] = useState(false)
   const [fileName, setFileName] = useState('尚未选择图片')
+  const [activity, setActivity] = useState(canUploadActivities && !tournaments.length)
 
   return (
     <form
@@ -55,6 +62,7 @@ export function Uploader({ tournaments }: { tournaments: Tournament[] }) {
             }
 
             formRef.current?.reset()
+            setActivity(canUploadActivities && !tournaments.length)
             setFileName('尚未选择图片')
             setTooLarge(false)
             setFeedback({ ok: true, message: `已上传 ${result.width}×${result.height}` })
@@ -73,15 +81,37 @@ export function Uploader({ tournaments }: { tournaments: Tournament[] }) {
       }}
     >
       <label className={styles.controlLabel}>
-        归属赛事
-        <select name="tournamentId" required className={styles.select} disabled={pending}>
+        归属赛事或活动
+        <select
+          name="tournamentId"
+          required
+          className={styles.select}
+          disabled={pending}
+          defaultValue={activity ? 'activity' : tournaments[0]?.id}
+          onChange={event => setActivity(event.currentTarget.value === 'activity')}
+        >
           {tournaments.map(tournament => (
             <option key={tournament.id} value={tournament.id}>
               {tournament.season} · {tournament.title}
             </option>
           ))}
+          {canUploadActivities ? (
+            <option value="activity">社团活动（招新、观赛、聚会等）</option>
+          ) : null}
         </select>
       </label>
+      {activity ? (
+        <Field
+          id="up-activity"
+          name="activityName"
+          label="活动名称"
+          required
+          maxLength={100}
+          placeholder="例如：2026年9月线下招新"
+          hint="同名归入同一活动，上传后公开。"
+          disabled={pending}
+        />
+      ) : null}
       <label className={styles.controlLabel}>
         图片文件
         <span className={styles.filePicker}>
