@@ -5,6 +5,7 @@ import { GhostStage } from '@/components/domain/GhostStage'
 import { RuleGhost } from '@/components/domain/RuleGhost'
 import { ButtonLink } from '@/components/ui'
 import { getTournament } from '@/lib/queries/public'
+import { fixturesEntry } from '@/lib/tournament-format'
 
 export const revalidate = 300
 export const metadata: Metadata = { title: '赛制与须知' }
@@ -13,6 +14,7 @@ export default async function RulesPage({ params }: { params: Promise<{ slug: st
   const { slug } = await params
   const tournament = await getTournament(slug)
   if (!tournament) notFound()
+  const fixtures = fixturesEntry(tournament)
 
   return (
     <>
@@ -54,8 +56,8 @@ export default async function RulesPage({ params }: { params: Promise<{ slug: st
               <GhostStage
                 figure={<RuleGhost />}
                 action={
-                  <ButtonLink href={`/tournaments/${slug}/schedule`} size="mini">
-                    看赛程
+                  <ButtonLink href={`/tournaments/${slug}${fixtures.path}`} size="mini">
+                    看{fixtures.label}
                   </ButtonLink>
                 }
               >

@@ -14,6 +14,7 @@ import {
   listPosts,
   safely,
 } from '@/lib/queries/public'
+import { playsHeadToHead } from '@/lib/tournament-format'
 import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -27,9 +28,10 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
   const { slug } = await params
   const tournament = await getTournament(slug)
   if (!tournament) notFound()
+  const headToHead = playsHeadToHead(tournament)
   const [teams, matches, posts, registration] = await Promise.all([
     getPublicTeams(tournament.id),
-    getMatches(tournament.id),
+    headToHead ? getMatches(tournament.id) : [],
     safely(() => listPosts(2), []),
     safely(() => getRegistrationStatus(slug), null),
   ])
@@ -94,7 +96,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
                     : '等待第一支战队加入。审核通过的队伍会展示在这里。'}
                 </p>
               )}
-              {!recent.length && !finished ? (
+              {headToHead && !recent.length && !finished ? (
                 <p className={styles.note}>
                   战报将在比赛结束后更新。<Link href={`${base}/schedule`}>先查看比赛日程 →</Link>
                 </p>

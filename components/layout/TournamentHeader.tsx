@@ -33,7 +33,7 @@ interface TournamentHeaderProps {
   season: string
   tagline: string
   seats: [number, number]
-  played: [number, number]
+  played: [number, number] | null
   deadline: string | null
   primaryAction: { href: string; label: string }
   next: NextMatchSummary | null
@@ -126,13 +126,15 @@ export function TournamentHeader({
                     </span>
                     <span className={styles.railKey}>已报名 · 含待审核</span>
                   </span>
-                  <span className={styles.railItem}>
-                    <span className={styles.railValue}>
-                      {played[0]}
-                      <span className={styles.railTotal}>/{played[1]}</span>
+                  {played ? (
+                    <span className={styles.railItem}>
+                      <span className={styles.railValue}>
+                        {played[0]}
+                        <span className={styles.railTotal}>/{played[1]}</span>
+                      </span>
+                      <span className={styles.railKey}>已完赛</span>
                     </span>
-                    <span className={styles.railKey}>已完赛</span>
-                  </span>
+                  ) : null}
                   <span className={styles.railItem}>
                     <span className={styles.deadline}>{deadline ?? '暂未公布'}</span>
                     <span className={styles.railKey}>报名截止 · 北京时间</span>

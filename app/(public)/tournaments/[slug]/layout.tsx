@@ -5,6 +5,7 @@ import { SectionTabs } from '@/components/layout/SectionTabs'
 import { isByeMatch, isCompletedMatch } from '@/lib/bracket'
 import {
   getMatches,
+  getPhotos,
   getPublicTeams,
   getRegistrationStatus,
   getTournament,
@@ -16,6 +17,7 @@ import { resolveSiteOrigin } from '@/lib/site-config'
 import styles from './page.module.css'
 import { CLUB_BRAND } from '@/lib/brand'
 import { formatSiteDateTime } from '@/lib/datetime'
+import { fixturesEntry, playsHeadToHead } from '@/lib/tournament-format'
 
 const STATUS_TEXT: Record<TournamentStatus, string> = {
   draft: '筹备中',
@@ -71,18 +73,20 @@ export default async function TournamentLayout({
   const tournament = await getTournament(slug)
   if (!tournament) notFound()
 
-  const [teams, matches, registration] = await Promise.all([
+  const headToHead = playsHeadToHead(tournament)
+  const finished = tournament.status === 'finished'
+  const [teams, matches, registration, photos] = await Promise.all([
     getPublicTeams(tournament.id),
-    getMatches(tournament.id),
+    headToHead ? getMatches(tournament.id) : [],
     safely(() => getRegistrationStatus(slug), null),
+    safely(() => getPhotos(tournament.id), []),
   ])
 
   const played = matches.filter(isCompletedMatch).length
   const playable = matches.filter(match => !isByeMatch(match)).length
+  const fixtures = fixturesEntry(tournament)
   const next =
-    tournament.status === 'finished'
-      ? null
-      : selectNextScheduleEntry(buildScheduleEntries(matches, teams))
+    finished || !headToHead ? null : selectNextScheduleEntry(buildScheduleEntries(matches, teams))
   const base = `/tournaments/${slug}`
   const status = STATUS_TEXT[tournament.status]
   const eyebrow = tournament.heroEyebrow ? `${tournament.heroEyebrow} · ${status}` : status
@@ -109,14 +113,17 @@ export default async function TournamentLayout({
         season={tournament.season}
         tagline={tournament.lede}
         seats={seats}
-        played={[played, playable]}
+        played={headToHead ? [played, playable] : null}
         deadline={formatSiteDateTime(tournament.regDeadline ?? '')}
         primaryAction={
           registration?.open
             ? { href: `${base}/register`, label: '组队报名' }
-            : tournament.status === 'finished'
+            : finished && headToHead
               ? { href: `${base}/results`, label: '查看战报' }
-              : { href: `${base}/schedule`, label: '查看赛程' }
+              : {
+                  href: `${base}${fixtures.path}`,
+                  label: `查看${headToHead ? '赛程' : fixtures.label}`,
+                }
         }
         next={
           next && tournament.status !== 'registration'
@@ -138,10 +145,13 @@ export default async function TournamentLayout({
         <SectionTabs
           tabs={[
             { href: base, label: '总览', exact: true },
-            { href: `${base}/schedule`, label: '赛程' },
+            ...(headToHead ? [{ href: `${base}/schedule`, label: '赛程' }] : []),
             { href: `${base}/teams`, label: '参赛战队', count: teams.length },
             { href: `${base}/bracket`, label: '对阵表' },
-            { href: `${base}/results`, label: '战报', count: played },
+            ...(headToHead ? [{ href: `${base}/results`, label: '战报', count: played }] : []),
+            ...(finished || photos.length
+              ? [{ href: `${base}/media`, label: '素材', count: photos.length }]
+              : []),
             { href: `${base}/rules`, label: '赛制与须知' },
             { href: `${base}/register`, label: '报名' },
           ]}

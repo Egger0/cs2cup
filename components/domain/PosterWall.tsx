@@ -30,9 +30,11 @@ export interface Edition {
 export function PosterWall({
   editions,
   emptyText = '档案整理中',
+  bare = false,
 }: {
   editions: Edition[]
   emptyText?: string
+  bare?: boolean
 }) {
   const [active, setActive] = useState<Photo | null>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
@@ -50,15 +52,17 @@ export function PosterWall({
     <>
       {editions.map(edition => (
         <section key={edition.key} className={styles.edition}>
-          <div className={styles.head}>
-            <h2>
-              <span className={styles.year}>{edition.year}</span>
-              <span className={styles.name}>{edition.name}</span>
-            </h2>
-            <span className={styles.count}>
-              {edition.posters.length > 0 ? `${edition.posters.length} 张` : '整理中'}
-            </span>
-          </div>
+          {bare ? null : (
+            <div className={styles.head}>
+              <h2>
+                <span className={styles.year}>{edition.year}</span>
+                <span className={styles.name}>{edition.name}</span>
+              </h2>
+              <span className={styles.count}>
+                {edition.posters.length > 0 ? `${edition.posters.length} 张` : '整理中'}
+              </span>
+            </div>
+          )}
 
           {edition.posters.length > 0 ? (
             <div className={styles.sheet}>

@@ -2,12 +2,14 @@ import Link from 'next/link'
 import { Icon } from '@/components/ui/Icon'
 import { formatSiteDate } from '@/lib/datetime'
 import { TOURNAMENT_STATES } from '@/lib/tournament-discovery'
+import { fixturesEntry } from '@/lib/tournament-format'
 import type { Tournament } from '@/lib/types'
 import { FollowTournament } from './FollowTournament'
 import styles from './TournamentCard.module.css'
 
 export function TournamentCard({ tournament }: { tournament: Tournament }) {
   const base = `/tournaments/${tournament.slug}`
+  const fixtures = fixturesEntry(tournament)
   const date = tournament.status === 'registration' ? tournament.regDeadline : tournament.startsAt
   return (
     <article className={styles.card}>
@@ -45,8 +47,8 @@ export function TournamentCard({ tournament }: { tournament: Tournament }) {
         <span>最多 {tournament.teamCap} 支战队</span>
       </div>
       <div className={styles.footer}>
-        <Link href={`${base}/schedule`}>
-          比赛日程 <Icon name="arrow" size={15} />
+        <Link href={`${base}${fixtures.path}`}>
+          {fixtures.label} <Icon name="arrow" size={15} />
         </Link>
         <FollowTournament id={tournament.id} title={tournament.title} />
       </div>
