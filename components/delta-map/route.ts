@@ -1,11 +1,12 @@
 import * as T from 'three'
 import { MeshBasicNodeMaterial } from 'three/webgpu'
+import type { Waypoint } from '@/lib/sand-routes'
 import type { Plate } from './plate'
 
 const WIDTH = 0.007
 const LIFT = 0.008
 
-export function buildRoute(plate: Plate, waypoints: [number, number][]) {
+export function buildRoute(plate: Plate, waypoints: Waypoint[]) {
   const group = new T.Group()
   if (waypoints.length < 1) return group
   const path: T.Vector3[] = []

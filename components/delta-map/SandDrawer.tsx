@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import type { DeltaMapData, DeltaMapSummary, SandPoint } from '@/lib/delta-sand'
 import { SandIcon } from './SandIcon'
-import { SandFloors, SandPicked, SandRoute } from './SandPlanner'
+import { SandFloors, SandPicked } from './SandPlanner'
+import { SandRoute } from './SandRoutes'
 import { SandSearch } from './SandSearch'
-import type { Waypoint } from './SandTable'
+import type { SandPlan, Waypoint } from '@/lib/sand-routes'
 import styles from './SandDrawer.module.css'
 
 export type SandTab = 'intel' | 'search' | 'floors' | 'route'
@@ -25,6 +26,9 @@ export function SandDrawer({
   floor,
   routing,
   route,
+  stop,
+  plans,
+  plan,
   loadouts,
   onTab,
   onLevel,
@@ -33,6 +37,8 @@ export function SandDrawer({
   onBuilding,
   onRouting,
   onRoute,
+  onStop,
+  onPlan,
   onClear,
 }: {
   map: DeltaMapSummary
@@ -44,6 +50,9 @@ export function SandDrawer({
   floor: string | null
   routing: boolean
   route: Waypoint[]
+  stop: number | null
+  plans: SandPlan[]
+  plan: number | null
   loadouts: string
   onTab: (tab: SandTab) => void
   onLevel: (level: number) => void
@@ -52,6 +61,8 @@ export function SandDrawer({
   onBuilding: (index: number | null, floor: string | null) => void
   onRouting: (routing: boolean) => void
   onRoute: (route: Waypoint[]) => void
+  onStop: (index: number) => void
+  onPlan: (plan: SandPlan) => void
   onClear: () => void
 }) {
   const points = data?.levels[level]?.points ?? []
@@ -168,11 +179,17 @@ export function SandDrawer({
         ) : null}
         {tab === 'route' ? (
           <SandRoute
-            meters={map.meters}
+            map={map}
+            level={level}
             routing={routing}
             route={route}
+            stop={stop}
+            plans={plans}
+            plan={plan}
             onRouting={onRouting}
             onRoute={onRoute}
+            onStop={onStop}
+            onPlan={onPlan}
           />
         ) : null}
       </div>

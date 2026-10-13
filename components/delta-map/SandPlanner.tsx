@@ -1,24 +1,7 @@
-'use client'
-
-import { useState } from 'react'
 import { SAND_KINDS, type DeltaMapData, type SandKind, type SandPoint } from '@/lib/delta-sand'
 import { SandIcon } from './SandIcon'
-import type { Waypoint } from './SandTable'
+import type { Waypoint } from '@/lib/sand-routes'
 import styles from './SandTools.module.css'
-
-const RUN = 5
-
-export const routeMeters = (route: Waypoint[], meters: number) =>
-  route.reduce(
-    (sum, [x, y], index) =>
-      index ? sum + Math.hypot(x - route[index - 1]![0], y - route[index - 1]![1]) * meters : 0,
-    0,
-  )
-
-const clock = (seconds: number) =>
-  seconds < 60
-    ? `${Math.round(seconds)} 秒`
-    : `${Math.floor(seconds / 60)} 分 ${Math.round(seconds % 60)} 秒`
 
 export function PointRow({
   point,
@@ -131,65 +114,6 @@ export function SandFloors({
       ) : (
         <p className={styles.empty}>选一栋建筑，楼层会在沙盘上逐层展开。</p>
       )}
-    </div>
-  )
-}
-
-export function SandRoute({
-  meters,
-  routing,
-  route,
-  onRouting,
-  onRoute,
-}: {
-  meters: number
-  routing: boolean
-  route: Waypoint[]
-  onRouting: (routing: boolean) => void
-  onRoute: (route: Waypoint[]) => void
-}) {
-  const [copied, setCopied] = useState(false)
-  const distance = routeMeters(route, meters)
-  return (
-    <div className={styles.stack}>
-      <div className={styles.readout}>
-        <b>{Math.round(distance)}</b>
-        <span>米</span>
-        <p>
-          {route.length > 1
-            ? `奔跑约 ${clock(distance / RUN)}，${route.length} 个途经点`
-            : '在沙盘上依次点出途经点，距离和奔跑时间会实时算出来。'}
-        </p>
-      </div>
-      <div className={styles.actions}>
-        <button
-          type="button"
-          className={styles.primary}
-          aria-pressed={routing}
-          onClick={() => onRouting(!routing)}
-        >
-          {routing ? '完成规划' : route.length ? '继续添加途经点' : '开始规划'}
-        </button>
-        <button type="button" disabled={!route.length} onClick={() => onRoute(route.slice(0, -1))}>
-          撤销一步
-        </button>
-        <button type="button" disabled={!route.length} onClick={() => onRoute([])}>
-          清空
-        </button>
-        <button
-          type="button"
-          disabled={route.length < 2}
-          onClick={() =>
-            void navigator.clipboard.writeText(location.href).then(() => {
-              setCopied(true)
-              window.setTimeout(() => setCopied(false), 1800)
-            })
-          }
-        >
-          {copied ? '链接已复制' : '复制路线链接'}
-        </button>
-      </div>
-      <p className={styles.empty}>奔跑时间按 5 m/s 估算，只算水平距离。</p>
     </div>
   )
 }

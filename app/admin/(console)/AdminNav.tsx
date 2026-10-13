@@ -27,6 +27,7 @@ const LINKS = [
   { index: '11', href: '/admin/loadouts', label: '改枪码', capability: 'platform.configure' },
   { index: '12', href: '/admin/handbook', label: '办赛文档', capability: 'platform.configure' },
   { index: '13', href: '/admin/graphics', label: '画质方案', capability: 'platform.configure' },
+  { index: '14', href: '/admin/routes', label: '沙盘路线', capability: 'platform.configure' },
 ] satisfies readonly {
   index: string
   href: string
