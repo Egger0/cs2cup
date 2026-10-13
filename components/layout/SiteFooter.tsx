@@ -9,6 +9,8 @@ import styles from './SiteFooter.module.css'
 import theme from '@/app/site-theme.module.css'
 import { CommunityChannels } from './CommunityChannels'
 
+const FRIEND_LINKS = [{ name: '计算机协会 NBTCA', href: 'https://nbtca.space' }]
+
 export async function SiteFooter({ setting }: { setting: SiteSetting }) {
   return (
     <footer className={`${theme.dark} ${styles.footer}`}>
@@ -55,6 +57,15 @@ export async function SiteFooter({ setting }: { setting: SiteSetting }) {
                 <CopyTextButton value={setting.contactWechat} label="复制微信号" />
               </p>
             ) : null}
+
+            <span className={`${styles.communityLabel} ${styles.friendsLabel}`}>友情链接</span>
+            <nav className={styles.friends} aria-label="友情链接">
+              {FRIEND_LINKS.map(friend => (
+                <a key={friend.href} href={friend.href} target="_blank" rel="noreferrer">
+                  {friend.name} <span aria-hidden="true">↗</span>
+                </a>
+              ))}
+            </nav>
           </div>
         </div>
         <div className={styles.legal}>

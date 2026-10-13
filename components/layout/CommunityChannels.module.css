@@ -21,15 +21,10 @@
     600 0.78rem var(--font-body),
     sans-serif;
   letter-spacing: 0.01em;
-  list-style: none;
   text-decoration: none;
   transition:
     border-color 0.2s ease,
     color 0.2s ease;
-}
-
-.chip::-webkit-details-marker {
-  display: none;
 }
 
 .chip:hover,
@@ -68,15 +63,4 @@
 
 .qqHint:empty {
   display: none;
-}
-
-.douyin summary {
-  width: fit-content;
-}
-
-.douyin .qrImage {
-  width: 112px;
-  height: 112px;
-  margin-top: 10px;
-  border: 1px solid rgba(241, 239, 232, 0.2);
 }
