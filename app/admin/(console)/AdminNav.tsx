@@ -1,39 +1,44 @@
 import type { ReactNode } from 'react'
-import { SectionTabs } from '@/components/layout/SectionTabs'
 import type { PlatformConsoleCapability } from '@/lib/auth'
+import { AdminRail } from './AdminRail'
+
+const GROUPS = ['赛事', '内容', '社区', '成员与系统'] as const
 
 const LINKS = [
   {
     index: '01',
     href: '/admin',
     label: '报名与赛果',
+    group: '赛事',
     exact: true,
     capability: 'platform.configure',
   },
+  { index: '03', href: '/admin/tournaments', label: '赛事', group: '赛事' },
+  { index: '04', href: '/admin/games', label: '项目', group: '赛事' },
+  { index: '10', href: '/admin/lottery', label: '抽奖核销', group: '赛事' },
+  { index: '05', href: '/admin/posts', label: '动态', group: '内容' },
+  { index: '06', href: '/admin/photos', label: '素材', group: '内容' },
+  { index: '12', href: '/admin/handbook', label: '办赛文档', group: '内容' },
+  { index: '13', href: '/admin/graphics', label: '画质方案', group: '内容' },
+  { index: '08', href: '/admin/guestbook', label: '留言', group: '社区' },
+  { index: '11', href: '/admin/loadouts', label: '改枪码', group: '社区' },
+  { index: '14', href: '/admin/routes', label: '沙盘路线', group: '社区' },
   {
     index: '02',
     href: '/admin/identity',
     label: '资格审核',
+    group: '成员与系统',
     capability: 'platform.identity.review',
   },
-  { index: '03', href: '/admin/tournaments', label: '赛事', capability: 'platform.configure' },
-  { index: '04', href: '/admin/games', label: '项目', capability: 'platform.configure' },
-  { index: '05', href: '/admin/posts', label: '动态', capability: 'platform.configure' },
-  { index: '06', href: '/admin/photos', label: '素材', capability: 'platform.configure' },
-  { index: '07', href: '/admin/members', label: '成员', capability: 'platform.configure' },
-  { index: '08', href: '/admin/guestbook', label: '留言', capability: 'platform.configure' },
-  { index: '09', href: '/admin/settings', label: '设置', capability: 'platform.configure' },
-  { index: '10', href: '/admin/lottery', label: '抽奖核销', capability: 'platform.configure' },
-  { index: '11', href: '/admin/loadouts', label: '改枪码', capability: 'platform.configure' },
-  { index: '12', href: '/admin/handbook', label: '办赛文档', capability: 'platform.configure' },
-  { index: '13', href: '/admin/graphics', label: '画质方案', capability: 'platform.configure' },
-  { index: '14', href: '/admin/routes', label: '沙盘路线', capability: 'platform.configure' },
+  { index: '07', href: '/admin/members', label: '成员', group: '成员与系统' },
+  { index: '09', href: '/admin/settings', label: '设置', group: '成员与系统' },
 ] satisfies readonly {
   index: string
   href: string
   label: string
+  group: (typeof GROUPS)[number]
   exact?: boolean
-  capability: PlatformConsoleCapability
+  capability?: PlatformConsoleCapability
 }[]
 
 export function AdminNav({
@@ -49,25 +54,31 @@ export function AdminNav({
   holdsReviewRole: boolean
   trailing?: ReactNode
 }) {
-  const tabs = LINKS.filter(
+  const configures = capabilities.includes('platform.configure')
+  const links = LINKS.filter(
     link =>
-      capabilities.includes(link.capability) ||
+      capabilities.includes(link.capability ?? 'platform.configure') ||
       (link.href === '/admin' && hasTournamentWork) ||
       (link.href === '/admin/tournaments' && hasProjectWork) ||
       (link.href === '/admin/photos' && hasProjectWork) ||
       (link.capability === 'platform.identity.review' && holdsReviewRole),
   ).map(link => ({
-    href: link.href,
-    exact: link.exact,
+    ...link,
     label:
-      link.href === '/admin' && !capabilities.includes('platform.configure')
+      link.href === '/admin' && !configures
         ? '我的工作区'
-        : link.href === '/admin/tournaments' &&
-            hasProjectWork &&
-            !capabilities.includes('platform.configure')
+        : link.href === '/admin/tournaments' && hasProjectWork && !configures
           ? '项目工作台'
           : link.label,
   }))
 
-  return <SectionTabs tabs={tabs} label="后台导航" trailing={trailing} />
+  return (
+    <AdminRail
+      groups={GROUPS.map(label => ({
+        label,
+        links: links.filter(link => link.group === label),
+      })).filter(group => group.links.length)}
+      trailing={trailing}
+    />
+  )
 }

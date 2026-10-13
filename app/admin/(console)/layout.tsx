@@ -43,7 +43,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </>
           }
         />
-        <main id="main" className={`wrap ${styles.main}`}>
+        <main id="main" className={styles.main}>
           {children}
         </main>
       </div>
