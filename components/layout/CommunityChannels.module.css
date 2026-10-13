@@ -64,3 +64,39 @@
 .qqHint:empty {
   display: none;
 }
+
+.douyin {
+  position: relative;
+  display: inline-flex;
+}
+
+.qr {
+  position: absolute;
+  z-index: 2;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  display: none;
+  width: max-content;
+  padding: 12px 12px 10px;
+  border-radius: 12px;
+  background: #f1efe8;
+  color: #171817;
+  font:
+    600 0.75rem var(--font-body),
+    sans-serif;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.qr img {
+  display: block;
+  margin-bottom: 8px;
+  border-radius: 8px;
+}
+
+@media (hover: hover) {
+  .douyin:hover .qr,
+  .douyin:focus-within .qr {
+    display: block;
+  }
+}

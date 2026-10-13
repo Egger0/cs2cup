@@ -74,16 +74,29 @@ export async function CommunityChannels({
         {kook ? <small>{kook.onlineCount} 在线</small> : null}
       </a>
 
-      <a
-        className={styles.chip}
-        href={DOUYIN_URL}
-        target="_blank"
-        rel="noreferrer"
-        aria-label="打开电竞社抖音主页"
-      >
-        <span>抖音</span>
-        <small>主页</small>
-      </a>
+      <span className={styles.douyin}>
+        <a
+          className={styles.chip}
+          href={DOUYIN_URL}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="打开电竞社抖音主页"
+        >
+          <span>抖音</span>
+          <small>主页</small>
+        </a>
+        <span className={styles.qr}>
+          <Image
+            src="/brand/douyin-qr.webp"
+            alt="电竞社抖音关注码"
+            width={168}
+            height={168}
+            loading="lazy"
+            unoptimized
+          />
+          手机抖音扫码关注
+        </span>
+      </span>
     </div>
   )
 }
