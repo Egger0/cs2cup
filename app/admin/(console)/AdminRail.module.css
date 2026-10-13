@@ -1,0 +1,129 @@
+.rail {
+  position: sticky;
+  z-index: 20;
+  top: var(--header-height);
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--admin-line-strong);
+  background: var(--admin-paper-deep);
+}
+
+.nav {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  padding-inline: var(--pad);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
+}
+
+.group {
+  display: contents;
+}
+
+.heading {
+  flex: none;
+  padding: 0 4px 0 14px;
+  color: var(--admin-muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+
+.group:first-child .heading {
+  padding-left: 0;
+}
+
+.link {
+  display: inline-flex;
+  flex: none;
+  min-height: 44px;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  white-space: nowrap;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease;
+}
+
+.link:hover,
+.link:focus-visible {
+  color: var(--ink);
+}
+
+.link[aria-current='page'] {
+  color: var(--ink);
+  background: rgb(109 165 211 / 16%);
+}
+
+.index {
+  display: none;
+}
+
+.session {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  padding-right: var(--pad);
+}
+
+@media (min-width: 1100px) {
+  .rail {
+    top: calc(var(--header-height) + 20px);
+    display: block;
+    align-self: start;
+    max-height: calc(100svh - var(--header-height) - 40px);
+    margin-top: clamp(28px, 4vw, 48px);
+    overflow-y: auto;
+    border-bottom: 0;
+    background: none;
+    scrollbar-width: thin;
+  }
+
+  .nav {
+    display: grid;
+    gap: 14px;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .group {
+    display: grid;
+    gap: 2px;
+  }
+
+  .heading,
+  .group:first-child .heading {
+    padding: 0 12px 4px;
+  }
+
+  .link {
+    min-height: 34px;
+  }
+
+  .session {
+    display: grid;
+    gap: 6px;
+    justify-items: start;
+    margin-top: 16px;
+    padding: 14px 12px 0;
+    border-top: 1px solid var(--admin-line);
+  }
+
+  .session span button {
+    justify-content: flex-start;
+    min-height: 34px;
+  }
+}
