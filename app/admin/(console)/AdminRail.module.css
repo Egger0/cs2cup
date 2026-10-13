@@ -122,7 +122,7 @@
     border-top: 1px solid var(--admin-line);
   }
 
-  .session button {
+  .session span button {
     justify-content: flex-start;
     min-height: 34px;
   }
