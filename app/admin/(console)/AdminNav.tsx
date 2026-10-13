@@ -26,6 +26,7 @@ const LINKS = [
   { index: '10', href: '/admin/lottery', label: '抽奖核销', capability: 'platform.configure' },
   { index: '11', href: '/admin/loadouts', label: '改枪码', capability: 'platform.configure' },
   { index: '12', href: '/admin/handbook', label: '办赛文档', capability: 'platform.configure' },
+  { index: '13', href: '/admin/graphics', label: '画质方案', capability: 'platform.configure' },
 ] satisfies readonly {
   index: string
   href: string
