@@ -5,6 +5,7 @@ export const PUBLIC_LINKS = [
   { href: '/games', label: '项目' },
   { href: '/loadouts', label: '改枪码' },
   { href: '/maps', label: '战术沙盘' },
+  { href: '/handbook', label: '办赛文档' },
   { href: '/about', label: '关于' },
   { href: '/guestbook', label: '留言' },
   { href: '/lottery', label: '招新抽奖' },

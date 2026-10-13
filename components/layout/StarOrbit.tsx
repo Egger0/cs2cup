@@ -12,6 +12,7 @@ const TONES: Record<string, string> = {
   '/news': '#9bcaeb',
   '/archive': '#d8b169',
   '/games': '#b28a51',
+  '/handbook': '#9fb3bb',
   '/about': '#cfe8f8',
   '/guestbook': '#7fc4b8',
   '/lottery': '#f0757b',
