@@ -11,6 +11,7 @@ const ENGLISH: Record<string, string> = {
   '/news': 'JOURNAL',
   '/archive': 'ARCHIVE',
   '/games': 'GAMES',
+  '/handbook': 'HANDBOOK',
   '/about': 'ABOUT',
   '/guestbook': 'GUESTBOOK',
   '/lottery': 'RECRUIT DRAW',

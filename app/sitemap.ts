@@ -24,6 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/archive`, priority: 0.6 },
     { url: `${BASE}/archive/merit`, priority: 0.5 },
     { url: `${BASE}/news`, priority: 0.7 },
+    { url: `${BASE}/handbook`, priority: 0.6 },
     { url: `${BASE}/about`, priority: 0.6 },
     { url: `${BASE}/guestbook`, priority: 0.5 },
     ...games.map(game => ({ url: `${BASE}/games/${game.slug}`, priority: 0.7 })),
