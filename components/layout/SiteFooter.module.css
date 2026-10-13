@@ -86,13 +86,17 @@
 .brand img {
   filter: brightness(2.05) saturate(0.72);
 }
-.links {
+.links,
+.friends {
   display: flex;
   flex-wrap: wrap;
   gap: 0 20px;
+}
+.links {
   margin-top: 20px;
 }
 .links a,
+.friends a,
 .legal a {
   display: inline-flex;
   align-items: center;
@@ -101,6 +105,7 @@
   font-size: 0.75rem;
 }
 .links a:hover,
+.friends a:hover,
 .legal a:hover {
   color: #fff;
   text-decoration: underline;
@@ -126,4 +131,12 @@
 
 .wechat {
   margin-top: 18px;
+}
+
+.friendsLabel {
+  margin-top: 28px;
+}
+
+.friends a {
+  gap: 6px;
 }

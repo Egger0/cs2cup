@@ -3,8 +3,6 @@ import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 
 const OG_OUTPUT = fileURLToPath(new URL('../app/opengraph-image.png', import.meta.url))
-const QR_INPUT = fileURLToPath(new URL('../public/brand/douyin-qr.png', import.meta.url))
-const QR_OUTPUT = fileURLToPath(new URL('../public/brand/douyin-qr-display.png', import.meta.url))
 
 const mark = await readFile(new URL('../public/brand/club-mark.svg', import.meta.url))
 const serif = await readFile(new URL('../public/fonts/noto-serif-sc-og-800.ttf', import.meta.url))
@@ -48,15 +46,11 @@ const svg = `
   <text x="1111" y="570" fill="#0b4d87" font-family="sans-serif" font-size="22">01</text>
 </svg>`
 
-const [og, qr] = await Promise.all([
-  sharp(Buffer.from(svg)).png({ compressionLevel: 9, palette: true }).toFile(OG_OUTPUT),
-  sharp(QR_INPUT)
-    .resize(256, 256, { fit: 'inside', withoutEnlargement: true })
-    .png({ compressionLevel: 9, palette: true, quality: 100, colours: 256, dither: 0 })
-    .toFile(QR_OUTPUT),
-])
+const og = await sharp(Buffer.from(svg))
+  .png({ compressionLevel: 9, palette: true })
+  .toFile(OG_OUTPUT)
 
-if (og.width !== 1200 || og.height !== 630 || qr.width !== 256 || qr.height !== 256) {
+if (og.width !== 1200 || og.height !== 630) {
   throw new Error('Generated static image dimensions are invalid')
 }
 for (const [filename, size] of [
@@ -71,4 +65,4 @@ for (const [filename, size] of [
     .png({ compressionLevel: 9 })
     .toFile(fileURLToPath(new URL(`../public/brand/${filename}`, import.meta.url)))
 }
-console.log('Generated static Open Graph, Douyin, and home-screen icons')
+console.log('Generated static Open Graph and home-screen icons')

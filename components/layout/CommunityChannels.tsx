@@ -1,11 +1,12 @@
 import Image from 'next/image'
-import { Icon } from '@/components/ui/Icon'
 import { qqGroupContact } from '@/lib/qq-group'
 import { QqGroupJoin } from './QqGroupJoin'
 import styles from './CommunityChannels.module.css'
 
 const KOOK_WIDGET_URL = 'https://kookapp.cn/api/guilds/3715592670073195/widget.json'
 const KOOK_INVITE_URL = 'https://kook.vip/f5xEe8'
+const DOUYIN_URL =
+  'https://www.douyin.com/user/MS4wLjABAAAAK_oJdWYhYr1B4f2dL0iz62o_pUmLFmrgCU0TSn-eDnpVenZMzEOgoJxTZB0q69HY'
 
 async function getKookWidget() {
   try {
@@ -73,23 +74,16 @@ export async function CommunityChannels({
         {kook ? <small>{kook.onlineCount} 在线</small> : null}
       </a>
 
-      <details className={styles.douyin}>
-        <summary className={styles.chip} aria-label="展开抖音关注码">
-          <span className={styles.chipIcon} aria-hidden="true">
-            <Icon name="qr" size={20} />
-          </span>
-          <span>抖音</span>
-          <small>扫码</small>
-        </summary>
-        <Image
-          className={styles.qrImage}
-          src="/brand/douyin-qr-display.png"
-          alt="抖音账号关注码"
-          width={112}
-          height={112}
-          unoptimized
-        />
-      </details>
+      <a
+        className={styles.chip}
+        href={DOUYIN_URL}
+        target="_blank"
+        rel="noreferrer"
+        aria-label="打开电竞社抖音主页"
+      >
+        <span>抖音</span>
+        <small>主页</small>
+      </a>
     </div>
   )
 }
