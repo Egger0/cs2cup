@@ -235,7 +235,7 @@ export async function startSandTable(
       } else if (moved) orbit.overview()
       poke()
     },
-    route(points: [number, number][]) {
+    route(points: Parameters<typeof content.setRoute>[0]) {
       content.setRoute(points)
       poke()
     },

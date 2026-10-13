@@ -5,7 +5,9 @@ import { PageMasthead, SectionHead } from '@/components/domain/Sections'
 import { ButtonLink } from '@/components/ui'
 import { DELTA_MAPS, deltaMap } from '@/lib/delta-maps'
 import { PLANET_COLORS } from '@/lib/planets'
-import { getGame } from '@/lib/queries/public'
+import { getGame, safely } from '@/lib/queries/public'
+import { getCurrentUnifiedPlatformOwner } from '@/lib/auth'
+import { findSandPlan, listSandPlans } from '@/lib/sand-route-store'
 import theme from '@/app/site-theme.module.css'
 import styles from './maps.module.css'
 
@@ -34,11 +36,20 @@ export default async function MapsPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ map?: string }>
+  searchParams: Promise<{ map?: string; plan?: string }>
 }) {
-  const [{ slug }, { map }] = await Promise.all([params, searchParams])
+  const [{ slug }, { map, plan }] = await Promise.all([params, searchParams])
   const game = await getGame(slug)
   if (!game?.loadoutCodes) notFound()
+  const [approved, linked] = await Promise.all([
+    safely(() => listSandPlans('approved'), []),
+    safely(async () => (Number(plan) > 0 ? findSandPlan(Number(plan)) : null), null),
+  ])
+  const shared =
+    linked && (linked.approved || (await safely(getCurrentUnifiedPlatformOwner, null)))
+      ? linked
+      : null
+  const plans = shared && !shared.approved ? [shared, ...approved] : approved
   const loadouts = `/games/${game.slug}/loadouts`
 
   return (
@@ -48,7 +59,7 @@ export default async function MapsPage({
         tone={PLANET_COLORS.get(game.slug)}
         eyebrow={`${game.name} / 烽火地带`}
         title="战术沙盘"
-        lede="六张烽火地带地图摆上桌：楼层逐层拆开看，钥匙房、保险箱、撤离条件一搜就到，跑图路线量好距离直接甩进群里。"
+        lede="六张烽火地带地图摆上桌：楼层逐层拆开看，钥匙房、保险箱、撤离条件一搜就到，跑刀路线逐站写上思路，投稿给全社用。"
         density="compact"
       >
         <ButtonLink href="#sandtable" variant="primary">
@@ -58,7 +69,13 @@ export default async function MapsPage({
       </PageMasthead>
 
       <section className={`${theme.dark} ${styles.stage}`} id="sandtable">
-        <SandTable maps={DELTA_MAPS} initial={deltaMap(map).id} loadouts={loadouts} />
+        <SandTable
+          maps={DELTA_MAPS}
+          initial={deltaMap(shared?.mapId ?? map).id}
+          loadouts={loadouts}
+          plans={plans}
+          shared={shared}
+        />
       </section>
 
       <section className="section" id="extracts">

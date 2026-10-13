@@ -9,7 +9,8 @@ import {
 } from '@/lib/delta-sand'
 import type { SandRuntime } from './runtime'
 import { SandIcon } from './SandIcon'
-import type { Waypoint } from './SandTable'
+import { SandStops } from './SandStops'
+import type { Waypoint } from '@/lib/sand-routes'
 import styles from './SandTable.module.css'
 import hud from './SandHud.module.css'
 
@@ -31,11 +32,13 @@ export function SandStage({
   floor,
   routing,
   route,
+  stop,
   runtime,
   children,
   onPoint,
   onFloor,
   onGround,
+  onStop,
   onOverview,
 }: {
   host: RefObject<HTMLDivElement | null>
@@ -50,11 +53,13 @@ export function SandStage({
   floor: string | null
   routing: boolean
   route: Waypoint[]
+  stop: number | null
   runtime: RefObject<SandRuntime | null>
   children: ReactNode
   onPoint: (point: SandPoint) => void
   onFloor: (code: string) => void
   onGround: (x: number, y: number) => void
+  onStop: (index: number) => void
   onOverview: () => void
 }) {
   const flat = mode === 'flat'
@@ -136,6 +141,7 @@ export function SandStage({
                 {name}
               </button>
             ))}
+        {inside ? null : <SandStops route={route} stop={stop} onStop={onStop} />}
         {pinned ? (
           <div
             className={styles.pin}

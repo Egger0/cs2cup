@@ -5,6 +5,7 @@ import { buildFloorStack, type FloorStack } from './floors'
 import { buildMarkers, disposeTree, type Markers } from './markers'
 import { buildPlate, type Plate } from './plate'
 import { buildRoute } from './route'
+import type { Waypoint } from '@/lib/sand-routes'
 
 export function createContent(world: T.Group, invalidate: () => void) {
   let data: DeltaMapData | null = null
@@ -17,7 +18,7 @@ export function createContent(world: T.Group, invalidate: () => void) {
   let kinds: ReadonlySet<SandKind> = new Set()
   let building: number | null = null
   let floor: string | null = null
-  let waypoints: [number, number][] = []
+  let waypoints: Waypoint[] = []
   let dark = false
 
   const points = (): SandPoint[] => data?.levels[level]?.points ?? []
@@ -97,7 +98,7 @@ export function createContent(world: T.Group, invalidate: () => void) {
       if (changed) rebuildStack()
       else stack?.focus(code, kinds)
     },
-    setRoute(next: [number, number][]) {
+    setRoute(next: Waypoint[]) {
       waypoints = next
       rebuildRoute()
     },

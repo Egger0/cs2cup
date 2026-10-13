@@ -11,30 +11,27 @@ import {
   type SandKind,
   type SandPoint,
 } from '@/lib/delta-sand'
+import type { SandPlan } from '@/lib/sand-routes'
 import type { SandRuntime } from './runtime'
 import { SandDrawer, type SandTab } from './SandDrawer'
 import { SandLayers } from './SandLayers'
 import { SandRail } from './SandRail'
 import { SandStage, type SandMode } from './SandStage'
 import styles from './SandTable.module.css'
-
-export type Waypoint = [number, number]
-
-const parseRoute = (value: string | null): Waypoint[] =>
-  (value ?? '')
-    .split(';')
-    .map(pair => pair.split(',').map(Number) as Waypoint)
-    .filter(pair => pair.length === 2 && pair.every(n => Number.isFinite(n) && n >= 0 && n <= 1))
-    .slice(0, 40)
+import { useSandRoute } from './useSandRoute'
 
 export function SandTable({
   maps,
   initial,
   loadouts,
+  plans,
+  shared,
 }: {
   maps: DeltaMapSummary[]
   initial: string
   loadouts: string
+  plans: SandPlan[]
+  shared: SandPlan | null
 }) {
   const host = useRef<HTMLDivElement>(null)
   const overlay = useRef<HTMLDivElement>(null)
@@ -43,7 +40,7 @@ export function SandTable({
   const ground = useRef<(x: number, y: number) => void>(() => {})
   const pickRef = useRef<(point: SandPoint | null) => void>(() => {})
   const [mapId, setMapId] = useState(initial)
-  const [level, setLevel] = useState(0)
+  const [level, setLevel] = useState(shared?.level ?? 0)
   const [kinds, setKinds] = useState<ReadonlySet<SandKind>>(() => new Set(SAND_DEFAULT_KINDS))
   const [data, setData] = useState<DeltaMapData | null>(null)
   const [mode, setMode] = useState<SandMode>('loading')
@@ -52,8 +49,7 @@ export function SandTable({
   const [selected, setSelected] = useState<SandPoint | null>(null)
   const [building, setBuilding] = useState<number | null>(null)
   const [floor, setFloor] = useState<string | null>(null)
-  const [routing, setRouting] = useState(false)
-  const [route, setRoute] = useState<Waypoint[]>([])
+  const { route, routing, stop, plan, setRouting, setStop, edit, open } = useSandRoute(shared)
   const [tab, setTab] = useState<SandTab>('intel')
   const drawer = useRef<HTMLDivElement>(null)
   const map = maps.find(entry => entry.id === mapId) ?? maps[0]!
@@ -65,8 +61,7 @@ export function SandTable({
     const controller = new AbortController()
     queueMicrotask(() => {
       if (controller.signal.aborted) return
-      if (saved > 0) setLevel(saved)
-      setRoute(parseRoute(params.get('route')))
+      if (saved > 0 && !params.has('plan')) setLevel(saved)
     })
     const give = () => {
       runtime.current?.destroy()
@@ -137,14 +132,8 @@ export function SandTable({
     url.searchParams.set('map', map.id)
     if (level) url.searchParams.set('level', String(level))
     else url.searchParams.delete('level')
-    if (route.length)
-      url.searchParams.set(
-        'route',
-        route.map(([x, y]) => `${x.toFixed(4)},${y.toFixed(4)}`).join(';'),
-      )
-    else url.searchParams.delete('route')
     history.replaceState(history.state, '', url)
-  }, [map.id, level, route])
+  }, [map.id, level])
 
   const levelName = map.levels[level] ?? ''
   useEffect(() => {
@@ -188,14 +177,22 @@ export function SandTable({
   }
   useEffect(() => {
     ground.current = (x, y) => {
-      if (routing) setRoute(previous => [...previous, [x, y]])
+      if (routing) edit(previous => [...previous, [x, y]])
       else runtime.current?.focus(x, y)
     }
     pickRef.current = point => {
-      if (routing && point && !point[6]) setRoute(previous => [...previous, [point[1], point[2]]])
+      if (routing && point && !point[6]) edit(previous => [...previous, [point[1], point[2]]])
       else setSelected(point)
     }
-  }, [routing])
+  }, [routing, edit])
+  const visit = (index: number, path = route) => {
+    const point = path[index]
+    if (!point) return
+    setStop(index)
+    setBuilding(null)
+    setFloor(null)
+    runtime.current?.focus(point[0], point[1], 1.1)
+  }
   const reset = () => {
     setSelected(null)
     setHovered(null)
@@ -207,7 +204,7 @@ export function SandTable({
     if (id === map.id) return
     setMapId(id)
     setLevel(0)
-    setRoute([])
+    edit([])
     reset()
   }
   const points = current?.levels[level]?.points ?? []
@@ -227,10 +224,12 @@ export function SandTable({
         floor={floor}
         routing={routing}
         route={route}
+        stop={stop}
         runtime={runtime}
         onPoint={focusPoint}
         onFloor={setFloor}
         onGround={(x, y) => ground.current(x, y)}
+        onStop={visit}
         onOverview={() => {
           reset()
           runtime.current?.overview()
@@ -250,6 +249,9 @@ export function SandTable({
           floor={floor}
           routing={routing}
           route={route}
+          stop={stop}
+          plans={plans.filter(entry => entry.mapId === map.id)}
+          plan={plan}
           loadouts={loadouts}
           onTab={setTab}
           onLevel={value => {
@@ -267,7 +269,14 @@ export function SandTable({
             setFloor(code)
           }}
           onRouting={setRouting}
-          onRoute={setRoute}
+          onRoute={edit}
+          onStop={visit}
+          onPlan={entry => {
+            setLevel(entry.level)
+            setSelected(null)
+            open(entry)
+            visit(0, entry.waypoints)
+          }}
           onClear={() => setSelected(null)}
         />
       </div>
