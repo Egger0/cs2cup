@@ -7,6 +7,7 @@ import { PageMasthead, SectionHead } from '@/components/domain/Sections'
 import { TournamentList } from '@/components/domain/TournamentList'
 import { Honours } from '@/components/domain/Honours'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
+import { countGraphicsPresets } from '@/lib/graphics-presets'
 import { queryLoadoutCodes } from '@/lib/loadout-queries'
 import { getGame, listHonours, listPosts, listTournaments, safely } from '@/lib/queries/public'
 import styles from './game.module.css'
@@ -26,10 +27,11 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
   const game = await getGame(slug)
   if (!game) notFound()
 
-  const [tournaments, posts, honours, loadouts] = await Promise.all([
+  const [tournaments, posts, honours, presets, loadouts] = await Promise.all([
     safely(listTournaments, []),
     safely(() => listPosts(), []),
     safely(listHonours, []),
+    safely(() => countGraphicsPresets(game.id), 0),
     game.loadoutCodes
       ? safely(async () => {
           const { codes } = await queryLoadoutCodes(
@@ -75,10 +77,12 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
         {game.loadoutCodes ? (
           <ButtonLink href={`/games/${game.slug}/maps`}>战术沙盘</ButtonLink>
         ) : null}
+        {presets ? <ButtonLink href={`/games/${game.slug}/graphics`}>画质方案</ButtonLink> : null}
         <HeroStats
           items={(
             [
               ['届赛事', mine.length],
+              ['套画质方案', presets],
               ['条动态', news.length],
             ] as const
           ).filter(([, value]) => value !== 0)}
