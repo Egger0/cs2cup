@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Icon } from '@/components/ui/Icon'
+import { fixturesEntry } from '@/lib/tournament-format'
 import type { Post, Tournament } from '@/lib/types'
 import styles from './HomeHub.module.css'
 import motionStyles from './HomeMotion.module.css'
@@ -17,7 +18,9 @@ export function HomeHub({ tournament, posts }: { tournament: Tournament | null; 
       title: '来看比赛',
       label: '跟进赛程',
       detail: '找到支持的战队，把比赛时间加入你的日历。',
-      href: tournament ? `/tournaments/${tournament.slug}/schedule` : '/tournaments',
+      href: tournament
+        ? `/tournaments/${tournament.slug}${fixturesEntry(tournament).path}`
+        : '/tournaments',
       number: '02',
     },
     {

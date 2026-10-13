@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { MapStats } from '@/components/domain/MapStats'
 import { ResultsTable } from '@/components/domain/ResultsTable'
 import { SectionHead } from '@/components/domain/Sections'
 import { isCompletedMatch } from '@/lib/bracket'
 import { mapStats } from '@/lib/mapstats'
+import { playsHeadToHead } from '@/lib/tournament-format'
 import {
   getMatchMaps,
   getMatches,
@@ -20,6 +21,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ slug: 
   const { slug } = await params
   const tournament = await getTournament(slug)
   if (!tournament) notFound()
+  if (!playsHeadToHead(tournament)) redirect(`/tournaments/${slug}/bracket`)
 
   const [teams, matches] = await Promise.all([
     getPublicTeams(tournament.id),

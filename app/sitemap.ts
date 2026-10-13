@@ -3,6 +3,7 @@ import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { listLoadoutSitemap } from '@/lib/loadout-reach'
 import { listGames, listPosts, listTournaments, safely } from '@/lib/queries/public'
 import { resolveSiteOrigin } from '@/lib/site-config'
+import { playsHeadToHead } from '@/lib/tournament-format'
 
 const BASE = resolveSiteOrigin()
 
@@ -38,7 +39,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
     ...tournaments.flatMap(tournament => {
       const base = `${BASE}/tournaments/${tournament.slug}`
-      return ['', '/schedule', '/teams', '/bracket', '/results', '/rules'].map(suffix => ({
+      const matches = playsHeadToHead(tournament) ? ['/schedule', '/results'] : []
+      const media = tournament.status === 'finished' ? ['/media'] : []
+      return ['', '/teams', '/bracket', '/rules', ...matches, ...media].map(suffix => ({
         url: `${base}${suffix}`,
         priority: suffix === '' ? 0.9 : 0.5,
       }))

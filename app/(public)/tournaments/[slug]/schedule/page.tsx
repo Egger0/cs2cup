@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { SectionHead } from '@/components/domain/Sections'
 import { SITE_TIME_ZONE } from '@/lib/datetime'
+import { playsHeadToHead } from '@/lib/tournament-format'
 import { getMatches, getPublicTeams, getTournament } from '@/lib/queries/public'
 import { buildScheduleEntries, groupScheduleEntries, selectNextScheduleEntry } from '@/lib/schedule'
 import { ScheduleFilters } from './ScheduleFilters'
@@ -24,6 +25,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
   const [{ slug }, query] = await Promise.all([params, searchParams])
   const tournament = await getTournament(slug)
   if (!tournament) notFound()
+  if (!playsHeadToHead(tournament)) redirect(`/tournaments/${slug}/bracket`)
 
   const [teams, matches] = await Promise.all([
     getPublicTeams(tournament.id),
