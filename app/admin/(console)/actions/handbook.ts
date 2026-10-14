@@ -1,6 +1,7 @@
 'use server'
 
-import { requireAdmin } from '@/lib/auth'
+import { requirePlatformConsole } from '@/lib/auth'
+import { requireProjectContentAccess } from '@/lib/project-content-access'
 import {
   HANDBOOK_KINDS,
   deleteHandbookDocument,
@@ -21,7 +22,14 @@ function externalUrl(value: string) {
 }
 
 export async function createHandbookDocument(form: FormData) {
-  await requireAdmin()
+  await requirePlatformConsole()
+
+  const selectedGame = String(form.get('gameId') ?? '')
+  const gameId = selectedGame === '' ? null : Number(selectedGame)
+  if (gameId !== null && (!Number.isSafeInteger(gameId) || gameId <= 0)) {
+    return { ok: false as const, error: '请选择归属项目' }
+  }
+  await requireProjectContentAccess(gameId)
 
   const kind = String(form.get('kind') ?? '')
   const title = String(form.get('title') ?? '').trim()
@@ -37,7 +45,7 @@ export async function createHandbookDocument(form: FormData) {
     return { ok: false as const, error: '上传文件和外部链接二选一' }
   }
 
-  const base = { kind: kind as HandbookKind, title, summary }
+  const base = { gameId, kind: kind as HandbookKind, title, summary }
   if (!hasFile) {
     const url = externalUrl(link)
     if (!url) return { ok: false as const, error: '外部链接需要以 https:// 开头' }
@@ -75,9 +83,10 @@ export async function createHandbookDocument(form: FormData) {
 }
 
 export async function removeHandbookDocument(id: number) {
-  await requireAdmin()
+  await requirePlatformConsole()
   const document = Number.isSafeInteger(id) && id > 0 ? await findHandbookDocument(id) : null
   if (!document) return { ok: false as const, error: '文档不存在或已被删除' }
+  await requireProjectContentAccess(document.gameId)
 
   await deleteHandbookDocument(id)
   if (document.storageKey) {

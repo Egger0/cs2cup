@@ -46,12 +46,14 @@ export function AdminNav({
   hasProjectWork,
   hasTournamentWork,
   holdsReviewRole,
+  canManageRoutes,
   trailing,
 }: {
   capabilities: readonly PlatformConsoleCapability[]
   hasProjectWork: boolean
   hasTournamentWork: boolean
   holdsReviewRole: boolean
+  canManageRoutes: boolean
   trailing?: ReactNode
 }) {
   const configures = capabilities.includes('platform.configure')
@@ -61,6 +63,8 @@ export function AdminNav({
       (link.href === '/admin' && hasTournamentWork) ||
       (link.href === '/admin/tournaments' && hasProjectWork) ||
       (link.href === '/admin/photos' && hasProjectWork) ||
+      ((link.href === '/admin/handbook' || link.href === '/admin/graphics') && hasProjectWork) ||
+      (link.href === '/admin/routes' && canManageRoutes) ||
       (link.capability === 'platform.identity.review' && holdsReviewRole),
   ).map(link => ({
     ...link,

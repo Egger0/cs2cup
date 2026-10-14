@@ -6,7 +6,7 @@ import { ButtonLink } from '@/components/ui'
 import { DELTA_MAPS, deltaMap } from '@/lib/delta-maps'
 import { PLANET_COLORS } from '@/lib/planets'
 import { getGame, safely } from '@/lib/queries/public'
-import { getCurrentUnifiedPlatformOwner } from '@/lib/auth'
+import { canManageSandRoutes } from '@/lib/project-content-access'
 import { findSandPlan, listSandPlans } from '@/lib/sand-route-store'
 import theme from '@/app/site-theme.module.css'
 import styles from './maps.module.css'
@@ -46,9 +46,7 @@ export default async function MapsPage({
     safely(async () => (Number(plan) > 0 ? findSandPlan(Number(plan)) : null), null),
   ])
   const shared =
-    linked && (linked.approved || (await safely(getCurrentUnifiedPlatformOwner, null)))
-      ? linked
-      : null
+    linked && (linked.approved || (await safely(canManageSandRoutes, false))) ? linked : null
   const plans = shared && !shared.approved ? [shared, ...approved] : approved
   const loadouts = `/games/${game.slug}/loadouts`
 

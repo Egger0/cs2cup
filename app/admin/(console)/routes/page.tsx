@@ -1,6 +1,6 @@
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { Empty } from '@/components/ui'
-import { requireAdmin } from '@/lib/auth'
+import { requireSandRouteManagement } from '@/lib/project-content-access'
 import { DELTA_MAPS } from '@/lib/delta-maps'
 import { listSandPlans } from '@/lib/sand-route-store'
 import { SandRouteRow } from './SandRouteRow'
@@ -9,7 +9,7 @@ import styles from '../admin.module.css'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminRoutesPage() {
-  await requireAdmin()
+  await requireSandRouteManagement()
   const plans = await listSandPlans('all')
   const groups = [
     ['待审核', plans.filter(plan => !plan.approved), '没有待审核的路线'],

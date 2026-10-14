@@ -1,6 +1,6 @@
 import { Empty } from '@/components/ui'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
-import { requireAdmin } from '@/lib/auth'
+import { projectContentWorkspace } from '@/lib/project-content-access'
 import { listHandbookDocuments } from '@/lib/handbook'
 import { HandbookForm } from './HandbookForm'
 import { HandbookRow } from './HandbookRow'
@@ -9,8 +9,11 @@ import styles from '../admin.module.css'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminHandbookPage() {
-  await requireAdmin()
-  const documents = await listHandbookDocuments()
+  const { games, platformOwner } = await projectContentWorkspace()
+  const gameIds = new Set(games.map(game => game.id))
+  const documents = (await listHandbookDocuments()).filter(
+    document => platformOwner || (document.gameId !== null && gameIds.has(document.gameId)),
+  )
 
   return (
     <>
@@ -21,7 +24,7 @@ export default async function AdminHandbookPage() {
       />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>添加文档</h2>
-        <HandbookForm />
+        <HandbookForm games={games} platformOwner={platformOwner} />
       </section>
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>已公开 · {documents.length} 份</h2>
@@ -30,7 +33,15 @@ export default async function AdminHandbookPage() {
         ) : (
           <div className={styles.list}>
             {documents.map(document => (
-              <HandbookRow key={document.id} document={document} />
+              <HandbookRow
+                key={document.id}
+                document={document}
+                projectName={
+                  document.gameId === null
+                    ? '社团通用'
+                    : (games.find(game => game.id === document.gameId)?.name ?? '项目已删除')
+                }
+              />
             ))}
           </div>
         )}

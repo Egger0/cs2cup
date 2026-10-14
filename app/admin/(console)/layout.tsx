@@ -3,6 +3,7 @@ import { SiteHeaderEntry } from '@/components/layout/SiteHeaderEntry'
 import { SiteIdentity } from '@/components/layout/SiteIdentity'
 import { AccountSignOut } from '@/components/account/AccountSignOut'
 import { requirePlatformConsole } from '@/lib/auth'
+import { canManageSandRoutes } from '@/lib/project-content-access'
 import { currentAccountAccess } from '@/lib/identity/account-access'
 import { accountHeaderLinks } from '@/lib/account-navigation'
 import { PUBLIC_LINKS } from '@/lib/site-navigation'
@@ -21,6 +22,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     safely(getSiteSetting, FALLBACK_SITE_SETTING),
   ])
   const site = setting ?? FALLBACK_SITE_SETTING
+  const canManageRoutes =
+    admin.capabilities.includes('platform.configure') ||
+    (admin.hasProjectWork && (await canManageSandRoutes()))
 
   return (
     <div className={`${theme.dark} ${styles.shell}`}>
@@ -36,6 +40,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           hasProjectWork={admin.hasProjectWork}
           hasTournamentWork={admin.hasTournamentWork}
           holdsReviewRole={admin.holdsReviewRole}
+          canManageRoutes={canManageRoutes}
           trailing={
             <>
               <span className={styles.uid}>SESSION / {admin.uid}</span>

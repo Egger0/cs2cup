@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process'
 
 const tests = [
+  'project-content-access-test.mjs',
   'identity-account-security-test.mjs',
   'identity-assisted-recovery-test.mjs',
   'identity-account-registration-test.mjs',

@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { cloudflareBindings } from './cloudflare-bindings'
+import { requireProjectContentAccess } from './project-content-access'
 
 export const HANDBOOK_KINDS = {
   handbook: { label: '赛事手册', lede: '从立项到颁奖，一场比赛怎么办下来。' },
@@ -11,6 +12,7 @@ export type HandbookKind = keyof typeof HANDBOOK_KINDS
 
 export interface HandbookDocument {
   id: number
+  gameId: number | null
   kind: HandbookKind
   title: string
   summary: string
@@ -20,7 +22,7 @@ export interface HandbookDocument {
   url: string | null
 }
 
-const COLUMNS = `id, kind, title, summary, storage_key AS storageKey, file_name AS fileName,
+const COLUMNS = `id, game_id AS gameId, kind, title, summary, storage_key AS storageKey, file_name AS fileName,
   byte_size AS byteSize, url`
 
 export async function listHandbookDocuments() {
@@ -38,13 +40,15 @@ export function findHandbookDocument(id: number) {
     .first<HandbookDocument>()
 }
 
-export function insertHandbookDocument(document: Omit<HandbookDocument, 'id'>) {
+export async function insertHandbookDocument(document: Omit<HandbookDocument, 'id'>) {
+  await requireProjectContentAccess(document.gameId)
   return cloudflareBindings()
     .db.prepare(
-      `INSERT INTO handbook_document (kind, title, summary, storage_key, file_name, byte_size, url)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO handbook_document (game_id, kind, title, summary, storage_key, file_name, byte_size, url)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
+      document.gameId,
       document.kind,
       document.title,
       document.summary,
@@ -56,9 +60,12 @@ export function insertHandbookDocument(document: Omit<HandbookDocument, 'id'>) {
     .run()
 }
 
-export function deleteHandbookDocument(id: number) {
+export async function deleteHandbookDocument(id: number) {
+  const document = await findHandbookDocument(id)
+  if (!document) throw new Error('文档不存在或已被删除')
+  await requireProjectContentAccess(document.gameId)
   return cloudflareBindings()
-    .db.prepare('DELETE FROM handbook_document WHERE id = ?')
-    .bind(id)
+    .db.prepare('DELETE FROM handbook_document WHERE id = ? AND game_id IS ?')
+    .bind(id, document.gameId)
     .run()
 }

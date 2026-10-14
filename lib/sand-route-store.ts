@@ -2,6 +2,7 @@ import 'server-only'
 
 import { cloudflareBindings } from './cloudflare-bindings'
 import { parseWaypoints, type SandPlan, type Waypoint } from './sand-routes'
+import { requireSandRouteManagement } from './project-content-access'
 
 interface SandRouteRow {
   id: number
@@ -39,6 +40,7 @@ function toPlan(row: SandRouteRow): SandPlan[] {
 }
 
 export async function listSandPlans(scope: 'approved' | 'all') {
+  if (scope === 'all') await requireSandRouteManagement()
   const { results } = await cloudflareBindings()
     .db.prepare(
       `${SELECT} WHERE ?1 = 'all' OR route.status = 'approved'
@@ -71,13 +73,15 @@ export function insertSandRoute(
     .run()
 }
 
-export function approveSandRoute(id: number) {
+export async function approveSandRoute(id: number) {
+  await requireSandRouteManagement()
   return cloudflareBindings()
     .db.prepare("UPDATE sand_route SET status = 'approved' WHERE id = ?")
     .bind(id)
     .run()
 }
 
-export function deleteSandRoute(id: number) {
+export async function deleteSandRoute(id: number) {
+  await requireSandRouteManagement()
   return cloudflareBindings().db.prepare('DELETE FROM sand_route WHERE id = ?').bind(id).run()
 }

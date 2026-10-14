@@ -4,12 +4,13 @@ import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, Field, TextField } from '@/components/ui'
 import { HANDBOOK_ACCEPT, HANDBOOK_MAX_BYTES } from '@/lib/handbook-file'
+import type { Game } from '@/lib/types'
 import { createHandbookDocument } from '../actions/handbook'
 import styles from '../admin.module.css'
 
 const EMPTY_FILE = '尚未选择文件'
 
-export function HandbookForm() {
+export function HandbookForm({ games, platformOwner }: { games: Game[]; platformOwner: boolean }) {
   const router = useRouter()
   const formRef = useRef<HTMLFormElement>(null)
   const [pending, startTransition] = useTransition()
@@ -43,6 +44,22 @@ export function HandbookForm() {
         })
       }}
     >
+      <label className={styles.controlLabel}>
+        归属项目
+        <select
+          name="gameId"
+          className={styles.select}
+          disabled={pending}
+          required={!platformOwner}
+        >
+          {platformOwner ? <option value="">社团通用</option> : null}
+          {games.map(game => (
+            <option key={game.id} value={game.id}>
+              {game.name}
+            </option>
+          ))}
+        </select>
+      </label>
       <div className={styles.pair}>
         <label className={styles.controlLabel}>
           类别

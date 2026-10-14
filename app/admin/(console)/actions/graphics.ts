@@ -1,6 +1,6 @@
 'use server'
 
-import { requireAdmin } from '@/lib/auth'
+import { requirePlatformConsole } from '@/lib/auth'
 import {
   deleteGraphicsPreset,
   insertGraphicsPreset,
@@ -11,7 +11,7 @@ import { GRAPHICS_SETTINGS_LIMIT, parseGraphicsSettings } from '@/lib/graphics-s
 const validId = (id: number) => Number.isSafeInteger(id) && id > 0
 
 export async function saveGraphicsPreset(id: number | null, form: FormData) {
-  await requireAdmin()
+  await requirePlatformConsole()
 
   const text = (name: string) => String(form.get(name) ?? '').trim()
   const preset = {
@@ -58,7 +58,7 @@ export async function saveGraphicsPreset(id: number | null, form: FormData) {
 }
 
 export async function removeGraphicsPreset(id: number) {
-  await requireAdmin()
+  await requirePlatformConsole()
   if (!validId(id)) return { ok: false as const, error: '方案编号无效' }
   await deleteGraphicsPreset(id)
   return { ok: true as const }

@@ -1,8 +1,7 @@
 import { Empty } from '@/components/ui'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
-import { requireAdmin } from '@/lib/auth'
+import { projectContentWorkspace } from '@/lib/project-content-access'
 import { listGraphicsPresets } from '@/lib/graphics-presets'
-import { adminListGames } from '@/lib/queries/content'
 import { GraphicsPresetForm } from './GraphicsPresetForm'
 import { GraphicsPresetRow } from './GraphicsPresetRow'
 import styles from '../admin.module.css'
@@ -10,8 +9,9 @@ import styles from '../admin.module.css'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminGraphicsPage() {
-  await requireAdmin()
-  const [games, presets] = await Promise.all([adminListGames(), listGraphicsPresets()])
+  const { games } = await projectContentWorkspace()
+  const gameIds = new Set(games.map(game => game.id))
+  const presets = (await listGraphicsPresets()).filter(preset => gameIds.has(preset.gameId))
 
   return (
     <>

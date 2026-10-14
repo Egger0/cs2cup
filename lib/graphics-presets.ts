@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { cloudflareBindings } from './cloudflare-bindings'
+import { requireProjectContentAccess } from './project-content-access'
 
 export interface GraphicsPreset {
   id: number
@@ -46,7 +47,8 @@ export async function countGraphicsPresets(gameId: number) {
   return row?.total ?? 0
 }
 
-export function insertGraphicsPreset(preset: GraphicsPresetInput) {
+export async function insertGraphicsPreset(preset: GraphicsPresetInput) {
+  await requireProjectContentAccess(preset.gameId)
   return cloudflareBindings()
     .db.prepare(
       `INSERT INTO graphics_preset (game_id, title, hardware, target, author, note, settings)
@@ -56,17 +58,34 @@ export function insertGraphicsPreset(preset: GraphicsPresetInput) {
     .run()
 }
 
-export function updateGraphicsPreset(id: number, preset: GraphicsPresetInput) {
+export function findGraphicsPreset(id: number) {
+  return cloudflareBindings()
+    .db.prepare(`SELECT ${COLUMNS} FROM graphics_preset WHERE id = ?`)
+    .bind(id)
+    .first<GraphicsPreset>()
+}
+
+export async function updateGraphicsPreset(id: number, preset: GraphicsPresetInput) {
+  const current = await findGraphicsPreset(id)
+  if (!current) throw new Error('方案不存在或已被删除')
+  await requireProjectContentAccess(current.gameId)
+  await requireProjectContentAccess(preset.gameId)
   return cloudflareBindings()
     .db.prepare(
       `UPDATE graphics_preset
        SET game_id = ?, title = ?, hardware = ?, target = ?, author = ?, note = ?, settings = ?
-       WHERE id = ?`,
+       WHERE id = ? AND game_id = ?`,
     )
-    .bind(...values(preset), id)
+    .bind(...values(preset), id, current.gameId)
     .run()
 }
 
-export function deleteGraphicsPreset(id: number) {
-  return cloudflareBindings().db.prepare('DELETE FROM graphics_preset WHERE id = ?').bind(id).run()
+export async function deleteGraphicsPreset(id: number) {
+  const current = await findGraphicsPreset(id)
+  if (!current) throw new Error('方案不存在或已被删除')
+  await requireProjectContentAccess(current.gameId)
+  return cloudflareBindings()
+    .db.prepare('DELETE FROM graphics_preset WHERE id = ? AND game_id = ?')
+    .bind(id, current.gameId)
+    .run()
 }
