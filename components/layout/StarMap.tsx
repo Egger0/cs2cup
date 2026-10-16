@@ -53,7 +53,7 @@ export function StarMap({
       inert={!open}
       style={{ '--origin': origin } as CSSProperties}
     >
-      <div className={styles.inner}>
+      <div className={styles.scroll}>
         <nav ref={ref} className={styles.index} aria-label="全部页面">
           <div className={styles.meta}>
             <span>STAR MAP / {String(links.length).padStart(2, '0')}</span>
@@ -98,14 +98,14 @@ export function StarMap({
             <span>ESC 关闭</span>
           </div>
         </nav>
-        <StarOrbit
-          links={links}
-          codes={links.map(link => ENGLISH[link.href] ?? '')}
-          lit={hot ?? active}
-          active={active}
-          open={open}
-        />
       </div>
+      <StarOrbit
+        links={links}
+        codes={links.map(link => ENGLISH[link.href] ?? '')}
+        lit={hot ?? active}
+        active={active}
+        open={open}
+      />
     </div>
   )
 }
