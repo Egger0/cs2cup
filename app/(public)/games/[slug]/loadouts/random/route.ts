@@ -2,6 +2,7 @@ import { LOADOUT_MODES, PRICE_TIERS, type LoadoutMode, type PriceTier } from '@/
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { randomLoadoutId, type LoadoutSource } from '@/lib/loadout-queries'
 import { getAuthContext } from '@/lib/identity/kernel'
+import { currentUserIsMember } from '@/lib/identity/member-access'
 import { getGame } from '@/lib/queries/public'
 
 export const dynamic = 'force-dynamic'
@@ -17,6 +18,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
   const redirect = (location: string) =>
     new Response(null, { status: 307, headers: { Location: location } })
   if (!game?.loadoutCodes) return redirect('/games')
+  if (!(await currentUserIsMember().catch(() => false))) return redirect('/account')
   const search = new URL(request.url).searchParams
   const price = pick(search.get('price'), Object.keys(PRICE_TIERS) as PriceTier[])
   const weapon = search.get('weapon')?.slice(0, 30) || null

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { PageMasthead, SectionHead } from '@/components/domain/Sections'
 import { ButtonLink, Empty } from '@/components/ui'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
@@ -12,6 +12,7 @@ import {
   type PriceTier,
 } from '@/lib/delta-loadouts'
 import { getAuthContext } from '@/lib/identity/kernel'
+import { isApprovedMember } from '@/lib/identity/member-access'
 import { loadoutFacets } from '@/lib/loadout-facets'
 import { listViewerLoadoutMarks } from '@/lib/loadout-community'
 import {
@@ -87,6 +88,12 @@ export default async function LoadoutsPage({
     context.kind === 'authenticated' && !context.session.recoveryRestricted
       ? context.account.id
       : null
+
+  const restricted = Object.keys(search).some(
+    key => key !== 'mode' && key !== 'paste' && search[key as keyof Search],
+  )
+  const member = accountId ? await isApprovedMember(accountId) : false
+  if (restricted && !member) redirect(`/games/${game.slug}/loadouts`)
 
   const mode = pick(search.mode, Object.keys(LOADOUT_MODES) as LoadoutMode[]) ?? 'operations'
   const source = pick(search.source, ['member', 'official'] as LoadoutSource[])
@@ -206,6 +213,12 @@ export default async function LoadoutsPage({
               <LoadoutCards codes={featured.codes} marks={marks} anchored={false} />
             </div>
           ) : null}
+          {member ? null : (
+            <p className={styles.gate}>
+              完整筛选、翻页和随机抽取仅对社员开放，<Link href="/account">登录并申请入社</Link>
+              后即可使用。
+            </p>
+          )}
           <LoadoutFilters
             slug={game.slug}
             state={state}
