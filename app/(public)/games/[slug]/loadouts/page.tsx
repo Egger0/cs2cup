@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { PageMasthead, SectionHead } from '@/components/domain/Sections'
 import { ButtonLink, Empty } from '@/components/ui'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
@@ -12,6 +12,7 @@ import {
   type PriceTier,
 } from '@/lib/delta-loadouts'
 import { getAuthContext } from '@/lib/identity/kernel'
+import { isApprovedMember } from '@/lib/identity/member-access'
 import { loadoutFacets } from '@/lib/loadout-facets'
 import { listViewerLoadoutMarks } from '@/lib/loadout-community'
 import {
@@ -23,6 +24,7 @@ import {
 import { photoUrl } from '@/lib/media'
 import { PLANET_COLORS } from '@/lib/planets'
 import { getGame } from '@/lib/queries/public'
+import { sharedCache } from '@/lib/shared-cache'
 import { LoadoutCards } from './LoadoutCards'
 import { LoadoutFilters, LoadoutPager, type BrowseState } from './LoadoutFilters'
 import { LoadoutLookup } from './LoadoutLookup'
@@ -33,6 +35,7 @@ import styles from './loadouts.module.css'
 export const dynamic = 'force-dynamic'
 
 const PAGE_SIZE = 24
+const SHARED_SECONDS = 300
 
 type Search = Partial<
   Record<
@@ -86,9 +89,19 @@ export default async function LoadoutsPage({
       ? context.account.id
       : null
 
+  const restricted = Object.keys(search).some(
+    key => key !== 'mode' && key !== 'paste' && search[key as keyof Search],
+  )
+  const member = accountId ? await isApprovedMember(accountId) : false
+  if (restricted && !member) redirect(`/games/${game.slug}/loadouts`)
+
   const mode = pick(search.mode, Object.keys(LOADOUT_MODES) as LoadoutMode[]) ?? 'operations'
   const source = pick(search.source, ['member', 'official'] as LoadoutSource[])
-  const facets = await loadoutFacets(db, game.id, { mode, source })
+  const facets = await sharedCache(
+    `loadout-facets:${game.id}:${mode}:${source}`,
+    SHARED_SECONDS,
+    () => loadoutFacets(db, game.id, { mode, source }),
+  )
   const category = pick(search.class, WEAPON_CATEGORIES)
   const weapon = facets.weapons.some(entry => entry.name === search.weapon) ? search.weapon! : null
   const price =
@@ -119,17 +132,35 @@ export default async function LoadoutsPage({
     tag: state.tag,
     savedBy: state.saved ? accountId : null,
   }
+  const browse = {
+    sort: state.sort,
+    limit: PAGE_SIZE,
+    offset: (state.page - 1) * PAGE_SIZE,
+  }
   const [{ codes, total }, expired, own, marks, heroes, featured] = await Promise.all([
-    queryLoadoutCodes(db, game.id, filter, {
-      sort: state.sort,
-      limit: PAGE_SIZE,
-      offset: (state.page - 1) * PAGE_SIZE,
-    }),
-    queryLoadoutCodes(db, game.id, { mode, source, status: 'expired' }, { sort: 'new', limit: 12 }),
+    state.saved
+      ? queryLoadoutCodes(db, game.id, filter, browse)
+      : sharedCache(
+          `loadout-list:${game.id}:${JSON.stringify([filter, browse])}`,
+          SHARED_SECONDS,
+          () => queryLoadoutCodes(db, game.id, filter, browse),
+        ),
+    sharedCache(`loadout-expired:${game.id}:${mode}:${source}`, SHARED_SECONDS, () =>
+      queryLoadoutCodes(
+        db,
+        game.id,
+        { mode, source, status: 'expired' },
+        { sort: 'new', limit: 12 },
+      ),
+    ),
     accountId ? listOwnLoadoutCodes(db, accountId, game.id) : Promise.resolve([]),
     accountId ? listViewerLoadoutMarks(db, accountId) : Promise.resolve(null),
-    queryLoadoutCodes(db, game.id, {}, { sort: 'hot', limit: 12 }),
-    queryLoadoutCodes(db, game.id, { featured: true }, { sort: 'featured', limit: 3 }),
+    sharedCache(`loadout-heroes:${game.id}`, SHARED_SECONDS, () =>
+      queryLoadoutCodes(db, game.id, {}, { sort: 'hot', limit: 12 }),
+    ),
+    sharedCache(`loadout-featured:${game.id}`, SHARED_SECONDS, () =>
+      queryLoadoutCodes(db, game.id, { featured: true }, { sort: 'featured', limit: 3 }),
+    ),
   ])
   const hero = [...featured.codes, ...heroes.codes].find(code => code.shotKey || code.renderUrl)
   const count = (from: LoadoutSource) =>
@@ -182,6 +213,12 @@ export default async function LoadoutsPage({
               <LoadoutCards codes={featured.codes} marks={marks} anchored={false} />
             </div>
           ) : null}
+          {member ? null : (
+            <p className={styles.gate}>
+              完整筛选、翻页和随机抽取仅对社员开放，<Link href="/account">登录并申请入社</Link>
+              后即可使用。
+            </p>
+          )}
           <LoadoutFilters
             slug={game.slug}
             state={state}

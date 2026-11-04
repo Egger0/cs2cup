@@ -299,3 +299,9 @@
   border-style: solid;
   border-color: var(--ink);
 }
+
+.gate {
+  margin: 0 0 1rem;
+  color: var(--muted, inherit);
+  font-size: 0.9rem;
+}

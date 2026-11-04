@@ -15,6 +15,16 @@ interface WorkerEnvironment {
   QQ_BOT_APP_ID?: string
   QQ_BOT_APP_SECRET?: string
   QQ_BOT_ALLOWED_GROUP_OPEN_ID?: string
+  CRAWL_LIMIT?: { limit(options: { key: string }): Promise<{ success: boolean }> }
+}
+
+const THROTTLED_PATH = /^\/(?:games\/[^/]+\/loadouts|sitemap\.xml|feed\.xml)(?:\/|$)/
+
+async function throttled(request: Request, environment: WorkerEnvironment) {
+  if (!environment.CRAWL_LIMIT || request.method !== 'GET') return false
+  if (!THROTTLED_PATH.test(new URL(request.url).pathname)) return false
+  const key = request.headers.get('cf-connecting-ip') ?? 'unknown'
+  return !(await environment.CRAWL_LIMIT.limit({ key })).success
 }
 
 function botConfig(environment: WorkerEnvironment): QqBotApiConfig | null {
@@ -26,11 +36,13 @@ function botConfig(environment: WorkerEnvironment): QqBotApiConfig | null {
 const LOADOUT_SYNC_CRON = '30 19 * * *'
 
 const worker = {
-  fetch(request: Request, environment: WorkerEnvironment, context: WorkerExecutionContext) {
-    return (
-      httpsRedirect(request, environment.NEXT_PUBLIC_SITE_URL) ??
-      nextWorker.fetch(request, environment, context)
-    )
+  async fetch(request: Request, environment: WorkerEnvironment, context: WorkerExecutionContext) {
+    const redirect = httpsRedirect(request, environment.NEXT_PUBLIC_SITE_URL)
+    if (redirect) return redirect
+    if (await throttled(request, environment)) {
+      return new Response('too many requests', { status: 429, headers: { 'Retry-After': '60' } })
+    }
+    return nextWorker.fetch(request, environment, context)
   },
 
   async scheduled(
