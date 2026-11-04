@@ -23,6 +23,7 @@ import {
 import { photoUrl } from '@/lib/media'
 import { PLANET_COLORS } from '@/lib/planets'
 import { getGame } from '@/lib/queries/public'
+import { sharedCache } from '@/lib/shared-cache'
 import { LoadoutCards } from './LoadoutCards'
 import { LoadoutFilters, LoadoutPager, type BrowseState } from './LoadoutFilters'
 import { LoadoutLookup } from './LoadoutLookup'
@@ -33,6 +34,7 @@ import styles from './loadouts.module.css'
 export const dynamic = 'force-dynamic'
 
 const PAGE_SIZE = 24
+const SHARED_SECONDS = 300
 
 type Search = Partial<
   Record<
@@ -88,7 +90,11 @@ export default async function LoadoutsPage({
 
   const mode = pick(search.mode, Object.keys(LOADOUT_MODES) as LoadoutMode[]) ?? 'operations'
   const source = pick(search.source, ['member', 'official'] as LoadoutSource[])
-  const facets = await loadoutFacets(db, game.id, { mode, source })
+  const facets = await sharedCache(
+    `loadout-facets:${game.id}:${mode}:${source}`,
+    SHARED_SECONDS,
+    () => loadoutFacets(db, game.id, { mode, source }),
+  )
   const category = pick(search.class, WEAPON_CATEGORIES)
   const weapon = facets.weapons.some(entry => entry.name === search.weapon) ? search.weapon! : null
   const price =
@@ -119,17 +125,35 @@ export default async function LoadoutsPage({
     tag: state.tag,
     savedBy: state.saved ? accountId : null,
   }
+  const browse = {
+    sort: state.sort,
+    limit: PAGE_SIZE,
+    offset: (state.page - 1) * PAGE_SIZE,
+  }
   const [{ codes, total }, expired, own, marks, heroes, featured] = await Promise.all([
-    queryLoadoutCodes(db, game.id, filter, {
-      sort: state.sort,
-      limit: PAGE_SIZE,
-      offset: (state.page - 1) * PAGE_SIZE,
-    }),
-    queryLoadoutCodes(db, game.id, { mode, source, status: 'expired' }, { sort: 'new', limit: 12 }),
+    state.saved
+      ? queryLoadoutCodes(db, game.id, filter, browse)
+      : sharedCache(
+          `loadout-list:${game.id}:${JSON.stringify([filter, browse])}`,
+          SHARED_SECONDS,
+          () => queryLoadoutCodes(db, game.id, filter, browse),
+        ),
+    sharedCache(`loadout-expired:${game.id}:${mode}:${source}`, SHARED_SECONDS, () =>
+      queryLoadoutCodes(
+        db,
+        game.id,
+        { mode, source, status: 'expired' },
+        { sort: 'new', limit: 12 },
+      ),
+    ),
     accountId ? listOwnLoadoutCodes(db, accountId, game.id) : Promise.resolve([]),
     accountId ? listViewerLoadoutMarks(db, accountId) : Promise.resolve(null),
-    queryLoadoutCodes(db, game.id, {}, { sort: 'hot', limit: 12 }),
-    queryLoadoutCodes(db, game.id, { featured: true }, { sort: 'featured', limit: 3 }),
+    sharedCache(`loadout-heroes:${game.id}`, SHARED_SECONDS, () =>
+      queryLoadoutCodes(db, game.id, {}, { sort: 'hot', limit: 12 }),
+    ),
+    sharedCache(`loadout-featured:${game.id}`, SHARED_SECONDS, () =>
+      queryLoadoutCodes(db, game.id, { featured: true }, { sort: 'featured', limit: 3 }),
+    ),
   ])
   const hero = [...featured.codes, ...heroes.codes].find(code => code.shotKey || code.renderUrl)
   const count = (from: LoadoutSource) =>
