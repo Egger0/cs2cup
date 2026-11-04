@@ -18,7 +18,7 @@ interface WorkerEnvironment {
   CRAWL_LIMIT?: { limit(options: { key: string }): Promise<{ success: boolean }> }
 }
 
-const THROTTLED_PATH = /^\/(?:games\/[^/]+\/loadouts|api|sitemap\.xml|feed\.xml)(?:\/|$)/
+const THROTTLED_PATH = /^\/(?:games\/[^/]+\/loadouts|sitemap\.xml|feed\.xml)(?:\/|$)/
 
 async function throttled(request: Request, environment: WorkerEnvironment) {
   if (!environment.CRAWL_LIMIT || request.method !== 'GET') return false
