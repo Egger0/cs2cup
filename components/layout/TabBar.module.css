@@ -99,7 +99,6 @@
 
 @keyframes rise {
   from {
-    opacity: 0;
     transform: translateY(24px) scale(0.94);
   }
 }
