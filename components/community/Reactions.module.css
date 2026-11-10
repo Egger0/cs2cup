@@ -1,0 +1,151 @@
+.row {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.chip,
+.add {
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9375rem;
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  transition:
+    transform 420ms var(--spring),
+    background-color 200ms ease,
+    border-color 200ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chip b {
+  font-variant-numeric: tabular-nums;
+  font-weight: 640;
+  animation: count 420ms var(--spring);
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--ct);
+  background: color-mix(in srgb, var(--ct) 16%, transparent);
+}
+
+.chip[aria-pressed='true'] > span {
+  animation: pop 520ms var(--spring);
+}
+
+.add {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.chip:active,
+.add:active {
+  transform: scale(0.9);
+  transition-duration: 90ms;
+}
+
+.row[data-compact] .chip,
+.row[data-compact] .add {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 0.875rem;
+}
+
+.picker {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--glass-stroke);
+  border-radius: 999px;
+  background: var(--glass-fill);
+  box-shadow:
+    inset 0 1px 0 var(--glass-sheen),
+    var(--glass-shadow);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  backdrop-filter: blur(20px) saturate(1.6);
+  animation: open 360ms var(--spring);
+  transform-origin: left center;
+}
+
+.picker button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  font-size: 1.375rem;
+  background: none;
+  cursor: pointer;
+  animation: rise 420ms var(--spring) both;
+  animation-delay: calc(var(--i) * 30ms);
+  transition: transform 320ms var(--spring);
+}
+
+.picker button[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--ct) 18%, transparent);
+}
+
+.picker button:active {
+  transform: scale(1.3);
+}
+
+@media (hover: hover) {
+  .picker button:hover {
+    transform: scale(1.25) translateY(-2px);
+  }
+
+  .chip:hover,
+  .add:hover {
+    border-color: var(--line-strong);
+  }
+}
+
+@keyframes pop {
+  40% {
+    transform: scale(1.5) rotate(-8deg);
+  }
+}
+
+@keyframes count {
+  from {
+    transform: translateY(-40%);
+  }
+}
+
+@keyframes open {
+  from {
+    transform: scale(0.6);
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(10px) scale(0.5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip,
+  .add,
+  .chip b,
+  .chip > span,
+  .picker,
+  .picker button {
+    animation: none;
+    transition: none;
+  }
+}

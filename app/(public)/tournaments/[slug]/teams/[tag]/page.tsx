@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Comments } from '@/components/community/Comments'
 import { Empty } from '@/components/ui'
 import { MapStats } from '@/components/domain/MapStats'
 import { SectionHead } from '@/components/domain/Sections'
@@ -223,6 +224,10 @@ export default async function TeamPage({
             <MapStats stats={stats} />
           </div>
         ) : null}
+
+        <div style={{ marginTop: 44 }}>
+          <Comments kind="team" id={team.id} prompt="还没有人给这支队伍留言，来打个气吧。" />
+        </div>
       </div>
     </section>
   )
