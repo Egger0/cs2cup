@@ -1,0 +1,94 @@
+.comments {
+  display: grid;
+  gap: 24px;
+}
+
+.thread {
+  display: grid;
+  list-style: none;
+  border-top: 1px solid var(--ink);
+}
+
+.thread li {
+  display: grid;
+  gap: 6px;
+  padding-block: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.thread li[data-hidden] {
+  opacity: 0.5;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.meta :is(a, b) {
+  color: var(--ink);
+  font-weight: 620;
+}
+
+@media (hover: hover) {
+  .meta a:hover {
+    color: var(--ct);
+  }
+
+  .meta button:hover {
+    color: var(--c4);
+  }
+}
+
+.meta button {
+  min-height: 44px;
+  margin-inline-start: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.body {
+  color: var(--ink);
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.quiet {
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.quiet a {
+  color: var(--ct);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.form {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.form > div {
+  width: 100%;
+}
+
+.form > div {
+  width: 100%;
+}
+
+.comments h2 {
+  font-size: 1.375rem;
+}
