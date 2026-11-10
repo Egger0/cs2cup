@@ -45,7 +45,7 @@ export function HomeScenes() {
         }
         schedule()
       },
-      { rootMargin: '25% 0px' },
+      { rootMargin: '60% 0px' },
     )
     scenes.forEach(scene => observer.observe(scene))
     window.addEventListener('scroll', schedule, { passive: true })

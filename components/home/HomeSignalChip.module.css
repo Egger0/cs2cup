@@ -4,27 +4,23 @@
   display: grid;
   grid-area: signal;
   justify-self: end;
-  gap: 8px;
-  width: min(360px, 100%);
+  gap: 10px;
+  width: min(420px, 100%);
+  padding: 20px 22px 22px;
+  border: 1px solid rgb(155 202 235 / 18%);
+  border-radius: 28px;
   color: var(--space-ink);
+  background: rgb(12 17 21 / 48%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 10%),
+    0 24px 60px rgb(0 0 0 / 40%);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  backdrop-filter: blur(20px) saturate(1.5);
   opacity: calc(1 - var(--solar-progress, 0) * 1.8);
   pointer-events: auto;
   transition:
     opacity 120ms linear,
     visibility 0s;
-}
-.signal::before {
-  position: absolute;
-  z-index: -1;
-  inset: -56px calc(-1 * var(--pad)) -48px -72px;
-  background: radial-gradient(
-    closest-side,
-    rgb(6 7 10 / 82%),
-    rgb(6 7 10 / 62%) 55%,
-    rgb(6 7 10 / 0%)
-  );
-  content: '';
-  pointer-events: none;
 }
 :global(body:has([data-solar-overlay]:not([data-solar-focus='overview']))) .signal {
   opacity: 0;
@@ -78,8 +74,8 @@
   min-height: 44px;
   align-items: center;
   gap: 12px;
-  font-size: 1.15rem;
-  font-weight: 620;
+  font-size: clamp(1.25rem, 1.6vw, 1.5rem);
+  font-weight: 650;
   line-height: 1.4;
 }
 .signalTitle svg {
@@ -94,7 +90,7 @@
 }
 .signalAction {
   display: flex;
-  min-height: 46px;
+  min-height: 48px;
   border-radius: 999px;
   align-items: center;
   justify-content: space-between;
@@ -109,6 +105,45 @@
 @media (hover: hover) {
   .signalAction:is(:hover, :focus-visible) {
     background: #c4e5f8;
+  }
+}
+.latest {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid rgb(155 202 235 / 14%);
+  color: var(--space-ink);
+  font-size: 0.9375rem;
+}
+.latest small {
+  color: var(--space-accent);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+}
+.latest span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.latest svg {
+  color: var(--space-accent);
+  transition: transform 260ms var(--ease-out);
+}
+@media (hover: hover) {
+  .latest:is(:hover, :focus-visible) svg {
+    transform: translateX(3px);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .signal {
+    background: rgb(12 17 21 / 94%);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }
 @keyframes rise {
@@ -126,16 +161,6 @@
   .signal {
     justify-self: stretch;
     width: auto;
-  }
-  .signal::before {
-    inset: -48px calc(-1 * var(--pad)) -40px;
-    background: linear-gradient(
-      to bottom,
-      rgb(6 7 10 / 0%),
-      rgb(6 7 10 / 72%) 30%,
-      rgb(6 7 10 / 72%) 70%,
-      rgb(6 7 10 / 0%)
-    );
   }
 }
 @media (max-height: 500px) and (orientation: landscape) {

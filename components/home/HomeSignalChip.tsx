@@ -11,9 +11,11 @@ const highlight = (key: string | null) =>
 export function HomeSignalChip({
   signal,
   current,
+  latest,
 }: {
   signal: HomeTournamentSignal | null
   current: string | null
+  latest: { slug: string; title: string } | null
 }) {
   const base = signal ? `/tournaments/${signal.slug}` : '/tournaments'
   return (
@@ -55,6 +57,13 @@ export function HomeSignalChip({
         {signal?.status === 'registration' ? '组队报名' : signal ? '查看赛程' : '进入赛事大厅'}
         <Icon name="arrow" size={16} />
       </Link>
+      {latest ? (
+        <Link href={`/news/${latest.slug}`} className={styles.latest}>
+          <small>最新动态</small>
+          <span>{latest.title}</span>
+          <Icon name="arrow" size={16} />
+        </Link>
+      ) : null}
     </aside>
   )
 }

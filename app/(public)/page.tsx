@@ -40,6 +40,7 @@ export default async function HomePage() {
         signal={homeTournamentSignal(tournament)}
         stops={['club', ...games.map(game => game.slug)]}
         current={tournament ? `event-${tournament.slug}` : null}
+        latest={posts[0] ? { slug: posts[0].slug, title: posts[0].title } : null}
       />
       <HomeScenes />
       <HomeReveal />

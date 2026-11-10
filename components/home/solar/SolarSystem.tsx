@@ -91,7 +91,7 @@ export function SolarSystem({ data }: { data: SolarData }) {
       if (runtime.current || controller.signal.aborted) return
       gaveUp = true
       setFallback(true)
-    }, 15000)
+    }, 45000)
     const thin = () => {
       const device = navigator as Navigator & {
         deviceMemory?: number

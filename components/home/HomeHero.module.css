@@ -149,7 +149,7 @@
   display: grid;
 }
 .stop {
-  height: 45svh;
+  height: 35svh;
 }
 :global(body:has([data-solar-overlay]:not([data-solar-focus='overview']))) :is(.copy, .flow) {
   opacity: 0;
