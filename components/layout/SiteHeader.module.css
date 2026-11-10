@@ -63,6 +63,7 @@
   display: flex;
   width: min(100%, var(--wrap));
   height: 100%;
+  padding-top: env(safe-area-inset-top, 0px);
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -257,6 +258,12 @@
 
 .toggle[aria-expanded='true'] .menuIcon i {
   opacity: 0;
+}
+
+@media (max-width: 900px) {
+  .menuToggle[aria-expanded='false'] {
+    display: none;
+  }
 }
 
 @media (max-width: 640px) {

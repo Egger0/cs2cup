@@ -12,6 +12,12 @@ const PATHS = {
     'M8 2v4m8-4v4M3 10h18M4 4h16a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z',
   download: 'M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4',
   copy: 'M8 8h12v13H8ZM4 16H2V2h13v2',
+  home: 'M3 11 12 3l9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z',
+  news: 'M4 4h13a1 1 0 0 1 1 1v15H5a1 1 0 0 1-1-1ZM18 8h2v11a1 1 0 0 1-1 1M8 9h6M8 13h6',
+  user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-8 9a8 8 0 0 1 16 0',
+  more: 'M5 12h.01M12 12h.01M19 12h.01',
+  trophy:
+    'M7 4h10v5a5 5 0 0 1-10 0ZM7 6H4a3 3 0 0 0 3 4m10-4h3a3 3 0 0 1-3 4M12 14v4m-4 3h8l-1-3H9Z',
   qr: 'M4 4h6v6H4Zm10 0h6v6h-6ZM4 14h6v6H4Zm10 0h2v2h-2Zm4 0h2v2h-2Zm-4 4h2v2h-2Zm4 0h2v2h-2Z',
 } as const
 

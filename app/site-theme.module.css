@@ -116,6 +116,7 @@
 
 @media (max-width: 900px) {
   .theme {
+    padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom, 0px));
     --section-space: var(--space-6);
   }
 }
