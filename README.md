@@ -108,10 +108,13 @@ npm run browser:check
 ```
 
 `npm run check` covers formatting, types, ESLint, deterministic offline tests, repository
-safety, and source-size limits. Pull requests build the Worker once, enforce its size budget, and
-reuse that output for accessibility, keyboard, and account-signup smoke checks. A lightweight
-project check covers direct pushes to `main` without rebuilding the already verified commit. The
-full browser gate is available on demand; it resets disposable `.local/cloudflare` state and adds
+safety, and source-size limits. `npm test` runs every `test:*` script that no other script calls,
+in parallel, so a new suite only needs a `test:` name. Pull requests run two jobs at once:
+`Checks` runs `npm run check`, and `Browser` runs in the Playwright image that matches the
+installed version, builds the Worker once, enforces its size budget, and reuses that output for
+the smoke checks. Read-only browser checks run three at a time; checks that write data run in
+sequence, and the performance budget runs alone. Pushes to `main` run only `Checks`, and
+Markdown-only changes skip CI. The full browser gate is available on demand; it resets disposable `.local/cloudflare` state and adds
 the performance budget and remaining identity journeys against the same loopback Worker and D1
 state:
 

@@ -20,6 +20,25 @@ function run(command, args, extraEnv = {}) {
   if (result.status !== 0) throw new Error(`${command} ${args.join(' ')} failed`)
 }
 
+async function runConcurrently(scripts, extraEnv, limit) {
+  const failures = []
+  let next = 0
+  const worker = async () => {
+    while (next < scripts.length) {
+      const script = scripts[next++]
+      const child = spawn(process.execPath, [script], {
+        cwd: ROOT,
+        env: { ...process.env, ...extraEnv },
+        stdio: 'inherit',
+      })
+      const [code] = await once(child, 'exit')
+      if (code !== 0) failures.push(script)
+    }
+  }
+  await Promise.all(Array.from({ length: limit }, worker))
+  if (failures.length) throw new Error(`Browser checks failed: ${failures.join(', ')}`)
+}
+
 async function waitForWorker(worker) {
   const deadline = Date.now() + 30_000
   while (Date.now() < deadline) {
@@ -72,27 +91,31 @@ const worker = spawn(
 try {
   await waitForWorker(worker)
   const environment = { E2E_BASE_URL: BASE }
-  const smokeScripts = [
+  const readOnly = [
     'scripts/a11y.mjs',
-    'scripts/keyboard.mjs',
-    'scripts/header-fallback-browser.mjs',
-    'scripts/discovery-browser.mjs',
     'scripts/share-browser.mjs',
-    'scripts/frontend-browser.mjs',
+    'scripts/keyboard.mjs',
     'scripts/layout-browser.mjs',
+    'scripts/header-fallback-browser.mjs',
     'scripts/home-motion-browser.mjs',
+  ]
+  const writing = [
+    'scripts/discovery-browser.mjs',
+    'scripts/frontend-browser.mjs',
     'scripts/auth-feedback-browser.mjs',
     'scripts/identity-signup-browser.mjs',
     'scripts/admin-ui-browser.mjs',
-    'scripts/perf.mjs',
   ]
-  const identityScripts = ['scripts/identity-migration-browser.mjs', 'scripts/identity-browser.mjs']
-  const memberScripts = ['scripts/recruitment-lottery-browser.mjs']
-  for (const script of smokeOnly
-    ? smokeScripts
-    : [...smokeScripts, ...identityScripts, ...memberScripts]) {
-    run(process.execPath, [script], environment)
-  }
+  const full = smokeOnly
+    ? []
+    : [
+        'scripts/identity-migration-browser.mjs',
+        'scripts/identity-browser.mjs',
+        'scripts/recruitment-lottery-browser.mjs',
+      ]
+  await runConcurrently(readOnly, environment, 3)
+  for (const script of [...writing, ...full]) run(process.execPath, [script], environment)
+  run(process.execPath, ['scripts/perf.mjs'], environment)
 } finally {
   if (worker.exitCode === null) {
     worker.kill('SIGTERM')

@@ -3,9 +3,13 @@ name: Quality
 
 on:
   pull_request:
+    paths-ignore:
+      - '**/*.md'
   push:
     branches:
       - main
+    paths-ignore:
+      - '**/*.md'
   workflow_dispatch:
 
 permissions:
@@ -16,10 +20,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  cloudflare:
-    name: Fast release gate
+  checks:
+    name: Checks
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 10
 
     steps:
       - name: Check out repository
@@ -39,17 +43,36 @@ jobs:
       - name: Run project checks
         run: npm run check
 
+  browser:
+    name: Browser
+    if: github.event_name != 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container: mcr.microsoft.com/playwright:v1.62.1-noble
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --fund=false
+
       - name: Build Cloudflare Worker
         run: npm run cf:build
 
       - name: Enforce Worker size budget
         run: npm run cf:size
 
-      - name: Install browser
-        run: npx --no-install playwright install --with-deps chromium
-
       - name: Run frontend smoke checks
-        if: github.event_name != 'workflow_dispatch'
+        if: github.event_name == 'pull_request'
         run: npm run browser:smoke -- --skip-build
 
       - name: Run full browser checks
