@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Comments } from '@/components/community/Comments'
+import { FollowTeam } from '@/components/community/FollowTeam'
 import { Empty } from '@/components/ui'
 import { MapStats } from '@/components/domain/MapStats'
 import { SectionHead } from '@/components/domain/Sections'
@@ -109,6 +110,7 @@ export default async function TeamPage({
               队长 {team.captain}
               {team.dept ? ` · ${team.dept}` : ''}
             </div>
+            <FollowTeam teamId={team.id} />
           </div>
           <div className={styles.record}>
             <div className={styles.recordItem}>

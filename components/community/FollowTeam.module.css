@@ -1,0 +1,23 @@
+.follow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.follow a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  color: var(--ct);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.follow [role='alert'] {
+  flex-basis: 100%;
+  color: var(--c4);
+}
