@@ -110,30 +110,44 @@ jobs:
         include:
           - name: a11y 1
             scripts: a11y
-            shard: 1/2
+            shard: 1/3
           - name: a11y 2
             scripts: a11y
-            shard: 2/2
+            shard: 2/3
+          - name: a11y 3
+            scripts: a11y
+            shard: 3/3
           - name: share 1
             scripts: share-browser
-            shard: 1/2
+            shard: 1/3
           - name: share 2
             scripts: share-browser
-            shard: 2/2
+            shard: 2/3
+          - name: share 3
+            scripts: share-browser
+            shard: 3/3
           - name: perf pages
             scripts: perf
             shard: 1/2
           - name: perf mobile
             scripts: perf
             shard: 2/2
-          - name: frontend
+          - name: frontend 1
             scripts: frontend-browser
+            shard: 1/2
+          - name: frontend 2
+            scripts: frontend-browser
+            shard: 2/2
+          - name: discovery
+            scripts: discovery-browser
           - name: accounts
-            scripts: discovery-browser,auth-feedback-browser,identity-signup-browser
+            scripts: auth-feedback-browser,identity-signup-browser
           - name: keyboard
-            scripts: keyboard,header-fallback-browser
+            scripts: keyboard
+          - name: navigation
+            scripts: header-fallback-browser,home-motion-browser
           - name: layout
-            scripts: layout-browser,home-motion-browser,admin-ui-browser
+            scripts: layout-browser,admin-ui-browser
 
     steps:
       - name: Check out repository
@@ -172,6 +186,7 @@ jobs:
         run: npm run cf:build
 
       - name: Enforce Worker size budget
+        if: matrix.name == 'a11y 1'
         run: npm run cf:size
 
       - name: Run browser checks
