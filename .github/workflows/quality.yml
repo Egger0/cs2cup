@@ -148,7 +148,9 @@ jobs:
           - name: navigation
             scripts: header-fallback-browser,home-motion-browser
           - name: layout
-            scripts: layout-browser,admin-ui-browser
+            scripts: layout-browser
+          - name: admin
+            scripts: admin-ui-browser
 
     steps:
       - name: Check out repository

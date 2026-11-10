@@ -109,7 +109,7 @@ npm run browser:check
 
 `npm run check` covers formatting, types, ESLint, deterministic offline tests, repository safety,
 and source-size limits. `npm test` runs every `test:*` script that no other script calls, in
-parallel, so a new suite only needs a `test:` name. Pull requests run `Checks` and 15 `Browser`
+parallel, so a new suite only needs a `test:` name. Pull requests run `Checks` and 16 `Browser`
 shards at once, each within three minutes. Every shard restores the shared Next.js build cache and
 the cached Chromium headless shell, builds the Worker, and runs its own scripts with `npm run
 browser:smoke -- --skip-build --only=a11y`. `SHARD=1/2` splits `a11y`, `share-browser`, `perf` and
