@@ -28,6 +28,7 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
   const brandRef = useRef<HTMLAnchorElement>(null)
   const menuRef = useRef<HTMLElement>(null)
   const toggleRef = useRef<HTMLButtonElement>(null)
+  const triggerRef = useRef<HTMLElement | null>(null)
   const brandName = setting.clubName === '宁波理工电竞社' ? '宁理电竞社' : setting.clubName
   const usesDefaultMark = !setting.logoUrl || setting.logoUrl === '/brand/club-logo.jpg'
   const active = links.reduce((best, link, index) => {
@@ -71,7 +72,7 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setOpen(false)
-        toggleRef.current?.focus()
+        requestAnimationFrame(() => triggerRef.current?.focus())
         return
       }
       if (event.key !== 'Tab') return
@@ -100,6 +101,7 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
   }, [open, active])
 
   const toggle = (trigger: HTMLElement | null = toggleRef.current) => {
+    triggerRef.current = trigger
     const box = trigger?.getBoundingClientRect()
     if (box)
       setOrigin(
