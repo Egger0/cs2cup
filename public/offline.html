@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>当前离线 · 宁理电竞社</title>
+<style>
+:root{color-scheme:light dark;--bg:#f1efe8;--ink:#171817;--mute:#5d605b}
+@media(prefers-color-scheme:dark){:root{--bg:#171817;--ink:#f1efe8;--mute:#a4a8a1}}
+body{margin:0;min-height:100dvh;display:grid;place-content:center;gap:12px;padding:24px;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,sans-serif;text-align:center}
+h1{margin:0;font-size:1.6rem}
+p{margin:0;color:var(--mute)}
+button{justify-self:center;min-height:44px;padding:0 24px;border:0;border-radius:999px;background:var(--ink);color:var(--bg);font:inherit;font-weight:600}
+</style>
+</head>
+<body>
+<h1>网络好像断了</h1>
+<p>恢复连接后会自动刷新，也可以手动重试。</p>
+<button type="button" onclick="location.reload()">重新加载</button>
+<script>addEventListener('online',()=>location.reload())</script>
+</body>
+</html>

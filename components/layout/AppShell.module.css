@@ -1,0 +1,35 @@
+.cue {
+  --pull: 0;
+  position: fixed;
+  z-index: 90;
+  top: 50%;
+  left: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--glass-fill, rgb(255 255 255 / 80%));
+  box-shadow: var(--glass-shadow, 0 4px 16px rgb(0 0 0 / 20%));
+  backdrop-filter: blur(16px) saturate(1.6);
+  opacity: var(--pull);
+  pointer-events: none;
+  transform: translate(calc(var(--pull) * 40px - 44px), -50%) scale(calc(0.6 + var(--pull) * 0.4));
+  transition:
+    opacity 0.25s var(--spring-soft, ease),
+    transform 0.25s var(--spring-soft, ease);
+}
+
+.cue::before {
+  content: '';
+  position: absolute;
+  inset: 15px 17px 15px 19px;
+  border-bottom: 2.5px solid currentcolor;
+  border-left: 2.5px solid currentcolor;
+  transform: rotate(45deg) scale(0.8);
+  color: light-dark(#171817, #f1efe8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cue {
+    transition: none;
+  }
+}

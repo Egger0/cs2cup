@@ -12,3 +12,7 @@
 
 /brand/*
   Cache-Control: public,max-age=86400,stale-while-revalidate=2592000
+
+/sw.js
+  Cache-Control: no-cache
+  Service-Worker-Allowed: /
