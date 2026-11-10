@@ -9,6 +9,11 @@ const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx'
 const options = new Set(process.argv.slice(2))
 const smokeOnly = options.has('--smoke')
 const skipBuild = options.has('--skip-build')
+const only = process.argv
+  .find(argument => argument.startsWith('--only='))
+  ?.slice('--only='.length)
+  .split(',')
+  .map(name => `scripts/${name}.mjs`)
 
 function run(command, args, extraEnv = {}) {
   const result = spawnSync(command, args, {
@@ -113,9 +118,12 @@ try {
         'scripts/identity-browser.mjs',
         'scripts/recruitment-lottery-browser.mjs',
       ]
-  await runConcurrently(readOnly, environment, 3)
-  for (const script of [...writing, ...full]) run(process.execPath, [script], environment)
-  run(process.execPath, ['scripts/perf.mjs'], environment)
+  if (only) for (const script of only) run(process.execPath, [script], environment)
+  else {
+    await runConcurrently(readOnly, environment, 3)
+    for (const script of [...writing, ...full]) run(process.execPath, [script], environment)
+    run(process.execPath, ['scripts/perf.mjs'], environment)
+  }
 } finally {
   if (worker.exitCode === null) {
     worker.kill('SIGTERM')

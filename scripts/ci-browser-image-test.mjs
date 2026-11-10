@@ -8,11 +8,15 @@ const workflow = await readFile(
 const installed = JSON.parse(
   await readFile(new URL('../node_modules/playwright/package.json', import.meta.url), 'utf8'),
 ).version
-const image = /mcr\.microsoft\.com\/playwright:v([\d.]+)-/.exec(workflow)?.[1]
-
-assert.equal(
-  image,
-  installed,
-  `The CI browser image must match playwright ${installed}, or its browsers will not launch`,
+const images = [...workflow.matchAll(/mcr\.microsoft\.com\/playwright:v([\d.]+)-/g)].map(
+  match => match[1],
 )
+
+assert.ok(images.length > 0, 'The workflow must run browser checks in the Playwright image')
+for (const image of images)
+  assert.equal(
+    image,
+    installed,
+    `The CI browser image must match playwright ${installed}, or its browsers will not launch`,
+  )
 console.log(`CI browser image matches playwright ${installed}`)

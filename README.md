@@ -109,12 +109,13 @@ npm run browser:check
 
 `npm run check` covers formatting, types, ESLint, deterministic offline tests, repository
 safety, and source-size limits. `npm test` runs every `test:*` script that no other script calls,
-in parallel, so a new suite only needs a `test:` name. Pull requests run two jobs at once:
-`Checks` runs `npm run check`, and `Browser` runs in the Playwright image that matches the
-installed version, builds the Worker once, enforces its size budget, and reuses that output for
-the smoke checks. Read-only browser checks run three at a time; checks that write data run in
-sequence, and the performance budget runs alone. Pushes to `main` run only `Checks`, and
-Markdown-only changes skip CI. The full browser gate is available on demand; it resets disposable `.local/cloudflare` state and adds
+in parallel, so a new suite only needs a `test:` name. Pull requests run `Checks` and five
+`Browser` shards at once, each within three minutes. Every shard runs in the Playwright image that
+matches the installed version, builds the Worker from the shared Next.js cache, enforces its size
+budget, and runs its own scripts with `npm run browser:smoke -- --skip-build --only=a11y,perf`.
+Pushes to `main` run `Checks` and refresh the build cache. Markdown-only changes skip CI. Locally,
+`npm run browser:smoke` runs read-only checks three at a time, checks that write data in
+sequence, and the performance budget alone. The full browser gate is available on demand; it resets disposable `.local/cloudflare` state and adds
 the performance budget and remaining identity journeys against the same loopback Worker and D1
 state:
 
