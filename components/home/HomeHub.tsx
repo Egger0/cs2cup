@@ -2,10 +2,19 @@ import Link from 'next/link'
 import { Icon } from '@/components/ui/Icon'
 import { fixturesEntry } from '@/lib/tournament-format'
 import type { Post, Tournament } from '@/lib/types'
+import { HomePulse, type UpcomingMatch } from './HomePulse'
 import styles from './HomeHub.module.css'
 import motionStyles from './HomeMotion.module.css'
 
-export function HomeHub({ tournament, posts }: { tournament: Tournament | null; posts: Post[] }) {
+export function HomeHub({
+  tournament,
+  posts,
+  upcoming,
+}: {
+  tournament: Tournament | null
+  posts: Post[]
+  upcoming: UpcomingMatch[]
+}) {
   const steps = [
     {
       title: '想上场',
@@ -61,20 +70,7 @@ export function HomeHub({ tournament, posts }: { tournament: Tournament | null; 
             </Link>
           ))}
         </nav>
-        {posts.length ? (
-          <div className={styles.journal}>
-            <span className={styles.journalLabel}>社团近况 / JOURNAL</span>
-            {posts.slice(0, 2).map(post => (
-              <Link key={post.id} href={`/news/${post.slug}`}>
-                <span>{post.title}</span>
-                <Icon name="arrow" size={16} />
-              </Link>
-            ))}
-            <Link href="/news" className={styles.allNews}>
-              全部动态 ↗
-            </Link>
-          </div>
-        ) : null}
+        <HomePulse posts={posts} upcoming={upcoming} />
       </div>
     </section>
   )

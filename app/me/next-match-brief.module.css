@@ -61,8 +61,8 @@
 
 .clock > time {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  max-width: 30ch;
+  grid-template-columns: auto repeat(3, minmax(0, 1fr));
+  max-width: 34ch;
   margin-block: 14px 12px;
 }
 
