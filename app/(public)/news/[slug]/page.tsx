@@ -6,6 +6,7 @@ import { getPost, safely } from '@/lib/queries/public'
 import { ShareButton } from '@/components/share/ShareButton'
 import { resolveSiteOrigin } from '@/lib/site-config'
 import { CLUB_BRAND } from '@/lib/brand'
+import { Comments } from '@/components/community/Comments'
 import styles from './post.module.css'
 
 export const revalidate = 300
@@ -90,6 +91,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                     <p key={index}>{paragraph}</p>
                   ))}
               </div>
+              <Comments kind="post" id={post.id} prompt="还没有人留言，来说说你的看法。" />
               <p className={styles.back}>
                 <Link href="/news" className="readout">
                   ← 全部动态

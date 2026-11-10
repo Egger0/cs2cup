@@ -17,7 +17,14 @@ export const PRIMARY_LINKS = PUBLIC_LINKS.filter(link =>
   ['/tournaments', '/news', '/games', '/loadouts', '/maps'].includes(link.href),
 )
 
-export const ACCOUNT_PREFIXES = ['/me', '/account', '/squads', '/login', '/register']
+export const ACCOUNT_PREFIXES = [
+  '/me',
+  '/account',
+  '/squads',
+  '/notifications',
+  '/login',
+  '/register',
+]
 
 export function isCurrentPath(pathname: string, href: string) {
   return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
