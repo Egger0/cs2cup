@@ -7,11 +7,11 @@
   display: none;
   height: 64px;
   padding: 6px;
-  --tab-ink: light-dark(rgb(23 24 23 / 62%), rgb(241 239 232 / 66%));
+  --tab-ink: light-dark(rgb(23 24 23 / 84%), rgb(241 239 232 / 88%));
   --tab-ink-active: light-dark(#0b4d87, #fff);
   --tab-lens: light-dark(rgb(255 255 255 / 78%), rgb(255 255 255 / 16%));
   color: var(--tab-ink);
-  background: var(--glass-fill);
+  background: light-dark(rgb(255 255 255 / 76%), rgb(26 28 26 / 78%));
   border: 1px solid var(--glass-stroke);
   border-radius: 32px;
   box-shadow:
