@@ -40,8 +40,7 @@ export function TabBar({
       </Link>
       <button
         type="button"
-        aria-controls="site-menu"
-        aria-expanded="false"
+        aria-haspopup="dialog"
         onClick={event => onMore(event.currentTarget)}
       >
         <Icon name="more" size={22} />
