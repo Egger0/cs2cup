@@ -138,7 +138,7 @@ export default async function TeamPage({
           }}
         />
 
-        <div style={{ marginTop: 44 }}>
+        <div className={styles.block}>
           <SectionHead eyebrow="阵容" title="首发与替补" />
           {team.players.length > 0 ? (
             <div className={styles.roster}>
@@ -165,7 +165,7 @@ export default async function TeamPage({
           )}
         </div>
 
-        <div style={{ marginTop: 44 }}>
+        <div className={styles.block}>
           <SectionHead eyebrow="赛程" title="赛程与战绩" />
           <div className={styles.timeline}>
             {played.length === 0 ? <Empty>这支战队的赛程还没有公布</Empty> : null}
@@ -221,13 +221,13 @@ export default async function TeamPage({
         </div>
 
         {stats.length > 0 ? (
-          <div style={{ marginTop: 44 }}>
+          <div className={styles.block}>
             <SectionHead eyebrow="地图" title="这支队的 Ban/Pick 倾向" />
             <MapStats stats={stats} />
           </div>
         ) : null}
 
-        <div style={{ marginTop: 44 }}>
+        <div className={styles.block}>
           <Comments kind="team" id={team.id} prompt="还没有人给这支队伍留言，来打个气吧。" />
         </div>
       </div>
