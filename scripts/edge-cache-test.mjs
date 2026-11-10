@@ -36,8 +36,14 @@ for (const path of [
 assert.equal(isEdgeCacheable(get('/news', { cookie: '__Host-cs2cup_session=abc' })), false)
 assert.equal(isEdgeCacheable(get('/news', { cookie: '__Host-cs2cup_participant=abc' })), false)
 assert.equal(isEdgeCacheable(get('/news', { cookie: '_ga=1' })), true)
-assert.equal(isEdgeCacheable(get('/news', { rsc: '1' })), false)
-assert.equal(isEdgeCacheable(get('/news?_rsc=abc')), false)
+assert.equal(isEdgeCacheable(get('/news', { rsc: '1' })), false, 'flight without a state hash')
+assert.equal(isEdgeCacheable(get('/news?_rsc=abc')), false, 'html never carries a flight hash')
+assert.equal(isEdgeCacheable(get('/news?_rsc=abc', { rsc: '1', accept: '*/*' })), true)
+assert.equal(
+  isEdgeCacheable(get('/news?_rsc=abc', { rsc: '1', cookie: '__Host-cs2cup_session=x' })),
+  false,
+)
+assert.equal(isEdgeCacheable(get('/news', { 'next-action': 'abc' })), false)
 assert.equal(isEdgeCacheable(get('/news', { accept: 'application/json' })), false)
 assert.equal(isEdgeCacheable(new Request('https://example.test/news', { method: 'POST' })), false)
 
@@ -120,5 +126,17 @@ assert.equal(
   'miss',
   'a new deployment never reuses the previous version',
 )
+
+const flight = async () =>
+  new Response('flight', { headers: { 'content-type': 'text/x-component' } })
+const flightRequest = get('/news?_rsc=abc', { rsc: '1', accept: '*/*' })
+result = await edgeCached(flightRequest, context, flight, cache, 'v1', now)
+await Promise.all(pending.splice(0))
+assert.equal(result.headers.get('x-edge-cache'), 'miss')
+result = await edgeCached(get('/news'), context, render, cache, 'v1', now)
+assert.notEqual(await result.text(), 'flight', 'html and flight responses never share an entry')
+result = await edgeCached(flightRequest, context, flight, cache, 'v1', now)
+assert.equal(await result.text(), 'flight')
+assert.equal(result.headers.get('x-edge-cache'), 'hit')
 
 console.log('edge cache tests passed')

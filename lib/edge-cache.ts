@@ -1,6 +1,6 @@
 const CACHEABLE_PATH =
   /^\/(?:|news(?:\/[^/]+)?|tournaments(?:\/[^/]+(?:\/(?:bracket|results|rules|teams|schedule)|\/teams\/[^/]+|\/matches\/\d+)?)?|archive(?:\/merit)?|games(?:\/[^/]+)?|about|leaderboard|handbook|players\/[^/]+)$/
-const PERSONAL_HEADERS = ['rsc', 'next-router-prefetch', 'next-router-state-tree', 'next-action']
+const ACTION_HEADERS = ['next-action']
 const SESSION_COOKIE = /cs2cup|session/i
 
 export const EDGE_FRESH_SECONDS = 30
@@ -11,27 +11,34 @@ interface CacheStore {
   put(request: Request, response: Response): Promise<void>
 }
 
+function isFlight(request: Request) {
+  return request.headers.has('rsc')
+}
+
 export function isEdgeCacheable(request: Request) {
   if (request.method !== 'GET') return false
   const url = new URL(request.url)
-  if (!CACHEABLE_PATH.test(url.pathname) || url.search.length > 100 || url.searchParams.has('_rsc'))
-    return false
-  if (PERSONAL_HEADERS.some(name => request.headers.has(name))) return false
+  if (!CACHEABLE_PATH.test(url.pathname) || url.search.length > 100) return false
+  if (ACTION_HEADERS.some(name => request.headers.has(name))) return false
   if (SESSION_COOKIE.test(request.headers.get('cookie') ?? '')) return false
-  return (request.headers.get('accept') ?? '').includes('text/html')
+  if (isFlight(request)) return url.searchParams.has('_rsc')
+  return (
+    !url.searchParams.has('_rsc') && (request.headers.get('accept') ?? '').includes('text/html')
+  )
 }
 
 function storable(response: Response) {
   return (
     response.status === 200 &&
     !response.headers.has('set-cookie') &&
-    (response.headers.get('content-type') ?? '').startsWith('text/html')
+    /^text\/(?:html|x-component)/.test(response.headers.get('content-type') ?? '')
   )
 }
 
 function keyOf(request: Request, version: string) {
   const url = new URL(request.url)
   url.searchParams.set('__v', version)
+  if (isFlight(request)) url.searchParams.set('__k', 'flight')
   return new Request(url, { method: 'GET' })
 }
 
