@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { FollowedTeam } from '@/lib/team-follows'
 import { LOADOUT_MODES, findWeapon } from '@/lib/delta-loadouts'
 import type { listSavedLoadouts } from '@/lib/loadout-community'
 import type { LoadoutCode } from '@/lib/loadout-queries'
@@ -60,6 +61,30 @@ export function SavedLoadouts({ items }: { items: Awaited<ReturnType<typeof list
             </span>
             <strong>{item.title}</strong>
             <Link href={`/games/${item.gameSlug}/loadouts/${item.id}`}>打开方案</Link>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+export function FollowedTeams({ teams }: { teams: FollowedTeam[] }) {
+  if (!teams.length) return null
+  return (
+    <section className={styles.drafts} aria-labelledby="followed-teams-title">
+      <h2 id="followed-teams-title">关注的队伍</h2>
+      <div>
+        {teams.map(team => (
+          <article key={team.teamId} className={styles.loadout}>
+            <span>
+              {team.tag} · {team.tournamentTitle}
+            </span>
+            <strong>{team.name}</strong>
+            <Link
+              href={`/tournaments/${team.tournamentSlug}/teams/${encodeURIComponent(team.tag)}`}
+            >
+              查看队伍
+            </Link>
           </article>
         ))}
       </div>

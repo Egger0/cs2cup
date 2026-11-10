@@ -31,13 +31,14 @@ import {
 } from '@/lib/queries/staff-check-in'
 import { maskParticipantPrincipal } from '@/lib/tournament-staff-management'
 import { listSavedLoadouts } from '@/lib/loadout-community'
+import { followedTeams } from '@/lib/team-follows'
 import { listOwnLoadoutCodes } from '@/lib/loadout-queries'
 import { stardustWallet } from '@/lib/stardust'
 import { incomingSquadInvitations } from '@/lib/squads'
 import { SquadInvitationInbox } from '@/app/squads/SquadInvitationInbox'
 import { AccessReceipt } from './AccessReceipt'
 import { EntryDossier } from './EntryDossier'
-import { MyLoadouts, SavedLoadouts } from './MyLoadouts'
+import { FollowedTeams, MyLoadouts, SavedLoadouts } from './MyLoadouts'
 import styles from './me.module.css'
 import { NextMatchBrief } from './NextMatchBrief'
 import { StardustWallet } from './stardust/StardustWallet'
@@ -102,6 +103,7 @@ async function UnifiedAccountEvents({
     squadInvitations,
     loadouts,
     saved,
+    teams,
   ] = await Promise.all([
     listAccountTournamentRegistrations(database, context, now),
     optional('invitations', listIncomingRegistrationInvitations(database, context, now), []),
@@ -126,6 +128,7 @@ async function UnifiedAccountEvents({
     optional('squad invitations', incomingSquadInvitations(database, context.account.id), []),
     optional('loadout codes', listOwnLoadoutCodes(database, context.account.id), []),
     optional('saved loadouts', listSavedLoadouts(database, context.account.id), []),
+    optional('followed teams', followedTeams(database, context.account.id), []),
   ])
   const staffPages = Math.max(1, Math.ceil(workspacePage.total / STAFF_PAGE_SIZE))
   if (staffPage > staffPages) redirect(staffPages === 1 ? '/me' : `/me?staffPage=${staffPages}`)
@@ -185,6 +188,7 @@ async function UnifiedAccountEvents({
 
       <MyLoadouts codes={loadouts} />
       <SavedLoadouts items={saved} />
+      <FollowedTeams teams={teams} />
 
       {entries.length ? (
         <section className={styles.files} aria-label="我的赛事报名">
