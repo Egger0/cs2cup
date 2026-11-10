@@ -3,9 +3,13 @@ name: Quality
 
 on:
   pull_request:
+    paths-ignore:
+      - '**/*.md'
   push:
     branches:
       - main
+    paths-ignore:
+      - '**/*.md'
   workflow_dispatch:
 
 permissions:
@@ -16,10 +20,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  cloudflare:
-    name: Fast release gate
+  checks:
+    name: Checks
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 5
 
     steps:
       - name: Check out repository
@@ -39,19 +43,181 @@ jobs:
       - name: Run project checks
         run: npm run check
 
+  build-cache:
+    name: Build cache
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --fund=false
+
+      - name: Restore Next.js build cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .next/cache
+          key: next-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+          restore-keys: next-${{ hashFiles('package-lock.json') }}-
+
+      - name: Build Cloudflare Worker
+        run: npm run cf:build
+
+      - name: Save Next.js build cache
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .next/cache
+          key: next-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+
+      - name: Restore browser cache
+        id: browsers
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('package-lock.json') }}
+
+      - name: Install browser
+        if: steps.browsers.outputs.cache-hit != 'true'
+        run: npx --no-install playwright install chromium-headless-shell
+
+      - name: Save browser cache
+        if: steps.browsers.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('package-lock.json') }}
+
+  browser:
+    name: Browser (${{ matrix.name }})
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      SHARD: ${{ matrix.shard || '1/1' }}
+      SKIP_BUILD_TYPECHECK: '1'
+    strategy:
+      matrix:
+        include:
+          - name: a11y 1
+            scripts: a11y
+            shard: 1/3
+          - name: a11y 2
+            scripts: a11y
+            shard: 2/3
+          - name: a11y 3
+            scripts: a11y
+            shard: 3/3
+          - name: share 1
+            scripts: share-browser
+            shard: 1/3
+          - name: share 2
+            scripts: share-browser
+            shard: 2/3
+          - name: share 3
+            scripts: share-browser
+            shard: 3/3
+          - name: perf pages
+            scripts: perf
+            shard: 1/2
+          - name: perf mobile
+            scripts: perf
+            shard: 2/2
+          - name: frontend 1
+            scripts: frontend-browser
+            shard: 1/2
+          - name: frontend 2
+            scripts: frontend-browser
+            shard: 2/2
+          - name: discovery
+            scripts: discovery-browser
+          - name: accounts
+            scripts: auth-feedback-browser,identity-signup-browser
+          - name: keyboard
+            scripts: keyboard
+          - name: navigation
+            scripts: header-fallback-browser,home-motion-browser
+          - name: layout
+            scripts: layout-browser
+          - name: admin
+            scripts: admin-ui-browser
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --fund=false
+
+      - name: Restore Next.js build cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .next/cache
+          key: next-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+          restore-keys: next-${{ hashFiles('package-lock.json') }}-
+
+      - name: Restore browser cache
+        id: browsers
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('package-lock.json') }}
+
+      - name: Install browser
+        if: steps.browsers.outputs.cache-hit != 'true'
+        run: npx --no-install playwright install chromium-headless-shell
+
       - name: Build Cloudflare Worker
         run: npm run cf:build
 
       - name: Enforce Worker size budget
+        if: matrix.name == 'a11y 1'
         run: npm run cf:size
+
+      - name: Run browser checks
+        run: npm run browser:smoke -- --skip-build --only=${{ matrix.scripts }}
+
+  browser-full:
+    name: Full browser gate
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --fund=false
 
       - name: Install browser
         run: npx --no-install playwright install --with-deps chromium
 
-      - name: Run frontend smoke checks
-        if: github.event_name != 'workflow_dispatch'
-        run: npm run browser:smoke -- --skip-build
-
       - name: Run full browser checks
-        if: github.event_name == 'workflow_dispatch'
-        run: npm run browser:check -- --skip-build
+        run: npm run browser:check

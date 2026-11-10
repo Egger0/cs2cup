@@ -64,6 +64,9 @@ const config: NextConfig = {
       bodySizeLimit: '12mb',
     },
   },
+  typescript: {
+    ignoreBuildErrors: process.env.SKIP_BUILD_TYPECHECK === '1',
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     localPatterns: [{ pathname: '/brand/**' }],

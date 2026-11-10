@@ -107,13 +107,18 @@ npm run browser:smoke
 npm run browser:check
 ```
 
-`npm run check` covers formatting, types, ESLint, deterministic offline tests, repository
-safety, and source-size limits. Pull requests build the Worker once, enforce its size budget, and
-reuse that output for accessibility, keyboard, and account-signup smoke checks. A lightweight
-project check covers direct pushes to `main` without rebuilding the already verified commit. The
-full browser gate is available on demand; it resets disposable `.local/cloudflare` state and adds
-the performance budget and remaining identity journeys against the same loopback Worker and D1
-state:
+`npm run check` covers formatting, types, ESLint, deterministic offline tests, repository safety,
+and source-size limits. `npm test` runs every `test:*` script that no other script calls, in
+parallel, so a new suite only needs a `test:` name. Pull requests run `Checks` and 16 `Browser`
+shards at once, each within three minutes. Every shard restores the shared Next.js build cache and
+the cached Chromium headless shell, builds the Worker, and runs its own scripts with `npm run
+browser:smoke -- --skip-build --only=a11y`. `SHARD=1/2` splits `a11y`, `share-browser`, `perf` and
+`frontend-browser` across shards, and one shard enforces the Worker size budget. Pushes to `main`
+run `Checks` and refresh both caches. Markdown-only changes skip CI. Locally, `npm run
+browser:smoke` runs read-only checks three at a time, checks that write data in sequence, and the
+performance budget alone. The full browser gate is available on demand; it resets disposable
+`.local/cloudflare` state and adds the performance budget and remaining identity journeys against
+the same loopback Worker and D1 state:
 
 ```sh
 npm run a11y

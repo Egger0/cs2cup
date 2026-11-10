@@ -3,6 +3,7 @@ import { mkdir } from 'node:fs/promises'
 import { chromium, webkit } from 'playwright'
 import AxeBuilder from '@axe-core/playwright'
 import { installLoopbackRequestGuard, resolveE2EBaseUrl } from './loopback-url.mjs'
+import { shard } from './shard.mjs'
 
 const base = resolveE2EBaseUrl()
 const engine = process.env.SHARE_BROWSER === 'webkit' ? webkit : chromium
@@ -75,13 +76,13 @@ async function checkDialog(dialog, label) {
 }
 
 try {
-  for (const viewport of [
+  for (const viewport of shard([
     { width: 1440, height: 900 },
     { width: 768, height: 900 },
     { width: 390, height: 844 },
     { width: 320, height: 568 },
     { width: 844, height: 390 },
-  ]) {
+  ])) {
     await page.setViewportSize(viewport)
     for (const testCase of cases) {
       const label = `${testCase.name} at ${viewport.width}x${viewport.height}`

@@ -1,5 +1,6 @@
 import { chromium, devices } from 'playwright'
 import { installLoopbackRequestGuard, resolveE2EBaseUrl } from './loopback-url.mjs'
+import { inShard } from './shard.mjs'
 
 const BASE = resolveE2EBaseUrl()
 
@@ -32,7 +33,7 @@ const browser = await chromium.launch()
 const rows = []
 let failed = 0
 
-for (const path of PAGES) {
+for (const path of inShard(0) ? PAGES : []) {
   const budget = { ...BUDGET, ...PAGE_BUDGET[path] }
   const ctx = await browser.newContext({
     viewport: { width: 1280, height: 900 },
@@ -132,7 +133,7 @@ for (const path of PAGES) {
 const MOBILE_LCP_MS = 2500
 const IDLE_BUSY_MS = 80
 
-for (const path of ['/', '/news']) {
+for (const path of inShard(1) ? ['/', '/news'] : []) {
   const ctx = await browser.newContext({ ...devices['Pixel 7'], serviceWorkers: 'block' })
   const guard = await installLoopbackRequestGuard(ctx)
   const page = await ctx.newPage()
@@ -164,7 +165,7 @@ for (const path of ['/', '/news']) {
   await ctx.close()
 }
 
-{
+if (inShard(1)) {
   const ctx = await browser.newContext({ ...devices['Pixel 7'], serviceWorkers: 'block' })
   const guard = await installLoopbackRequestGuard(ctx)
   const page = await ctx.newPage()
