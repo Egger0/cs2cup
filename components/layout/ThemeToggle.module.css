@@ -1,0 +1,23 @@
+.group {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.group button {
+  min-width: 44px;
+  min-height: 44px;
+  padding-inline: 14px;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8125rem;
+  background: none;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.group button[aria-pressed='true'] {
+  color: var(--ink);
+  background: var(--line);
+}
