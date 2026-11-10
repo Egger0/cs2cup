@@ -10,7 +10,9 @@ import { AccountPortal } from './AccountPortal'
 import { SiteHeaderFallback, type SiteNavLink } from './SiteHeaderFallback'
 import styles from './SiteHeader.module.css'
 import { HeaderSearch } from './HeaderSearch'
+import { PrimaryNav } from './PrimaryNav'
 import { StarMap } from './StarMap'
+import { TabBar } from './TabBar'
 
 export interface SiteHeaderProps {
   setting: SiteSetting
@@ -26,6 +28,7 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
   const brandRef = useRef<HTMLAnchorElement>(null)
   const menuRef = useRef<HTMLElement>(null)
   const toggleRef = useRef<HTMLButtonElement>(null)
+  const triggerRef = useRef<HTMLElement | null>(null)
   const brandName = setting.clubName === '宁波理工电竞社' ? '宁理电竞社' : setting.clubName
   const usesDefaultMark = !setting.logoUrl || setting.logoUrl === '/brand/club-logo.jpg'
   const active = links.reduce((best, link, index) => {
@@ -69,7 +72,7 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setOpen(false)
-        toggleRef.current?.focus()
+        requestAnimationFrame(() => triggerRef.current?.focus())
         return
       }
       if (event.key !== 'Tab') return
@@ -97,8 +100,9 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
     }
   }, [open, active])
 
-  const toggle = () => {
-    const box = toggleRef.current?.getBoundingClientRect()
+  const toggle = (trigger: HTMLElement | null = toggleRef.current) => {
+    triggerRef.current = trigger
+    const box = trigger?.getBoundingClientRect()
     if (box)
       setOrigin(
         `${Math.round(box.left + box.width / 2)}px ${Math.round(box.top + box.height / 2)}px`,
@@ -134,17 +138,18 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
 
         <div className={styles.actions}>
           {pathname === '/' && !open ? <HomeMotionControl /> : null}
+          <PrimaryNav hidden={open} />
           <HeaderSearch hidden={open} />
           <AccountPortal href={accountLink.href} label={accountLink.label} hidden={open} />
           {clientReady ? (
             <button
               ref={toggleRef}
               type="button"
-              className={styles.toggle}
+              className={`${styles.toggle} ${styles.menuToggle}`}
               aria-controls="site-menu"
               aria-expanded={open}
               aria-label={open ? '关闭全站目录' : '打开全站目录'}
-              onClick={toggle}
+              onClick={() => toggle()}
             >
               <span className={styles.menuIcon} aria-hidden="true">
                 <i />
@@ -156,6 +161,8 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
           )}
         </div>
       </div>
+
+      {clientReady ? <TabBar accountHref={accountLink.href} hidden={open} onMore={toggle} /> : null}
 
       <StarMap
         ref={menuRef}

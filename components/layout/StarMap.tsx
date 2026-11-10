@@ -88,7 +88,9 @@ export function StarMap({
                   {DOCUMENT_LINKS.has(link.href) ? (
                     <a {...shared}>{content}</a>
                   ) : (
-                    <Link {...shared}>{content}</Link>
+                    <Link {...shared} prefetch={false}>
+                      {content}
+                    </Link>
                   )}
                 </li>
               )

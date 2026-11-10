@@ -8,6 +8,7 @@ import type { SiteSetting } from '@/lib/types'
 import styles from './SiteFooter.module.css'
 import theme from '@/app/site-theme.module.css'
 import { CommunityChannels } from './CommunityChannels'
+import { ThemeToggle } from './ThemeToggle'
 
 const FRIEND_LINKS = [{ name: '计算机协会 NBTCA', href: 'https://nbtca.space' }]
 
@@ -70,6 +71,7 @@ export async function SiteFooter({ setting }: { setting: SiteSetting }) {
         </div>
         <div className={styles.legal}>
           <span>{setting.footerCopy ?? `${CLUB_BRAND.englishName} · 校园电竞，始于热爱。`}</span>
+          <ThemeToggle />
           <a href="#main">回到顶部 ↑</a>
         </div>
       </div>
