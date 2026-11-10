@@ -26,6 +26,7 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
   const [origin, setOrigin] = useState('100% 0')
   const [clientReady, setClientReady] = useState(false)
   const brandRef = useRef<HTMLAnchorElement>(null)
+  const headerRef = useRef<HTMLElement>(null)
   const menuRef = useRef<HTMLElement>(null)
   const toggleRef = useRef<HTMLButtonElement>(null)
   const triggerRef = useRef<HTMLElement | null>(null)
@@ -46,6 +47,25 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
     })
     return () => {
       alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let last = window.scrollY
+    const root = document.documentElement
+    const update = () => {
+      const y = window.scrollY
+      const down = y > last + 6 && y > 120
+      const up = y < last - 6 || y < 24
+      if (down && !headerRef.current?.contains(document.activeElement))
+        root.dataset.headerHidden = ''
+      else if (up) delete root.dataset.headerHidden
+      if (down || up) last = y
+    }
+    window.addEventListener('scroll', update, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', update)
+      delete root.dataset.headerHidden
     }
   }, [])
 
@@ -112,6 +132,7 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
 
   return (
     <header
+      ref={headerRef}
       className={styles.dock}
       data-open={open || undefined}
       role={open ? 'dialog' : undefined}

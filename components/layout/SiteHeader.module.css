@@ -300,3 +300,17 @@
     transition: none;
   }
 }
+
+.inner {
+  transition: transform 520ms var(--spring-soft);
+}
+
+:global(html[data-header-hidden]) .dock:not([data-open]) .inner {
+  transform: translateY(calc(-100% - 12px));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inner {
+    transition: none;
+  }
+}
