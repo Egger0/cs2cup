@@ -110,7 +110,6 @@
     "test:reactions": "node --experimental-strip-types scripts/reaction-test.mjs",
     "test:team-follows": "node --experimental-strip-types scripts/team-follow-test.mjs",
     "test:pass-status": "node --experimental-strip-types scripts/pass-status-test.mjs",
-    "test:ci-browser-image": "node scripts/ci-browser-image-test.mjs",
     "test:follows": "node --experimental-strip-types scripts/follow-test.mjs",
     "test:leaderboard": "node --experimental-strip-types scripts/leaderboard-test.mjs",
     "test:notifications": "node scripts/notification-test.mjs",

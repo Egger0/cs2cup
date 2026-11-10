@@ -1,6 +1,7 @@
 import { chromium } from 'playwright'
 import AxeBuilder from '@axe-core/playwright'
 import { installLoopbackRequestGuard, resolveE2EBaseUrl } from './loopback-url.mjs'
+import { shard } from './shard.mjs'
 
 const BASE = resolveE2EBaseUrl()
 const PAGES = [
@@ -36,7 +37,7 @@ const page = await ctx.newPage()
 let total = 0
 const byRule = new Map()
 
-for (const path of PAGES) {
+for (const path of shard(PAGES)) {
   const response = await page.goto(BASE + path, { waitUntil: 'domcontentloaded' })
   if (!response?.ok()) throw new Error(`${path} returned HTTP ${response?.status() ?? 'unknown'}`)
   await page.waitForTimeout(1200)
