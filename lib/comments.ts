@@ -3,7 +3,7 @@ import 'server-only'
 import type { IdentityDatabase } from './identity/internal/contracts.ts'
 import { CONTROL_CHARACTER } from './registration-form.ts'
 
-export const COMMENT_SUBJECTS = ['post', 'match'] as const
+export const COMMENT_SUBJECTS = ['post', 'match', 'team'] as const
 export const COMMENT_HOURLY_LIMIT = 10
 
 export type CommentSubject = (typeof COMMENT_SUBJECTS)[number]

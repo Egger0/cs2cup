@@ -4,6 +4,8 @@ import Image from 'next/image'
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import theme from '@/app/site-theme.module.css'
+import { useSheetDrag } from '@/components/ui/useSheetDrag'
+import sheet from '@/components/ui/Sheet.module.css'
 import styles from './welcome-dialog.module.css'
 
 function forgetWelcome() {
@@ -15,6 +17,7 @@ function forgetWelcome() {
 
 export function WelcomeDialog({ children }: { children: ReactNode }) {
   const dialog = useRef<HTMLDialogElement>(null)
+  useSheetDrag(dialog)
   const heading = useId()
   const description = useId()
 
@@ -28,7 +31,7 @@ export function WelcomeDialog({ children }: { children: ReactNode }) {
   return (
     <dialog
       ref={dialog}
-      className={`${theme.dark} ${styles.dialog}`}
+      className={`${theme.dark} ${styles.dialog} ${sheet.sheet}`}
       aria-labelledby={heading}
       aria-describedby={description}
       onClose={forgetWelcome}

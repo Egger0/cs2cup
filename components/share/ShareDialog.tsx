@@ -7,6 +7,8 @@ import type { PublicShare } from '@/lib/share-poster'
 import { Icon } from '@/components/ui/Icon'
 import styles from './Share.module.css'
 import theme from '@/app/site-theme.module.css'
+import { useSheetDrag } from '@/components/ui/useSheetDrag'
+import sheet from '@/components/ui/Sheet.module.css'
 
 export function ShareDialog({
   share,
@@ -18,6 +20,7 @@ export function ShareDialog({
   accessTips: boolean
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
+  useSheetDrag(dialog)
   const link = useRef<HTMLInputElement>(null)
   const heading = useId()
   const description = useId()
@@ -81,7 +84,7 @@ export function ShareDialog({
   return (
     <dialog
       ref={dialog}
-      className={`${theme.light} ${styles.dialog}`}
+      className={`${theme.light} ${styles.dialog} ${sheet.sheet}`}
       aria-labelledby={heading}
       aria-describedby={description}
       onClose={onClose}

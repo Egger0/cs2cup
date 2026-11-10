@@ -56,10 +56,14 @@ try {
     VALUES (1, 'draft', 'Draft', 1, '2026', 1, 'draft', 4), (2, 'live', 'Live', 1, '2026', 2, 'running', 4);
     INSERT INTO match (id, tournament_id, round, slot, round_label)
     VALUES (1, 1, 0, 0, 'Draft'), (2, 2, 0, 0, 'Live');
+    INSERT INTO team (id, tournament_id, name, tag, captain, contact, status)
+    VALUES (1, 2, 'Approved', 'APR', 'c', 'c', 'approved'), (2, 2, 'Pending', 'PEN', 'c', 'c', 'pending'),
+      (3, 1, 'Draft', 'DRF', 'c', 'c', 'approved');
   `)
 
   assert.deepEqual(parseCommentSubject('post', '3'), { kind: 'post', id: 3 })
-  assert.equal(parseCommentSubject('team', 1), null)
+  assert.deepEqual(parseCommentSubject('team', 1), { kind: 'team', id: 1 })
+  assert.equal(parseCommentSubject('player', 1), null)
   assert.equal(parseCommentBody('   '), null)
   assert.equal(parseCommentBody('x'.repeat(301)), null)
 
@@ -82,6 +86,20 @@ try {
     (await postComment(db, { kind: 'match', id: 2, accountId: BOB, body: 'gg' }, 13)).ok,
     true,
   )
+
+  assert.equal(
+    (await postComment(db, { kind: 'team', id: 1, accountId: BOB, body: 'go' }, 14)).ok,
+    true,
+  )
+  for (const team of [2, 3, 9]) {
+    assert.equal(
+      (await postComment(db, { kind: 'team', id: team, accountId: BOB, body: 'x' }, 15)).ok,
+      false,
+      `team ${team} is closed`,
+    )
+  }
+  database.exec('DELETE FROM team WHERE id = 1')
+  assert.equal((await listComments(db, { kind: 'team', id: 1 }, true)).length, 0)
 
   for (let index = 0; index < 9; index += 1) {
     await postComment(db, { kind: 'post', id: 1, accountId: BOB, body: `n${index}` }, 20 + index)

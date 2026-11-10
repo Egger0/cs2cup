@@ -7,6 +7,7 @@ import { variantStorageKey } from '@/lib/photo-variants'
 import type { Photo } from '@/lib/types'
 import styles from './PosterWall.module.css'
 import theme from '@/app/site-theme.module.css'
+import { useSheetDrag } from '@/components/ui/useSheetDrag'
 
 function displayKey(poster: Photo) {
   const widest = poster.variantWidths.at(-1)
@@ -38,6 +39,7 @@ export function PosterWall({
 }) {
   const [active, setActive] = useState<Photo | null>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
+  useSheetDrag(dialogRef)
 
   useEffect(() => {
     const dialog = dialogRef.current

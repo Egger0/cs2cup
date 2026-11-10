@@ -6,6 +6,7 @@ import { postCommentAction, removeCommentAction, type CommentResult } from '@/ap
 import { Button, TextField } from '@/components/ui'
 import type { Comment, CommentSubject } from '@/lib/comments'
 import { formatSiteNumericDateTime } from '@/lib/datetime'
+import { Reactions, type ReactionState } from './Reactions'
 import styles from './Comments.module.css'
 
 interface Payload {
@@ -13,6 +14,8 @@ interface Payload {
   viewerId: string | null
   moderator: boolean
   comments: Comment[]
+  reactions: ReactionState
+  commentReactions: Record<number, ReactionState>
 }
 
 export function Comments({
@@ -73,6 +76,7 @@ export function Comments({
       aria-labelledby={`comments-${kind}-${id}`}
       aria-busy={pending}
     >
+      <Reactions kind={kind} id={id} initial={data.reactions} signedIn={Boolean(data.viewerId)} />
       <h2 id={`comments-${kind}-${id}`}>讨论 · {comments.length}</h2>
       {comments.length ? (
         <ol className={styles.thread}>
@@ -99,6 +103,15 @@ export function Comments({
                 ) : null}
               </p>
               <p className={styles.body}>{comment.body}</p>
+              {comment.hidden || comment.id < 0 ? null : (
+                <Reactions
+                  kind="comment"
+                  id={comment.id}
+                  initial={data.commentReactions[comment.id] ?? { counts: {}, mine: null }}
+                  signedIn={Boolean(data.viewerId)}
+                  compact
+                />
+              )}
             </li>
           ))}
         </ol>
