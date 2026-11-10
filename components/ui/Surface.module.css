@@ -11,7 +11,8 @@
   transition:
     border-color 180ms ease,
     box-shadow 180ms ease,
-    transform 480ms var(--spring);
+    transform 480ms var(--spring-soft),
+    scale 480ms var(--spring);
 }
 
 .linkSheet {
@@ -33,19 +34,25 @@
 }
 
 @media (hover: hover) {
+  .linkSheet[data-lit] {
+    transform: perspective(1100px) rotateX(calc(var(--ty, 0) * -3deg))
+      rotateY(calc(var(--tx, 0) * 3.5deg));
+  }
+
   .linkSheet[data-lit]::after {
     opacity: 1;
   }
 }
 
 .linkSheet:active {
-  transform: scale(0.985);
-  transition-duration: 180ms, 180ms, 90ms;
+  scale: 0.985;
+  transition-duration: 180ms, 180ms, 480ms, 90ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .linkSheet:active {
+  .linkSheet:is([data-lit], :active) {
     transform: none;
+    scale: none;
   }
 }
 
