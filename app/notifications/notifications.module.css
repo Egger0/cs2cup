@@ -1,0 +1,48 @@
+.bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-2);
+}
+
+.list {
+  display: grid;
+  border-top: 1px solid var(--line-strong);
+  list-style: none;
+}
+
+.list li {
+  border-bottom: 1px solid var(--line);
+}
+
+.list a {
+  display: grid;
+  min-height: 44px;
+  gap: 4px;
+  padding: var(--space-2) 0;
+}
+
+.list li[data-unread] strong::before {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 10px;
+  background: var(--accent);
+  border-radius: 50%;
+  content: '';
+}
+
+.list span {
+  color: var(--muted);
+}
+
+.list time {
+  color: var(--muted-2);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+}
+
+@media (hover: hover) {
+  .list a:hover strong {
+    color: var(--accent);
+  }
+}
