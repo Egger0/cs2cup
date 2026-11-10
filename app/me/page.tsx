@@ -43,6 +43,7 @@ import styles from './me.module.css'
 import { NextMatchBrief } from './NextMatchBrief'
 import { StardustWallet } from './stardust/StardustWallet'
 import { PassReference } from './PassReference'
+import { PassShelf } from './PassShelf'
 import { ParticipantSessionBoundary, ParticipantSignOut } from './ParticipantSessionBoundary'
 import { RegistrationInvitations } from './RegistrationInvitations'
 import { RosterClaimRequests } from './RosterClaimRequests'
@@ -189,6 +190,7 @@ async function UnifiedAccountEvents({
       <MyLoadouts codes={loadouts} />
       <SavedLoadouts items={saved} />
       <FollowedTeams teams={teams} />
+      <PassShelf entries={entries} />
 
       {entries.length ? (
         <section className={styles.files} aria-label="我的赛事报名">

@@ -2,6 +2,7 @@
 
 import { useRef, useState, type CSSProperties } from 'react'
 import type { PlayerProfile } from '@/lib/queries/player-profile'
+import { hueOf } from './hue'
 import { useTilt } from './useTilt'
 import styles from './PlayerCard.module.css'
 import back from './PlayerCardBack.module.css'
@@ -11,12 +12,6 @@ const SPOTS = [
   [22, 40],
   [78, 44],
 ]
-
-function hueOf(text: string) {
-  let hash = 0
-  for (const char of text) hash = (hash * 31 + char.codePointAt(0)!) % 360
-  return hash
-}
 
 function Seal({ title, season, seed }: { title: string; season: string; seed: string }) {
   const id = `seal-${seed.replace(/\W/g, '')}`

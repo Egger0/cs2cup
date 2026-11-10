@@ -1,0 +1,220 @@
+.pass {
+  --px: calc(50% + var(--x, 0) * 50%);
+  --py: calc(50% + var(--y, 0) * 50%);
+  --pass-ink: #111214;
+  --pass-accent: oklch(0.62 0.17 var(--hue));
+  position: relative;
+  display: block;
+  flex: none;
+  width: min(300px, 78vw);
+  aspect-ratio: 5 / 7.2;
+  color: var(--pass-ink);
+  perspective: 1100px;
+  container-type: inline-size;
+  scroll-snap-align: start;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pass:focus-visible {
+  outline: none;
+}
+
+.pass:focus-visible .sheet {
+  outline: 2px solid var(--pass-accent);
+  outline-offset: 4px;
+}
+
+.tilt {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  transform: rotateX(calc(var(--y, 0) * -9deg)) rotateY(calc(var(--x, 0) * 11deg));
+  transform-style: preserve-3d;
+  transition: scale 420ms var(--spring);
+}
+
+.pass:active .tilt {
+  scale: 0.97;
+  transition-duration: 90ms;
+}
+
+.sheet,
+.stub {
+  position: relative;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(-24deg, rgb(0 0 0 / 3%) 0 1px, transparent 1px 7px), #fbfaf7;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 6%) inset,
+    0 4cqi 10cqi -4cqi oklch(0.35 0.12 var(--hue) / 45%);
+}
+
+.sheet {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto auto;
+  gap: 4cqi;
+  padding: 12cqi 8cqi 7cqi;
+  border-radius: 6cqi 6cqi 0 0;
+  mask:
+    radial-gradient(circle 4cqi at 0 100%, transparent 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 4cqi at 100% 100%, transparent 98%, #000) right / 51% 100% no-repeat;
+}
+
+.slot {
+  position: absolute;
+  top: 4cqi;
+  left: 50%;
+  width: 20cqi;
+  height: 3.6cqi;
+  border-radius: 99px;
+  background: rgb(0 0 0 / 14%);
+  box-shadow: inset 0 0.6cqi 1cqi rgb(0 0 0 / 25%);
+  translate: -50% 0;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  font:
+    700 3.4cqi / 1 var(--font-mono),
+    monospace;
+  letter-spacing: 0.14em;
+}
+
+.word {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--pass-accent);
+  font:
+    800 15cqi / 0.98 var(--font-display),
+    sans-serif;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  translate: calc(var(--x, 0) * -2cqi) calc(var(--y, 0) * -1.5cqi);
+}
+
+.holder {
+  display: grid;
+  align-content: end;
+  gap: 2cqi;
+}
+
+.holder strong {
+  font-size: 7cqi;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.tag {
+  justify-self: start;
+  padding: 0.8cqi 2.6cqi;
+  border-radius: 99px;
+  color: #fff;
+  background: var(--pass-ink);
+  font:
+    700 3.4cqi / 1.4 var(--font-mono),
+    monospace;
+  letter-spacing: 0.1em;
+}
+
+.facts {
+  display: flex;
+  gap: 8cqi;
+  padding-top: 3cqi;
+  border-top: 1px solid rgb(0 0 0 / 12%);
+}
+
+.facts dt {
+  color: rgb(0 0 0 / 50%);
+  font:
+    3cqi / 1 var(--font-mono),
+    monospace;
+  letter-spacing: 0.14em;
+}
+
+.facts dd {
+  margin-top: 1.4cqi;
+  font-size: 4.2cqi;
+  font-weight: 600;
+}
+
+.stamp {
+  position: absolute;
+  right: 7cqi;
+  bottom: 22cqi;
+  display: grid;
+  width: 26cqi;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 0.9cqi double currentcolor;
+  border-radius: 50%;
+  color: oklch(0.55 0.16 var(--hue));
+  font:
+    800 5cqi / 1 var(--font-display),
+    sans-serif;
+  opacity: 0.85;
+  rotate: -14deg;
+  mix-blend-mode: multiply;
+}
+
+.pass[data-status='pending'] .stamp {
+  color: #a77a1f;
+}
+
+.pass[data-status='rejected'] {
+  filter: grayscale(1);
+  opacity: 0.7;
+}
+
+.glare {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    farthest-corner circle at var(--px) var(--py),
+    rgb(255 255 255 / 55%),
+    transparent 50%
+  );
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+
+.stub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4cqi;
+  padding: 5cqi 8cqi;
+  border-top: 0.5cqi dashed rgb(0 0 0 / 22%);
+  border-radius: 0 0 6cqi 6cqi;
+  font:
+    700 3.2cqi / 1.2 var(--font-mono),
+    monospace;
+  letter-spacing: 0.12em;
+  transition:
+    translate 700ms var(--spring),
+    rotate 700ms var(--spring),
+    opacity 400ms ease;
+}
+
+.stub b {
+  font-family: var(--font-body), sans-serif;
+  font-size: 4cqi;
+  letter-spacing: 0.04em;
+}
+
+.pass[data-checked-in] .stub {
+  opacity: 0.55;
+  translate: 2cqi 6cqi;
+  rotate: 4deg;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stub,
+  .tilt {
+    transition: none;
+  }
+}
