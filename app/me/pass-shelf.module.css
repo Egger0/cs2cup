@@ -1,0 +1,32 @@
+.shelf {
+  display: grid;
+  gap: 20px;
+  margin-block: 8px 32px;
+}
+
+.head h2 {
+  font-size: 1.25rem;
+  font-weight: 680;
+}
+
+.head p {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.row {
+  display: flex;
+  gap: 20px;
+  margin-inline: calc(-1 * var(--pad, 16px));
+  padding: 12px var(--pad, 16px) 28px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: var(--pad, 16px);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.row::-webkit-scrollbar {
+  display: none;
+}
