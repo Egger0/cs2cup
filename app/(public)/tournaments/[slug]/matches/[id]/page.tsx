@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Comments } from '@/components/community/Comments'
 import { SectionHead } from '@/components/domain/Sections'
 import { MapVeto } from '@/components/domain/MapVeto'
 import { MatchPrediction } from '@/components/domain/MatchPrediction'
@@ -134,6 +135,10 @@ export default async function MatchPage({
               teamBName={resolved.b?.tag ?? 'B'}
             />
           </div>
+        )}
+
+        {bye ? null : (
+          <Comments kind="match" id={match.id} prompt="还没有人留言，来聊聊这场比赛。" />
         )}
 
         <nav className={styles.contextLinks} aria-label="继续浏览赛事">
