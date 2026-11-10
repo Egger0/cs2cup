@@ -1,4 +1,4 @@
-import { chromium } from 'playwright'
+import { chromium, devices } from 'playwright'
 import { installLoopbackRequestGuard, resolveE2EBaseUrl } from './loopback-url.mjs'
 
 const BASE = resolveE2EBaseUrl()
@@ -123,6 +123,64 @@ for (const path of PAGES) {
       (over.length ? `  over budget: ${over.join(', ')}` : ''),
   )
   outboundGuard.assertSafe()
+  await ctx.close()
+}
+
+const MOBILE_LCP_MS = 2500
+const IDLE_BUSY_MS = 80
+
+for (const path of ['/', '/news']) {
+  const ctx = await browser.newContext({ ...devices['Pixel 7'], serviceWorkers: 'block' })
+  const guard = await installLoopbackRequestGuard(ctx)
+  const page = await ctx.newPage()
+  const cdp = await ctx.newCDPSession(page)
+  await cdp.send('Network.enable')
+  await cdp.send('Network.emulateNetworkConditions', {
+    offline: false,
+    latency: 150,
+    downloadThroughput: (1.6 * 1024 * 1024) / 8,
+    uploadThroughput: (750 * 1024) / 8,
+  })
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+  await page.addInitScript(() => {
+    window.__lcp = 0
+    new PerformanceObserver(list => {
+      for (const entry of list.getEntries()) window.__lcp = entry.startTime
+    }).observe({ type: 'largest-contentful-paint', buffered: true })
+  })
+  await page.goto(BASE + path, { waitUntil: 'load' })
+  await page.waitForTimeout(3500)
+  const lcp = Math.round(await page.evaluate(() => window.__lcp))
+  const slow = lcp > MOBILE_LCP_MS
+  if (slow) failed += 1
+  rows.push({ path })
+  console.log(
+    `${slow ? 'FAIL' : 'PASS'}  ${path.padEnd(32)} throttled mobile LCP ${lcp}ms (4x CPU, 1.6 Mbps)`,
+  )
+  guard.assertSafe()
+  await ctx.close()
+}
+
+{
+  const ctx = await browser.newContext({ ...devices['Pixel 7'], serviceWorkers: 'block' })
+  const guard = await installLoopbackRequestGuard(ctx)
+  const page = await ctx.newPage()
+  const cdp = await ctx.newCDPSession(page)
+  await page.goto(BASE + '/news', { waitUntil: 'load' })
+  await page.waitForTimeout(2500)
+  await cdp.send('Performance.enable')
+  const busy = async () =>
+    (await cdp.send('Performance.getMetrics')).metrics.find(m => m.name === 'TaskDuration').value
+  const before = await busy()
+  await page.waitForTimeout(5000)
+  const idle = Math.round(((await busy()) - before) * 1000)
+  const heavy = idle > IDLE_BUSY_MS
+  if (heavy) failed += 1
+  rows.push({ path: 'idle' })
+  console.log(
+    `${heavy ? 'FAIL' : 'PASS'}  ${'/news idle'.padEnd(32)} main thread busy ${idle}ms in 5s (budget ${IDLE_BUSY_MS}ms)`,
+  )
+  guard.assertSafe()
   await ctx.close()
 }
 

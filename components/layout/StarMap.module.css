@@ -49,6 +49,12 @@
   }
 }
 
+.menu:not([data-open]) *,
+.menu:not([data-open]) *::before,
+.menu:not([data-open]) *::after {
+  animation-play-state: paused !important;
+}
+
 .scroll {
   display: contents;
 }
