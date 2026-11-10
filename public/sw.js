@@ -2,7 +2,7 @@ const SHELL = 'shell-v1'
 const STATIC = 'static-v1'
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(SHELL).then(cache => cache.add('/offline.html')))
+  event.waitUntil(caches.open(SHELL).then(cache => cache.add('/offline')))
   self.skipWaiting()
 })
 
@@ -26,7 +26,7 @@ self.addEventListener('fetch', event => {
   if (url.origin !== location.origin) return
 
   if (request.mode === 'navigate') {
-    event.respondWith(fetch(request).catch(() => caches.match('/offline.html')))
+    event.respondWith(fetch(request).catch(() => caches.match('/offline')))
     return
   }
 
