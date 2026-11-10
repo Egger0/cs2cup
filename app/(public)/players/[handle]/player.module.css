@@ -4,7 +4,38 @@
 
 .showcase {
   display: grid;
+  align-content: start;
   gap: 24px;
+  min-width: 0;
+}
+
+.cardStage {
+  padding-top: var(--space-4);
+  display: grid;
+  grid-template-columns: minmax(260px, 380px) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(32px, 6vw, 88px);
+}
+
+.cardSlot {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+}
+
+.cardHint {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 760px) {
+  .cardStage {
+    grid-template-columns: 1fr;
+  }
+
+  .cardSlot > :first-child {
+    width: min(320px, 82vw);
+  }
 }
 
 .crown {

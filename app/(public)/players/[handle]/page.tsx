@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PageMasthead, SectionHead } from '@/components/domain/Sections'
 import { PlayerBadges, PlayerGameCards } from '@/components/domain/PlayerGameCards'
+import { PlayerCard } from '@/components/cards/PlayerCard'
 import { FollowPlayer } from '@/components/community/FollowPlayer'
 import { Empty } from '@/components/ui'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
@@ -54,15 +55,17 @@ export default async function PlayerPage({ params }: { params: Promise<{ handle:
         <FollowPlayer handle={profile.handle} followers={profile.followers} />
       </PageMasthead>
       <div className="wrap">
-        {profile.games.length || profile.badges.length ? (
-          <section className={styles.section}>
+        <section className={`${styles.section} ${styles.cardStage}`}>
+          <div className={styles.cardSlot}>
+            <PlayerCard profile={profile} />
+            <p className={styles.cardHint}>移动鼠标或倾斜手机看看，点一下翻面。</p>
+          </div>
+          <div className={styles.showcase}>
             <SectionHead eyebrow="名片" title="项目名片" lede="参赛次数越多，名片越亮。" />
-            <div className={styles.showcase}>
-              <PlayerBadges badges={profile.badges} />
-              <PlayerGameCards cards={profile.games} />
-            </div>
-          </section>
-        ) : null}
+            {profile.badges.length ? <PlayerBadges badges={profile.badges} /> : null}
+            {profile.games.length ? <PlayerGameCards cards={profile.games} /> : null}
+          </div>
+        </section>
         <section className={styles.section}>
           <SectionHead eyebrow="履历" title="参赛记录" />
           {profile.entries.length > 0 ? (

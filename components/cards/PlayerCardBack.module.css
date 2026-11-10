@@ -1,0 +1,103 @@
+.back {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 5cqi;
+  padding: 9cqi 8cqi 7cqi;
+  background:
+    radial-gradient(100% 60% at 50% 0%, oklch(0.5 0.14 var(--hue) / 55%), transparent),
+    linear-gradient(160deg, #0b3a66, #001a33);
+  transform: rotateY(180deg);
+}
+
+.stamps {
+  position: relative;
+  height: 46cqi;
+}
+
+.stamps > div {
+  position: absolute;
+  top: var(--y0);
+  left: var(--x0);
+  width: 31cqi;
+  translate: -50% -50%;
+}
+
+.stamps > span {
+  position: relative !important;
+  display: block;
+  width: 46cqi;
+  margin-inline: auto;
+}
+
+.seal {
+  display: block;
+  width: 100%;
+  overflow: visible;
+  color: color-mix(in oklch, var(--ink) 62%, #fff);
+  opacity: 0.92;
+}
+
+.seal circle {
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.4;
+}
+
+.seal circle + circle {
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.seal text {
+  fill: currentcolor;
+  font:
+    700 9px var(--font-mono),
+    monospace;
+  letter-spacing: 1.4px;
+}
+
+.seal .sealCenter {
+  font:
+    800 13px var(--font-display),
+    sans-serif;
+  letter-spacing: 0;
+  text-anchor: middle;
+}
+
+.back dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-content: center;
+  gap: 4cqi 6cqi;
+}
+
+.back dt {
+  font:
+    3.4cqi / 1 var(--font-mono),
+    monospace;
+  letter-spacing: 0.16em;
+  opacity: 0.65;
+}
+
+.back dd {
+  margin-top: 1.2cqi;
+  overflow: hidden;
+  font-size: 4.6cqi;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.motto {
+  padding-top: 4cqi;
+  border-top: 1px solid rgb(255 255 255 / 18%);
+  font-size: 4cqi;
+  line-height: 1.6;
+  opacity: 0.85;
+}
+
+.org {
+  font-size: 3.2cqi;
+  letter-spacing: 0.2em;
+  opacity: 0.6;
+}
