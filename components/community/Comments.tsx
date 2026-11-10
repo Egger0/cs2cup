@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useState, useTransition } from 'react'
+import { useCallback, useEffect, useOptimistic, useState, useTransition } from 'react'
 import { postCommentAction, removeCommentAction, type CommentResult } from '@/app/comments/actions'
 import { Button, TextField } from '@/components/ui'
 import type { Comment, CommentSubject } from '@/lib/comments'
@@ -28,6 +28,13 @@ export function Comments({
   const [pending, startTransition] = useTransition()
   const [body, setBody] = useState('')
   const [error, setError] = useState('')
+  const [comments, applyOptimistic] = useOptimistic(
+    data?.comments ?? [],
+    (current: Comment[], change: { add: Comment } | { drop: number }) =>
+      'add' in change
+        ? [...current, change.add]
+        : current.filter(comment => comment.id !== change.drop),
+  )
 
   const load = useCallback(
     () =>
@@ -44,9 +51,14 @@ export function Comments({
 
   if (!data) return null
 
-  const run = (action: () => Promise<CommentResult>, after?: () => void) =>
+  const run = (
+    action: () => Promise<CommentResult>,
+    change?: { add: Comment } | { drop: number },
+    after?: () => void,
+  ) =>
     startTransition(async () => {
       setError('')
+      if (change) applyOptimistic(change)
       const result = await action().catch(
         (): CommentResult => ({ ok: false, error: '网络异常，请稍后重试。' }),
       )
@@ -61,10 +73,10 @@ export function Comments({
       aria-labelledby={`comments-${kind}-${id}`}
       aria-busy={pending}
     >
-      <h2 id={`comments-${kind}-${id}`}>讨论 · {data.comments.length}</h2>
-      {data.comments.length ? (
+      <h2 id={`comments-${kind}-${id}`}>讨论 · {comments.length}</h2>
+      {comments.length ? (
         <ol className={styles.thread}>
-          {data.comments.map(comment => (
+          {comments.map(comment => (
             <li key={comment.id} data-hidden={comment.hidden ? '' : undefined}>
               <p className={styles.meta}>
                 {comment.authorHandle ? (
@@ -80,7 +92,7 @@ export function Comments({
                   <button
                     type="button"
                     disabled={pending}
-                    onClick={() => run(() => removeCommentAction(comment.id))}
+                    onClick={() => run(() => removeCommentAction(comment.id), { drop: comment.id })}
                   >
                     {data.moderator ? '隐藏' : '删除'}
                   </button>
@@ -99,6 +111,17 @@ export function Comments({
           action={() =>
             run(
               () => postCommentAction(kind, id, body),
+              {
+                add: {
+                  id: -Date.now(),
+                  body: body.trim(),
+                  authorId: data.viewerId ?? '',
+                  authorName: '我',
+                  authorHandle: null,
+                  hidden: false,
+                  createdAt: Date.now(),
+                },
+              },
               () => setBody(''),
             )
           }

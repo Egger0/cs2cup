@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { CLUB_BRAND } from '@/lib/brand'
 import { display, mono } from '@/lib/fonts'
 import { resolveSiteOrigin } from '@/lib/site-config'
+import { AppShell } from '@/components/layout/AppShell'
 import styles from './noscript.module.css'
 import './globals.css'
 import './layout-tokens.css'
@@ -64,6 +65,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <span className="scrollbar" aria-hidden />
         {children}
+        <AppShell />
       </body>
     </html>
   )

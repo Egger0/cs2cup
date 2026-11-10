@@ -6,7 +6,10 @@ import { SiteHeaderLoader } from './SiteHeaderLoader'
 import { AccountPortal } from './AccountPortal'
 import styles from './SiteHeader.module.css'
 import searchStyles from './HeaderSearch.module.css'
+import './PrimaryNav.module.css'
 import './StarMap.module.css'
+import './TabBar.module.css'
+import './UnreadBadge.module.css'
 
 export function SiteHeaderEntry(props: SiteHeaderProps) {
   const { setting, links, accountLink } = props
