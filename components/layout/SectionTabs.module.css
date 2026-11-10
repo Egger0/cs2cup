@@ -2,8 +2,10 @@
   position: sticky;
   top: var(--header-height);
   z-index: 20;
-  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
   border-bottom: 1px solid var(--line-strong);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  backdrop-filter: blur(20px) saturate(1.6);
 }
 
 .scrollHint {

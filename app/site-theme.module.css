@@ -114,9 +114,14 @@
   animation: none;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .theme {
     padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 900px) {
+  .theme {
     --section-space: var(--space-6);
   }
 }

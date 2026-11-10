@@ -1,4 +1,5 @@
 .nav {
+  position: relative;
   display: none;
   align-items: center;
   gap: 2px;
@@ -21,12 +22,38 @@
     background-color 180ms ease;
 }
 
-.nav a[aria-current='page'] {
-  color: var(--header-ink);
-  background: rgb(155 202 235 / 16%);
+.nav a {
+  position: relative;
 }
 
-@media (min-width: 1100px) {
+.nav a[aria-current='page'] {
+  color: var(--header-ink);
+}
+
+.lens {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--width, 0);
+  background: linear-gradient(rgb(255 255 255 / 20%), rgb(155 202 235 / 12%));
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 999px;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 24%);
+  opacity: 0;
+  transform: translateX(var(--left, 0));
+  transition:
+    transform 560ms var(--spring),
+    width 560ms var(--spring),
+    opacity 200ms ease;
+  pointer-events: none;
+}
+
+.lens[data-visible] {
+  opacity: 1;
+}
+
+@media (min-width: 961px) {
   .nav {
     display: flex;
   }
@@ -39,7 +66,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nav a {
+  .nav a,
+  .lens {
     transition: none;
   }
 }

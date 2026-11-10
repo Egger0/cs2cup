@@ -260,7 +260,7 @@
   opacity: 0;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .menuToggle[aria-expanded='false'] {
     display: none;
   }
@@ -297,6 +297,20 @@
   .menuIcon::before,
   .menuIcon::after,
   .menuIcon i {
+    transition: none;
+  }
+}
+
+.inner {
+  transition: transform 520ms var(--spring-soft);
+}
+
+:global(html[data-header-hidden]) .dock:not([data-open]) .inner {
+  transform: translateY(calc(-100% - 12px));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inner {
     transition: none;
   }
 }

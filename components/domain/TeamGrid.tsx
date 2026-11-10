@@ -45,6 +45,7 @@ export function TeamGrid({
           key={team.id}
           href={slug ? `/tournaments/${slug}/teams/${team.tag}` : '#'}
           className={styles.card}
+          data-light
         >
           <div className={styles.head}>
             <span className={styles.seed}>{team.seed ? `#${team.seed}` : '—'}</span>
