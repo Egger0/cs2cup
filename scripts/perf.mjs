@@ -47,12 +47,15 @@ for (const path of PAGES) {
   const cdp = await ctx.newCDPSession(page)
   await cdp.send('Network.enable')
   const kinds = new Map()
+  const prefetches = new Set()
 
   cdp.on('Network.responseReceived', event => {
     kinds.set(event.requestId, event.type)
+    if (event.response.url.includes('_rsc=')) prefetches.add(event.requestId)
   })
 
   cdp.on('Network.loadingFinished', event => {
+    if (prefetches.has(event.requestId)) return
     requests += 1
     const bytes = event.encodedDataLength ?? 0
     const type = (kinds.get(event.requestId) ?? '').toLowerCase()

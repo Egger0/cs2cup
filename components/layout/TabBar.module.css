@@ -67,9 +67,7 @@
   border: 0;
   border-radius: 26px;
   cursor: pointer;
-  transition:
-    color 200ms ease,
-    transform 420ms var(--spring);
+  transition: transform 420ms var(--spring);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -81,10 +79,6 @@
 
 .bar [aria-current='page'] {
   color: var(--tab-ink-active);
-}
-
-:global(body:has([data-solar-home])) .bar {
-  color-scheme: dark;
 }
 
 .bar :focus-visible {
