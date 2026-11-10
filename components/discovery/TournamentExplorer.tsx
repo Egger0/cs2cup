@@ -155,7 +155,7 @@ export function TournamentExplorer({
         <p role="status" aria-live="polite">
           找到 <strong>{visible.length}</strong> 场赛事{filters.q ? ` · “${filters.q}”` : ''}
         </p>
-        <span>关注保存在当前浏览器</span>
+        <span>登录后，关注会同步到账号</span>
       </div>
       {visible.length ? (
         <div className={styles.grid}>
