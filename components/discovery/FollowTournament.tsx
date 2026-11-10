@@ -16,7 +16,7 @@ export function FollowTournament({ id, title }: { id: number; title: string }) {
         className={styles.button}
         aria-pressed={followed}
         aria-label={`${followed ? '取消关注' : '关注'} ${title}`}
-        title="保存在当前浏览器，可在赛事大厅查看"
+        title="登录后会同步到账号，可在赛事大厅查看"
         onClick={() => setError(!toggle(id))}
       >
         <Icon name={followed ? 'check' : 'bookmark'} />
