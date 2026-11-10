@@ -7,6 +7,8 @@ import './globals.css'
 import './layout-tokens.css'
 
 const SITE = resolveSiteOrigin()
+const THEME_SCRIPT =
+  "try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}"
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
@@ -43,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <noscript>
           <style>{'.reveal{opacity:1 !important;transform:none !important}'}</style>
         </noscript>

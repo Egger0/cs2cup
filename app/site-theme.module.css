@@ -5,9 +5,38 @@
   --paper: var(--bg);
   display: flow-root;
   min-height: 100dvh;
+  --bg: light-dark(#f1efe8, #171817);
+  --bg-2: light-dark(#e9e6dc, #111210);
+  --surface: light-dark(#f7f5ee, #1f201e);
+  --surface-2: light-dark(#dfdcd2, #171817);
+  --line: light-dark(rgba(23, 24, 23, 0.15), rgba(241, 239, 232, 0.16));
+  --line-strong: light-dark(#aaa69b, rgba(241, 239, 232, 0.32));
+  --ink: light-dark(#171817, #f1efe8);
+  --muted: light-dark(#5f605a, #c0c1ba);
+  --muted-2: light-dark(#62645d, #b0b2ac);
+  --ct: light-dark(#0b4d87, #8fc8ef);
+  --ct-dim: light-dark(rgba(11, 77, 135, 0.1), rgba(143, 200, 239, 0.12));
+  --t: var(--ct);
+  --t-dim: var(--ct-dim);
+  --accent: var(--ct);
+  --accent-dim: var(--ct-dim);
+  --c4: light-dark(#b52b3b, #f0757b);
+  --danger-dim: light-dark(rgba(181, 43, 59, 0.12), rgba(240, 117, 123, 0.14));
+  --honour: light-dark(#8d661f, #d8b169);
+  --void: light-dark(#f7f5ee, #0b0c0b);
+  --button-ink: light-dark(#f1efe8, #171817);
+  --toast-ink: var(--ink);
   color: var(--ink);
-  color-scheme: light;
+  color-scheme: light dark;
   background: var(--bg);
+}
+
+:global(html[data-theme='light']) .theme {
+  color-scheme: light;
+}
+
+:global(html[data-theme='dark']) .theme {
+  color-scheme: dark;
 }
 
 .dark {
