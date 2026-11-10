@@ -10,7 +10,9 @@ import { AccountPortal } from './AccountPortal'
 import { SiteHeaderFallback, type SiteNavLink } from './SiteHeaderFallback'
 import styles from './SiteHeader.module.css'
 import { HeaderSearch } from './HeaderSearch'
+import { PrimaryNav } from './PrimaryNav'
 import { StarMap } from './StarMap'
+import { TabBar } from './TabBar'
 
 export interface SiteHeaderProps {
   setting: SiteSetting
@@ -97,8 +99,8 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
     }
   }, [open, active])
 
-  const toggle = () => {
-    const box = toggleRef.current?.getBoundingClientRect()
+  const toggle = (trigger: HTMLElement | null = toggleRef.current) => {
+    const box = trigger?.getBoundingClientRect()
     if (box)
       setOrigin(
         `${Math.round(box.left + box.width / 2)}px ${Math.round(box.top + box.height / 2)}px`,
@@ -134,17 +136,18 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
 
         <div className={styles.actions}>
           {pathname === '/' && !open ? <HomeMotionControl /> : null}
+          <PrimaryNav hidden={open} />
           <HeaderSearch hidden={open} />
           <AccountPortal href={accountLink.href} label={accountLink.label} hidden={open} />
           {clientReady ? (
             <button
               ref={toggleRef}
               type="button"
-              className={styles.toggle}
+              className={`${styles.toggle} ${styles.menuToggle}`}
               aria-controls="site-menu"
               aria-expanded={open}
               aria-label={open ? '关闭全站目录' : '打开全站目录'}
-              onClick={toggle}
+              onClick={() => toggle()}
             >
               <span className={styles.menuIcon} aria-hidden="true">
                 <i />
@@ -156,6 +159,8 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
           )}
         </div>
       </div>
+
+      {clientReady ? <TabBar accountHref={accountLink.href} hidden={open} onMore={toggle} /> : null}
 
       <StarMap
         ref={menuRef}
