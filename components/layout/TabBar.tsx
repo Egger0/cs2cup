@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { Icon } from '@/components/ui/Icon'
 import { ACCOUNT_PREFIXES, isCurrentPath } from '@/lib/site-navigation'
 import styles from './TabBar.module.css'
+import { UnreadBadge } from './UnreadBadge'
 
 const TABS = [
   { href: '/', label: '首页', icon: 'home' },
@@ -35,6 +36,7 @@ export function TabBar({
       <Link href={accountHref} aria-current={onAccount ? 'page' : undefined}>
         <Icon name="user" size={22} />
         <span>我的</span>
+        <UnreadBadge enabled={accountHref === '/me'} />
       </Link>
       <button
         type="button"
