@@ -8,6 +8,10 @@
   }
 }
 
+body:has([data-solar-home]) .page {
+  animation: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page {
     animation: none;
