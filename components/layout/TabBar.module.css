@@ -10,10 +10,10 @@
   height: 64px;
   padding: 6px;
   --tab-ink: light-dark(rgb(23 24 23 / 84%), rgb(241 239 232 / 88%));
-  --tab-ink-active: light-dark(#0b4d87, #fff);
+  --tab-ink-active: light-dark(#08376a, #fff);
   --tab-lens: light-dark(rgb(255 255 255 / 78%), rgb(255 255 255 / 16%));
   color: var(--tab-ink);
-  background: light-dark(rgb(255 255 255 / 76%), rgb(26 28 26 / 78%));
+  background: light-dark(rgb(255 255 255 / 86%), rgb(26 28 26 / 84%));
   border: 1px solid var(--glass-stroke);
   border-radius: 32px;
   box-shadow:
