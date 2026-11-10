@@ -43,6 +43,7 @@ const config = [
   {
     files: [
       'app/**/loadouts/**/Loadout{Accessories,Cards,Hero,SubmitForm,ReviewRow}.tsx',
+      'components/cards/CheckInSheet.tsx',
       'components/delta-map/Sand{Rail,Stage}.tsx',
       'components/domain/PosterWall.tsx',
       'components/home/HomeStatement.tsx',

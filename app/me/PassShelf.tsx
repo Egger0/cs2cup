@@ -21,6 +21,7 @@ export function PassShelf({ entries }: { entries: ParticipantTournamentEntry[] }
               key={entry.team.id}
               pass={{
                 teamId: entry.team.id,
+                tournamentId: entry.tournament.id,
                 tournamentSlug: entry.tournament.slug,
                 tournamentTitle: entry.tournament.title,
                 teamName: entry.team.name,

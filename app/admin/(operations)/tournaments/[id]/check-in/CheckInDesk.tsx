@@ -29,6 +29,8 @@ export function CheckInDesk({
   const [busyId, setBusyId] = useState<number | null>(null)
   const [message, setMessage] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
   const [closed, setClosed] = useState(false)
+  const [scanned, setScanned] = useState<number | null>(null)
+  const handledHash = useRef('')
   const writeInFlight = useRef(false)
   const refreshInFlight = useRef(false)
 
@@ -76,6 +78,22 @@ export function CheckInDesk({
       document.removeEventListener('visibilitychange', refreshVisibleDesk)
     }
   }, [refreshFromServer])
+
+  useEffect(() => {
+    const focusScanned = () => {
+      if (location.hash === handledHash.current) return
+      const id = Number(/^#team-(\d+)$/.exec(location.hash)?.[1])
+      const team = initialTeams.find(item => item.id === id)
+      if (!team) return
+      handledHash.current = location.hash
+      setScanned(team.id)
+      setKeyword(team.tag)
+      navigator.vibrate?.(10)
+    }
+    focusScanned()
+    window.addEventListener('hashchange', focusScanned)
+    return () => window.removeEventListener('hashchange', focusScanned)
+  }, [initialTeams])
 
   function clearSearch() {
     document.getElementById('team-check-in-search')?.focus()
@@ -215,7 +233,12 @@ export function CheckInDesk({
             const isBusy = busyId === team.id
             const time = team.checkedInAt ? formatSiteTime(team.checkedInAt) : null
             return (
-              <li key={team.id} className={styles.team} aria-busy={isBusy || undefined}>
+              <li
+                key={team.id}
+                className={styles.team}
+                aria-busy={isBusy || undefined}
+                data-scanned={scanned === team.id || undefined}
+              >
                 <div className={styles.teamLead}>
                   <Badge tone={team.checkedInAt ? 'ct' : 'neutral'}>{team.tag}</Badge>
                   <p className={team.checkedInAt ? styles.checked : styles.waiting}>

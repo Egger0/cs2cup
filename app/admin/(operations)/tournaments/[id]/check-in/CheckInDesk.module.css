@@ -104,6 +104,11 @@
   list-style: none;
 }
 
+.team[data-scanned] {
+  outline: 2px solid var(--ct);
+  outline-offset: -2px;
+}
+
 .team {
   display: grid;
   grid-template-columns: minmax(130px, 0.65fr) minmax(190px, 1.2fr) minmax(270px, 1fr) auto;
