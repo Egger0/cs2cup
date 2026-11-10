@@ -8,6 +8,7 @@ export const PUBLIC_LINKS = [
   { href: '/handbook', label: '办赛文档' },
   { href: '/about', label: '关于' },
   { href: '/guestbook', label: '留言' },
+  { href: '/leaderboard', label: '排行榜' },
   { href: '/lottery', label: '招新抽奖' },
   { href: '/search', label: '搜索' },
 ]
