@@ -81,10 +81,6 @@
   color: var(--tab-ink-active);
 }
 
-:global(body:has([data-solar-home])) .bar {
-  color-scheme: dark;
-}
-
 .bar :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -3px;
