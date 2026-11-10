@@ -30,7 +30,7 @@
 
 .count {
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted-2);
@@ -64,9 +64,11 @@
     transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.poster:hover {
-  border-color: var(--ct);
-  transform: translateY(-3px);
+@media (hover: hover) {
+  .poster:hover {
+    border-color: var(--ct);
+    transform: translateY(-3px);
+  }
 }
 
 .poster img {
@@ -76,8 +78,10 @@
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.poster:hover img {
-  transform: scale(1.02);
+@media (hover: hover) {
+  .poster:hover img {
+    transform: scale(1.02);
+  }
 }
 
 .caption {
@@ -88,7 +92,7 @@
   background: var(--surface);
   border-top: 1px solid var(--line);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.12em;
   color: var(--muted);
   text-align: left;

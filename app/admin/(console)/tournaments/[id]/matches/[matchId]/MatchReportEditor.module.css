@@ -9,12 +9,14 @@
   margin-bottom: 18px;
   color: var(--muted);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
 }
 
-.back:hover {
-  color: var(--t);
+@media (hover: hover) {
+  .back:hover {
+    color: var(--t);
+  }
 }
 
 .header {
@@ -30,7 +32,7 @@
 .kicker {
   color: var(--muted-2);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
@@ -107,7 +109,7 @@
 .team small {
   overflow: hidden;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -132,7 +134,7 @@
 .playedCount {
   grid-column: 1 / -1;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .form {

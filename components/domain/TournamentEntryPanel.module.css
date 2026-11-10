@@ -130,8 +130,10 @@
   font-size: 0.83rem;
   margin-top: -10px;
 }
-.steps a:hover {
-  color: var(--ct);
+@media (hover: hover) {
+  .steps a:hover {
+    color: var(--ct);
+  }
 }
 .steps li span {
   display: block;

@@ -93,8 +93,10 @@
   font-size: 0.875rem;
   font-weight: 600;
 }
-.mainLink:hover .enter svg {
-  transform: translate(2px, -2px);
+@media (hover: hover) {
+  .mainLink:hover .enter svg {
+    transform: translate(2px, -2px);
+  }
 }
 .enter svg {
   transition: transform 180ms ease;
@@ -127,6 +129,8 @@
   color: var(--muted);
   font-size: 0.8rem;
 }
-.footer > a:hover {
-  color: var(--ct);
+@media (hover: hover) {
+  .footer > a:hover {
+    color: var(--ct);
+  }
 }

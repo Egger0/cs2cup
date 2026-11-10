@@ -18,8 +18,10 @@
   font-size: 0.875rem;
   cursor: pointer;
 }
-.control button:hover {
-  background: rgb(128 128 128 / 12%);
+@media (hover: hover) {
+  .control button:hover {
+    background: rgb(128 128 128 / 12%);
+  }
 }
 .control button:focus-visible,
 .control input:focus-visible {

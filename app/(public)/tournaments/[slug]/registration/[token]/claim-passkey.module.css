@@ -48,7 +48,7 @@
 
 .kicker {
   color: var(--pass-blue);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 750;
 }
 
@@ -67,7 +67,7 @@
   padding: 7px 9px;
   border: 1px solid var(--pass-blue);
   color: var(--pass-blue);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   transform: rotate(1.5deg);
 }
@@ -95,7 +95,7 @@
 
 .facts dt {
   color: var(--pass-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 .facts dd {
@@ -114,7 +114,7 @@
   gap: 22px;
   padding: 20px 26px 26px;
   color: var(--pass-muted);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
 .notes p {
@@ -126,7 +126,7 @@
   display: block;
   margin-bottom: 5px;
   color: var(--pass-blue);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 .action {
@@ -161,8 +161,10 @@
     color 160ms ease;
 }
 
-.claimButton:not(:disabled):hover {
-  background: #0e486f;
+@media (hover: hover) {
+  .claimButton:not(:disabled):hover {
+    background: #0e486f;
+  }
 }
 
 .claimButton:disabled {
@@ -179,7 +181,7 @@
   place-items: center;
   border: 1px solid currentColor;
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
 }
 
@@ -187,7 +189,7 @@
   min-height: 42px;
   margin-top: 11px;
   color: var(--pass-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.03em;
   line-height: 1.5;
 }
@@ -211,19 +213,19 @@
 .recoverySignal {
   color: var(--pass-blue);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 750;
   letter-spacing: 0.09em;
 }
 
 .recovery strong {
   color: var(--pass-ink);
-  font-size: 0.71rem;
+  font-size: 0.75rem;
 }
 
 .recovery p {
   color: #4b595d;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   line-height: 1.45;
 }
 
@@ -248,7 +250,7 @@
   border: 3px double var(--pass-blue);
   color: var(--pass-blue);
   font-family: 'NLC Role Sans', var(--font-body);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   transform: rotate(-2deg);
@@ -261,7 +263,7 @@
 .complete p {
   margin-top: 4px;
   color: var(--pass-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 .complete a {
@@ -269,7 +271,7 @@
   padding-bottom: 3px;
   border-bottom: 1px solid currentColor;
   color: var(--pass-blue);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 

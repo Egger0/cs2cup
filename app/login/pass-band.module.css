@@ -20,7 +20,7 @@
 .serial {
   color: var(--pass-blue);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.18em;
 }
 
@@ -65,9 +65,11 @@
     background-color 180ms ease;
 }
 
-.passkeyButton:hover:not(:disabled) {
-  border-color: var(--pass-blue);
-  background: #fff;
+@media (hover: hover) {
+  .passkeyButton:hover:not(:disabled) {
+    border-color: var(--pass-blue);
+    background: #fff;
+  }
 }
 
 .passkeyButton:disabled {

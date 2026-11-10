@@ -104,12 +104,14 @@
   color: #c5c7c0;
   font-size: 0.75rem;
 }
-.links a:hover,
-.friends a:hover,
-.legal a:hover {
-  color: #fff;
-  text-decoration: underline;
-  text-underline-offset: 5px;
+@media (hover: hover) {
+  .links a:hover,
+  .friends a:hover,
+  .legal a:hover {
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 5px;
+  }
 }
 
 @media (max-width: 760px) {

@@ -64,7 +64,7 @@
   margin-top: 2px;
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.14em;
 }
@@ -105,13 +105,15 @@
   background: transparent;
   color: #b4c2c7;
   cursor: pointer;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
-.nav a:hover,
-.nav button:hover {
-  border-color: var(--ops-blue-bright);
-  color: #fff;
+@media (hover: hover) {
+  .nav a:hover,
+  .nav button:hover {
+    border-color: var(--ops-blue-bright);
+    color: #fff;
+  }
 }
 
 .main {
@@ -142,7 +144,7 @@
 .eyebrow,
 .event > span {
   color: var(--ops-blue);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 .masthead h1 {
@@ -170,7 +172,7 @@
 .event p {
   margin-top: 4px;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .footer {
@@ -182,7 +184,7 @@
   padding-top: 18px;
   border-top: 1px solid var(--ops-line);
   color: var(--muted-2);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 @keyframes ops-enter {

@@ -3,6 +3,7 @@ import { ButtonLink, Empty, Field } from '@/components/ui'
 import { PageMasthead } from '@/components/domain/Sections'
 import { safely, search } from '@/lib/queries/public'
 import styles from './search.module.css'
+import results from './results.module.css'
 
 export const dynamic = 'force-dynamic'
 
@@ -82,8 +83,8 @@ export default async function SearchPage({
           </div>
 
           {query ? (
-            <div className={styles.output} data-rise="3">
-              <div className={styles.outputHead}>
+            <div className={results.output} data-rise="3">
+              <div className={results.outputHead}>
                 <span>
                   {hits.length > 0 ? 'RESULT' : 'NO MATCH'} / {resultCode}
                 </span>
@@ -91,19 +92,19 @@ export default async function SearchPage({
               </div>
 
               {hits.length > 0 ? (
-                <ol className={styles.results}>
+                <ol className={results.results}>
                   {hits.map((hit, index) => (
-                    <li key={`${hit.kind}-${hit.href}`} className={styles.resultItem}>
-                      <Link href={hit.href} className={styles.hit}>
-                        <span className={styles.index} aria-hidden="true">
+                    <li key={`${hit.kind}-${hit.href}`} className={results.resultItem}>
+                      <Link href={hit.href} className={results.hit}>
+                        <span className={results.index} aria-hidden="true">
                           {String(index + 1).padStart(2, '0')}
                         </span>
-                        <span className={styles.kind}>{KIND[hit.kind]}</span>
-                        <span className={styles.identity}>
-                          <span className={styles.title}>{hit.title}</span>
-                          <span className={styles.subtitle}>{hit.subtitle}</span>
+                        <span className={results.kind}>{KIND[hit.kind]}</span>
+                        <span className={results.identity}>
+                          <span className={results.title}>{hit.title}</span>
+                          <span className={results.subtitle}>{hit.subtitle}</span>
                         </span>
-                        <span className={styles.arrow} aria-hidden="true">
+                        <span className={results.arrow} aria-hidden="true">
                           →
                         </span>
                       </Link>

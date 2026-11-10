@@ -171,11 +171,13 @@
   color: var(--button-ink);
 }
 
-.form button:hover:not(:disabled),
-.pendingActions button:hover:not(:disabled) {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--bg);
+@media (hover: hover) {
+  .form button:hover:not(:disabled),
+  .pendingActions button:hover:not(:disabled) {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+  }
 }
 
 .form button:disabled,

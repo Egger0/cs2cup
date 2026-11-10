@@ -46,12 +46,12 @@
 .meta span,
 .links a > span {
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.1em;
 }
 
 .meta small {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.02em;
 }
 
@@ -75,12 +75,20 @@
   border-bottom: 1px solid #c8c4b9;
 }
 
-.links a:hover,
 .links a:focus-visible {
   color: #f1efe8;
   background: #171817;
   outline-color: #6da5d3;
   outline-offset: -3px;
+}
+
+@media (hover: hover) {
+  .links a:hover {
+    color: #f1efe8;
+    background: #171817;
+    outline-color: #6da5d3;
+    outline-offset: -3px;
+  }
 }
 
 .links strong {
@@ -94,9 +102,14 @@
   font-style: normal;
 }
 
-.links a:hover i,
 .links a:focus-visible i {
   color: #8fc8fa;
+}
+
+@media (hover: hover) {
+  .links a:hover i {
+    color: #8fc8fa;
+  }
 }
 
 @media (max-width: 900px) {

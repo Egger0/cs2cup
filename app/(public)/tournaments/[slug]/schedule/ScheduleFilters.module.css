@@ -63,15 +63,19 @@
   color: var(--muted);
 }
 
-.submit:hover {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--bg);
+@media (hover: hover) {
+  .submit:hover {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+  }
 }
 
-.reset:hover {
-  border-color: var(--ink);
-  color: var(--ink);
+@media (hover: hover) {
+  .reset:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
 }
 
 @media (max-width: 720px) {

@@ -25,9 +25,14 @@
   content: '';
 }
 
-.row:hover,
 .row:focus-visible {
   background: var(--ct-dim);
+}
+
+@media (hover: hover) {
+  .row:hover {
+    background: var(--ct-dim);
+  }
 }
 
 .index {
@@ -58,7 +63,7 @@
   margin-top: 10px;
   color: var(--accent);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
 }
@@ -80,7 +85,7 @@
   color: var(--muted-2);
   border-left: 1px solid var(--line);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
   white-space: nowrap;
 }
@@ -103,9 +108,14 @@
   transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.row:hover .arrow,
 .row:focus-visible .arrow {
   transform: translateX(6px);
+}
+
+@media (hover: hover) {
+  .row:hover .arrow {
+    transform: translateX(6px);
+  }
 }
 
 @media (max-width: 680px) {
@@ -136,8 +146,13 @@
     transition: none;
   }
 
-  .row:hover .arrow,
   .row:focus-visible .arrow {
     transform: none;
+  }
+
+  @media (hover: hover) {
+    .row:hover .arrow {
+      transform: none;
+    }
   }
 }

@@ -17,7 +17,7 @@
 .switchNotice p {
   margin-top: 4px;
   color: var(--pass-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   line-height: 1.5;
 }
 
@@ -31,16 +31,18 @@
   border: 1px solid var(--pass-blue);
   border-radius: 999px;
   color: var(--pass-blue);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 750;
   transition:
     background-color 160ms ease,
     transform 160ms ease;
 }
 
-.loginLink:hover {
-  background: rgba(21, 93, 140, 0.08);
-  transform: translate(-2px, -2px);
+@media (hover: hover) {
+  .loginLink:hover {
+    background: rgba(21, 93, 140, 0.08);
+    transform: translate(-2px, -2px);
+  }
 }
 
 .orRule,
@@ -50,7 +52,7 @@
   gap: 8px;
   color: var(--pass-muted);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -89,14 +91,14 @@
 }
 
 .confirmActions button {
-  min-height: 42px;
+  min-height: 44px;
   padding: 8px 11px;
   border: 1px solid var(--pass-blue);
   border-radius: 999px;
   background: transparent;
   color: var(--pass-blue);
   cursor: pointer;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 740;
 }
 
@@ -128,7 +130,7 @@
   color: var(--pass-blue);
   cursor: pointer;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -146,19 +148,21 @@
   border-radius: 999px;
   background: transparent;
   font-family: 'NLC Role Sans', var(--font-body);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 0.02em;
 }
 
-.ownerSwitchButton:not(:disabled):hover {
-  background: rgba(21, 93, 140, 0.08);
+@media (hover: hover) {
+  .ownerSwitchButton:not(:disabled):hover {
+    background: rgba(21, 93, 140, 0.08);
+  }
 }
 
 .switchFeedback {
   min-height: 22px;
   color: var(--pass-muted);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 .switchFeedback p {
@@ -173,7 +177,7 @@
 
 .otherOwner small {
   color: var(--pass-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   line-height: 1.45;
 }
 

@@ -60,8 +60,10 @@
   transition: color 180ms ease;
 }
 
-.card:is(:hover, :focus-visible) .cardTag {
-  color: var(--ct);
+@media (hover: hover) {
+  .card:is(:hover, :focus-visible) .cardTag {
+    color: var(--ct);
+  }
 }
 
 .cardName {
@@ -103,9 +105,14 @@
   letter-spacing: 0.08em;
 }
 
-.scheduleLink:hover,
 .scheduleLink:focus-visible {
   color: var(--ct);
+}
+
+@media (hover: hover) {
+  .scheduleLink:hover {
+    color: var(--ct);
+  }
 }
 
 @keyframes cardEnter {

@@ -106,11 +106,18 @@
   cursor: pointer;
 }
 
-.region:hover,
 .region:focus-visible {
   color: #0b0d10;
   text-shadow: none;
   background: var(--honour);
+}
+
+@media (hover: hover) {
+  .region:hover {
+    color: #0b0d10;
+    text-shadow: none;
+    background: var(--honour);
+  }
 }
 
 .pin {

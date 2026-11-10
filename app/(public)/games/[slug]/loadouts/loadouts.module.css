@@ -56,8 +56,10 @@
     monospace;
 }
 
-.modes a:hover {
-  color: var(--ink);
+@media (hover: hover) {
+  .modes a:hover {
+    color: var(--ink);
+  }
 }
 
 .modes a[aria-current] {
@@ -90,7 +92,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 40px;
+  min-height: 44px;
   width: fit-content;
   color: var(--ink);
   font-size: 0.875rem;
@@ -132,7 +134,7 @@
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
-  min-height: 40px;
+  min-height: 44px;
   padding: 9px 12px;
   border: 1px solid var(--line-strong);
   border-radius: 999px;
@@ -151,8 +153,10 @@
     monospace;
 }
 
-.chip:hover {
-  border-color: var(--ink);
+@media (hover: hover) {
+  .chip:hover {
+    border-color: var(--ink);
+  }
 }
 
 .chip[aria-current] {
@@ -272,8 +276,10 @@
   color: var(--ink);
 }
 
-.pager a:hover {
-  border-color: var(--ink);
+@media (hover: hover) {
+  .pager a:hover {
+    border-color: var(--ink);
+  }
 }
 
 .featured {
@@ -287,7 +293,7 @@
 .random {
   display: inline-flex;
   align-items: center;
-  min-height: 36px;
+  min-height: 44px;
   padding: 7px 14px;
   border: 1px dashed var(--line-strong);
   border-radius: 999px;
@@ -295,9 +301,11 @@
   font-size: 0.875rem;
 }
 
-.random:hover {
-  border-style: solid;
-  border-color: var(--ink);
+@media (hover: hover) {
+  .random:hover {
+    border-style: solid;
+    border-color: var(--ink);
+  }
 }
 
 .gate {

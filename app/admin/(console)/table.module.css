@@ -48,8 +48,10 @@
   transition: background 0.16s ease;
 }
 
-.table tbody tr:hover td {
-  background: rgba(109, 165, 211, 0.045);
+@media (hover: hover) {
+  .table tbody tr:hover td {
+    background: rgba(109, 165, 211, 0.045);
+  }
 }
 
 .sensitive {
@@ -94,7 +96,7 @@
   margin-bottom: 9px;
   color: var(--admin-muted, var(--muted));
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
 }
 

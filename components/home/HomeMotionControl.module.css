@@ -10,8 +10,10 @@
   cursor: pointer;
   transition: color 180ms ease;
 }
-.control:is(:hover, :focus-visible) {
-  color: var(--header-accent);
+@media (hover: hover) {
+  .control:is(:hover, :focus-visible) {
+    color: var(--header-accent);
+  }
 }
 .control:disabled {
   opacity: 0.45;

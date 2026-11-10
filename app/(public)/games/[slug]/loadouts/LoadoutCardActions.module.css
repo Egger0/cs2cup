@@ -33,9 +33,11 @@
     transform 180ms var(--ease-out);
 }
 
-.copy:hover {
-  border-color: var(--ink);
-  background: var(--ink);
+@media (hover: hover) {
+  .copy:hover {
+    border-color: var(--ink);
+    background: var(--ink);
+  }
 }
 
 .copy:active {
@@ -116,8 +118,10 @@
   font-weight: 620;
 }
 
-.like:hover {
-  border-color: var(--ink);
+@media (hover: hover) {
+  .like:hover {
+    border-color: var(--ink);
+  }
 }
 
 .like[aria-pressed='true'] {
@@ -146,8 +150,10 @@
   text-underline-offset: 4px;
 }
 
-.report:hover {
-  color: var(--c4);
+@media (hover: hover) {
+  .report:hover {
+    color: var(--c4);
+  }
 }
 
 .shotUpload {
@@ -184,9 +190,11 @@
     border-color 160ms ease;
 }
 
-.save:hover {
-  border-color: var(--ink);
-  color: var(--ink);
+@media (hover: hover) {
+  .save:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
 }
 
 .save[aria-pressed='true'] {

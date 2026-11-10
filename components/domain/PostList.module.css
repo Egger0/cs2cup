@@ -14,9 +14,14 @@
   transition: background-color 180ms ease;
 }
 
-.item:hover,
 .item:focus-visible {
   background: var(--ct-dim);
+}
+
+@media (hover: hover) {
+  .item:hover {
+    background: var(--ct-dim);
+  }
 }
 
 .stamp {
@@ -25,7 +30,7 @@
   gap: 10px;
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.12em;
 }
 
@@ -38,7 +43,7 @@
   padding: 2px 7px;
   color: var(--accent);
   border: 1px solid currentColor;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
 }
 
@@ -65,9 +70,14 @@
   transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.item:hover .arrow,
 .item:focus-visible .arrow {
   transform: translateX(6px);
+}
+
+@media (hover: hover) {
+  .item:hover .arrow {
+    transform: translateX(6px);
+  }
 }
 
 @media (max-width: 680px) {
@@ -96,8 +106,13 @@
     transition: none;
   }
 
-  .item:hover .arrow,
   .item:focus-visible .arrow {
     transform: none;
+  }
+
+  @media (hover: hover) {
+    .item:hover .arrow {
+      transform: none;
+    }
   }
 }
