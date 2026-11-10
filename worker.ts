@@ -3,6 +3,7 @@ import type { IdentityDatabase } from './lib/identity/internal/contracts'
 import { syncOfficialLoadouts } from './lib/loadout-official-sync'
 import { sendQqMorning, type QqAutomationDatabase } from './lib/qq-automation'
 import type { QqBotApiConfig } from './lib/qq-bot-api'
+import { edgeCached } from './lib/edge-cache'
 import { httpsRedirect } from './lib/site-config'
 
 interface WorkerExecutionContext {
@@ -15,6 +16,7 @@ interface WorkerEnvironment {
   QQ_BOT_APP_ID?: string
   QQ_BOT_APP_SECRET?: string
   QQ_BOT_ALLOWED_GROUP_OPEN_ID?: string
+  CF_VERSION_METADATA?: { id: string }
   CRAWL_LIMIT?: { limit(options: { key: string }): Promise<{ success: boolean }> }
 }
 
@@ -42,7 +44,13 @@ const worker = {
     if (await throttled(request, environment)) {
       return new Response('too many requests', { status: 429, headers: { 'Retry-After': '60' } })
     }
-    return nextWorker.fetch(request, environment, context)
+    return edgeCached(
+      request,
+      context,
+      renderRequest => nextWorker.fetch(renderRequest, environment, context),
+      (caches as unknown as { default: Cache }).default,
+      environment.CF_VERSION_METADATA?.id ?? 'local',
+    )
   },
 
   async scheduled(
