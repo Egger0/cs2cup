@@ -38,11 +38,7 @@ export function TabBar({
         <span>我的</span>
         <UnreadBadge enabled={accountHref === '/me'} />
       </Link>
-      <button
-        type="button"
-        aria-haspopup="dialog"
-        onClick={event => onMore(event.currentTarget)}
-      >
+      <button type="button" aria-haspopup="dialog" onClick={event => onMore(event.currentTarget)}>
         <Icon name="more" size={22} />
         <span>更多</span>
       </button>
