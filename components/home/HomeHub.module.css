@@ -135,51 +135,6 @@
   font-size: 0.85rem;
   line-height: 1.75;
 }
-.journal {
-  display: flex;
-  align-items: center;
-  gap: 16px 32px;
-  flex-wrap: wrap;
-  padding-block: 28px 0;
-  color: var(--space-muted);
-  font-size: 0.82rem;
-}
-.journalLabel {
-  color: var(--space-accent);
-  font:
-    0.6875rem var(--font-mono),
-    monospace;
-  letter-spacing: 0.16em;
-}
-.journal a {
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  min-height: 44px;
-  transition: color 180ms ease;
-}
-.journal a:not(.allNews)::before {
-  width: 22px;
-  height: 1px;
-  background: linear-gradient(90deg, rgb(155 202 235 / 0%), var(--space-accent));
-  box-shadow: 1px 0 6px rgb(155 202 235 / 80%);
-  content: '';
-  transition: width 260ms var(--ease-out);
-}
-@media (hover: hover) {
-  .journal a:is(:hover, :focus-visible) {
-    color: #fff;
-  }
-}
-@media (hover: hover) {
-  .journal a:not(.allNews):is(:hover, :focus-visible)::before {
-    width: 34px;
-  }
-}
-.allNews {
-  margin-left: auto;
-  color: var(--space-accent);
-}
 @media (max-width: 640px) {
   .heading {
     align-items: start;
@@ -207,21 +162,12 @@
   .pathways p {
     max-width: none;
   }
-  .journal {
-    display: grid;
-    gap: 8px;
-  }
-  .allNews {
-    margin-left: 0;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .pathways a,
   .pathways a::after,
   .pathways h3 svg,
-  .number,
-  .journal a,
-  .journal a::before {
+  .number {
     transition: none;
   }
   @media (hover: hover) {

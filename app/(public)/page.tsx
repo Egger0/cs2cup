@@ -8,27 +8,57 @@ import { HomeScenes } from '@/components/home/HomeScenes'
 import { HomeStatement } from '@/components/home/HomeStatement'
 import { HomeWall } from '@/components/home/HomeWall'
 import { SolarSystem } from '@/components/home/solar/SolarSystem'
+import type { UpcomingMatch } from '@/components/home/HomePulse'
+import { isCompletedMatch } from '@/lib/bracket'
+import { currentTimeMillis } from '@/lib/current-time'
 import { homeTournamentSignal } from '@/lib/home-tournament-signal'
 import {
   getCurrentTournament,
+  getMatches,
   getPhotos,
+  getPublicTeams,
   listGames,
   listTournaments,
   listPosts,
   safely,
 } from '@/lib/queries/public'
+import type { Tournament } from '@/lib/types'
 
 export const metadata = { alternates: { canonical: '/' } }
 export const viewport: Viewport = { themeColor: '#06070a' }
 
+async function upcomingMatches(tournament: Tournament | null): Promise<UpcomingMatch[]> {
+  if (!tournament) return []
+  const [matches, teams] = await Promise.all([
+    getMatches(tournament.id),
+    getPublicTeams(tournament.id),
+  ])
+  const names = new Map(teams.map(team => [team.id, team.name]))
+  const now = currentTimeMillis()
+  return matches
+    .filter(match => match.scheduledAt && Date.parse(match.scheduledAt) > now)
+    .filter(match => !isCompletedMatch(match) && match.teamAId && match.teamBId)
+    .sort((a, b) => Date.parse(a.scheduledAt!) - Date.parse(b.scheduledAt!))
+    .slice(0, 3)
+    .map(match => ({
+      id: match.id,
+      href: `/tournaments/${tournament.slug}/matches/${match.id}`,
+      round: match.roundLabel,
+      teamA: names.get(match.teamAId!) ?? '待定',
+      teamB: names.get(match.teamBId!) ?? '待定',
+      at: match.scheduledAt!,
+    }))
+}
+
 export default async function HomePage() {
   const [tournament, posts, games, tournaments, photos] = await Promise.all([
     safely(getCurrentTournament, null),
-    safely(() => listPosts(2, 'latest'), []),
+    safely(() => listPosts(3, 'latest'), []),
     safely(listGames, []),
     safely(listTournaments, []),
     safely(() => getPhotos(), []),
   ])
+  const upcoming = await safely(() => upcomingMatches(tournament), [])
 
   return (
     <>
@@ -49,7 +79,7 @@ export default async function HomePage() {
         photo={photos.find(photo => photo.width > photo.height) ?? photos[0] ?? null}
       />
       <HomeWall photos={photos} tournaments={tournaments} />
-      <HomeHub tournament={tournament} posts={posts} />
+      <HomeHub tournament={tournament} posts={posts} upcoming={upcoming} />
       <HomeEvidence slug={tournament?.slug} />
     </>
   )
