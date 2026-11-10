@@ -40,6 +40,8 @@ export interface PlayerProfile {
   readonly entries: PlayerTournamentEntry[]
   readonly games: PlayerGameCard[]
   readonly badges: PlayerBadge[]
+  readonly bio: string | null
+  readonly followers: number
 }
 
 interface ProfileRow {
@@ -173,11 +175,20 @@ export async function playerProfileByHandle(
     )
     .bind(first.account_id, first.account_id)
     .first<{ won: number; checkIns: number }>()
+  const social = await database
+    .prepare(
+      `SELECT (SELECT bio FROM account_bio WHERE account_id = ?1) AS bio,
+              (SELECT COUNT(*) FROM player_follow WHERE followed_account_id = ?1) AS followers`,
+    )
+    .bind(first.account_id)
+    .first<{ bio: string | null; followers: number }>()
 
   return {
     accountId: first.account_id,
     displayName: first.display_name,
     handle: first.public_handle,
+    bio: social?.bio ?? null,
+    followers: Number(social?.followers ?? 0),
     entries,
     games: gameCards(entries, rows),
     badges: badgesFor(

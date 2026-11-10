@@ -10,10 +10,12 @@ import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { currentTimeMillis } from '@/lib/current-time'
 import { accountOverview } from '@/lib/identity/account-overview'
 import { getAuthContext } from '@/lib/identity/kernel'
+import { getBio } from '@/lib/player-social'
 import { FALLBACK_SITE_SETTING, getSiteSetting, safely } from '@/lib/queries/public'
 import { registrationAuthHref, registrationSlug } from '@/lib/registration-navigation'
 import { MembershipPanel } from './MembershipPanel'
 import { ProfileNameForm } from './ProfileNameForm'
+import { BioForm } from './BioForm'
 import { PublicHandleForm } from './PublicHandleForm'
 import { WelcomeDialog } from './WelcomeDialog'
 import styles from './account.module.css'
@@ -42,7 +44,10 @@ export default async function AccountPage({
   if (context.session.recoveryRestricted) redirect('/account/security?recovery=1')
   const database = cloudflareBindings().db
   const now = currentTimeMillis()
-  const overview = await accountOverview(database, context, now)
+  const [overview, bio] = await Promise.all([
+    accountOverview(database, context, now),
+    getBio(database, context.account.id),
+  ])
   if (!overview) redirect('/login?error=expired')
 
   return (
@@ -97,6 +102,12 @@ export default async function AccountPage({
                 <dt>公开主页</dt>
                 <dd>
                   <PublicHandleForm handle={overview.account.publicHandle} />
+                </dd>
+              </div>
+              <div>
+                <dt>个性签名</dt>
+                <dd>
+                  <BioForm bio={bio} />
                 </dd>
               </div>
             </dl>
