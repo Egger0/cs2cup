@@ -31,16 +31,15 @@
   position: absolute;
   inset: 0;
   background: url('/models/solar-panorama.webp') center / cover;
-  opacity: 0;
-  transition: opacity 700ms ease;
+  transition: opacity 900ms ease;
 }
 @media (max-aspect-ratio: 4 / 5) {
   .still {
     background-image: url('/models/solar-portrait.webp');
   }
 }
-:global(body:has([data-solar-fallback='true'])) .still {
-  opacity: 1;
+:global(body:has([data-solar-ready='true'])) .still {
+  opacity: 0;
 }
 @media (max-width: 700px) {
   .star {

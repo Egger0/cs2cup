@@ -10,10 +10,12 @@ export function HomeHero({
   signal,
   stops,
   current,
+  latest,
 }: {
   signal: HomeTournamentSignal | null
   stops: string[]
   current: string | null
+  latest: { slug: string; title: string } | null
 }) {
   return (
     <>
@@ -38,7 +40,7 @@ export function HomeHero({
             </Link>
           </div>
         </div>
-        <HomeSignalChip signal={signal} current={current} />
+        <HomeSignalChip signal={signal} current={current} latest={latest} />
         <a href="#clubhouse" className={styles.flow} aria-label="向下探索主场">
           <span>向下探索主场</span>
           <i aria-hidden="true" />

@@ -1,16 +1,15 @@
 .route {
-  --step: min(3, round(down, var(--p, 0) * 4, 1));
-  --fill: clamp(0, (var(--p, 0) - 0.8) * 8, 1);
   position: relative;
-  height: 320svh;
+  min-height: 100svh;
   color: #f1efe8;
   content-visibility: auto;
   contain-intrinsic-size: auto 100svh;
   scroll-margin-top: var(--header-height);
 }
 .stage {
-  position: sticky;
-  top: 0;
+  --p: clamp(0, (var(--travel, 0) - 0.2) * 2.5, 1);
+  --step: min(3, round(down, var(--p) * 4, 1));
+  --fill: clamp(0, (var(--p) - 0.8) * 8, 1);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   justify-items: center;
@@ -247,14 +246,8 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .route {
-    --p: 1 !important;
-    height: auto;
-  }
   .stage {
-    position: relative;
-    height: auto;
-    min-height: 100svh;
+    --p: 1 !important;
   }
   .reel,
   .foot a {

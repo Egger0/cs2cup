@@ -127,3 +127,7 @@
 :global(html[data-theme='dark']) .bar {
   color-scheme: dark;
 }
+
+:global(html body:has([data-solar-overlay])) .bar {
+  color-scheme: dark;
+}
