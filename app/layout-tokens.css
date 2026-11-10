@@ -75,10 +75,15 @@
     radial-gradient(1px 1px at 97% 24%, #e3ecf4, transparent);
 }
 
+@media (max-width: 960px) {
+  :root {
+    --tabbar-height: 84px;
+  }
+}
+
 @media (max-width: 900px) {
   :root {
     --header-height: calc(60px + env(safe-area-inset-top, 0px));
-    --tabbar-height: 84px;
   }
 }
 

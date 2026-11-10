@@ -3,6 +3,8 @@
   right: max(12px, env(safe-area-inset-right, 0px));
   bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   left: max(12px, env(safe-area-inset-left, 0px));
+  width: min(520px, calc(100% - 24px));
+  margin-inline: auto;
   z-index: 40;
   display: none;
   height: 64px;
@@ -90,7 +92,7 @@
   outline-offset: -3px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .bar:not([hidden]) {
     display: flex;
     animation: rise 560ms var(--spring) both;
