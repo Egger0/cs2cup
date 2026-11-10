@@ -18,6 +18,7 @@
 
 .bar a,
 .bar button {
+  position: relative;
   display: flex;
   min-width: 0;
   flex: 1;
