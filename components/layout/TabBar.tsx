@@ -31,6 +31,7 @@ export function TabBar({
   return (
     <nav
       className={styles.bar}
+      onClick={() => navigator.vibrate?.(8)}
       aria-label="底部导航"
       hidden={hidden}
       style={{ '--count': TABS.length + 2, '--index': Math.max(index, 0) } as CSSProperties}

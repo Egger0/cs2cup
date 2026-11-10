@@ -14,6 +14,30 @@
     transform 480ms var(--spring);
 }
 
+.linkSheet {
+  position: relative;
+}
+
+.linkSheet::after {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    320px circle at var(--px, 50%) var(--py, 0%),
+    light-dark(rgb(11 77 135 / 9%), rgb(143 200 239 / 12%)),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 300ms ease;
+  content: '';
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .linkSheet[data-lit]::after {
+    opacity: 1;
+  }
+}
+
 .linkSheet:active {
   transform: scale(0.985);
   transition-duration: 180ms, 180ms, 90ms;

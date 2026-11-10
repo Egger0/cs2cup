@@ -33,7 +33,8 @@
   background: color-mix(in srgb, var(--surface) 68%, transparent);
   transition:
     border-color 0.2s ease,
-    background 0.2s ease;
+    background 0.2s ease,
+    box-shadow 0.5s var(--spring);
 }
 
 .control::placeholder {
@@ -45,6 +46,7 @@
   background: var(--surface);
   outline: 1px solid var(--accent);
   outline-offset: 0;
+  box-shadow: 0 0 0 5px var(--accent-dim);
 }
 
 .invalid {
@@ -55,4 +57,10 @@
   color: var(--c4);
   font-size: 0.8rem;
   min-height: 1.2em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .control {
+    transition: none;
+  }
 }

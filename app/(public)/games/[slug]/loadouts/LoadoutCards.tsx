@@ -63,6 +63,7 @@ export function LoadoutCard({
   return (
     <Root
       className={styles.card}
+      data-light
       id={!anchored || mine || single || preview ? undefined : `loadout-${code.id}`}
       data-status={code.status}
       data-single={single ? '' : undefined}
