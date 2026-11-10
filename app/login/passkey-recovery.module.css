@@ -80,9 +80,14 @@
   transition: transform 180ms var(--ease-out);
 }
 
-.receiptReturn:hover span:last-child,
 .receiptReturn:focus-visible span:last-child {
   transform: translate(2px, -2px);
+}
+
+@media (hover: hover) {
+  .receiptReturn:hover span:last-child {
+    transform: translate(2px, -2px);
+  }
 }
 
 @media (max-width: 820px) {

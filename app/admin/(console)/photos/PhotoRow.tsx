@@ -7,6 +7,7 @@ import { Button } from '@/components/ui'
 import { photoUrl } from '@/lib/media'
 import { deletePhotoAndFile } from '../actions/media'
 import styles from '../admin.module.css'
+import row from './photo-row.module.css'
 
 export function PhotoRow({
   photo,
@@ -24,8 +25,8 @@ export function PhotoRow({
 
   return (
     <div className={styles.listRow}>
-      <div className={styles.photoRow}>
-        <span className={styles.thumb}>
+      <div className={row.photoRow}>
+        <span className={row.thumb}>
           <Image
             src={photoUrl(photo.storageKey)}
             alt=""

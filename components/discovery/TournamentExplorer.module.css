@@ -84,8 +84,10 @@
   cursor: pointer;
   font-size: 0.9375rem;
 }
-.submit:hover {
-  background: var(--ink);
+@media (hover: hover) {
+  .submit:hover {
+    background: var(--ink);
+  }
 }
 .filterRow {
   display: flex;
@@ -109,10 +111,15 @@
   color: var(--muted);
   font-size: 0.875rem;
 }
-.tabs a[aria-current],
-.tabs a:hover {
+.tabs a[aria-current] {
   color: var(--ct);
   border-bottom-color: var(--ct);
+}
+@media (hover: hover) {
+  .tabs a:hover {
+    color: var(--ct);
+    border-bottom-color: var(--ct);
+  }
 }
 .tabs span,
 .followed > span {

@@ -43,8 +43,10 @@
   cursor: pointer;
 }
 
-.levels button:hover {
-  color: var(--space-ink);
+@media (hover: hover) {
+  .levels button:hover {
+    color: var(--space-ink);
+  }
 }
 
 .levels button[aria-pressed='true'] {
@@ -71,8 +73,10 @@
   cursor: pointer;
 }
 
-.tabs button:hover {
-  color: var(--space-ink);
+@media (hover: hover) {
+  .tabs button:hover {
+    color: var(--space-ink);
+  }
 }
 
 .tabs button[aria-selected='true'] {
@@ -134,9 +138,14 @@
   cursor: pointer;
 }
 
-.exits button:hover,
 .exits button[aria-pressed='true'] {
   background: rgb(127 224 168 / 10%);
+}
+
+@media (hover: hover) {
+  .exits button:hover {
+    background: rgb(127 224 168 / 10%);
+  }
 }
 
 .exits span {
@@ -160,8 +169,10 @@
   text-decoration: none;
 }
 
-.loadouts:hover {
-  background: rgb(216 177 105 / 10%);
+@media (hover: hover) {
+  .loadouts:hover {
+    background: rgb(216 177 105 / 10%);
+  }
 }
 
 .credit {
@@ -184,6 +195,6 @@
 
 @media (pointer: coarse) {
   .levels button {
-    min-height: 40px;
+    min-height: 44px;
   }
 }

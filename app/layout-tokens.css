@@ -2,7 +2,8 @@
   --wrap: 1536px;
   --pad: max(clamp(20px, 4vw, 64px), env(safe-area-inset-left), env(safe-area-inset-right));
   --grid-gap: 24px;
-  --header-height: 64px;
+  --header-height: calc(64px + env(safe-area-inset-top, 0px));
+  --tabbar-height: 0px;
   --space-1: 8px;
   --space-2: 16px;
   --space-3: 24px;
@@ -37,7 +38,8 @@
 
 @media (max-width: 900px) {
   :root {
-    --header-height: 60px;
+    --header-height: calc(60px + env(safe-area-inset-top, 0px));
+    --tabbar-height: 56px;
   }
 }
 

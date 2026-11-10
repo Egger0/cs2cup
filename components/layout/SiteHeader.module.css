@@ -63,6 +63,7 @@
   display: flex;
   width: min(100%, var(--wrap));
   height: 100%;
+  padding-top: env(safe-area-inset-top, 0px);
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -134,10 +135,16 @@
   object-fit: contain;
 }
 
-.brand:hover .mark,
 .brand:focus-visible .mark {
   box-shadow: 0 0 28px 6px rgb(74 163 223 / 52%);
   transform: rotate(-14deg) scale(1.08);
+}
+
+@media (hover: hover) {
+  .brand:hover .mark {
+    box-shadow: 0 0 28px 6px rgb(74 163 223 / 52%);
+    transform: rotate(-14deg) scale(1.08);
+  }
 }
 
 .defaultMark {
@@ -158,7 +165,7 @@
 .school {
   color: var(--header-muted);
   font-family: var(--font-mono), monospace;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 450;
   letter-spacing: 0.2em;
 }
@@ -187,12 +194,19 @@
     background-color 200ms ease;
 }
 
-.toggle:hover,
 .toggle:focus-visible,
 .toggle[aria-expanded='true'] {
   color: #06070a;
   border-color: var(--header-accent);
   background: var(--header-accent);
+}
+
+@media (hover: hover) {
+  .toggle:hover {
+    color: #06070a;
+    border-color: var(--header-accent);
+    background: var(--header-accent);
+  }
 }
 
 .toggleLabel {
@@ -244,6 +258,12 @@
 
 .toggle[aria-expanded='true'] .menuIcon i {
   opacity: 0;
+}
+
+@media (max-width: 900px) {
+  .menuToggle[aria-expanded='false'] {
+    display: none;
+  }
 }
 
 @media (max-width: 640px) {

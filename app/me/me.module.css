@@ -53,7 +53,7 @@
 
 .drafts article a {
   display: inline-flex;
-  min-height: 40px;
+  min-height: 44px;
   align-items: center;
   color: var(--accent);
   font-size: 0.9375rem;
@@ -100,10 +100,12 @@
     color 0.2s ease;
 }
 
-.empty a:hover {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--bg);
+@media (hover: hover) {
+  .empty a:hover {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+  }
 }
 
 @media (max-width: 620px) {

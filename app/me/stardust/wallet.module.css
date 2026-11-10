@@ -106,8 +106,10 @@
   transition: background 160ms ease;
 }
 
-.ledger a:hover {
-  background: var(--accent-dim);
+@media (hover: hover) {
+  .ledger a:hover {
+    background: var(--accent-dim);
+  }
 }
 
 .match {

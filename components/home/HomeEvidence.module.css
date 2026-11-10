@@ -26,7 +26,7 @@
 .head p {
   color: #9fb3bb;
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.24em;
 }
 .head h2 {
@@ -170,7 +170,7 @@
 .stages span {
   color: #8c9aa0;
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.16em;
 }
 .stages strong {
@@ -216,8 +216,10 @@
   letter-spacing: 0.1em;
   transition: border-color 200ms ease;
 }
-.foot a:is(:hover, :focus-visible) {
-  border-color: #9bcaeb;
+@media (hover: hover) {
+  .foot a:is(:hover, :focus-visible) {
+    border-color: #9bcaeb;
+  }
 }
 .foot a span:last-child {
   color: #9bcaeb;

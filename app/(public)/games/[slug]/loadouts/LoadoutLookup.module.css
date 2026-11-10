@@ -31,7 +31,7 @@
 .field input {
   flex: 1;
   min-width: 0;
-  min-height: 40px;
+  min-height: 44px;
   border: 0;
   background: none;
   color: var(--ink);

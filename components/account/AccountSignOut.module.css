@@ -18,9 +18,14 @@
   transition: color 180ms ease;
 }
 
-.control button:hover,
 .control button:focus-visible {
   color: var(--ink);
+}
+
+@media (hover: hover) {
+  .control button:hover {
+    color: var(--ink);
+  }
 }
 
 .control button:disabled {

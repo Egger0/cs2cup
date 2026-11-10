@@ -130,7 +130,7 @@
 
 .stops small {
   color: var(--space-muted);
-  font-size: 11px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -179,10 +179,16 @@
   margin-top: 6px;
 }
 
-.plan:hover,
 .plan[aria-pressed='true'] {
   border-color: #ffd166;
   background: rgb(255 209 102 / 8%);
+}
+
+@media (hover: hover) {
+  .plan:hover {
+    border-color: #ffd166;
+    background: rgb(255 209 102 / 8%);
+  }
 }
 
 .plan b {

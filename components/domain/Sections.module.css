@@ -218,9 +218,14 @@
   transition: color 180ms ease;
 }
 
-.faqItem summary:hover,
 .faqItem summary:focus-visible {
   color: var(--accent);
+}
+
+@media (hover: hover) {
+  .faqItem summary:hover {
+    color: var(--accent);
+  }
 }
 
 .faqItem summary::-webkit-details-marker {

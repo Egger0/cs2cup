@@ -74,8 +74,10 @@
   transition: background 0.24s ease;
 }
 
-.role:hover {
-  background: var(--ct-dim);
+@media (hover: hover) {
+  .role:hover {
+    background: var(--ct-dim);
+  }
 }
 
 .roleName {
@@ -101,8 +103,8 @@
   position: relative;
   overflow: hidden;
   border: 1px solid var(--line-strong);
-  background: var(--ink);
-  color: var(--bg);
+  background: #171817;
+  color: #f1efe8;
   padding: clamp(28px, 4vw, 48px);
   display: flex;
   flex-wrap: wrap;
@@ -126,7 +128,7 @@
 }
 
 .joinText h2 {
-  color: var(--bg);
+  color: #f1efe8;
   font-family: var(--font-heavy), var(--font-body);
   font-weight: 900;
   font-size: clamp(1.4rem, 3vw, 2rem);
@@ -152,7 +154,7 @@
   gap: 10px;
   font-family: var(--font-mono), monospace;
   font-size: 0.9375rem;
-  color: var(--bg);
+  color: #f1efe8;
 }
 
 .contact a {

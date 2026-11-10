@@ -59,14 +59,24 @@
   transition: opacity 160ms ease;
 }
 
-.rail button:hover,
 .rail button[aria-pressed='true'] {
   color: var(--space-ink);
 }
 
-.rail button:hover img,
+@media (hover: hover) {
+  .rail button:hover {
+    color: var(--space-ink);
+  }
+}
+
 .rail button[aria-pressed='true'] img {
   opacity: 1;
+}
+
+@media (hover: hover) {
+  .rail button:hover img {
+    opacity: 1;
+  }
 }
 
 .rail button[aria-pressed='true'] {
@@ -120,9 +130,14 @@
   transition: opacity 120ms ease;
 }
 
-.layers button:hover .tip,
 .layers button:focus-visible .tip {
   opacity: 1;
+}
+
+@media (hover: hover) {
+  .layers button:hover .tip {
+    opacity: 1;
+  }
 }
 
 .layers button[aria-pressed='false'] > [aria-hidden] {
@@ -161,8 +176,10 @@
   cursor: pointer;
 }
 
-.controls button:hover {
-  background: rgb(255 255 255 / 8%);
+@media (hover: hover) {
+  .controls button:hover {
+    background: rgb(255 255 255 / 8%);
+  }
 }
 
 .controls svg {

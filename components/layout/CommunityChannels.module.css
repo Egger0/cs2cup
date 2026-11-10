@@ -8,7 +8,7 @@
 
 .chip {
   display: inline-flex;
-  min-height: 42px;
+  min-height: 44px;
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
@@ -27,10 +27,16 @@
     color 0.2s ease;
 }
 
-.chip:hover,
 .chip:focus-visible {
   border-color: var(--ct);
   color: #f1efe8;
+}
+
+@media (hover: hover) {
+  .chip:hover {
+    border-color: var(--ct);
+    color: #f1efe8;
+  }
 }
 
 .chipIcon {

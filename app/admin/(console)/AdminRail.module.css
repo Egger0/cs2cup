@@ -33,7 +33,7 @@
   padding: 0 4px 0 14px;
   color: var(--admin-muted);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
   white-space: nowrap;
 }
@@ -57,9 +57,14 @@
     background-color 180ms ease;
 }
 
-.link:hover,
 .link:focus-visible {
   color: var(--ink);
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--ink);
+  }
 }
 
 .link[aria-current='page'] {

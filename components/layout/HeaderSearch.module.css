@@ -11,10 +11,15 @@
     color 180ms ease,
     background-color 180ms ease;
 }
-.search:hover,
 .search:focus-visible {
   color: var(--header-accent);
   background: rgb(155 202 235 / 12%);
+}
+@media (hover: hover) {
+  .search:hover {
+    color: var(--header-accent);
+    background: rgb(155 202 235 / 12%);
+  }
 }
 @media (max-width: 390px) {
   .search {

@@ -18,10 +18,12 @@
     color 0.2s ease;
 }
 
-.button:hover:not(:disabled) {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--bg);
+@media (hover: hover) {
+  .button:hover:not(:disabled) {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+  }
 }
 
 .button:active:not(:disabled) {
@@ -39,10 +41,12 @@
   color: var(--button-ink);
 }
 
-.primary:hover:not(:disabled) {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--bg);
+@media (hover: hover) {
+  .primary:hover:not(:disabled) {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+  }
 }
 
 .ghost {
@@ -50,10 +54,12 @@
   color: var(--ink);
 }
 
-.ghost:hover:not(:disabled) {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--bg);
+@media (hover: hover) {
+  .ghost:hover:not(:disabled) {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+  }
 }
 
 .danger {
@@ -61,10 +67,12 @@
   color: var(--c4);
 }
 
-.danger:hover:not(:disabled) {
-  border-color: var(--c4);
-  background: var(--c4);
-  color: #fff;
+@media (hover: hover) {
+  .danger:hover:not(:disabled) {
+    border-color: var(--c4);
+    background: var(--c4);
+    color: #fff;
+  }
 }
 
 .mini {

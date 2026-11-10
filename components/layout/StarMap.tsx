@@ -14,6 +14,7 @@ const ENGLISH: Record<string, string> = {
   '/handbook': 'HANDBOOK',
   '/about': 'ABOUT',
   '/guestbook': 'GUESTBOOK',
+  '/leaderboard': 'RANKING',
   '/lottery': 'RECRUIT DRAW',
   '/search': 'SEARCH',
   '/me': 'MY EVENTS',
@@ -87,7 +88,9 @@ export function StarMap({
                   {DOCUMENT_LINKS.has(link.href) ? (
                     <a {...shared}>{content}</a>
                   ) : (
-                    <Link {...shared}>{content}</Link>
+                    <Link {...shared} prefetch={false}>
+                      {content}
+                    </Link>
                   )}
                 </li>
               )

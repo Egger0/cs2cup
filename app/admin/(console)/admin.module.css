@@ -121,7 +121,7 @@
   overflow-wrap: anywhere;
   color: var(--admin-muted, var(--muted-2));
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.07em;
 }
 
@@ -235,9 +235,11 @@
   font-size: 0.76rem;
 }
 
-.panelAction:hover {
-  border-color: var(--admin-blue, var(--t));
-  background: rgba(109, 165, 211, 0.08);
+@media (hover: hover) {
+  .panelAction:hover {
+    border-color: var(--admin-blue, var(--t));
+    background: rgba(109, 165, 211, 0.08);
+  }
 }
 
 .formSection {
@@ -253,7 +255,7 @@
   padding-inline: 8px;
   color: var(--admin-blue, var(--t));
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
 }
 
@@ -273,28 +275,6 @@
 
 .saveBar:not([data-dirty]) {
   position: static;
-}
-
-.photoRow {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 16px;
-}
-
-.thumb {
-  width: 96px;
-  height: 64px;
-  flex: none;
-  overflow: hidden;
-  border: 1px solid var(--admin-line, var(--line));
-  background: var(--void);
-}
-
-.thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 @media (max-width: 680px) {
