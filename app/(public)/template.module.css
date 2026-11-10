@@ -1,0 +1,15 @@
+.page {
+  animation: arrive 360ms ease-out both;
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page {
+    animation: none;
+  }
+}

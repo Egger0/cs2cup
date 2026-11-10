@@ -10,7 +10,19 @@
   composes: sheet;
   transition:
     border-color 180ms ease,
-    box-shadow 180ms ease;
+    box-shadow 180ms ease,
+    transform 480ms var(--spring);
+}
+
+.linkSheet:active {
+  transform: scale(0.985);
+  transition-duration: 180ms, 180ms, 90ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .linkSheet:active {
+    transform: none;
+  }
 }
 
 @media (hover: hover) {

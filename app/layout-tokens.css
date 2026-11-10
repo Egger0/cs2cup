@@ -4,6 +4,45 @@
   --grid-gap: 24px;
   --header-height: calc(64px + env(safe-area-inset-top, 0px));
   --tabbar-height: 0px;
+  --spring: linear(
+    0,
+    0.009,
+    0.035 2.1%,
+    0.141 4.4%,
+    0.723 12.9%,
+    0.938 16.7%,
+    1.017 19.4%,
+    1.077 22.4%,
+    1.121 25.7%,
+    1.149 29.6%,
+    1.159 34.1%,
+    1.143 40.6%,
+    1.04 54.5%,
+    0.99 63.7%,
+    0.983 70.2%,
+    1.002 87.6%,
+    1
+  );
+  --spring-soft: linear(
+    0,
+    0.006,
+    0.024 2.3%,
+    0.1 5.5%,
+    0.5 15.4%,
+    0.8 22.4%,
+    0.99 29.9%,
+    1.06 36.4%,
+    1.075 42%,
+    1.06 50%,
+    1.015 66%,
+    0.998 80%,
+    1
+  );
+  --press: 0.96;
+  --glass-fill: light-dark(rgb(255 255 255 / 58%), rgb(46 48 46 / 52%));
+  --glass-stroke: light-dark(rgb(255 255 255 / 72%), rgb(255 255 255 / 15%));
+  --glass-shadow: light-dark(0 10px 34px rgb(23 24 23 / 14%), 0 10px 34px rgb(0 0 0 / 42%));
+  --glass-sheen: light-dark(rgb(255 255 255 / 85%), rgb(255 255 255 / 20%));
   --space-1: 8px;
   --space-2: 16px;
   --space-3: 24px;
@@ -39,7 +78,7 @@
 @media (max-width: 900px) {
   :root {
     --header-height: calc(60px + env(safe-area-inset-top, 0px));
-    --tabbar-height: 56px;
+    --tabbar-height: 84px;
   }
 }
 
