@@ -58,8 +58,10 @@
   text-align: center;
 }
 
-.card:hover .media img {
-  transform: translateX(-2%) scale(1.03);
+@media (hover: hover) {
+  .card:hover .media img {
+    transform: translateX(-2%) scale(1.03);
+  }
 }
 
 .media[data-shot] a {
@@ -275,9 +277,11 @@
   color: var(--ink);
 }
 
-.meta a:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
+@media (hover: hover) {
+  .meta a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
 }
 
 .codeRow {
@@ -313,8 +317,10 @@
   }
 }
 
-.title a:hover {
-  color: var(--ct);
+@media (hover: hover) {
+  .title a:hover {
+    color: var(--ct);
+  }
 }
 
 @media (min-width: 721px) {

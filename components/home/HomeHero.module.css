@@ -45,7 +45,7 @@
 .eyebrow {
   color: #9bcaeb;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.26em;
 }
 .copy h1 {
@@ -103,15 +103,19 @@
   background: rgb(12 17 21 / 72%);
   border: 1px solid rgb(155 202 235 / 42%);
 }
-.primary:is(:hover, :focus-visible) {
-  background: rgb(155 202 235 / 20%);
-  border-color: #9bcaeb;
+@media (hover: hover) {
+  .primary:is(:hover, :focus-visible) {
+    background: rgb(155 202 235 / 20%);
+    border-color: #9bcaeb;
+  }
 }
 .secondary {
   color: #b4c8d1;
 }
-.secondary:is(:hover, :focus-visible) {
-  color: #fff;
+@media (hover: hover) {
+  .secondary:is(:hover, :focus-visible) {
+    color: #fff;
+  }
 }
 .primary svg,
 .secondary svg {
@@ -128,7 +132,7 @@
   min-height: 44px;
   color: rgb(241 239 232 / 62%);
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.32em;
   opacity: calc(1 - var(--solar-progress, 0) * 3);
   transform: translateX(-50%);

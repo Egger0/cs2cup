@@ -19,9 +19,14 @@
   border-right: 0;
 }
 
-.entry:hover,
 .entry:focus-visible {
   background: var(--ct-dim);
+}
+
+@media (hover: hover) {
+  .entry:hover {
+    background: var(--ct-dim);
+  }
 }
 
 .entry::before {
@@ -48,7 +53,7 @@
   margin-top: 18px;
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.16em;
 }
 

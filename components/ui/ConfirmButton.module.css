@@ -21,7 +21,7 @@
 }
 
 .cancel {
-  min-height: 32px;
+  min-height: 44px;
   padding-inline: 8px;
   color: var(--muted);
   background: none;
@@ -32,7 +32,12 @@
   cursor: pointer;
 }
 
-.cancel:hover,
 .cancel:focus-visible {
   color: var(--ink);
+}
+
+@media (hover: hover) {
+  .cancel:hover {
+    color: var(--ink);
+  }
 }

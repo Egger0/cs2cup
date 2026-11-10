@@ -162,8 +162,10 @@
   font-weight: 650;
   border: 1px solid #f1efe8;
 }
-.primary:hover {
-  background: #b8dbf4;
+@media (hover: hover) {
+  .primary:hover {
+    background: #b8dbf4;
+  }
 }
 .rail {
   display: flex;

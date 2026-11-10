@@ -34,7 +34,7 @@
 .order {
   color: var(--t);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 .smallButton {
@@ -45,12 +45,14 @@
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
-.smallButton:hover:not(:disabled) {
-  border-color: var(--t);
-  color: var(--ink);
+@media (hover: hover) {
+  .smallButton:hover:not(:disabled) {
+    border-color: var(--t);
+    color: var(--ink);
+  }
 }
 
 .smallButton:disabled {
@@ -133,7 +135,7 @@
   padding-inline: 5px;
   color: var(--muted-2);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
 }
 
@@ -141,7 +143,7 @@
   display: grid;
   gap: 4px;
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-align: center;
 }
 

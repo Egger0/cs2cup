@@ -65,9 +65,14 @@
   cursor: pointer;
 }
 
-.close:hover,
 .close:focus-visible {
   border-color: var(--line-strong);
+}
+
+@media (hover: hover) {
+  .close:hover {
+    border-color: var(--line-strong);
+  }
 }
 
 .title {
@@ -125,9 +130,14 @@
   background: var(--honour);
 }
 
-.primary:hover,
 .primary:focus-visible {
   background: #e6c486;
+}
+
+@media (hover: hover) {
+  .primary:hover {
+    background: #e6c486;
+  }
 }
 
 .later {
@@ -136,10 +146,16 @@
   background: transparent;
 }
 
-.later:hover,
 .later:focus-visible {
   color: var(--ink);
   border-color: var(--line);
+}
+
+@media (hover: hover) {
+  .later:hover {
+    color: var(--ink);
+    border-color: var(--line);
+  }
 }
 
 @keyframes arrive {

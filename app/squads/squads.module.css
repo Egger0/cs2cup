@@ -101,10 +101,12 @@
   color: var(--bg);
 }
 
-.primaryButton:hover:not(:disabled) {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--button-ink);
+@media (hover: hover) {
+  .primaryButton:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--button-ink);
+  }
 }
 
 .quietButton {
@@ -113,9 +115,14 @@
   color: var(--ink);
 }
 
-.quietButton:hover,
 .quietButton:focus-visible {
   border-color: var(--ink);
+}
+
+@media (hover: hover) {
+  .quietButton:hover {
+    border-color: var(--ink);
+  }
 }
 
 .primaryButton:disabled,
@@ -206,9 +213,11 @@
   overflow-wrap: anywhere;
 }
 
-.seatName a:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
+@media (hover: hover) {
+  .seatName a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
 }
 
 .seatName small {

@@ -14,6 +14,7 @@ const ENGLISH: Record<string, string> = {
   '/handbook': 'HANDBOOK',
   '/about': 'ABOUT',
   '/guestbook': 'GUESTBOOK',
+  '/leaderboard': 'RANKING',
   '/lottery': 'RECRUIT DRAW',
   '/search': 'SEARCH',
   '/me': 'MY EVENTS',

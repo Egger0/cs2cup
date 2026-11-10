@@ -1,0 +1,21 @@
+.photoRow {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 16px;
+}
+
+.thumb {
+  width: 96px;
+  height: 64px;
+  flex: none;
+  overflow: hidden;
+  border: 1px solid var(--admin-line, var(--line));
+  background: var(--void);
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

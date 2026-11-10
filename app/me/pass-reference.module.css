@@ -69,11 +69,18 @@
     color 180ms ease;
 }
 
-.copy:hover:not(:disabled),
 .copy:focus-visible {
   border-color: var(--ink);
   background: var(--ink);
   color: var(--bg);
+}
+
+@media (hover: hover) {
+  .copy:hover:not(:disabled) {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+  }
 }
 
 .copy:disabled {

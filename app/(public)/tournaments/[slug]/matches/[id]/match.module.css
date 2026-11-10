@@ -18,9 +18,14 @@
   transition: color 160ms ease;
 }
 
-.breadcrumb a:hover,
 .breadcrumb a:focus-visible {
   color: var(--ct);
+}
+
+@media (hover: hover) {
+  .breadcrumb a:hover {
+    color: var(--ct);
+  }
 }
 
 .veto {
@@ -50,17 +55,26 @@
     transform 180ms var(--ease);
 }
 
-.contextLinks a:hover,
 .contextLinks a:focus-visible {
   color: var(--ct);
 }
 
-.contextLinks a:first-child:hover {
-  transform: translateX(-3px);
+@media (hover: hover) {
+  .contextLinks a:hover {
+    color: var(--ct);
+  }
 }
 
-.contextLinks a:last-child:hover {
-  transform: translateX(3px);
+@media (hover: hover) {
+  .contextLinks a:first-child:hover {
+    transform: translateX(-3px);
+  }
+}
+
+@media (hover: hover) {
+  .contextLinks a:last-child:hover {
+    transform: translateX(3px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -69,7 +83,9 @@
     transition: none;
   }
 
-  .contextLinks a:hover {
-    transform: none;
+  @media (hover: hover) {
+    .contextLinks a:hover {
+      transform: none;
+    }
   }
 }

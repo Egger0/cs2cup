@@ -12,7 +12,7 @@
   padding: 1px 6px;
   border: 1px solid var(--honour);
   color: var(--honour);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -39,13 +39,13 @@
 .season {
   color: var(--muted);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.1em;
 }
 
 .role {
   color: var(--muted-2);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .tournament {
@@ -53,8 +53,10 @@
   border-bottom: 1px solid transparent;
 }
 
-.tournament:hover {
-  border-bottom-color: var(--accent);
+@media (hover: hover) {
+  .tournament:hover {
+    border-bottom-color: var(--accent);
+  }
 }
 
 .team {
@@ -65,14 +67,16 @@
   font-size: 0.9rem;
 }
 
-.team:hover {
-  color: var(--ink);
+@media (hover: hover) {
+  .team:hover {
+    color: var(--ink);
+  }
 }
 
 .tag {
   color: var(--accent);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 0.1em;
 }
 
