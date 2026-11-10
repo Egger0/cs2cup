@@ -32,7 +32,7 @@
 .card header span {
   color: var(--muted);
   font-family: var(--font-mono, monospace);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }

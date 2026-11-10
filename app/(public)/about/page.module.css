@@ -74,8 +74,10 @@
   transition: background 0.24s ease;
 }
 
-.role:hover {
-  background: var(--ct-dim);
+@media (hover: hover) {
+  .role:hover {
+    background: var(--ct-dim);
+  }
 }
 
 .roleName {

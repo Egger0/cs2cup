@@ -101,13 +101,15 @@
     color 0.2s ease;
 }
 
-.passkeyList button:hover:not(:disabled),
-.sessionList button:hover:not(:disabled),
-.section > button:hover:not(:disabled),
-.codeReceipt button:hover:not(:disabled) {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--bg);
+@media (hover: hover) {
+  .passkeyList button:hover:not(:disabled),
+  .sessionList button:hover:not(:disabled),
+  .section > button:hover:not(:disabled),
+  .codeReceipt button:hover:not(:disabled) {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+  }
 }
 
 .passkeyList button[data-confirming='true'],
@@ -167,11 +169,13 @@
   color: var(--button-ink);
 }
 
-.securityForm button:hover:not(:disabled),
-.enroll button:hover:not(:disabled) {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--bg);
+@media (hover: hover) {
+  .securityForm button:hover:not(:disabled),
+  .enroll button:hover:not(:disabled) {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+  }
 }
 
 .currentBadge {

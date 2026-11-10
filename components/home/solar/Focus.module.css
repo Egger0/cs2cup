@@ -34,9 +34,13 @@
   line-height: 1.6;
   white-space: normal;
 }
-.anchor:is(:focus-visible, :hover) .detail,
 .anchor[data-hovered='true'] .detail {
   display: block;
+}
+@media (hover: hover) {
+  .anchor:is(:focus-visible, :hover) .detail {
+    display: block;
+  }
 }
 .transition {
   display: none;

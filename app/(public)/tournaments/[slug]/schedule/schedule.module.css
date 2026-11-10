@@ -4,7 +4,7 @@
   gap: 16px;
   margin-top: 28px;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   color: var(--muted-2);
 }
@@ -25,9 +25,11 @@
   content: '';
 }
 
-.calendarLink:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+@media (hover: hover) {
+  .calendarLink:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 }
 
 @media (max-width: 720px) {

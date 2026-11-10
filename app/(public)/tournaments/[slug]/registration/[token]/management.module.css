@@ -16,7 +16,7 @@
   border: 1px solid currentColor;
   color: var(--ct);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
 }
 
@@ -42,7 +42,7 @@
 .checkIn > span {
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
 }
 
@@ -58,7 +58,7 @@
 .checkIn time {
   color: var(--muted);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 .locked {
@@ -90,7 +90,7 @@
 
 .summaryGrid dt {
   color: var(--muted-2);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .summaryGrid dd {
@@ -216,7 +216,7 @@
 .accountHandoff > span {
   color: var(--ct);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.1em;
 }
@@ -232,7 +232,7 @@
 
 .accountHandoff p {
   color: var(--muted);
-  font-size: 0.73rem;
+  font-size: 0.75rem;
 }
 
 .accountHandoff > a,
@@ -240,7 +240,7 @@
   width: fit-content;
   border-bottom: 1px solid currentColor;
   color: var(--ct);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 

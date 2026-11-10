@@ -144,7 +144,7 @@
   display: grid;
   gap: 6px;
   color: var(--admin-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 .recoveryForm {
@@ -205,7 +205,7 @@
 .accessList span,
 .rosterList span {
   color: var(--admin-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 .accessList form,
@@ -218,7 +218,7 @@
 .rosterList small {
   max-width: 680px;
   color: #d8a887;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 .auditList {
@@ -235,7 +235,7 @@
   gap: 12px;
   border-bottom: 1px solid var(--admin-line);
   padding: 10px 0;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 .auditList time,
@@ -283,7 +283,9 @@
   }
 }
 
-.accessPanel button:hover:not(:disabled),
-.roster button:hover:not(:disabled) {
-  border-color: var(--ink);
+@media (hover: hover) {
+  .accessPanel button:hover:not(:disabled),
+  .roster button:hover:not(:disabled) {
+    border-color: var(--ink);
+  }
 }

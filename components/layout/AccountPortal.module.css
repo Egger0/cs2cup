@@ -17,11 +17,18 @@
   height: 23px;
 }
 
-.portal:hover,
 .portal:focus-visible {
   color: var(--header-accent);
   background: rgb(155 202 235 / 14%);
   transform: translateY(-1px) scale(1.04);
+}
+
+@media (hover: hover) {
+  .portal:hover {
+    color: var(--header-accent);
+    background: rgb(155 202 235 / 14%);
+    transform: translateY(-1px) scale(1.04);
+  }
 }
 
 .portal:active {

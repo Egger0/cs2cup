@@ -46,8 +46,10 @@
   border-top: 1px solid var(--line);
 }
 
-.back a:hover {
-  color: var(--ct);
+@media (hover: hover) {
+  .back a:hover {
+    color: var(--ct);
+  }
 }
 .back a {
   display: inline-flex;

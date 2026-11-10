@@ -41,9 +41,11 @@
     background 180ms ease;
 }
 
-.switcher li > a:hover {
-  border-color: var(--accent);
-  background: var(--accent-dim);
+@media (hover: hover) {
+  .switcher li > a:hover {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
 }
 
 .signal {

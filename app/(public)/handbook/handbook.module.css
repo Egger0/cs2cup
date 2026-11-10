@@ -17,9 +17,14 @@
   transition: background-color 0.2s ease;
 }
 
-.row:hover,
 .row:focus-visible {
   background: var(--surface);
+}
+
+@media (hover: hover) {
+  .row:hover {
+    background: var(--surface);
+  }
 }
 
 .index {
@@ -50,7 +55,7 @@
 .meta {
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.1em;
   white-space: nowrap;
 }

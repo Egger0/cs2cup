@@ -18,9 +18,11 @@
     background 160ms ease,
     border-color 160ms ease;
 }
-.trigger:hover {
-  border-color: currentColor;
-  background: var(--ct-dim);
+@media (hover: hover) {
+  .trigger:hover {
+    border-color: currentColor;
+    background: var(--ct-dim);
+  }
 }
 .dialog {
   width: min(820px, calc(100% - 32px));
@@ -73,8 +75,10 @@
   padding: 0;
   flex: none;
 }
-.close:hover {
-  background: #e9e6dc;
+@media (hover: hover) {
+  .close:hover {
+    background: #e9e6dc;
+  }
 }
 .shareGrid {
   display: grid;
@@ -131,12 +135,16 @@
   background: #0b4d87;
   border-color: #0b4d87;
 }
-.primary:hover {
-  background: #07375f;
+@media (hover: hover) {
+  .primary:hover {
+    background: #07375f;
+  }
 }
-.option:hover {
-  background: #e9e6dc;
-  border-color: #171817;
+@media (hover: hover) {
+  .option:hover {
+    background: #e9e6dc;
+    border-color: #171817;
+  }
 }
 .linkLabel {
   display: grid;

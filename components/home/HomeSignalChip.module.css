@@ -42,7 +42,7 @@
   gap: 10px;
   color: var(--space-muted);
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
 }
 .beacon {
@@ -87,8 +87,10 @@
   color: var(--space-accent);
   transition: transform 260ms var(--ease-out);
 }
-.signalTitle:is(:hover, :focus-visible) svg {
-  transform: translate(3px, -3px);
+@media (hover: hover) {
+  .signalTitle:is(:hover, :focus-visible) svg {
+    transform: translate(3px, -3px);
+  }
 }
 .signalAction {
   display: flex;
@@ -104,8 +106,10 @@
   letter-spacing: 0.08em;
   transition: background-color 180ms ease;
 }
-.signalAction:is(:hover, :focus-visible) {
-  background: #c4e5f8;
+@media (hover: hover) {
+  .signalAction:is(:hover, :focus-visible) {
+    background: #c4e5f8;
+  }
 }
 @keyframes rise {
   from {

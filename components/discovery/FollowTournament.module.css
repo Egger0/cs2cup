@@ -18,11 +18,17 @@
     background 160ms ease,
     border-color 160ms ease;
 }
-.button:hover,
 .button[aria-pressed='true'] {
   border-color: var(--ct);
   color: var(--ct);
   background: var(--ct-dim);
+}
+@media (hover: hover) {
+  .button:hover {
+    border-color: var(--ct);
+    color: var(--ct);
+    background: var(--ct-dim);
+  }
 }
 .error {
   display: block;

@@ -15,8 +15,10 @@
   border-bottom: 0;
 }
 
-.match:hover {
-  background: var(--ct-dim);
+@media (hover: hover) {
+  .match:hover {
+    background: var(--ct-dim);
+  }
 }
 
 .match:focus-visible {

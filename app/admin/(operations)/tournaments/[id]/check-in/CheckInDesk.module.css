@@ -18,7 +18,7 @@
 .closed > p {
   color: var(--ops-blue);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.15em;
 }
 
@@ -37,7 +37,7 @@
 
 .summary small {
   color: var(--muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 .progress {
@@ -119,10 +119,16 @@
     background 180ms ease;
 }
 
-.team:hover,
 .team:focus-within {
   border-color: var(--ops-line-strong);
   background: #171e21;
+}
+
+@media (hover: hover) {
+  .team:hover {
+    border-color: var(--ops-line-strong);
+    background: #171e21;
+  }
 }
 
 .team[aria-busy='true'] {
@@ -137,7 +143,7 @@
 
 .teamLead p {
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.06em;
 }
 
@@ -165,7 +171,7 @@
 .details dt {
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.12em;
 }
 
@@ -294,14 +300,14 @@
   background: none;
   color: var(--accent);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.1em;
   cursor: pointer;
 }
 
 .seatsError {
   color: var(--c4);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .seatsList {
@@ -330,7 +336,7 @@
 
 .seatsList small {
   color: var(--muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 .seatsList form {

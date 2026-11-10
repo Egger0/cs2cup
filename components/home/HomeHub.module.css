@@ -61,12 +61,14 @@
   );
   content: '';
 }
-.pathways a:is(:hover, :focus-visible) {
-  background: radial-gradient(
-    120% 90% at 50% 100%,
-    rgb(155 202 235 / 10%),
-    rgb(155 202 235 / 0%) 70%
-  );
+@media (hover: hover) {
+  .pathways a:is(:hover, :focus-visible) {
+    background: radial-gradient(
+      120% 90% at 50% 100%,
+      rgb(155 202 235 / 10%),
+      rgb(155 202 235 / 0%) 70%
+    );
+  }
 }
 .pathways a::after {
   position: absolute;
@@ -82,8 +84,10 @@
 .pathways a:first-child::after {
   left: 0;
 }
-.pathways a:is(:hover, :focus-visible)::after {
-  transform: scaleX(1);
+@media (hover: hover) {
+  .pathways a:is(:hover, :focus-visible)::after {
+    transform: scaleX(1);
+  }
 }
 .number {
   position: absolute;
@@ -96,12 +100,14 @@
   -webkit-text-stroke: 1px rgb(155 202 235 / 48%);
   transition: -webkit-text-stroke-color 200ms ease;
 }
-.pathways a:is(:hover, :focus-visible) .number {
-  -webkit-text-stroke-color: var(--space-accent);
+@media (hover: hover) {
+  .pathways a:is(:hover, :focus-visible) .number {
+    -webkit-text-stroke-color: var(--space-accent);
+  }
 }
 .role {
   color: var(--space-accent);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   padding-right: 52px;
 }
@@ -117,8 +123,10 @@
   color: var(--space-accent);
   transition: transform 260ms var(--ease-out);
 }
-.pathways a:is(:hover, :focus-visible) h3 svg {
-  transform: translate(3px, -3px);
+@media (hover: hover) {
+  .pathways a:is(:hover, :focus-visible) h3 svg {
+    transform: translate(3px, -3px);
+  }
 }
 .pathways p {
   margin-top: 12px;
@@ -158,11 +166,15 @@
   content: '';
   transition: width 260ms var(--ease-out);
 }
-.journal a:is(:hover, :focus-visible) {
-  color: #fff;
+@media (hover: hover) {
+  .journal a:is(:hover, :focus-visible) {
+    color: #fff;
+  }
 }
-.journal a:not(.allNews):is(:hover, :focus-visible)::before {
-  width: 34px;
+@media (hover: hover) {
+  .journal a:not(.allNews):is(:hover, :focus-visible)::before {
+    width: 34px;
+  }
 }
 .allNews {
   margin-left: auto;
@@ -212,7 +224,9 @@
   .journal a::before {
     transition: none;
   }
-  .pathways a:is(:hover, :focus-visible) h3 svg {
-    transform: none;
+  @media (hover: hover) {
+    .pathways a:is(:hover, :focus-visible) h3 svg {
+      transform: none;
+    }
   }
 }

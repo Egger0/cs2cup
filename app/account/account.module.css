@@ -89,7 +89,7 @@
 }
 
 .rows dd button {
-  min-height: 40px;
+  min-height: 44px;
   padding: 7px 18px;
   border: 1px solid var(--line-strong);
   border-radius: 999px;
@@ -103,10 +103,12 @@
     color 0.2s ease;
 }
 
-.rows dd button:hover:not(:disabled) {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--bg);
+@media (hover: hover) {
+  .rows dd button:hover:not(:disabled) {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+  }
 }
 
 .rows dd form {
