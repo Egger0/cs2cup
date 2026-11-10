@@ -1,0 +1,141 @@
+.dialog {
+  width: min(420px, calc(100% - 32px));
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  color: var(--ink);
+  background: var(--bg);
+  box-shadow: 0 28px 90px rgb(0 0 0 / 35%);
+  overscroll-behavior: contain;
+  opacity: 0;
+  transform: translateY(28px) scale(0.95);
+  transition:
+    opacity 220ms ease,
+    transform 560ms var(--spring),
+    overlay 560ms allow-discrete,
+    display 560ms allow-discrete;
+}
+
+.dialog[open] {
+  opacity: 1;
+  transform: none;
+}
+
+@starting-style {
+  .dialog[open] {
+    opacity: 0;
+    transform: translateY(28px) scale(0.95);
+  }
+}
+
+.dialog::backdrop {
+  background: rgb(17 18 16 / 72%);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.body {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 28px 24px 24px;
+  text-align: center;
+}
+
+.kicker {
+  color: var(--muted);
+  font:
+    0.75rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.18em;
+}
+
+.body h2 {
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+.code {
+  position: relative;
+  display: grid;
+  width: min(280px, 70vw);
+  aspect-ratio: 1;
+  place-items: center;
+  padding: 12px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 8%) inset;
+}
+
+.code img {
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  transition:
+    opacity 400ms ease,
+    filter 400ms ease;
+}
+
+.code[data-done] img {
+  opacity: 0.25;
+  filter: blur(2px);
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #eee, #f7f7f7, #eee);
+}
+
+.stamp {
+  position: absolute;
+  display: grid;
+  width: 62%;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 6px double #1f7a4d;
+  border-radius: 50%;
+  color: #1f7a4d;
+  font:
+    800 2rem / 1 var(--font-display),
+    sans-serif;
+  rotate: -14deg;
+  animation: land 620ms var(--spring) both;
+}
+
+@keyframes land {
+  from {
+    opacity: 0;
+    scale: 1.8;
+    rotate: -30deg;
+  }
+}
+
+.hint {
+  max-width: 28ch;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.close {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 24px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--ink);
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog,
+  .stamp {
+    transition: none;
+    animation: none;
+  }
+}
