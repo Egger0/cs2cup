@@ -36,11 +36,7 @@ export function TabBar({
         <Icon name="user" size={22} />
         <span>我的</span>
       </Link>
-      <button
-        type="button"
-        aria-haspopup="dialog"
-        onClick={event => onMore(event.currentTarget)}
-      >
+      <button type="button" aria-haspopup="dialog" onClick={event => onMore(event.currentTarget)}>
         <Icon name="more" size={22} />
         <span>更多</span>
       </button>
