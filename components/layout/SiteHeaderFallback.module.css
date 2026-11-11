@@ -37,19 +37,8 @@
   border-bottom: 1px solid #aaa69b;
 }
 
-.meta small,
-.links a > span {
-  color: #62635e;
-}
-
-.links a > span {
-  font-family: var(--font-body);
-  font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-}
-
 .meta small {
+  color: #62635e;
   font-size: 0.75rem;
   letter-spacing: 0.02em;
 }
@@ -65,11 +54,9 @@
 }
 
 .links a {
-  display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) auto;
-  min-height: 54px;
+  display: flex;
+  min-height: 48px;
   align-items: center;
-  gap: 8px;
   padding: 0 12px;
   border-bottom: 1px solid #c8c4b9;
 }

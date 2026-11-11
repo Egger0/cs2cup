@@ -188,7 +188,6 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
         origin={origin}
         links={links}
         active={active}
-        school={setting.school}
         onNavigate={() => setOpen(false)}
       />
     </header>

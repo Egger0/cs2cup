@@ -4,6 +4,7 @@ import styles from './SiteHeaderFallback.module.css'
 export interface SiteNavLink {
   href: string
   label: string
+  group?: string
 }
 
 export function SiteHeaderFallback({ links }: { links: SiteNavLink[] }) {
@@ -18,12 +19,10 @@ export function SiteHeaderFallback({ links }: { links: SiteNavLink[] }) {
           <small>客户端界面未就绪，链接仍可直接访问</small>
         </div>
         <ol className={styles.links}>
-          {links.map((link, index) => (
+          {links.map(link => (
             <li key={link.href}>
               <a href={link.href}>
-                <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
                 <strong>{link.label}</strong>
-                <i aria-hidden="true">↗</i>
               </a>
             </li>
           ))}
