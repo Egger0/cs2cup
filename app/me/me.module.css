@@ -34,7 +34,7 @@
 
 .empty a {
   display: inline-flex;
-  min-height: 46px;
+  min-height: 44px;
   align-items: center;
   margin-top: 18px;
   padding: 11px 22px;

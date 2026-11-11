@@ -80,7 +80,7 @@
 .primary,
 .secondary {
   display: inline-flex;
-  min-height: 48px;
+  min-height: 44px;
   border-radius: 999px;
   align-items: center;
   gap: 14px;

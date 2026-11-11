@@ -117,15 +117,15 @@ await Promise.all([
   page.keyboard.press('Enter'),
 ])
 await page.waitForFunction(() => {
-  const state = document.querySelector('select[name="state"]')
+  const state = document.querySelector('nav[aria-label="比赛进度"] a[aria-current]')
   const team = document.querySelector('select[name="team"]')
-  return state instanceof HTMLSelectElement && state.value === 'all' && team?.value === 'FLC'
+  return state?.textContent === '全部' && team?.value === 'FLC'
 })
 const recoveredScheduleLinks = page.locator('main a[href^="/tournaments/2026-nlc/matches/"]')
 await recoveredScheduleLinks.first().waitFor()
 check(
   'Recovered schedule controls reflect the active filters',
-  (await page.locator('select[name="state"]').inputValue()) === 'all' &&
+  (await page.locator('nav[aria-label="比赛进度"] a[aria-current]').textContent()) === '全部' &&
     (await page.locator('select[name="team"]').inputValue()) === 'FLC',
 )
 check('Recovered team schedule exposes match links', (await recoveredScheduleLinks.count()) > 0)
@@ -135,16 +135,12 @@ await page.waitForTimeout(1200)
 const scheduleTeamFilter = page.locator('select[name="team"]')
 await scheduleTeamFilter.focus()
 check('Schedule team filter accepts focus', await hasFocus(scheduleTeamFilter))
-await page.keyboard.press('f')
-const selectedTeam = await scheduleTeamFilter.inputValue()
-check('Keyboard changes the schedule team filter', selectedTeam.length > 0, selectedTeam)
-await page.keyboard.press('Tab')
-const scheduleSubmit = page.getByRole('button', { name: '查看日程' })
-check('Tab reaches the schedule filter submit button', await hasFocus(scheduleSubmit))
 await Promise.all([
-  page.waitForURL(url => new URL(url).searchParams.get('team') === selectedTeam),
-  page.keyboard.press('Enter'),
+  page.waitForURL(url => new URL(url).searchParams.get('team') !== null),
+  page.keyboard.press('f'),
 ])
+const selectedTeam = new URL(page.url()).searchParams.get('team') ?? ''
+check('Keyboard applies the schedule team filter', selectedTeam.length > 0, selectedTeam)
 await page.waitForLoadState('networkidle')
 const keyboardScheduleLinks = page.locator('main a[href^="/tournaments/2026-nlc/matches/"]')
 check('Keyboard-filtered schedule exposes match links', (await keyboardScheduleLinks.count()) > 0)

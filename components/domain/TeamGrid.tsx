@@ -1,7 +1,5 @@
 import Link from 'next/link'
-import { ButtonLink } from '@/components/ui'
-import { GhostStage } from './GhostStage'
-import { SeatGhost } from './SeatGhost'
+import { ButtonLink, Empty } from '@/components/ui'
 import type { PublicTeam } from '@/lib/types'
 import styles from './TeamGrid.module.css'
 
@@ -17,12 +15,11 @@ export function TeamGrid({
   finished?: boolean
 }) {
   if (teams.length === 0 && finished) {
-    return <GhostStage figure={null}>这一届没有留下参赛名单。</GhostStage>
+    return <Empty>这一届没有留下参赛名单。</Empty>
   }
   if (teams.length === 0) {
     return (
-      <GhostStage
-        figure={cap ? <SeatGhost cap={cap} /> : null}
+      <Empty
         action={
           slug ? (
             <ButtonLink href={`/tournaments/${slug}/register`} variant="primary">
@@ -34,7 +31,7 @@ export function TeamGrid({
         {cap
           ? `${cap} 个席位还空着。报名后由主办方确认，通过的队伍会填进这里。`
           : '还没有战队通过审核。报名后由主办方确认，通过的队伍会出现在这里。'}
-      </GhostStage>
+      </Empty>
     )
   }
 
@@ -45,7 +42,6 @@ export function TeamGrid({
           key={team.id}
           href={slug ? `/tournaments/${slug}/teams/${team.tag}` : '#'}
           className={styles.card}
-          data-light
         >
           <div className={styles.head}>
             <span className={styles.seed}>{team.seed ? `#${team.seed}` : '—'}</span>

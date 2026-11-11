@@ -7,22 +7,30 @@
   padding-bottom: 22px;
 }
 
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.tag,
 .seed {
-  font-family: var(--font-display), sans-serif;
-  font-weight: 800;
-  font-size: 0.9375rem;
-  line-height: 1;
-  color: var(--muted-2);
-  font-variant-numeric: tabular-nums;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 650;
 }
 
 .tag {
-  font-family: var(--font-display), sans-serif;
-  font-weight: 800;
-  font-size: 1.5rem;
-  letter-spacing: 0.04em;
-  color: var(--t);
-  line-height: 1;
+  color: var(--ct);
+  background: var(--ct-dim);
+}
+
+.seed {
+  color: var(--muted);
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  font-variant-numeric: tabular-nums;
 }
 
 .name {

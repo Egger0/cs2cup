@@ -1,7 +1,7 @@
 .empty {
-  padding: 28px 20px;
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--line-strong);
+  padding: 40px 24px;
+  background: var(--surface);
+  border-radius: 16px;
   display: grid;
   justify-items: center;
   gap: 18px;

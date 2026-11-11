@@ -82,7 +82,7 @@ export function SectionTabs({
                 aria-current={active ? 'page' : undefined}
               >
                 {tab.label}
-                {tab.count !== undefined ? <span className={styles.count}>{tab.count}</span> : null}
+                {tab.count ? <span className={styles.count}>{tab.count}</span> : null}
               </Link>
             )
           })}

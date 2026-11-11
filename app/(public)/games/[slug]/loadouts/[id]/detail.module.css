@@ -32,7 +32,7 @@
 .thread {
   display: grid;
   list-style: none;
-  border-top: 1px solid var(--ink);
+  border-top: 1px solid var(--line);
 }
 
 .thread li {
@@ -121,7 +121,7 @@
 }
 
 .share.share {
-  min-height: 46px;
+  min-height: 44px;
   padding-inline: 20px;
   border-color: var(--line-strong);
   border-radius: 999px;
@@ -145,7 +145,7 @@
 }
 
 .feature button {
-  min-height: 46px;
+  min-height: 44px;
   padding-inline: 18px;
   border: 1px dashed rgb(241 239 232 / 40%);
   border-radius: 999px;

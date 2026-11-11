@@ -203,7 +203,7 @@
   width: 100%;
   min-height: 44px;
   border: 1px solid var(--admin-line-strong);
-  border-radius: 10px;
+  border-radius: 12px;
   outline: none;
   background: var(--admin-paper-deep);
   padding: 9px 11px;

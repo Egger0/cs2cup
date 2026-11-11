@@ -6,7 +6,7 @@
 .thread {
   display: grid;
   list-style: none;
-  border-top: 1px solid var(--ink);
+  border-top: 1px solid var(--line);
 }
 
 .thread li {
@@ -89,6 +89,20 @@
   width: 100%;
 }
 
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .comments h2 {
   font-size: 1.375rem;
+}
+
+.comments h2 span {
+  margin-left: 8px;
+  color: var(--muted);
+  font-weight: 500;
 }

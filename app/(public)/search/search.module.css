@@ -22,7 +22,7 @@
 .form input {
   min-width: 0;
   flex: 1;
-  min-height: 48px;
+  min-height: 44px;
   color: var(--ink);
   background: none;
   border: 0;
@@ -35,7 +35,7 @@
 }
 
 .form button {
-  min-height: 48px;
+  min-height: 44px;
   padding-inline: 24px;
   color: var(--button-ink);
   background: var(--ct);

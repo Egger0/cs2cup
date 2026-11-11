@@ -3,7 +3,7 @@
   margin: auto;
   padding: 0;
   border: 1px solid var(--line);
-  border-radius: 28px;
+  border-radius: 20px;
   color: var(--ink);
   background: var(--bg);
   box-shadow: 0 28px 90px rgb(0 0 0 / 35%);

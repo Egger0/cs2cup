@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation'
-import { PointerLight } from '@/components/ui/PointerLight'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SiteHeaderEntry } from '@/components/layout/SiteHeaderEntry'
 import { SiteIdentity } from '@/components/layout/SiteIdentity'
@@ -31,7 +30,6 @@ export default async function PublicLayout({ children }: { children: React.React
         links={await siteMenuLinks(access)}
         accountLink={accountLink}
       />
-      <PointerLight />
       <main id="main">{children}</main>
       <SiteFooter setting={setting} />
     </div>

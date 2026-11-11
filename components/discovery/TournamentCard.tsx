@@ -12,7 +12,7 @@ export function TournamentCard({ tournament }: { tournament: Tournament }) {
   const fixtures = fixturesEntry(tournament)
   const date = tournament.status === 'registration' ? tournament.regDeadline : tournament.startsAt
   return (
-    <article className={styles.card} data-light>
+    <article className={styles.card}>
       <div className={styles.topline}>
         <span>
           {tournament.gameName ?? '校园电竞'} / {tournament.season}

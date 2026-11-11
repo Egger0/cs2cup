@@ -42,7 +42,7 @@
   display: inline-flex;
   flex: none;
   min-width: 44px;
-  min-height: 54px;
+  min-height: 52px;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -107,7 +107,7 @@
   }
 
   .tab {
-    min-height: 48px;
+    min-height: 44px;
     font-size: 0.875rem;
   }
 }

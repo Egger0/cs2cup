@@ -1,7 +1,7 @@
 .search {
   width: 100%;
   max-width: 380px;
-  min-height: 46px;
+  min-height: 44px;
   padding: 10px 13px;
   margin-bottom: 18px;
   border: 1px solid var(--admin-line-strong, var(--line-strong));
@@ -63,10 +63,10 @@
   margin-left: 8px;
   padding: 2px 8px;
   color: var(--t);
-  border: 1px solid currentColor;
-  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
   font-size: 0.75rem;
   white-space: nowrap;
+  border-radius: 999px;
 }
 
 .roster {

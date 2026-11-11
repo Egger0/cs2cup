@@ -102,10 +102,10 @@
 
 .grant select {
   width: 100%;
-  min-height: 48px;
+  min-height: 44px;
   padding: 10px 36px 10px 12px;
   border: 1px solid var(--admin-line-strong);
-  border-radius: 10px;
+  border-radius: 12px;
   background: #101211;
   color: var(--ink);
   font-family: var(--font-body), sans-serif;
@@ -280,7 +280,7 @@
 }
 
 .revoke button {
-  min-height: 42px;
+  min-height: 44px;
 }
 
 .emptyLedger {

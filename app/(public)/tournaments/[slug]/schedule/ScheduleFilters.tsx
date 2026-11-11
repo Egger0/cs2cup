@@ -1,50 +1,48 @@
 import Link from 'next/link'
 import type { PublicTeam } from '@/lib/types'
-import type { StateFilter } from './schedule-view'
+import { STATE_LABEL, type StateFilter } from './schedule-view'
+import { TeamPicker } from './TeamPicker'
 import styles from './ScheduleFilters.module.css'
 
-interface ScheduleFiltersProps {
+const STATES: StateFilter[] = ['upcoming', 'completed', 'all']
+
+export function ScheduleFilters({
+  base,
+  state,
+  teams,
+  selectedTeam,
+}: {
   base: string
   state: StateFilter
   teams: PublicTeam[]
   selectedTeam: PublicTeam | null
-}
-
-export function ScheduleFilters({ base, state, teams, selectedTeam }: ScheduleFiltersProps) {
+}) {
+  const href = (next: StateFilter) => {
+    const params = new URLSearchParams({ state: next })
+    if (selectedTeam) params.set('team', selectedTeam.tag)
+    return `${base}?${params}`
+  }
   return (
-    <form
-      key={`${state}:${selectedTeam?.id ?? 'all'}`}
-      className={styles.filters}
-      action={base}
-      method="get"
-    >
-      <label className={styles.field}>
-        <span className={styles.fieldLabel}>进度</span>
-        <select name="state" defaultValue={state} className={styles.select}>
-          <option value="upcoming">未完赛</option>
-          <option value="completed">已完赛</option>
-          <option value="all">全部状态</option>
-        </select>
-      </label>
-
-      <label className={styles.field}>
-        <span className={styles.fieldLabel}>战队</span>
-        <select name="team" defaultValue={selectedTeam?.tag ?? ''} className={styles.select}>
-          <option value="">全部战队</option>
-          {teams.map(team => (
-            <option key={team.id} value={team.tag}>
-              {team.tag} · {team.name}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <button type="submit" className={styles.submit}>
-        查看日程
-      </button>
-      <Link href={base} className={styles.reset}>
-        重置
-      </Link>
-    </form>
+    <div className={styles.filters}>
+      <nav className={styles.segments} aria-label="比赛进度">
+        {STATES.map(option => (
+          <Link
+            key={option}
+            href={href(option)}
+            aria-current={option === state ? 'true' : undefined}
+            scroll={false}
+          >
+            {STATE_LABEL[option]}
+          </Link>
+        ))}
+      </nav>
+      <TeamPicker
+        key={selectedTeam?.tag ?? ''}
+        base={base}
+        state={state}
+        teams={teams.map(team => ({ tag: team.tag, name: team.name }))}
+        selected={selectedTeam?.tag ?? ''}
+      />
+    </div>
   )
 }

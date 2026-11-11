@@ -3,8 +3,8 @@
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
   gap: 0;
   align-items: start;
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--ink);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 .submit,
@@ -67,7 +67,7 @@
 }
 
 .list {
-  border-top: 1px solid var(--ink);
+  border-top: 1px solid var(--line);
 }
 
 .message {
@@ -168,7 +168,7 @@
   .submit {
     padding-bottom: 42px;
     border-right: 0;
-    border-bottom: 1px solid var(--ink);
+    border-bottom: 1px solid var(--line);
   }
 
   .messages {

@@ -38,7 +38,7 @@ export async function AccountShell({
         links={await siteMenuLinks(access)}
         accountLink={{ href: '/me', label: '我的赛事' }}
       />
-      <header className={`${themeStyles.dark} ${styles.band}`}>
+      <header className={`${themeStyles.dark} ${styles.band}`} data-arrival>
         <div className={styles.bandInner}>
           <span className={styles.avatar} aria-hidden="true">
             {[...identity][0]}

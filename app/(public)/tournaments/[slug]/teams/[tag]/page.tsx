@@ -103,8 +103,10 @@ export default async function TeamPage({
       <div className="wrap">
         <div className={styles.head}>
           <div>
-            <span className={styles.seed}>{team.seed ? `#${team.seed}` : '—'}</span>
-            <div className={styles.tag}>{team.tag}</div>
+            <div className={styles.badges}>
+              <span className={styles.tag}>{team.tag}</span>
+              {team.seed ? <span className={styles.seed}>{team.seed} 号种子</span> : null}
+            </div>
             <h2 className={styles.name}>{team.name}</h2>
             <div className={styles.meta}>
               队长 {team.captain}

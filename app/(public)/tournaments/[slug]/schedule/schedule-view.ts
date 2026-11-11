@@ -5,7 +5,7 @@ export type StateFilter = 'upcoming' | 'completed' | 'all'
 export const STATE_LABEL: Record<StateFilter, string> = {
   upcoming: '未完赛',
   completed: '已完赛',
-  all: '全部状态',
+  all: '全部',
 }
 
 export const STATUS_LABEL: Record<ScheduleStatus, string> = {

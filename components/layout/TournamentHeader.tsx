@@ -107,14 +107,7 @@ export function TournamentHeader({
                 <Link href={primaryAction.href} className={styles.primary}>
                   {primaryAction.label} <Icon name="arrow" size={16} />
                 </Link>
-                {compact ? (
-                  <details className={styles.tools}>
-                    <summary>更多赛事工具</summary>
-                    <div className={styles.toolGroup}>{tools}</div>
-                  </details>
-                ) : (
-                  tools
-                )}
+                <div className={styles.toolGroup}>{tools}</div>
               </div>
 
               {compact ? null : (

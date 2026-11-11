@@ -1,5 +1,5 @@
 .list {
-  border-top: 1px solid var(--ink);
+  border-top: 1px solid var(--line);
 }
 
 .row {
@@ -61,11 +61,11 @@
   min-width: 82px;
   padding: 7px 10px;
   color: var(--muted);
-  border: 1px solid currentColor;
-  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
   font-size: 0.75rem;
   text-align: center;
   white-space: nowrap;
+  border-radius: 999px;
 }
 
 .registration {

@@ -24,7 +24,6 @@ const cases = [
     name: 'schedule',
     path: '/tournaments/2026-nlc/schedule',
     trigger: '分享赛事',
-    disclosure: true,
   },
   { name: 'team', path: '/tournaments/2026-nlc/teams/FLC', trigger: '分享战队' },
   { name: 'match', path: '/tournaments/2026-nlc/matches/1', trigger: '分享这场比赛' },
@@ -35,7 +34,6 @@ const cases = [
 async function openShare(testCase) {
   const response = await page.goto(`${base}${testCase.path}`)
   assert.ok(response?.ok(), `${testCase.path} must load`)
-  if (testCase.disclosure) await page.getByText('更多赛事工具', { exact: true }).click()
   const trigger = page.getByRole('button', { name: testCase.trigger, exact: true })
   await trigger.click()
   const dialog = page.getByRole('dialog')

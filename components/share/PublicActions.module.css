@@ -3,9 +3,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 12px 20px;
-  margin-block: 24px;
-  padding-block: 16px;
-  border-block: 1px solid var(--line);
+  margin-block: 20px;
 }
 .actions > a {
   display: inline-flex;

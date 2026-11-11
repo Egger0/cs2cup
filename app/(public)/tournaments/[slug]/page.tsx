@@ -106,7 +106,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
             ) : null}
           </div>
           {tournament.mapPool.length ? (
-            <details className={styles.pool}>
+            <details className={`disclosure ${styles.pool}`}>
               <summary>本届地图池 · {tournament.mapPool.length} 张地图</summary>
               <ul className={styles.poolList}>
                 {tournament.mapPool.map(map => (

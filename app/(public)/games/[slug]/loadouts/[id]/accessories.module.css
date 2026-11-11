@@ -2,7 +2,7 @@
   display: grid;
   gap: 16px;
   padding-top: 20px;
-  border-top: 1px solid var(--ink);
+  border-top: 1px solid var(--line);
 }
 
 .panel h2 {

@@ -1,99 +1,83 @@
 .filters {
-  display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) auto auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  align-items: end;
-  margin-top: 32px;
-  padding-block: 18px;
-  border-block: 1px solid var(--line-strong);
 }
 
-.field {
-  display: grid;
-  gap: 6px;
-  min-width: 0;
+.segments {
+  display: inline-flex;
+  padding: 3px;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  border-radius: 12px;
 }
 
-.fieldLabel {
-  font-family: var(--font-body);
-  font-variant-numeric: tabular-nums;
+.segments a {
+  display: inline-flex;
+  min-width: 72px;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 14px;
+  color: var(--muted);
+  border-radius: 9px;
   font-size: 0.875rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--muted-2);
+  font-weight: 600;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
 }
 
-.select,
-.submit,
-.reset {
-  min-width: 0;
-  min-height: 44px;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
+.segments a[aria-current] {
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 12%);
+}
+
+.team {
+  display: flex;
+  gap: 8px;
+  min-width: min(100%, 260px);
 }
 
 .select {
   width: 100%;
-  padding: 0 36px 0 12px;
-  border-radius: 10px;
-  background-color: var(--surface);
+  min-height: 44px;
+  padding: 0 36px 0 14px;
   color: var(--ink);
+  background-color: color-mix(in srgb, var(--ink) 7%, transparent);
+  border: 0;
+  border-radius: 12px;
+  font-size: 0.9375rem;
 }
 
-.submit,
-.reset {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding-inline: 18px;
-  font-family: var(--font-body);
-  font-variant-numeric: tabular-nums;
-  font-size: 0.875rem;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-
-.submit {
-  cursor: pointer;
-  background: var(--ct);
-  border-color: var(--ct);
+.apply {
+  min-height: 44px;
+  padding-inline: 16px;
   color: var(--button-ink);
+  background: var(--accent);
+  border: 0;
+  border-radius: 999px;
 }
 
-.reset {
-  background: transparent;
-  color: var(--muted);
-}
-
-@media (hover: hover) {
-  .submit:hover {
-    border-color: var(--ink);
-    background: var(--ink);
-    color: var(--bg);
-  }
-}
-
-@media (hover: hover) {
-  .reset:hover {
-    border-color: var(--ink);
-    color: var(--ink);
-  }
-}
-
-@media (max-width: 720px) {
-  .filters {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 10px;
+@media (max-width: 560px) {
+  .segments {
+    width: 100%;
   }
 
-  .submit,
-  .reset {
+  .segments a {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .team {
     width: 100%;
   }
 }
 
-@media (max-width: 420px) {
-  .filters {
-    margin-top: 24px;
+@media (prefers-reduced-motion: reduce) {
+  .segments a {
+    transition: none;
   }
 }
