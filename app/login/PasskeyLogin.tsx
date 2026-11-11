@@ -19,46 +19,31 @@ type SupportState = 'checking' | 'supported' | 'unsupported'
 type LoginState = 'idle' | 'working'
 type AuthenticationOptions = Parameters<typeof startAuthentication>[0]['optionsJSON']
 
-const FAILURE_SIGNAL: Record<PasskeyLoginFeedback['code'], string> = {
-  'refresh-required': 'REQUEST / EXPIRED',
-  'rate-limited': 'PACE / HOLD',
-  'interrupted-or-unavailable': 'DEVICE / INTERRUPTED',
-  'verification-failed': 'DEVICE / NOT VERIFIED',
-  'temporarily-unavailable': 'SERVICE / STANDBY',
-}
-
 const UNSUPPORTED_RECOVERY = {
   code: 'unsupported',
-  signal: 'DEVICE / UNSUPPORTED',
   title: '这台设备还不能打开通行密钥',
   description: '请使用账号密码登录，或换用支持通行密钥的浏览器或设备。',
 }
 
 const PENDING_CLIENT_RECOVERY = {
   code: 'client-required',
-  signal: 'BROWSER / CLIENT',
   title: '浏览器功能尚未就绪',
   description: '通行密钥登录需要 JavaScript。若此提示持续，请启用页面脚本并刷新，或改用账号密码。',
 }
 
 function RecoveryPanel({
   code,
-  signal,
   title,
   description,
   receiptPath,
 }: {
   code: string
-  signal: string
   title: string
   description: string
   receiptPath: string | null
 }) {
   return (
     <div className={recoveryStyles.recovery} data-code={code}>
-      <span className={recoveryStyles.recoverySignal} hidden>
-        {signal}
-      </span>
       <strong>{title}</strong>
       <p>{description}</p>
       {receiptPath ? (
@@ -234,7 +219,6 @@ export default function PasskeyLogin({
         {support === 'supported' && failure ? (
           <RecoveryPanel
             code={failure.code}
-            signal={FAILURE_SIGNAL[failure.code]}
             title={failure.title}
             description={
               mustWait

@@ -14,12 +14,6 @@
   gap: 4px;
 }
 
-.heading span {
-  color: var(--muted);
-  font-family: var(--font-mono), monospace;
-  font-size: 0.8125rem;
-}
-
 .heading h2 {
   color: var(--ink);
   font-size: 1rem;

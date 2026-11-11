@@ -35,7 +35,7 @@ export function LegacyRegistrationAttach({
   if (relationship) {
     return (
       <aside className={styles.accountHandoff}>
-        <span>ACCOUNT / 已关联</span>
+        <span>已关联</span>
         <div>
           <strong>这份报名已在你的账号中</strong>
           <p>后续查看、修改与协作权限都从“我的赛事”进入。</p>
@@ -48,7 +48,7 @@ export function LegacyRegistrationAttach({
   if (accountOwned) {
     return (
       <aside className={styles.accountHandoff}>
-        <span>ACCOUNT / 已迁移</span>
+        <span>已迁移</span>
         <div>
           <strong>这份报名已经迁移到账号</strong>
           <p>旧链接现仅保留只读状态；请由报名所有者登录后管理。</p>
@@ -60,7 +60,7 @@ export function LegacyRegistrationAttach({
   if (!signedIn) {
     return (
       <aside className={styles.accountHandoff}>
-        <span>MIGRATION / 一次完成</span>
+        <span>一次完成</span>
         <div>
           <strong>把旧报名关联到账号</strong>
           <p>登录后确认一次即可；完成后不再需要保存或转发这条管理链接。</p>
@@ -72,7 +72,7 @@ export function LegacyRegistrationAttach({
 
   return (
     <aside className={styles.accountHandoff} aria-busy={pending}>
-      <span>MIGRATION / 待确认</span>
+      <span>待确认</span>
       <div>
         <strong>把旧报名关联到当前账号</strong>
         <p>确认后旧管理链接立即失效，当前账号成为报名所有者。</p>

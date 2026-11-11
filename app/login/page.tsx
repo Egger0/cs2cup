@@ -115,11 +115,8 @@ export default async function ParticipantLoginPage({
             aria-live="polite"
             aria-atomic="true"
           >
-            <span aria-hidden="true">{notice.signal}</span>
-            <div>
-              <strong>{notice.title}</strong>
-              <p>{notice.description}</p>
-            </div>
+            <strong>{notice.title}</strong>
+            <p>{notice.description}</p>
           </aside>
         ) : null}
 

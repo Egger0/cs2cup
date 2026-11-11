@@ -84,7 +84,6 @@ export function RegisterForm({
         </h2>
         <p>这份报名已经归入你的账号，可随时从“我的赛事”查看审核状态或修改阵容。</p>
         <div className={styles.passHandoff}>
-          <span aria-hidden="true">ACCOUNT / READY</span>
           <p>
             <strong>无需另存管理链接</strong>
             队长账号是当前所有者；需要协作时，可在报名管理页邀请其他账号。

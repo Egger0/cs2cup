@@ -57,7 +57,6 @@ export function StarMap({
       <div className={styles.scroll}>
         <nav ref={ref} className={styles.index} aria-label="全部页面">
           <div className={styles.meta}>
-            <span>STAR MAP / {String(links.length).padStart(2, '0')}</span>
             <span>{school} · 2022—</span>
           </div>
           <ol className={styles.list} onMouseLeave={() => setHot(null)}>

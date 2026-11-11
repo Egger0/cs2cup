@@ -41,14 +41,6 @@
   border-left-color: #97322b;
 }
 
-.recoverySignal {
-  color: var(--pass-blue);
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-}
-
 .recovery > strong {
   color: var(--paper-ink);
   font-family: 'NLC Role Sans', var(--font-body);
