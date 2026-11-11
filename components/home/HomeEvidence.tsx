@@ -3,10 +3,10 @@ import type { CSSProperties } from 'react'
 import styles from './HomeEvidence.module.css'
 
 const STAGES = [
-  { number: '08', label: '八强', round: 'ROUND 01' },
-  { number: '04', label: '四强', round: 'ROUND 02' },
-  { number: '02', label: '决赛', round: 'ROUND 03' },
-  { number: '01', label: '冠军', round: 'FINAL' },
+  { number: '08', label: '八强' },
+  { number: '04', label: '四强' },
+  { number: '02', label: '决赛' },
+  { number: '01', label: '冠军' },
 ]
 const TICKS = Array.from({ length: 96 }, (_, index) => index)
 
@@ -55,14 +55,12 @@ export function HomeEvidence({ slug }: { slug?: string }) {
         <ol className={styles.stages}>
           {STAGES.map((stage, index) => (
             <li key={stage.number} style={{ '--i': index } as CSSProperties}>
-              <span>{stage.round}</span>
               <strong>{stage.number}</strong>
               <em>{stage.label}</em>
             </li>
           ))}
         </ol>
         <div className={styles.foot}>
-          <p>每一条线，都要有人把它组织好。</p>
           <Link href={slug ? `/tournaments/${slug}/bracket` : '/tournaments'}>
             <span>{slug ? '查看完整对阵' : '浏览赛事大厅'}</span>
             <span aria-hidden="true">→</span>

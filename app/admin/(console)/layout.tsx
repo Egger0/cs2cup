@@ -43,7 +43,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           canManageRoutes={canManageRoutes}
           trailing={
             <>
-              <span className={styles.uid}>SESSION / {admin.uid}</span>
+              <span className={styles.uid}>{admin.uid}</span>
               <AccountSignOut />
             </>
           }

@@ -19,7 +19,6 @@ for (const [index, route] of [
 ]) {
   assert.match(nav, new RegExp(`index: ["']${index}["'][\\s\\S]{0,80}?href: ["']${route}["']`))
 }
-assert.match(await read('app/admin/(console)/identity/page.tsx'), /CONTROL \/ 02/)
 
 const desk = await read('app/admin/(operations)/tournaments/[id]/check-in/CheckInDesk.tsx')
 const deskStyles = await read(
