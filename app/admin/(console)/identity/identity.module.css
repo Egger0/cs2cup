@@ -28,7 +28,6 @@
   border-bottom: 1px solid var(--admin-line-strong);
 }
 
-.heading p,
 .card header p {
   color: var(--admin-blue);
   font-family: var(--font-mono), ui-monospace, monospace;
@@ -37,7 +36,6 @@
 }
 
 .heading h1 {
-  margin-top: 7px;
   font-family: var(--font-display), sans-serif;
   font-size: clamp(1.4rem, 2.2vw, 1.8rem);
   letter-spacing: -0.015em;

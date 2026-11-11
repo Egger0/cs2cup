@@ -267,7 +267,6 @@ export function PrivateSessionBoundary({
           role={failed ? 'alert' : 'status'}
           aria-live={failed ? 'assertive' : 'polite'}
         >
-          <p className={styles.code}>SESSION / {failed ? 'RETRY' : 'CLOSING'}</p>
           <span className={styles.indicator} aria-hidden="true" />
           <h1>{failed ? '我的赛事已隐藏' : '正在关闭本次访问'}</h1>
           <p>

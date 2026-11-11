@@ -12,12 +12,6 @@
   padding-top: clamp(24px, 4vw, 40px);
 }
 
-.code {
-  color: var(--muted);
-  font-family: var(--font-mono), monospace;
-  font-size: 0.8125rem;
-}
-
 .indicator {
   width: 42px;
   height: 6px;

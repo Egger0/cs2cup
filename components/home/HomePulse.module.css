@@ -14,11 +14,9 @@
 }
 
 .pulse h3 {
-  color: var(--space-accent);
-  font:
-    0.75rem var(--font-mono),
-    monospace;
-  letter-spacing: 0.06em;
+  color: var(--space-ink);
+  font-size: 1.0625rem;
+  font-weight: 650;
 }
 
 .pulse header a {
@@ -32,7 +30,7 @@
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 14px;
 }
 
