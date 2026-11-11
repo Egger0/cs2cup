@@ -15,7 +15,6 @@ export function SiteHeaderFallback({ links }: { links: SiteNavLink[] }) {
 
       <nav className={styles.panel} aria-label="基础站点目录链接">
         <div className={styles.meta}>
-          <span>BASIC INDEX / {String(links.length).padStart(2, '0')}</span>
           <small>客户端界面未就绪，链接仍可直接访问</small>
         </div>
         <ol className={styles.links}>

@@ -4,7 +4,6 @@ import {
 } from './participant-return.ts'
 
 export interface ParticipantLoginNotice {
-  readonly signal: string
   readonly title: string
   readonly description: string
 }
@@ -12,19 +11,16 @@ export interface ParticipantLoginNotice {
 export const PARTICIPANT_SIGNED_OUT_LOGIN_PATH = '/login?reason=signed-out'
 
 const EXPIRED_NOTICE: ParticipantLoginNotice = {
-  signal: 'SESSION / CLOSED',
   title: '访问窗口已结束',
   description: '为了保护账号资料，本次访问已关闭。报名与登录方式都没有变化，重新登录即可。',
 }
 
 const SIGNED_OUT_NOTICE: ParticipantLoginNotice = {
-  signal: 'SESSION / CLOSED',
   title: '账号已安全退出',
   description: '这台设备上的本次访问已关闭。报名与登录方式都没有变化；需要时可以再次登录。',
 }
 
 const CONFLICT_NOTICE: ParticipantLoginNotice = {
-  signal: 'SESSION / CONFLICT',
   title: '检测到另一份旧身份会话',
   description: '系统不会猜测你现在要切换到哪份身份。请先安全清除这台设备上的旧会话，再重新登录。',
 }

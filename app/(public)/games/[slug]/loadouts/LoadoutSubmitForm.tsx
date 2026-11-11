@@ -283,7 +283,7 @@ export function LoadoutSubmitForm({ slug, initialCode }: { slug: string; initial
         </div>
       </form>
       <aside className={styles.preview} aria-label="卡片预览">
-        <p className={styles.previewLabel}>PREVIEW · 审核通过后长这样</p>
+        <p className={styles.previewLabel}>审核通过后长这样</p>
         <LoadoutPreview
           slug={slug}
           mode={mode}

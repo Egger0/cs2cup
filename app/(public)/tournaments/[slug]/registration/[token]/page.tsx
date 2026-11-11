@@ -105,7 +105,7 @@ export default async function RegistrationStatusPage({
           </div>
           <div className={styles.meta}>
             <div className={styles.checkIn} data-state={checkIn.state}>
-              <span>CHECK-IN / 现场签到</span>
+              <span>现场签到</span>
               <strong>{checkIn.label}</strong>
               {checkIn.instant && checkIn.timeLabel ? (
                 <time dateTime={checkIn.instant}>北京时间 · {checkIn.timeLabel}</time>

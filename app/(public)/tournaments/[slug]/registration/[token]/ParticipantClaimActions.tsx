@@ -126,7 +126,7 @@ export function SignedInAttachAction({
 
   return (
     <div className={ownershipStyles.attach}>
-      <p className={ownershipStyles.sessionMark}>CURRENT ACCOUNT / 已登录</p>
+      <p className={ownershipStyles.sessionMark}>已登录</p>
       {confirming ? (
         <div className={ownershipStyles.confirmation} role="group" aria-labelledby="attach-title">
           <strong id="attach-title">

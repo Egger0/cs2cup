@@ -19,10 +19,10 @@ export default async function PublicLayout({ children }: { children: React.React
   if (!setting) notFound()
 
   const accountLink = access?.recoveryRestricted
-    ? { href: '/account/security', label: '继续恢复', code: 'RECOVERY / CONTINUE' }
+    ? { href: '/account/security', label: '继续恢复' }
     : access
-      ? { href: '/me', label: '我的赛事', code: 'MY / EVENTS' }
-      : { href: '/login', label: '登录', code: 'ACCOUNT / LOGIN' }
+      ? { href: '/me', label: '我的赛事' }
+      : { href: '/login', label: '登录' }
 
   return (
     <div className={styles.theme}>

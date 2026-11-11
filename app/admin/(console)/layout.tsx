@@ -32,7 +32,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <SiteHeaderEntry
         setting={site}
         links={[...PUBLIC_LINKS, ...accountHeaderLinks(access)]}
-        accountLink={{ href: '/me', label: '我的赛事', code: 'MY / EVENTS' }}
+        accountLink={{ href: '/me', label: '我的赛事' }}
       />
       <div className={styles.sheet}>
         <AdminNav

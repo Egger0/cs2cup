@@ -71,7 +71,7 @@ export function CheckInSheet({
       }}
     >
       <div className={styles.body}>
-        <p className={styles.kicker}>CHECK-IN · {teamTag}</p>
+        <p className={styles.kicker}>现场签到 · {teamTag}</p>
         <h2 id={`check-in-${teamId}`}>{teamName}</h2>
         <div className={styles.code} data-done={done ? '' : undefined}>
           {code ? (

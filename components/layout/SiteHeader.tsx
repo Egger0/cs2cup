@@ -16,7 +16,7 @@ import { TabBar } from './TabBar'
 export interface SiteHeaderProps {
   setting: SiteSetting
   links: SiteNavLink[]
-  accountLink: SiteNavLink & { code: string }
+  accountLink: SiteNavLink
 }
 
 export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {

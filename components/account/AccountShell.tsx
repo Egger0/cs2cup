@@ -39,7 +39,7 @@ export async function AccountShell({
       <SiteHeaderEntry
         setting={site}
         links={[...PUBLIC_LINKS, ...accountHeaderLinks(access)]}
-        accountLink={{ href: '/me', label: '我的赛事', code: 'MY / EVENTS' }}
+        accountLink={{ href: '/me', label: '我的赛事' }}
       />
       {masthead}
       <div className={styles.sheet}>

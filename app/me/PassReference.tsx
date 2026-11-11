@@ -30,7 +30,6 @@ export function PassReference({ participantReference }: { participantReference: 
   return (
     <section className={styles.pass} aria-labelledby="pass-reference-title">
       <header className={styles.heading}>
-        <span>LEGACY REFERENCE / 旧登录编号</span>
         <h2 id="pass-reference-title">现场核对索引</h2>
       </header>
 

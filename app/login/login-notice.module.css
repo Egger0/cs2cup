@@ -1,22 +1,11 @@
 .notice {
   display: grid;
-  grid-template-columns: 104px minmax(0, 1fr);
-  gap: 18px;
+  gap: 4px;
   margin-top: clamp(26px, 5vh, 52px);
   padding: 16px;
   border: 1px dashed rgba(11, 93, 148, 0.42);
   background: rgba(11, 93, 148, 0.055);
   animation: none;
-}
-
-.notice > span {
-  align-self: start;
-  padding-top: 3px;
-  color: var(--pass-blue);
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
 }
 
 .notice strong {
@@ -25,7 +14,6 @@
 }
 
 .notice p {
-  margin-top: 5px;
   color: #626b6d;
   font-size: 0.875rem;
   line-height: 1.55;

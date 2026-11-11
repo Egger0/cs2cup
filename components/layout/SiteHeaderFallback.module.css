@@ -37,13 +37,11 @@
   border-bottom: 1px solid #aaa69b;
 }
 
-.meta span,
 .meta small,
 .links a > span {
   color: #62635e;
 }
 
-.meta span,
 .links a > span {
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
