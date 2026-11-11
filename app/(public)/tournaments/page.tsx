@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
+import { Icon } from '@/components/ui/Icon'
 import { PageMasthead, SectionHead } from '@/components/domain/Sections'
 import { Honours } from '@/components/domain/Honours'
 import { TournamentExplorer } from '@/components/discovery/TournamentExplorer'
@@ -60,10 +62,12 @@ export default async function TournamentsPage({
 
           {honours.length > 0 ? (
             <div data-rise="2" style={{ marginTop: 72 }}>
-              <SectionHead
-                title="历届冠军"
-                lede="记住每一支走到最后的战队，也记住一起上场的日子。"
-              />
+              <div className={styles.honoursHead}>
+                <SectionHead title="历届冠军" />
+                <Link href="/archive">
+                  往届影像 <Icon name="arrow" size={16} />
+                </Link>
+              </div>
               <Honours honours={honours} />
             </div>
           ) : null}

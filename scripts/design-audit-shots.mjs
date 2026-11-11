@@ -18,7 +18,6 @@ const publicRoutes = [
   ['games', '/games'],
   ['game-detail', '/games/cs2'],
   ['archive', '/archive'],
-  ['archive-merit', '/archive/merit'],
   ['news', '/news'],
   ['about', '/about'],
   ['guestbook', '/guestbook'],

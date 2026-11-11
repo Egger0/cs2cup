@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Leaderboards } from '@/components/domain/Leaderboards'
 import { PageMasthead } from '@/components/domain/Sections'
 import { Empty } from '@/components/ui'
 import { listGames, listTournaments, safely } from '@/lib/queries/public'
@@ -60,6 +61,7 @@ export default async function GamesPage() {
           )}
         </div>
       </section>
+      <Leaderboards />
     </>
   )
 }

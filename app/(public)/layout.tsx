@@ -3,10 +3,9 @@ import { PointerLight } from '@/components/ui/PointerLight'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SiteHeaderEntry } from '@/components/layout/SiteHeaderEntry'
 import { SiteIdentity } from '@/components/layout/SiteIdentity'
-import { accountHeaderLinks } from '@/lib/account-navigation'
 import { currentAccountAccess } from '@/lib/identity/account-access'
 import { FALLBACK_SITE_SETTING, getSiteSetting, safely } from '@/lib/queries/public'
-import { PUBLIC_LINKS } from '@/lib/site-navigation'
+import { siteMenuLinks } from '@/lib/site-menu'
 import styles from '@/app/site-theme.module.css'
 
 export const revalidate = 0
@@ -29,7 +28,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <SiteIdentity />
       <SiteHeaderEntry
         setting={setting}
-        links={[...PUBLIC_LINKS, ...accountHeaderLinks(access)]}
+        links={await siteMenuLinks(access)}
         accountLink={accountLink}
       />
       <PointerLight />

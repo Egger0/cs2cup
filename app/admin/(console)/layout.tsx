@@ -5,8 +5,7 @@ import { AccountSignOut } from '@/components/account/AccountSignOut'
 import { requirePlatformConsole } from '@/lib/auth'
 import { canManageSandRoutes } from '@/lib/project-content-access'
 import { currentAccountAccess } from '@/lib/identity/account-access'
-import { accountHeaderLinks } from '@/lib/account-navigation'
-import { PUBLIC_LINKS } from '@/lib/site-navigation'
+import { siteMenuLinks } from '@/lib/site-menu'
 import { FALLBACK_SITE_SETTING, getSiteSetting, safely } from '@/lib/queries/public'
 import { AdminNav } from './AdminNav'
 import styles from './shell.module.css'
@@ -31,7 +30,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <SiteIdentity />
       <SiteHeaderEntry
         setting={site}
-        links={[...PUBLIC_LINKS, ...accountHeaderLinks(access)]}
+        links={await siteMenuLinks(access)}
         accountLink={{ href: '/me', label: '我的赛事' }}
       />
       <div className={styles.sheet}>
