@@ -1,14 +1,13 @@
 .wall {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   border-top: 1px solid var(--ink);
   border-bottom: 1px solid var(--ink);
 }
 
 .entry {
   position: relative;
-  min-height: 260px;
-  padding: 22px clamp(20px, 3vw, 36px) 30px;
+  padding: 22px clamp(20px, 3vw, 36px) 26px;
   overflow: hidden;
   color: inherit;
   border-right: 1px solid var(--line);
@@ -42,26 +41,24 @@
 .year {
   color: var(--muted-2);
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(3.6rem, 6vw, 6rem);
+  font-size: 1.5rem;
   font-variant-numeric: tabular-nums;
   font-weight: 560;
-  letter-spacing: -0.07em;
-  line-height: 0.8;
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
 
 .edition {
-  margin-top: 18px;
-  color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.8125rem;
 }
 
 .cup {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 42px;
+  margin-top: 20px;
 }
 
 .trophy {
@@ -96,7 +93,6 @@
   }
 
   .entry {
-    min-height: 220px;
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }

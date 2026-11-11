@@ -7,6 +7,7 @@ import styles from './PrimaryNav.module.css'
 
 export function PrimaryNav({ hidden = false }: { hidden?: boolean }) {
   const pathname = usePathname()
+  if (pathname.startsWith('/admin')) return null
   return (
     <nav
       className={styles.nav}

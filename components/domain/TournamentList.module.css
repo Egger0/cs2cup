@@ -4,10 +4,10 @@
 
 .row {
   display: grid;
-  grid-template-columns: clamp(94px, 12vw, 170px) minmax(0, 1fr) auto;
-  min-height: clamp(124px, 12vw, 164px);
+  grid-template-columns: clamp(64px, 7vw, 96px) minmax(0, 1fr) auto;
+  min-height: 96px;
   align-items: center;
-  gap: clamp(18px, 4vw, 58px);
+  gap: clamp(16px, 3vw, 40px);
   padding: 20px 0;
   color: inherit;
   border-bottom: 1px solid var(--line-strong);
@@ -27,11 +27,11 @@
 .year {
   color: var(--muted-2);
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(3.2rem, 6.8vw, 6.4rem);
+  font-size: clamp(1.6rem, 2.4vw, 2.2rem);
   font-variant-numeric: tabular-nums;
   font-weight: 560;
-  letter-spacing: -0.07em;
-  line-height: 0.78;
+  letter-spacing: -0.03em;
+  line-height: 1;
 }
 
 .year[data-timeline='0'] {
@@ -45,18 +45,16 @@
 .title {
   display: block;
   color: var(--ink);
-  font-size: clamp(1.25rem, 2.1vw, 1.8rem);
+  font-size: clamp(1.125rem, 1.6vw, 1.375rem);
   font-weight: 640;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.02em;
 }
 
 .meta {
   display: block;
-  margin-top: 12px;
-  color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.8125rem;
 }
 
 .state {
@@ -64,11 +62,9 @@
   padding: 7px 10px;
   color: var(--muted);
   border: 1px solid currentColor;
-  font-family: var(--font-mono), monospace;
+  border-radius: 999px;
   font-size: 0.75rem;
-  letter-spacing: 0.06em;
   text-align: center;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -112,15 +108,15 @@
 
 @media (max-width: 640px) {
   .row {
-    grid-template-columns: 72px minmax(0, 1fr);
-    min-height: 132px;
-    gap: 16px;
+    grid-template-columns: 52px minmax(0, 1fr);
+    min-height: 88px;
+    gap: 14px;
   }
 
   .year {
     align-self: start;
-    padding-top: 4px;
-    font-size: 3.15rem;
+    padding-top: 2px;
+    font-size: 1.5rem;
   }
 
   .state {
