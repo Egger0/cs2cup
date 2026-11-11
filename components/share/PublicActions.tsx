@@ -21,7 +21,6 @@ export function PublicActions({
           {calendar.label}
         </a>
       ) : null}
-      <span>叫上队友，下一场见。</span>
     </div>
   )
 }

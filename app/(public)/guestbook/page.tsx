@@ -33,7 +33,6 @@ export default async function GuestbookPage() {
           <div className={styles.grid}>
             <section className={styles.submit} aria-labelledby="guestbook-compose-title">
               <div className={styles.panelHead}>
-                <span>01</span>
                 <h2 id="guestbook-compose-title">写一条留言</h2>
               </div>
               <GuestbookForm />
@@ -41,7 +40,6 @@ export default async function GuestbookPage() {
 
             <section className={styles.messages} aria-labelledby="guestbook-messages-title">
               <div className={styles.panelHead}>
-                <span>02</span>
                 <h2 id="guestbook-messages-title">大家在说</h2>
               </div>
               {roots.length === 0 ? (

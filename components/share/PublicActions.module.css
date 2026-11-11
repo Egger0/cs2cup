@@ -15,8 +15,3 @@
   color: var(--ct);
   font-size: 0.8rem;
 }
-.actions > span {
-  margin-left: auto;
-  color: var(--muted);
-  font-size: 0.75rem;
-}
