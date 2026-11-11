@@ -36,7 +36,7 @@
   background: none;
   color: var(--ink);
   font:
-    0.875rem var(--font-mono),
+    0.875rem var(--font-code),
     monospace;
   outline: none;
 }

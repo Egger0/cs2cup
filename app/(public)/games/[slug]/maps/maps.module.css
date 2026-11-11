@@ -31,7 +31,8 @@
 
 .card header span {
   color: var(--muted);
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
   letter-spacing: 0.06em;
   text-transform: uppercase;

@@ -31,9 +31,7 @@
 }
 .toolbar p {
   color: var(--muted);
-  font:
-    0.75rem var(--font-mono),
-    monospace;
+  font: 0.75rem var(--font-body);
 }
 .empty {
   padding: 48px 24px;

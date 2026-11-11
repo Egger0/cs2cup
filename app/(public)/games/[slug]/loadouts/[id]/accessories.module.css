@@ -14,9 +14,7 @@
 .panel h2 small {
   margin-inline-start: 8px;
   color: var(--muted);
-  font:
-    0.8125rem var(--font-mono),
-    monospace;
+  font: 0.8125rem var(--font-body);
 }
 
 .list {
@@ -62,9 +60,7 @@
 .name span {
   display: block;
   color: var(--muted);
-  font:
-    0.75rem var(--font-mono),
-    monospace;
+  font: 0.75rem var(--font-body);
 }
 
 .effects {
@@ -83,7 +79,5 @@
 
 .price {
   color: var(--muted);
-  font:
-    0.75rem var(--font-mono),
-    monospace;
+  font: 0.75rem var(--font-body);
 }

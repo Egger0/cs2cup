@@ -328,7 +328,8 @@ body:has([data-solar-home]) main :focus-visible {
   border: 1px solid #6da5d3;
   background: #171817;
   color: #f1efe8;
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.04em;

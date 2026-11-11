@@ -70,9 +70,7 @@
 
 .figures {
   color: var(--muted);
-  font:
-    0.8125rem var(--font-mono),
-    monospace;
+  font: 0.8125rem var(--font-body);
 }
 
 .figures b {
@@ -180,9 +178,7 @@
   border-radius: 10px;
   background: var(--surface);
   color: var(--ink);
-  font:
-    1rem var(--font-mono),
-    monospace;
+  font: 1rem var(--font-body);
 }
 
 .preset {
@@ -193,9 +189,7 @@
   border-radius: 999px;
   background: transparent;
   color: var(--ink);
-  font:
-    0.875rem var(--font-mono),
-    monospace;
+  font: 0.875rem var(--font-body);
   cursor: pointer;
 }
 
@@ -251,9 +245,7 @@
   margin-inline-end: 10px;
   padding: 2px 8px;
   border: 1px solid currentColor;
-  font:
-    600 0.75rem var(--font-mono),
-    monospace;
+  font: 600 0.75rem var(--font-body);
 }
 
 .receipt[data-status='won'] span {

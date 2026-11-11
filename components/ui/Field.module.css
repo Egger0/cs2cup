@@ -9,7 +9,8 @@
   align-items: baseline;
   gap: 6px;
   color: var(--muted);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
   letter-spacing: 0.02em;
 }

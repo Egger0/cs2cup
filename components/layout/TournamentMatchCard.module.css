@@ -27,7 +27,8 @@
   justify-content: space-between;
   gap: 12px;
   color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   letter-spacing: 0.02em;
   grid-column: 1 / -1;
@@ -77,7 +78,8 @@
 .cardVs {
   align-self: center;
   color: var(--ct);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-align: center;
@@ -100,7 +102,8 @@
   justify-self: end;
   padding-inline: 8px;
   color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
 }

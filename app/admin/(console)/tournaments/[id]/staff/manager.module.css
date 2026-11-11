@@ -1,6 +1,7 @@
 :is(.managerHeader p, .sectionNumber, .ledgerHeading span),
 :is(.ledgerHeading small, .assignmentMeta dt, .count span) {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   letter-spacing: 0.05em;
 }
 
@@ -176,7 +177,8 @@
   place-items: center;
   border: 1px solid var(--admin-line-strong);
   color: var(--admin-blue-strong);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
 }
 

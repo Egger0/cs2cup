@@ -31,12 +31,13 @@
 
 .rank {
   color: var(--accent);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
 }
 
 .score {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
 }
 

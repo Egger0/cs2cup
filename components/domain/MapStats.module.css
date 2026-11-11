@@ -21,7 +21,8 @@
 
 .head {
   border-bottom-color: var(--line-strong);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -46,7 +47,7 @@
 }
 
 .num {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
   font-size: 0.86rem;
   text-align: right;

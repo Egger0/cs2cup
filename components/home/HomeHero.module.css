@@ -125,7 +125,8 @@
   min-width: 44px;
   min-height: 44px;
   color: rgb(241 239 232 / 62%);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   opacity: calc(1 - var(--solar-progress, 0) * 3);

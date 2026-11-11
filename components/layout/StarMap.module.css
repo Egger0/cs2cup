@@ -72,7 +72,8 @@
   justify-content: space-between;
   gap: 24px;
   color: #8c9aa0;
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
 }
@@ -126,7 +127,8 @@
 
 .number {
   color: #8c9aa0;
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
   transition: color 180ms ease;
@@ -151,7 +153,8 @@
 .label small {
   overflow: hidden;
   color: #8c9aa0;
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-overflow: ellipsis;

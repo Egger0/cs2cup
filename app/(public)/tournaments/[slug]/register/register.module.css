@@ -115,7 +115,8 @@
 
 .passHandoff strong {
   color: var(--ink);
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.82rem;
 }
 

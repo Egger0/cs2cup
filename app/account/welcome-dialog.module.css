@@ -42,9 +42,7 @@
   align-items: center;
   gap: 10px;
   color: var(--honour);
-  font:
-    600 0.6875rem var(--font-mono),
-    monospace;
+  font: 600 0.6875rem var(--font-body);
   letter-spacing: 0.06em;
 }
 
@@ -97,9 +95,7 @@
 
 .label {
   color: var(--muted-2);
-  font:
-    600 0.6875rem var(--font-mono),
-    monospace;
+  font: 600 0.6875rem var(--font-body);
   letter-spacing: 0.06em;
 }
 

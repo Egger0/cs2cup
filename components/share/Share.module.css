@@ -194,7 +194,7 @@
   background: #f1efe8;
   color: #171817;
   font:
-    1rem var(--font-mono),
+    1rem var(--font-code),
     monospace;
 }
 .message {

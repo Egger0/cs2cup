@@ -63,7 +63,8 @@
   margin-top: 5px;
   border-bottom: 1px solid rgba(11, 93, 148, 0.42);
   color: var(--pass-blue);
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
   letter-spacing: 0.04em;
 }

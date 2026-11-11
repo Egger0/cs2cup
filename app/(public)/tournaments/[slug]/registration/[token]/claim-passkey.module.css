@@ -42,7 +42,8 @@
 .notes strong,
 .actionStatus,
 .complete a {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   letter-spacing: 0.05em;
 }
 
@@ -180,7 +181,8 @@
   height: 32px;
   place-items: center;
   border: 1px solid currentColor;
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.04em;
 }

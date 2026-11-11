@@ -64,7 +64,8 @@
 .score,
 .status,
 .open {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
 }
 
 .time {

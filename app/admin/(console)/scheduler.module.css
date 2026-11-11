@@ -80,7 +80,8 @@
   gap: 16px;
   padding: 13px 0;
   color: var(--muted);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -109,7 +110,8 @@
 }
 
 .timeSlot {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.04em;
   color: var(--muted-2);
@@ -149,7 +151,8 @@
 
 .timeTeams i {
   color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   font-style: normal;
 }
@@ -161,7 +164,8 @@
 
 .timeZone {
   color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -176,7 +180,8 @@
   border-radius: 10px;
   background: var(--admin-paper-deep, var(--void));
   color: var(--ink);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.76rem;
 }
 

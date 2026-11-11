@@ -27,7 +27,8 @@
 
 .teamName span {
   color: var(--accent);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-weight: 620;
 }
 
@@ -35,7 +36,8 @@
   align-self: start;
   width: fit-content;
   color: var(--muted);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8rem;
   letter-spacing: 0.02em;
 }
@@ -88,7 +90,8 @@
 
 .checkIn time {
   color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
 }
 
@@ -115,7 +118,8 @@
 
 .sectionLabel span {
   color: var(--muted);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
 }
 
@@ -142,7 +146,8 @@
 }
 
 .order {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
 }
 
 .emptyRoster {

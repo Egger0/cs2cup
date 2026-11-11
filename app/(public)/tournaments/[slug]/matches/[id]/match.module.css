@@ -5,7 +5,8 @@
   gap: 8px;
   margin-bottom: 20px;
   color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
 }
@@ -47,7 +48,8 @@
   align-items: center;
   gap: 8px;
   color: var(--muted);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
   letter-spacing: 0.04em;
   transition:

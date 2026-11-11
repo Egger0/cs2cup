@@ -20,7 +20,8 @@
 
 .dayTitle,
 .dayCount {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-weight: 500;
 }
 
@@ -55,7 +56,8 @@
   padding-inline: 12px;
   border: 1px solid var(--line-strong);
   border-radius: 999px;
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   color: var(--ct);

@@ -21,7 +21,8 @@
 
 .label {
   color: var(--accent);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -141,7 +142,8 @@
 
 .receipt strong {
   color: var(--honour);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: clamp(1.7rem, 6vw, 2.7rem);
   letter-spacing: 0.06em;
 }

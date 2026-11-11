@@ -51,9 +51,7 @@
 }
 
 .modes a small {
-  font:
-    500 0.8125rem var(--font-mono),
-    monospace;
+  font: 500 0.8125rem var(--font-body);
 }
 
 @media (hover: hover) {
@@ -83,9 +81,7 @@
 .filterLabel {
   flex: 0 0 3.5em;
   color: var(--muted);
-  font:
-    0.8125rem var(--font-mono),
-    monospace;
+  font: 0.8125rem var(--font-body);
 }
 
 .more > summary {
@@ -102,7 +98,8 @@
 .more > summary::after {
   color: var(--muted);
   content: '+';
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
 }
 
 .more[open] > summary::after {
@@ -148,9 +145,7 @@
 
 .chip small {
   color: var(--muted);
-  font:
-    0.75rem var(--font-mono),
-    monospace;
+  font: 0.75rem var(--font-body);
 }
 
 @media (hover: hover) {
@@ -261,9 +256,7 @@
   gap: 16px;
   margin-top: 32px;
   color: var(--muted);
-  font:
-    0.875rem var(--font-mono),
-    monospace;
+  font: 0.875rem var(--font-body);
 }
 
 .pager a {

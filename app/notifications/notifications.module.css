@@ -37,7 +37,8 @@
 
 .list time {
   color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
 }
 

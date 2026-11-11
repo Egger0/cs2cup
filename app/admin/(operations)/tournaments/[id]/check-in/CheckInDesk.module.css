@@ -17,7 +17,8 @@
 .toolStatus p,
 .closed > p {
   color: var(--ops-blue);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
 }
@@ -147,7 +148,8 @@
 }
 
 .teamLead p {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
 }
@@ -175,7 +177,8 @@
 
 .details dt {
   color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
 }
@@ -304,7 +307,8 @@
   border: 0;
   background: none;
   color: var(--accent);
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
   cursor: pointer;

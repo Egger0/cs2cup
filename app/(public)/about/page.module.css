@@ -47,7 +47,8 @@
 }
 
 .factKey {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -81,7 +82,8 @@
 }
 
 .roleName {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -152,7 +154,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.9375rem;
   color: #f1efe8;
 }

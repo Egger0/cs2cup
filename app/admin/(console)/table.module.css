@@ -82,7 +82,8 @@
   border-radius: 8px;
   background: var(--admin-paper-deep, var(--bg-2));
   color: var(--ink);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.78rem;
 }
 
@@ -95,7 +96,8 @@
   display: none;
   margin-bottom: 9px;
   color: var(--admin-muted, var(--muted));
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.04em;
 }

@@ -4,7 +4,8 @@
   gap: 6px;
   padding: 4px 8px;
   border: 1px solid currentColor;
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.06em;
