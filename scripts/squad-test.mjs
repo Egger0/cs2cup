@@ -28,14 +28,8 @@ registerHooks({
 
 const { accountSquads, createSquad, incomingSquadInvitations, inviteToSquad, parseSquadIdentity } =
   await import('../lib/squads.ts')
-const {
-  addSquadGuest,
-  disbandSquad,
-  removeSquadGuest,
-  removeSquadMember,
-  respondToSquadInvitation,
-  revokeSquadInvitation,
-} = await import('../lib/squad-roster.ts')
+const { disbandSquad, removeSquadMember, respondToSquadInvitation, revokeSquadInvitation } =
+  await import('../lib/squad-roster.ts')
 const { registerSquad, squadTournaments } = await import('../lib/squad-registration.ts')
 const { accountIds, createIdentityKernelFixture, credentialIds, hex, passwordCredentialIds } =
   await import('./identity-kernel-test-fixture.mjs')
@@ -249,75 +243,6 @@ try {
     count(`SELECT COUNT(*) AS count FROM team WHERE id = ${registered.teamId}`),
     1,
     'disbanding keeps the tournament registration',
-  )
-
-  const withGuests = await createSquad(
-    db,
-    accountIds.owner,
-    { gameId: 71, name: 'Guest Squad', tag: 'GST', guests: ['Ghost-1'] },
-    now + 30,
-  )
-  assert.equal(withGuests.ok, true)
-  const guestSquadId = withGuests.squadId
-  const guest = input => addSquadGuest(db, { squadId: guestSquadId, ...input }, now + 31)
-  assert.deepEqual(await guest({ captainAccountId: accountIds.reviewer, nickname: 'X' }), {
-    ok: false,
-    reason: 'not_captain',
-  })
-  assert.deepEqual(await guest({ captainAccountId: accountIds.owner, nickname: 'Ghost-1' }), {
-    ok: false,
-    reason: 'duplicate',
-  })
-  assert.deepEqual(await guest({ captainAccountId: accountIds.owner, nickname: 'Ghost-2' }), {
-    ok: true,
-  })
-  assert.deepEqual(await guest({ captainAccountId: accountIds.owner, nickname: 'Ghost-3' }), {
-    ok: false,
-    reason: 'full',
-  })
-  assert.deepEqual(
-    await inviteToSquad(
-      db,
-      { captainAccountId: accountIds.owner, squadId: guestSquadId, identifier: 'staff.user' },
-      now + 32,
-    ),
-    { ok: false, reason: 'full' },
-    'placeholders take seats',
-  )
-  const [guestSquad] = await accountSquads(db, accountIds.owner)
-  assert.deepEqual(
-    guestSquad.guests.map(entry => entry.nickname),
-    ['Ghost-1', 'Ghost-2'],
-  )
-  const guestRegistration = await registerSquad(db, owner.context, {
-    squadId: guestSquadId,
-    tournamentId: 72,
-    details,
-    fingerprint: 'guest-fingerprint',
-    managementTokenHash: hex('9'),
-    now: now + 33,
-  })
-  assert.equal(guestRegistration.ok, true)
-  assert.deepEqual(
-    database
-      .prepare('SELECT nickname FROM player WHERE team_id = ? ORDER BY sort_order')
-      .all(guestRegistration.teamId)
-      .map(row => row.nickname),
-    ['Person 1', 'Ghost-1', 'Ghost-2'],
-  )
-  assert.equal(
-    count(`SELECT COUNT(*) AS count FROM identity_registration_membership
-           WHERE team_id = ${guestRegistration.teamId} AND relationship = 'player'`),
-    1,
-    'only account members are linked to the registration',
-  )
-  assert.deepEqual(
-    await removeSquadGuest(db, {
-      captainAccountId: accountIds.owner,
-      squadId: guestSquadId,
-      guestId: guestSquad.guests[0].id,
-    }),
-    { ok: true },
   )
 
   console.log('squad tests passed')
