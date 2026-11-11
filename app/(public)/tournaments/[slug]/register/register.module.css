@@ -116,7 +116,7 @@
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;
   font-weight: 750;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .passHandoff p {

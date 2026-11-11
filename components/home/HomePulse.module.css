@@ -18,7 +18,7 @@
   font:
     0.75rem var(--font-mono),
     monospace;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.06em;
 }
 
 .pulse header a {
@@ -106,7 +106,7 @@
 .round {
   color: var(--space-accent);
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .teams {

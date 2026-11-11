@@ -122,15 +122,27 @@
 }
 
 .names {
+  min-width: 0;
+  overflow: hidden;
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.04em;
+  text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@media (max-width: 360px) {
+  .names {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    clip-path: inset(50%);
+  }
 }
 
 .actions {
   display: flex;
-  flex: 1;
+  flex: 1 0 auto;
   align-items: center;
   justify-content: flex-end;
   gap: 4px;

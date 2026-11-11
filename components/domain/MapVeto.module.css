@@ -73,7 +73,7 @@
 .actor {
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 2px 6px;
   border: 1px solid currentColor;
@@ -139,7 +139,7 @@
 .unplayed {
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   color: var(--muted-2);
 }
 

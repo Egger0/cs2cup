@@ -97,7 +97,7 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
               </div>
               {game.formatNote ? (
                 <div className={styles.format}>
-                  <div className="readout">FORMAT · 社团赛制</div>
+                  <div className="readout">社团赛制</div>
                   <p>{game.formatNote}</p>
                 </div>
               ) : null}

@@ -23,7 +23,7 @@
   color: var(--accent);
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -143,7 +143,7 @@
   color: var(--honour);
   font-family: var(--font-mono), monospace;
   font-size: clamp(1.7rem, 6vw, 2.7rem);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.06em;
 }
 
 .receipt img {

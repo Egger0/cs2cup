@@ -63,7 +63,7 @@
 .recordKey {
   font-family: var(--font-mono), monospace;
   font-size: 0.8125rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted-2);
   margin-top: 8px;
@@ -132,7 +132,7 @@
 .round {
   font-family: var(--font-mono), monospace;
   font-size: 0.8125rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   color: var(--muted-2);
 }
 

@@ -74,7 +74,7 @@
   color: #8c9aa0;
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.06em;
 }
 
 .foot {
@@ -128,7 +128,7 @@
   color: #8c9aa0;
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   transition: color 180ms ease;
 }
 
@@ -153,7 +153,7 @@
   color: #8c9aa0;
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.06em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

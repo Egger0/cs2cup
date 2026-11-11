@@ -164,7 +164,7 @@
   color: #8c9aa0;
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.06em;
 }
 .stages strong {
   color: color-mix(in srgb, #f1efe8 calc(var(--on) * 100%), #7c878d);
@@ -177,7 +177,7 @@
   color: color-mix(in srgb, #c9d4d8 calc(var(--on) * 100%), #8c9aa0);
   font-size: 0.75rem;
   font-style: normal;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.06em;
 }
 .stages li:last-child strong,
 .stages li:last-child em {
@@ -206,7 +206,7 @@
   gap: 36px;
   border-bottom: 1px solid rgb(241 239 232 / 34%);
   font-size: 0.8rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   transition: border-color 200ms ease;
 }
 @media (hover: hover) {

@@ -33,7 +33,7 @@
   color: var(--admin-blue);
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.13em;
+  letter-spacing: 0.06em;
 }
 
 .heading h1 {

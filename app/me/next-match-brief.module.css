@@ -112,7 +112,7 @@
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
   font-size: 0.8125rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .team {

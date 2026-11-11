@@ -79,7 +79,7 @@
   color: var(--ct);
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.06em;
   text-align: center;
 }
 
@@ -102,7 +102,7 @@
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
   font-size: 0.8125rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .scheduleLink:focus-visible {

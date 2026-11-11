@@ -27,7 +27,7 @@
   gap: 14px;
   color: #9bcaeb;
   font-size: 0.85rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 .columns {
   display: grid;
@@ -74,7 +74,7 @@
   background: linear-gradient(rgb(6 7 10 / 0%), rgb(6 7 10 / 72%));
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
 }
 @media (max-width: 700px) {
   .columns {

@@ -184,7 +184,7 @@ g[data-lit] .tick {
   color: #dfe7ea;
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   white-space: nowrap;
 }
 
@@ -223,13 +223,13 @@ g[data-lit] .tick {
   color: #8c9aa0;
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.06em;
 }
 
 .readout b {
   color: #cfe8f8;
   font-size: 0.75rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.06em;
 }
 
 @keyframes drift {

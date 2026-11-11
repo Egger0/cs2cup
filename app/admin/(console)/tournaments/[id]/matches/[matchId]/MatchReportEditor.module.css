@@ -10,7 +10,7 @@
   color: var(--muted);
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 @media (hover: hover) {
@@ -33,7 +33,7 @@
   color: var(--muted-2);
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -52,7 +52,7 @@
   color: var(--t);
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.8rem;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 

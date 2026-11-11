@@ -152,10 +152,7 @@ button {
 }
 
 .readout {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.8125rem;
   color: var(--muted-2);
 }
 
@@ -334,7 +331,7 @@ body:has([data-solar-home]) main :focus-visible {
   font-family: var(--font-mono), monospace;
   font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   transform: translateY(-160%);
   transition: transform 0.2s var(--ease);
 }

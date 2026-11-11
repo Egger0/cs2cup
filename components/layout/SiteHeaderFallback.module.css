@@ -47,7 +47,7 @@
 .links a > span {
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
 .meta small {

@@ -27,14 +27,14 @@
 .dayTitle {
   min-width: 0;
   font-size: 0.76rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   color: var(--ink);
 }
 
 .dayCount {
   flex: 0 0 auto;
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   color: var(--muted-2);
 }
 

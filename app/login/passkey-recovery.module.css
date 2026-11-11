@@ -46,7 +46,7 @@
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.13em;
+  letter-spacing: 0.06em;
 }
 
 .recovery > strong {
@@ -73,7 +73,7 @@
   color: var(--pass-blue);
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.875rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .receiptReturn span:last-child {

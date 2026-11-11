@@ -31,7 +31,7 @@
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.06em;
 }
 
 .content {
@@ -44,7 +44,7 @@
   color: var(--accent);
   border: 1px solid currentColor;
   font-size: 0.75rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
 }
 
 .title {

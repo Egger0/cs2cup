@@ -136,7 +136,7 @@
   color: var(--muted-2);
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .mapScore label {

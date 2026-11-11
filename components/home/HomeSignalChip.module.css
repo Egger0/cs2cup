@@ -39,7 +39,7 @@
   color: var(--space-muted);
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
 }
 .beacon {
   width: 6px;
@@ -99,7 +99,7 @@
   background: var(--space-accent);
   font-size: 0.85rem;
   font-weight: 650;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   transition: background-color 180ms ease;
 }
 @media (hover: hover) {
@@ -123,7 +123,7 @@
   color: var(--space-accent);
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
 }
 .latest span {
   overflow: hidden;

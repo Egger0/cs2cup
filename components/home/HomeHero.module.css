@@ -68,7 +68,7 @@
 .tagline {
   color: #c9d4d8;
   font-size: 1.05rem;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.06em;
 }
 .actions {
   display: flex;
@@ -85,7 +85,7 @@
   align-items: center;
   gap: 14px;
   font-size: 0.85rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   transition:
     color 180ms ease,
     background-color 180ms ease,
@@ -127,7 +127,7 @@
   color: rgb(241 239 232 / 62%);
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.06em;
   opacity: calc(1 - var(--solar-progress, 0) * 3);
   transform: translateX(-50%);
   transition: opacity 120ms linear;
@@ -227,7 +227,7 @@
 @media (max-width: 700px) {
   .tagline {
     font-size: 0.95rem;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.06em;
   }
   .actions {
     gap: 8px 22px;

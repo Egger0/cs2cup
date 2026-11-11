@@ -75,7 +75,7 @@
   font:
     3.4cqi / 1 var(--font-mono),
     monospace;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.06em;
   opacity: 0.65;
 }
 
@@ -98,6 +98,6 @@
 
 .org {
   font-size: 3.2cqi;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.06em;
   opacity: 0.6;
 }

@@ -17,7 +17,7 @@
   font-family: var(--font-mono), monospace;
   font-weight: 400;
   font-size: 0.75rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted-2);
   white-space: nowrap;
@@ -54,7 +54,7 @@
 .round {
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   color: var(--muted-2);
   white-space: nowrap;
 }
@@ -107,7 +107,7 @@
   color: var(--ct);
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   white-space: nowrap;
 }
 
