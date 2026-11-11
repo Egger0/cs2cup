@@ -11,7 +11,7 @@ export const PUBLIC_LINKS = [
 export const LOTTERY_LINK = { href: '/lottery', label: '招新抽奖', group: '社团' }
 
 export const PRIMARY_LINKS = PUBLIC_LINKS.filter(link =>
-  ['/tournaments', '/news', '/games', '/loadouts', '/maps'].includes(link.href),
+  ['/tournaments', '/news', '/games'].includes(link.href),
 )
 
 export const ACCOUNT_PREFIXES = [
