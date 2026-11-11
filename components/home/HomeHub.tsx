@@ -17,27 +17,21 @@ export function HomeHub({
 }) {
   const steps = [
     {
-      title: '想上场',
       label: '组队参赛',
       detail: '创建账号、申请成员资格，和队友一起提交报名。',
       href: tournament ? `/tournaments/${tournament.slug}/register` : '/register',
-      number: '01',
     },
     {
-      title: '来看比赛',
       label: '跟进赛程',
       detail: '找到支持的战队，把比赛时间加入你的日历。',
       href: tournament
         ? `/tournaments/${tournament.slug}${fixturesEntry(tournament).path}`
         : '/tournaments',
-      number: '02',
     },
     {
-      title: '成为其中一员',
       label: '加入电竞社',
       detail: '解说、导播、设计、摄影。赛场之外，同样精彩。',
       href: '/about#join',
-      number: '03',
     },
   ]
   return (
@@ -58,9 +52,7 @@ export function HomeHub({
         </header>
         <nav className={styles.pathways} aria-label="参赛与社团指南" data-home-reveal="group">
           {steps.map(step => (
-            <Link key={step.number} href={step.href}>
-              <span className={styles.number}>{step.number}</span>
-              <span className={styles.role}>{step.title}</span>
+            <Link key={step.href} href={step.href}>
               <h3>
                 {step.label}
                 <Icon name="diagonal" />

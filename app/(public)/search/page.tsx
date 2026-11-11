@@ -1,9 +1,9 @@
 import Link from 'next/link'
-import { ButtonLink, Empty, Field } from '@/components/ui'
+import { ButtonLink, Empty } from '@/components/ui'
+import { Icon } from '@/components/ui/Icon'
 import { PageMasthead } from '@/components/domain/Sections'
 import { safely, search } from '@/lib/queries/public'
 import styles from './search.module.css'
-import results from './results.module.css'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,8 +17,6 @@ const KIND: Record<string, string> = {
   loadout: '改枪码',
 }
 
-const SOURCES = ['赛事', '战队', '项目', '动态', '改枪码']
-
 export default async function SearchPage({
   searchParams,
 }: {
@@ -27,84 +25,45 @@ export default async function SearchPage({
   const { q = '' } = await searchParams
   const query = q.trim()
   const hits = query ? await safely(() => search(q), []) : []
-  const resultCode = String(hits.length).padStart(2, '0')
 
   return (
     <>
       <PageMasthead
         tone="#8fc8ef"
-        title="找点什么"
-        lede="从赛事、战队、项目、社团动态和改枪码里，调取你要找的那一条记录。"
+        title="搜索"
+        lede="赛事、战队、项目、社团动态和改枪码。"
         density="compact"
       />
       <section className="section">
         <div className="wrap">
-          <div className={styles.console}>
-            <span className={styles.serial} aria-hidden="true">
-              07
-            </span>
-            <div className={styles.consoleHead} aria-hidden="true">
-              <span>NINGLI ESPORTS / PUBLIC INDEX</span>
-              <span>
-                {query
-                  ? `QUERY ACTIVE / ${resultCode}`
-                  : `SYSTEM READY / ${String(SOURCES.length).padStart(2, '0')} SOURCES`}
-              </span>
-            </div>
-
-            <form className={styles.form} action="/search">
-              <span className={styles.prompt} aria-hidden="true">
-                Q/
-              </span>
-              <Field
-                id="q"
-                name="q"
-                label="检索词"
-                defaultValue={q}
-                placeholder="宁理杯 / FROST / M4A1"
-              />
-              <button type="submit" className={styles.go}>
-                <span>执行检索</span>
-                <span aria-hidden="true">→</span>
-              </button>
-            </form>
-
-            <div className={styles.sources} aria-hidden="true">
-              <span className={styles.sourceLead}>INDEX</span>
-              {SOURCES.map((source, index) => (
-                <span key={source}>
-                  <b>{String(index + 1).padStart(2, '0')}</b>
-                  {source}
-                </span>
-              ))}
-            </div>
-          </div>
+          <form className={styles.form} action="/search" role="search">
+            <Icon name="search" size={20} />
+            <input
+              type="search"
+              name="q"
+              defaultValue={q}
+              placeholder="宁理杯、战队名或 M4A1"
+              aria-label="搜索内容"
+            />
+            <button type="submit">搜索</button>
+          </form>
 
           {query ? (
-            <div className={results.output} data-rise="3">
-              <div className={results.outputHead}>
-                <span>
-                  {hits.length > 0 ? 'RESULT' : 'NO MATCH'} / {resultCode}
-                </span>
-                <span>QUERY “{query}”</span>
-              </div>
-
+            <div className={styles.output}>
+              <p className={styles.count} role="status">
+                {hits.length > 0 ? `「${query}」共 ${hits.length} 条结果` : null}
+              </p>
               {hits.length > 0 ? (
-                <ol className={results.results}>
-                  {hits.map((hit, index) => (
-                    <li key={`${hit.kind}-${hit.href}`} className={results.resultItem}>
-                      <Link href={hit.href} className={results.hit}>
-                        <span className={results.index} aria-hidden="true">
-                          {String(index + 1).padStart(2, '0')}
+                <ol className={styles.results}>
+                  {hits.map(hit => (
+                    <li key={`${hit.kind}-${hit.href}`}>
+                      <Link href={hit.href} className={styles.hit}>
+                        <span className={styles.kind}>{KIND[hit.kind]}</span>
+                        <span className={styles.identity}>
+                          <span className={styles.title}>{hit.title}</span>
+                          <span className={styles.subtitle}>{hit.subtitle}</span>
                         </span>
-                        <span className={results.kind}>{KIND[hit.kind]}</span>
-                        <span className={results.identity}>
-                          <span className={results.title}>{hit.title}</span>
-                          <span className={results.subtitle}>{hit.subtitle}</span>
-                        </span>
-                        <span className={results.arrow} aria-hidden="true">
-                          →
-                        </span>
+                        <Icon name="arrow" size={16} />
                       </Link>
                     </li>
                   ))}
@@ -120,7 +79,7 @@ export default async function SearchPage({
                     </>
                   }
                 >
-                  没有匹配「{query}」的记录。可以修改检索词，或从完整目录继续找。
+                  没有找到「{query}」。换个关键词试试。
                 </Empty>
               )}
             </div>

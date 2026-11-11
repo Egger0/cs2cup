@@ -1,223 +1,143 @@
-.console {
-  --index-bg: #171817;
-  --index-ink: #f1efe8;
-  --index-muted: rgba(241, 239, 232, 0.56);
-  --index-line: rgba(241, 239, 232, 0.18);
-  --index-accent: #6da5d3;
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  color: var(--index-ink);
-  border: 1px solid var(--index-bg);
-  background:
-    linear-gradient(rgba(241, 239, 232, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(241, 239, 232, 0.045) 1px, transparent 1px), var(--index-bg);
-  background-size: 32px 32px;
-  animation: none;
-}
-
-.serial {
-  position: absolute;
-  top: clamp(28px, 3vw, 42px);
-  right: clamp(24px, 4vw, 58px);
-  z-index: -1;
-  color: rgba(241, 239, 232, 0.035);
-  font-family: var(--font-display), sans-serif;
-  font-size: clamp(8rem, 17vw, 15rem);
-  letter-spacing: -0.08em;
-  line-height: 0.66;
-  pointer-events: none;
-}
-
-.consoleHead,
-.sources,
-.outputHead {
-  font-family: var(--font-mono), monospace;
-  font-size: 0.8125rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.consoleHead {
+.form {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 9px clamp(20px, 3vw, 36px);
-  color: var(--index-muted);
-  border-bottom: 1px solid var(--index-line);
-}
-
-.consoleHead span:last-child {
-  color: var(--index-accent);
-}
-
-.form {
-  display: grid;
-  grid-template-columns: clamp(58px, 7vw, 88px) minmax(0, 1fr) auto;
-  align-items: end;
-  padding: 24px clamp(20px, 3vw, 36px);
-  border-bottom: 1px solid var(--index-line);
-}
-
-.form > div {
-  min-width: 0;
-}
-
-.prompt {
-  align-self: end;
-  padding-bottom: 8px;
-  color: var(--index-accent);
-  font-family: var(--font-display), sans-serif;
-  font-size: clamp(2.5rem, 4vw, 4rem);
-  letter-spacing: -0.07em;
-  line-height: 0.8;
-}
-
-.console .form label {
-  color: var(--index-muted);
-  font-size: 0.875rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.console .form input {
-  min-height: 72px;
-  padding-inline: 0;
-  color: var(--index-ink);
-  border: 0;
-  border-bottom: 1px solid var(--index-line);
-  background: transparent;
-  caret-color: var(--index-accent);
-  font-size: clamp(1.15rem, 2vw, 1.7rem);
-  letter-spacing: -0.025em;
-}
-
-.console .form input::placeholder {
-  color: var(--index-muted);
-}
-
-.console .form input:focus {
-  border-color: var(--index-accent);
-  outline: 2px solid var(--index-accent);
-  outline-offset: 4px;
-}
-
-.go {
-  display: inline-flex;
-  min-height: 72px;
-  align-items: center;
-  gap: 28px;
-  padding: 12px 24px;
-  color: var(--index-accent);
-  border: 0;
-  border-left: 1px solid var(--index-line);
-  background: transparent;
-  font-family: var(--font-mono), monospace;
-  font-size: 0.9375rem;
-  letter-spacing: 0.04em;
-  cursor: pointer;
+  gap: 12px;
+  max-width: 760px;
+  min-height: 60px;
+  padding-inline: 20px 6px;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
   transition:
-    color 180ms ease,
-    background-color 180ms ease;
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
-.go:focus-visible {
-  color: var(--index-bg);
-  background: var(--index-accent);
+.form:focus-within {
+  border-color: var(--ct);
+  box-shadow: 0 0 0 4px var(--ct-dim);
+}
+
+.form input {
+  min-width: 0;
+  flex: 1;
+  min-height: 48px;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  outline: 0;
+  font-size: 1.0625rem;
+}
+
+.form input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
+.form button {
+  min-height: 48px;
+  padding-inline: 24px;
+  color: var(--button-ink);
+  background: var(--ct);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.output {
+  max-width: 760px;
+  margin-top: 32px;
+}
+
+.count {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.results {
+  border-top: 1px solid var(--line);
+}
+
+.results li {
+  border-bottom: 1px solid var(--line);
+}
+
+.hit {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 72px;
+  padding-block: 14px;
+  color: var(--ink);
+}
+
+.hit svg {
+  color: var(--muted-2);
+  transition: transform 180ms ease;
 }
 
 @media (hover: hover) {
-  .go:hover {
-    color: var(--index-bg);
-    background: var(--index-accent);
+  .hit:hover .title {
+    color: var(--ct);
+  }
+
+  .hit:hover svg {
+    color: var(--ct);
+    transform: translateX(3px);
   }
 }
 
-.sources {
+.kind {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.identity {
   display: grid;
-  grid-template-columns: minmax(70px, 1.2fr) repeat(5, minmax(80px, 1fr));
-  gap: 18px;
-  padding: 15px clamp(20px, 3vw, 36px);
-  color: var(--index-muted);
+  gap: 4px;
+  min-width: 0;
 }
 
-.sources > span {
-  display: inline-flex;
-  gap: 8px;
+.title {
+  overflow: hidden;
+  font-size: 1.0625rem;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.sources b,
-.sourceLead {
-  color: var(--index-accent);
+.subtitle {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-@keyframes consoleEnter {
-  from {
-    opacity: 0;
-    clip-path: inset(0 0 18% 0);
-    transform: translateY(18px);
-  }
-}
-
-@media (max-width: 600px) {
-  .serial {
-    top: 56px;
-    right: 14px;
-    font-size: 9rem;
-  }
-
-  .consoleHead {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 5px;
-    padding-block: 12px;
-  }
-
+@media (max-width: 580px) {
   .form {
-    grid-template-columns: 42px minmax(0, 1fr);
-    padding: 26px 18px 0;
+    padding-left: 16px;
   }
 
-  .prompt {
-    padding-bottom: 13px;
-    font-size: 2.5rem;
-  }
-
-  .console .form input {
-    min-height: 64px;
-    font-size: 1.05rem;
-  }
-
-  .go {
-    grid-column: 1 / -1;
-    justify-content: space-between;
-    width: calc(100% + 36px);
-    min-height: 58px;
-    margin: 24px -18px 0;
+  .form button {
     padding-inline: 18px;
-    border-top: 1px solid var(--index-line);
-    border-left: 0;
   }
 
-  .sources {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px 18px;
-    padding-block: 14px;
+  .hit {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .sourceLead {
+  .kind {
     grid-column: 1 / -1;
-    padding-bottom: 3px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .console {
-    animation: none;
-  }
-
-  .go {
+  .form,
+  .hit svg {
     transition: none;
   }
 }

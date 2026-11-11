@@ -64,13 +64,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       <div className="section">
         <div className="wrap">
           <div className={styles.articleGrid}>
-            <div className={styles.rail} aria-hidden="true">
-              <span>ARTICLE</span>
-              <span>{post.pinned ? 'PINNED' : 'PUBLIC'}</span>
-            </div>
             <div className={styles.articleColumn}>
               <div className={styles.shareBar}>
-                <span>{CLUB_BRAND.shortName} · 社团动态</span>
                 <ShareButton
                   share={{
                     title: post.title,

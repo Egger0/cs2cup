@@ -82,33 +82,10 @@
     transform: scaleX(1);
   }
 }
-.number {
-  position: absolute;
-  top: var(--space-4);
-  right: clamp(20px, 2.2vw, 32px);
-  color: transparent;
-  font:
-    500 2.6rem/1 var(--font-display),
-    sans-serif;
-  -webkit-text-stroke: 1px rgb(155 202 235 / 48%);
-  transition: -webkit-text-stroke-color 200ms ease;
-}
-@media (hover: hover) {
-  .pathways a:is(:hover, :focus-visible) .number {
-    -webkit-text-stroke-color: var(--space-accent);
-  }
-}
-.role {
-  color: var(--space-accent);
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  padding-right: 52px;
-}
 .pathways h3 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 20px;
   font-size: 1.2rem;
   letter-spacing: -0.02em;
 }
@@ -159,8 +136,7 @@
 @media (prefers-reduced-motion: reduce) {
   .pathways a,
   .pathways a::after,
-  .pathways h3 svg,
-  .number {
+  .pathways h3 svg {
     transition: none;
   }
   @media (hover: hover) {

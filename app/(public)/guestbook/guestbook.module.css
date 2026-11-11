@@ -29,14 +29,6 @@
   margin-bottom: clamp(30px, 4vw, 46px);
 }
 
-.panelHead span {
-  color: var(--accent);
-  font-family: var(--font-display), sans-serif;
-  font-size: 1.85rem;
-  font-weight: 560;
-  letter-spacing: -0.05em;
-}
-
 .panelHead h2 {
   color: var(--ink);
   font-size: clamp(1.25rem, 2vw, 1.65rem);
