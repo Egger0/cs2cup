@@ -129,8 +129,8 @@ node scripts/identity-migration-browser.mjs
 node scripts/identity-browser.mjs
 ```
 
-The identity browser flow covers membership review, saved registration drafts, account-owned
-registrations, collaboration transfer, Passkey enrollment/sign-in, recovery codes, and session
+The identity browser flow covers membership review, team registration from a pending
+application, account-owned registrations, Passkey enrollment/sign-in, recovery codes, and session
 revocation against the same local Worker and D1 state.
 
 Source files carry no comments; naming and structure carry the meaning, and rule exceptions live in
