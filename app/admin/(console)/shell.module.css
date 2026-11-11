@@ -28,7 +28,7 @@
   color: var(--admin-muted);
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

@@ -38,8 +38,6 @@ export default async function NotificationsPage() {
       identity={context.account.displayName}
       masthead={
         <PageMasthead
-          code="INBOX"
-          eyebrow="消息"
           title="与我有关"
           lede="小队邀请、改枪码审核结果和留言都会出现在这里。"
           density="compact"

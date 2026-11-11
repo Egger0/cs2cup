@@ -17,15 +17,7 @@
   margin-inline: auto;
 }
 
-.serial {
-  color: var(--pass-blue);
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.18em;
-}
-
 .passHeader h2 {
-  margin-top: 12px;
   font-family: var(--font-body);
   font-size: clamp(1.75rem, 2.1vw, 2.25rem);
   font-weight: 740;

@@ -16,11 +16,7 @@ export default async function AdminGamesPage() {
 
   return (
     <>
-      <AdminPageHeader
-        index="04"
-        title="项目库"
-        description="管理比赛项目的名称、识别色与公开介绍。"
-      />
+      <AdminPageHeader title="项目库" description="管理比赛项目的名称、识别色与公开介绍。" />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>新增项目</h2>
         <ContentCreateForm

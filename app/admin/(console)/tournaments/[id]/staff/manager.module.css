@@ -1,7 +1,7 @@
 :is(.managerHeader p, .sectionNumber, .ledgerHeading span),
 :is(.ledgerHeading small, .assignmentMeta dt, .count span) {
   font-family: var(--font-mono), ui-monospace, monospace;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.05em;
 }
 
 .manager {

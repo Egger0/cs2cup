@@ -45,7 +45,7 @@
   font:
     600 0.6875rem var(--font-mono),
     monospace;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
 }
 
 .stamp img {
@@ -100,7 +100,7 @@
   font:
     600 0.6875rem var(--font-mono),
     monospace;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
 }
 
 .actions {

@@ -17,7 +17,7 @@
   color: var(--ct);
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .statusPanel h2 {
@@ -43,7 +43,7 @@
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .checkIn > strong {
@@ -218,7 +218,7 @@
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
 .accountHandoff > div {

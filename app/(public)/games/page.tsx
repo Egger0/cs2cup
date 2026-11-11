@@ -17,9 +17,7 @@ export default async function GamesPage() {
   return (
     <>
       <PageMasthead
-        code="GAMES"
         tone="#b28a51"
-        eyebrow="项目"
         title="我们在玩什么"
         lede="社团不只打一款游戏。每个项目都有自己的赛事、队伍和活动。"
       />

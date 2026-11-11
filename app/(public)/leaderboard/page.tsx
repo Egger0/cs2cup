@@ -47,8 +47,6 @@ export default async function LeaderboardPage() {
   return (
     <>
       <PageMasthead
-        code="RANKING"
-        eyebrow="排行榜"
         title="谁在发光"
         lede="只显示已公开个人主页的成员，每五分钟更新一次。"
         density="compact"
@@ -56,15 +54,11 @@ export default async function LeaderboardPage() {
       <div className="wrap">
         <div className={styles.grid}>
           <section>
-            <SectionHead eyebrow="星尘" title="星尘持有榜" />
+            <SectionHead title="星尘持有榜" />
             <Board rows={stardust} unit="星尘" />
           </section>
           <section>
-            <SectionHead
-              eyebrow="改枪码"
-              title="改枪码人气榜"
-              lede="按获得的点赞数排名，自己点赞不计。"
-            />
+            <SectionHead title="改枪码人气榜" lede="按获得的点赞数排名，自己点赞不计。" />
             <Board rows={loadouts} unit="赞" />
           </section>
         </div>

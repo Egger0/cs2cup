@@ -45,7 +45,7 @@
     0.6875rem var(--font-mono),
     ui-monospace,
     monospace;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
 .grid h2 {

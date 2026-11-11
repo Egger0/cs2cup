@@ -13,7 +13,6 @@ export function SquadInvitationInbox({ items }: { items: SquadInvitation[] }) {
   return (
     <section className={styles.inbox} aria-labelledby="squad-inbox-title" aria-busy={pending}>
       <header>
-        <span className={styles.eyebrow}>INBOX / 站内信</span>
         <h2 id="squad-inbox-title">组队邀请</h2>
       </header>
       <SquadFeedback feedback={feedback} />

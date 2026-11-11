@@ -96,7 +96,7 @@ export default async function MatchPage({
         </nav>
 
         <SectionHead
-          eyebrow={`${tournament.season} · ${match.roundLabel}`}
+          meta={`${tournament.season} · ${match.roundLabel}`}
           title={
             bye
               ? `${byeTeam?.name ?? '参赛战队'} · 轮空晋级`

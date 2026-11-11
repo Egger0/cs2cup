@@ -19,7 +19,7 @@ export default async function MediaPage({ params }: { params: Promise<{ slug: st
       <div className="wrap">
         <div data-rise>
           <SectionHead
-            eyebrow={posters.length ? `${posters.length} 张影像` : '视觉档案'}
+            meta={posters.length ? `${posters.length} 张影像` : '视觉档案'}
             title="素材"
             lede="本届的海报、奖品与现场影像，点开任意一张查看大图。"
           />

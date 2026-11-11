@@ -43,7 +43,7 @@
 .actionStatus,
 .complete a {
   font-family: var(--font-mono), ui-monospace, monospace;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
 .kicker {
@@ -182,7 +182,7 @@
   border: 1px solid currentColor;
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .actionStatus {
@@ -215,7 +215,7 @@
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;
   font-weight: 750;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.04em;
 }
 
 .recovery strong {
@@ -252,7 +252,7 @@
   font-family: 'NLC Role Sans', var(--font-body);
   font-size: 0.75rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.06em;
   transform: rotate(-2deg);
 }
 

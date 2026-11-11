@@ -117,7 +117,7 @@
   color: #fff8e8;
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .mode {
@@ -126,7 +126,7 @@
   background: rgb(6 7 10 / 62%);
   color: var(--space-ink);
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .mode[data-mode='warfare'] {

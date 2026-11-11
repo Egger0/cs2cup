@@ -77,7 +77,7 @@
 
 .matchNumber {
   font-size: 0.75rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   color: var(--muted);
 }
 
@@ -92,7 +92,7 @@
   flex-wrap: wrap;
   gap: 6px;
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   color: var(--muted);
 }
 
@@ -103,7 +103,7 @@
   padding-inline: 7px;
   border: 1px solid color-mix(in srgb, var(--ct) 48%, transparent);
   color: var(--ct);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .teams {
@@ -169,7 +169,7 @@
   padding-inline: 8px;
   border: 1px solid currentColor;
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   white-space: nowrap;
 }
 

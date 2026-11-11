@@ -32,24 +32,17 @@ export default async function RecoverPage({
         <header className={loginStyles.brandline}>
           <Image src="/brand/club-mark.svg" alt="" width={38} height={38} loading="eager" />
           <strong>宁波理工电竞社</strong>
-          <span>IDENTITY / RECOVER—01</span>
         </header>
         <div className={loginStyles.hero}>
-          <p className={loginStyles.eyebrow}>
-            <span>ACCOUNT RECOVERY</span> / 账号恢复
-          </p>
           <h1 id="recovery-title">重新掌握账号。</h1>
           <p className={loginStyles.lede}>
             验证成功后只能设置新密码。完成时，所有旧设备会自动退出。
           </p>
         </div>
-        <p className={loginStyles.assurances}>
-          <span>01 / ONE TIME</span>每枚恢复码只能使用一次
-        </p>
+        <p className={loginStyles.assurances}>每枚恢复码只能使用一次</p>
       </section>
       <section className={bandStyles.passBand} aria-labelledby="recovery-form-title">
         <header className={bandStyles.passHeader}>
-          <p className={bandStyles.serial}>OFFLINE RECOVERY / NLC—01</p>
           <h2 id="recovery-form-title">验证恢复码</h2>
           <p>输入用户名，以及之前在「账号安全」中保存的一个备用恢复码。</p>
         </header>

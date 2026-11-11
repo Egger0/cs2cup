@@ -6,23 +6,21 @@ import arrival from './Arrival.module.css'
 import styles from './Sections.module.css'
 
 interface HeadingCopy {
-  eyebrow?: string
+  meta?: string
   title: ReactNode
   lede?: string
 }
 
 export function PageMasthead({
-  eyebrow,
+  meta,
   title,
   lede,
-  code,
   tone,
   art,
   children,
   density = 'spacious',
   plain = false,
 }: HeadingCopy & {
-  code?: string
   tone?: string
   art?: ReactNode
   children?: ReactNode
@@ -34,7 +32,7 @@ export function PageMasthead({
       <header
         className={`${styles.pageHead} ${density === 'compact' ? styles.pageHeadCompact : ''}`}
       >
-        {eyebrow ? <span className={styles.eyebrow}>{eyebrow}</span> : null}
+        {meta ? <span className={styles.meta}>{meta}</span> : null}
         <h1 className={styles.pageTitle}>{title}</h1>
         {lede ? <p className={styles.pageLede}>{lede}</p> : null}
       </header>
@@ -50,13 +48,8 @@ export function PageMasthead({
       <div className={art ? arrival.art : arrival.limb} aria-hidden="true">
         {art}
       </div>
-      {code ? (
-        <span className={arrival.code} aria-hidden="true">
-          {code}
-        </span>
-      ) : null}
       <div className={`wrap ${theme.dark} ${arrival.copy}`}>
-        {eyebrow ? <span className={arrival.eyebrow}>{eyebrow}</span> : null}
+        {meta ? <span className={arrival.meta}>{meta}</span> : null}
         <h1 className={arrival.title}>{scriptRuns(title)}</h1>
         {lede ? <p className={arrival.lede}>{lede}</p> : null}
         {children ? <div className={arrival.aside}>{children}</div> : null}
@@ -83,10 +76,10 @@ function scriptRuns(title: ReactNode) {
   )
 }
 
-export function SectionHead({ eyebrow, title, lede }: HeadingCopy) {
+export function SectionHead({ meta, title, lede }: HeadingCopy) {
   return (
     <div className={styles.head}>
-      {eyebrow ? <span className={styles.eyebrow}>{eyebrow}</span> : null}
+      {meta ? <span className={styles.meta}>{meta}</span> : null}
       <h2 className={styles.title}>{title}</h2>
       {lede ? <p className={styles.lede}>{lede}</p> : null}
     </div>

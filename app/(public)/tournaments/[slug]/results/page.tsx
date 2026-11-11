@@ -37,7 +37,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ slug: 
       <div className="wrap">
         <div data-rise>
           <SectionHead
-            eyebrow={`${decided.length} 场已完赛`}
+            meta={`${decided.length} 场已完赛`}
             title="战报"
             lede={
               decided.length
@@ -58,11 +58,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ slug: 
 
         {stats.length > 0 ? (
           <div data-rise="3" style={{ marginTop: 56 }}>
-            <SectionHead
-              eyebrow="地图数据"
-              title="哪张图最常打"
-              lede="统计自每场比赛的 Ban/Pick 记录。"
-            />
+            <SectionHead title="哪张图最常打" lede="统计自每场比赛的 Ban/Pick 记录。" />
             <MapStats stats={stats} />
           </div>
         ) : null}

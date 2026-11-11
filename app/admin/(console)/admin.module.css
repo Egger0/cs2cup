@@ -256,7 +256,7 @@
   color: var(--admin-blue, var(--t));
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
 }
 
 .saveBar {

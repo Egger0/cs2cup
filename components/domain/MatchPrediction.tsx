@@ -77,7 +77,6 @@ export function MatchPrediction({ matchId }: { matchId: number }) {
   return (
     <section className={styles.panel} aria-labelledby={heading} aria-busy={working}>
       <header className={styles.head}>
-        <span className={styles.eyebrow}>PICK&apos;EM / 赛前预测</span>
         <h2 id={heading}>你看好谁？</h2>
         <p>
           {board.phase === 'open'

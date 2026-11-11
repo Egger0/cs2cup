@@ -18,9 +18,7 @@ export default async function HandbookPage() {
   return (
     <>
       <PageMasthead
-        code="HANDBOOK"
         tone="#9fb3bb"
-        eyebrow="办赛文档"
         title="自己办一场比赛"
         lede="手册讲清一场比赛怎么办下来，模板可以直接拿去改。有想法就来牵头。"
         density="compact"
@@ -46,7 +44,7 @@ export default async function HandbookPage() {
               <div className="wrap">
                 <div data-rise>
                   <SectionHead
-                    eyebrow={`${group.length} 份`}
+                    meta={`${group.length} 份`}
                     title={HANDBOOK_KINDS[kind].label}
                     lede={HANDBOOK_KINDS[kind].lede}
                   />

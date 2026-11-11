@@ -67,7 +67,7 @@
   background: transparent;
   border: 0;
   font-size: 0.82rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   cursor: pointer;
   transition: color 180ms ease;
 }
@@ -83,7 +83,7 @@
   font: inherit;
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
 }
 @media (hover: none) {
   .back kbd {
@@ -98,7 +98,7 @@
   color: var(--space-accent);
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .kicker::before {
@@ -130,7 +130,7 @@
   border: 0;
   border-radius: 999px;
   font-size: 0.8rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
   cursor: pointer;
   transition:
     color 180ms ease,

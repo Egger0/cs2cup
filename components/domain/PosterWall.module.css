@@ -31,7 +31,7 @@
 .count {
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted-2);
   white-space: nowrap;
@@ -93,7 +93,7 @@
   border-top: 1px solid var(--line);
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.06em;
   color: var(--muted);
   text-align: left;
 }

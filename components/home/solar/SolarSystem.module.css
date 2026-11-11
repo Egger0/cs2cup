@@ -95,13 +95,13 @@
 .anchor > span:first-child {
   font-size: 0.95rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 .anchor small {
   color: #9bcaeb;
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .anchor[data-visible='false'] {
@@ -130,7 +130,7 @@
   left: var(--pad);
   color: rgb(241 239 232 / 72%);
   font-size: 0.75rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.06em;
   opacity: 0;
   pointer-events: none;
   transition: opacity 800ms ease;
@@ -141,6 +141,9 @@
 }
 :global(html[data-solar-chapter='far']) .hint {
   opacity: 0;
+}
+.overlay[data-solar-fallback='true'] .anchors {
+  display: none;
 }
 @media (max-width: 700px) {
   .anchor > span:first-child {
@@ -153,8 +156,7 @@
     bottom: 10px;
     font-size: 0.75rem;
   }
-  .overlay:not([data-solar-focus='overview']) .hint,
-  .overlay[data-solar-fallback='true'] :is(.anchors, .hint) {
+  .overlay:not([data-solar-focus='overview']) .hint {
     display: none;
   }
 }

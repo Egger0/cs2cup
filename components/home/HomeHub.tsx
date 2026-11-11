@@ -50,7 +50,6 @@ export function HomeHub({
       <div className="wrap">
         <header className={styles.heading} data-home-reveal="item">
           <div>
-            <span>THE CLUBHOUSE / 宁理电竞</span>
             <h2 id="clubhouse-title">热爱，有了集合地。</h2>
           </div>
           <Link href="/tournaments">

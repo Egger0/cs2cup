@@ -30,9 +30,7 @@ export default function MeritPage() {
   return (
     <>
       <PageMasthead
-        code="MERIT"
         tone="#d8b169"
-        eyebrow="致谢"
         title="功德榜"
         lede="记录为宁理杯和社团活动提供支持的朋友。感谢每一份付出，让比赛继续。"
         density="compact"

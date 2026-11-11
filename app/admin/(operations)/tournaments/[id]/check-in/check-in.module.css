@@ -66,7 +66,7 @@
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
 }
 
 .session {
@@ -134,14 +134,12 @@
   animation: ops-enter 560ms var(--ease-out) both;
 }
 
-.eyebrow,
 .event > span,
 .footer {
   font-family: var(--font-mono), monospace;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
 }
 
-.eyebrow,
 .event > span {
   color: var(--ops-blue);
   font-size: 0.75rem;

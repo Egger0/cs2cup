@@ -27,7 +27,6 @@ export default async function AdminLoadoutsPage() {
   return (
     <>
       <AdminPageHeader
-        index="11"
         title="改枪码审核"
         description="有截图的投稿请对照截图核对武器、模式和属性；通过后署名展示在项目页。"
       />

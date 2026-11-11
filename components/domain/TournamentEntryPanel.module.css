@@ -5,13 +5,6 @@
   composes: emphasisSheet from '@/components/ui/Surface.module.css';
   padding-top: 22px;
 }
-.heading > span {
-  color: var(--ct);
-  font:
-    0.75rem var(--font-mono),
-    monospace;
-  letter-spacing: 0.13em;
-}
 .heading h2 {
   margin-top: 10px;
   font-size: 1.5rem;

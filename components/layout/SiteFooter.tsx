@@ -10,19 +10,45 @@ import theme from '@/app/site-theme.module.css'
 import { CommunityChannels } from './CommunityChannels'
 import { ThemeToggle } from './ThemeToggle'
 
-const FRIEND_LINKS = [{ name: '计算机协会 NBTCA', href: 'https://nbtca.space' }]
-
 export async function SiteFooter({ setting }: { setting: SiteSetting }) {
   return (
     <footer className={`${theme.dark} ${styles.footer}`}>
       <div className={styles.inner} data-layout-container>
-        <div className={styles.invitation}>
-          <div>
-            <span>NINGLI ESPORTS CLUB / SINCE 2022</span>
-            <p>{CLUB_BRAND.tagline}</p>
+        <div className={styles.grid}>
+          <div className={styles.identity}>
+            <Link href="/" className={styles.brand}>
+              <Image src="/brand/club-mark.svg" alt="" width={28} height={28} />
+              {setting.clubName}
+            </Link>
+            <p>{setting.school}</p>
           </div>
+          <nav className={styles.links} aria-label="官网快捷入口">
+            <Link href="/about">关于社团</Link>
+            <Link href="/about#join">加入我们</Link>
+            <Link href="/archive">往届档案</Link>
+            <Link href="/handbook">办赛文档</Link>
+            <a href="/feed.xml">RSS</a>
+            <a href="https://nbtca.space" target="_blank" rel="noreferrer">
+              计算机协会 ↗
+            </a>
+          </nav>
+          <div className={styles.contact}>
+            <CommunityChannels contactQq={setting.contactQq} />
+            {setting.contactWechat && setting.contactWechat !== '无' ? (
+              <p>
+                负责人微信 <b>{setting.contactWechat}</b>
+                <CopyTextButton value={setting.contactWechat} label="复制微信号" />
+              </p>
+            ) : null}
+          </div>
+        </div>
+        <div className={styles.legal}>
+          <span>
+            {setting.footerCopy ?? `© ${new Date().getFullYear()} ${CLUB_BRAND.shortName}`}
+          </span>
           <ShareButton
             accessTips
+            className={styles.share}
             share={{
               title: CLUB_BRAND.shortName,
               text: CLUB_BRAND.description,
@@ -30,49 +56,9 @@ export async function SiteFooter({ setting }: { setting: SiteSetting }) {
               label: '浙大宁波理工学院 / 官方网站',
             }}
           >
-            保存与分享官网
+            分享官网
           </ShareButton>
-        </div>
-        <div className={styles.grid}>
-          <div className={styles.identity}>
-            <Link href="/" className={styles.brand}>
-              <Image src="/brand/club-mark.svg" alt="" width={40} height={40} />
-              {setting.clubName}
-            </Link>
-            <p>{setting.school}</p>
-            <nav className={styles.links} aria-label="官网快捷入口">
-              <Link href="/tournaments">赛事大厅</Link>
-              <Link href="/me">我的赛事</Link>
-              <Link href="/about#join">加入社团</Link>
-              <Link href="/search">全站搜索</Link>
-              <a href="/feed.xml">订阅动态 RSS</a>
-            </nav>
-          </div>
-          <div className={styles.contact}>
-            <span className={styles.communityLabel}>社群</span>
-            <CommunityChannels contactQq={setting.contactQq} />
-
-            {setting.contactWechat && setting.contactWechat !== '无' ? (
-              <p className={styles.wechat}>
-                负责人微信：<b>{setting.contactWechat}</b>
-                <CopyTextButton value={setting.contactWechat} label="复制微信号" />
-              </p>
-            ) : null}
-
-            <span className={`${styles.communityLabel} ${styles.friendsLabel}`}>友情链接</span>
-            <nav className={styles.friends} aria-label="友情链接">
-              {FRIEND_LINKS.map(friend => (
-                <a key={friend.href} href={friend.href} target="_blank" rel="noreferrer">
-                  {friend.name} <span aria-hidden="true">↗</span>
-                </a>
-              ))}
-            </nav>
-          </div>
-        </div>
-        <div className={styles.legal}>
-          <span>{setting.footerCopy ?? `${CLUB_BRAND.englishName} · 校园电竞，始于热爱。`}</span>
           <ThemeToggle />
-          <a href="#main">回到顶部 ↑</a>
         </div>
       </div>
     </footer>

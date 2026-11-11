@@ -56,8 +56,6 @@ export default async function AccountPage({
       identity={overview.account.displayName}
       masthead={
         <PageMasthead
-          code="ACCOUNT"
-          eyebrow="账号中心"
           title="我的账号"
           lede="显示名称、公开主页和成员资格都保存在这个账号下。"
           density="compact"

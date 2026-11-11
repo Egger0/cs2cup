@@ -16,11 +16,7 @@ export default async function AdminMembersPage() {
 
   return (
     <>
-      <AdminPageHeader
-        index="07"
-        title="成员名册"
-        description="维护核心团队、职务与对外展示顺序。"
-      />
+      <AdminPageHeader title="成员名册" description="维护核心团队、职务与对外展示顺序。" />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>新增成员</h2>
         <ContentCreateForm

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { HomeTournamentSignal } from '@/lib/home-tournament-signal'
 import { Icon } from '@/components/ui/Icon'
+import { HomeMotionControl } from './HomeMotionControl'
 import { HomeSignalChip } from './HomeSignalChip'
 import styles from './HomeHero.module.css'
 
@@ -22,7 +23,6 @@ export function HomeHero({
       <script dangerouslySetInnerHTML={{ __html: ENTRY }} />
       <section className={styles.hero} aria-labelledby="home-title" data-solar-chapter="overview">
         <div className={styles.copy} data-solar-reserve>
-          <p className={styles.eyebrow}>NINGLI ESPORTS CLUB · EST. 2022</p>
           <h1 id="home-title" aria-label="宁理电竞社">
             <span>宁理</span>
             <span>
@@ -41,8 +41,10 @@ export function HomeHero({
           </div>
         </div>
         <HomeSignalChip signal={signal} current={current} latest={latest} />
+        <div className={styles.motion}>
+          <HomeMotionControl />
+        </div>
         <a href="#clubhouse" className={styles.flow} aria-label="向下探索主场">
-          <span>向下探索主场</span>
           <i aria-hidden="true" />
         </a>
       </section>

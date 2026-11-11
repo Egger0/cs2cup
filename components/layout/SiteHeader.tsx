@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { HomeMotionControl } from '@/components/home/HomeMotionControl'
 import type { SiteSetting } from '@/lib/types'
 import { AccountPortal } from './AccountPortal'
 import { SiteHeaderFallback, type SiteNavLink } from './SiteHeaderFallback'
@@ -55,6 +54,8 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
     const root = document.documentElement
     const update = () => {
       const y = window.scrollY
+      if (y > 8) root.dataset.scrolled = ''
+      else delete root.dataset.scrolled
       const down = y > last + 6 && y > 120
       const up = y < last - 6 || y < 24
       if (down && !headerRef.current?.contains(document.activeElement))
@@ -62,10 +63,12 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
       else if (up) delete root.dataset.headerHidden
       if (down || up) last = y
     }
+    update()
     window.addEventListener('scroll', update, { passive: true })
     return () => {
       window.removeEventListener('scroll', update)
       delete root.dataset.headerHidden
+      delete root.dataset.scrolled
     }
   }, [])
 
@@ -151,15 +154,12 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
               priority
             />
           </span>
-          <span className={styles.names}>
-            <span>{brandName}</span>
-            <small className={styles.school}>{setting.clubNameEn ?? 'ESPORTS CLUB'}</small>
-          </span>
+          <span className={styles.names}>{brandName}</span>
         </Link>
 
+        <PrimaryNav hidden={open} />
+
         <div className={styles.actions}>
-          {pathname === '/' && !open ? <HomeMotionControl /> : null}
-          <PrimaryNav hidden={open} />
           <HeaderSearch hidden={open} />
           <AccountPortal href={accountLink.href} label={accountLink.label} hidden={open} />
           {clientReady ? (
@@ -172,10 +172,7 @@ export function SiteHeader({ setting, links, accountLink }: SiteHeaderProps) {
               aria-label={open ? '关闭全站目录' : '打开全站目录'}
               onClick={() => toggle()}
             >
-              <span className={styles.menuIcon} aria-hidden="true">
-                <i />
-              </span>
-              <span className={styles.toggleLabel}>{open ? '关闭' : '星图'}</span>
+              <span className={styles.menuIcon} aria-hidden="true" />
             </button>
           ) : (
             <SiteHeaderFallback links={links} />

@@ -22,7 +22,7 @@ export default async function RulesPage({ params }: { params: Promise<{ slug: st
         <section className="section">
           <div className="wrap">
             <div data-rise>
-              <SectionHead eyebrow="赛制规则" title="开赛之前先读这些" />
+              <SectionHead title="开赛之前先读这些" />
             </div>
             <div data-rise="2">
               <RuleGrid rules={tournament.rules} />
@@ -37,7 +37,7 @@ export default async function RulesPage({ params }: { params: Promise<{ slug: st
         <section className="section">
           <div className="wrap">
             <div data-rise>
-              <SectionHead eyebrow="须知" title="常见问题" />
+              <SectionHead title="常见问题" />
             </div>
             <div data-rise="2">
               <FaqList faqs={tournament.faqs} />
@@ -50,7 +50,7 @@ export default async function RulesPage({ params }: { params: Promise<{ slug: st
         <section className="section">
           <div className="wrap">
             <div data-rise>
-              <SectionHead eyebrow="赛制规则" title="开赛之前先读这些" />
+              <SectionHead title="开赛之前先读这些" />
             </div>
             <div data-rise="2">
               <GhostStage

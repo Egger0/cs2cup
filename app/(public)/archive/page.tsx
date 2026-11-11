@@ -36,9 +36,7 @@ export default async function ArchivePage() {
   return (
     <>
       <PageMasthead
-        code="ARCHIVE"
         tone="#d8b169"
-        eyebrow="视觉档案"
         title="往届存档"
         lede={
           archivedCount > 0 || activities.length > 0

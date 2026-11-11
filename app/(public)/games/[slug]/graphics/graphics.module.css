@@ -38,7 +38,7 @@
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
 .note {
@@ -59,7 +59,7 @@
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.06em;
 }
 
 .group dl {

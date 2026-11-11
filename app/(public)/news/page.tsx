@@ -13,8 +13,6 @@ export default async function NewsPage() {
   return (
     <>
       <PageMasthead
-        code="JOURNAL"
-        eyebrow="社团动态"
         title="公告与记录"
         lede="赛事通知、纳新、服务器变更都在这里。"
         density="compact"

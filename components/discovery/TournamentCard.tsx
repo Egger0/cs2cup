@@ -27,15 +27,8 @@ export function TournamentCard({ tournament }: { tournament: Tournament }) {
         </span>
       </div>
       <Link href={base} className={styles.mainLink}>
-        <span className={styles.edition}>
-          EDITION <strong>{String(tournament.edition).padStart(2, '0')}</strong>
-        </span>
         <h3>{tournament.title}</h3>
         <p>{tournament.lede || '一起上场，把热爱写进校园。'}</p>
-        <span className={styles.enter}>
-          查看赛事
-          <Icon name="diagonal" />
-        </span>
       </Link>
       <div className={styles.details}>
         <span>

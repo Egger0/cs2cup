@@ -36,7 +36,7 @@
   color: var(--admin-muted, var(--muted));
   font-weight: 500;
   font-size: 0.78rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   padding: 11px 12px;
   border-bottom: 1px solid var(--admin-line-strong, var(--line-strong));
   background: rgba(20, 21, 20, 0.86);
@@ -97,7 +97,7 @@
   color: var(--admin-muted, var(--muted));
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 @media (max-width: 680px) {

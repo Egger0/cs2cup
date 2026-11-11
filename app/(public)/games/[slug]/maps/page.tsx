@@ -53,9 +53,7 @@ export default async function MapsPage({
   return (
     <>
       <PageMasthead
-        code="SANDTABLE"
         tone={PLANET_COLORS.get(game.slug)}
-        eyebrow={`${game.name} / 烽火地带`}
         title="战术沙盘"
         lede="六张烽火地带地图摆上桌：楼层逐层拆开看，钥匙房、保险箱、撤离条件一搜就到，跑刀路线逐站写上思路，投稿给全社用。"
         density="compact"
@@ -80,7 +78,6 @@ export default async function MapsPage({
         <div className="wrap">
           <div data-rise>
             <SectionHead
-              eyebrow="EXTRACTS · 撤离速查"
               title="每张图怎么走"
               lede="各难度的撤离点与条件。版本更新后以游戏内为准。"
             />

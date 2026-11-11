@@ -4,27 +4,10 @@
 .stop {
   color: var(--ct);
 }
-.number {
-  color: var(--ct);
-  font:
-    500 2rem/1 var(--font-display),
-    sans-serif;
-  letter-spacing: -0.065em;
-}
-.caption {
-  font-size: 0.8125rem;
-  color: var(--muted);
-}
 .featured {
   margin-bottom: 64px;
 }
 @media (max-width: 580px) {
-  .number {
-    font-size: 1.5rem;
-  }
-  .caption {
-    margin: 0 auto 0 0;
-  }
   .featured {
     margin-bottom: 40px;
   }

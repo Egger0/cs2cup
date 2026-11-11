@@ -54,7 +54,7 @@
   color: var(--muted-2);
   font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.06em;
 }
 
 .cup {

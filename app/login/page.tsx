@@ -86,13 +86,9 @@ export default async function ParticipantLoginPage({
         <header className={styles.brandline}>
           <Image src="/brand/club-mark.svg" alt="" width={38} height={38} loading="eager" />
           <strong>宁波理工电竞社</strong>
-          <span>IDENTITY / NLC—01</span>
         </header>
 
         <div className={styles.hero}>
-          <p className={styles.eyebrow}>
-            <span>ACCOUNT</span> / 账号登录
-          </p>
           <h1 id="participant-login-title">{isStaffReturn ? '回到社团工作台' : '回到你的账号'}</h1>
           <p className={styles.lede}>
             {params.reauth === '1'
@@ -102,16 +98,10 @@ export default async function ParticipantLoginPage({
                 : '查看资格进度、赛事报名与账号安全状态。'}
           </p>
         </div>
-
-        <p className={styles.assurances}>
-          <span>ACCOUNT / NINGLI</span>
-          一个账号，管理资格、报名与赛事协作
-        </p>
       </section>
 
       <section className={bandStyles.passBand} aria-labelledby="passkey-action-title">
         <header className={bandStyles.passHeader}>
-          <p className={bandStyles.serial}>ACCOUNT ACCESS / NLC—01</p>
           <h2 id="passkey-action-title">登录</h2>
           <p>登录后，继续填写报名或查看已保存的资料。</p>
         </header>

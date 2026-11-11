@@ -37,11 +37,18 @@
   bottom: -1px;
   left: -30%;
   height: clamp(36px, 5vw, 84px);
+  color-scheme: light dark;
   background: var(--paper);
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
   box-shadow:
     0 -1.5px 0 #b8dbf4,
     0 -18px 60px -8px rgb(74 163 223 / 45%);
+}
+:global(html[data-theme='light']) .horizon {
+  color-scheme: light;
+}
+:global(html[data-theme='dark']) .horizon {
+  color-scheme: dark;
 }
 .inner {
   position: relative;

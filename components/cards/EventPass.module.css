@@ -77,7 +77,7 @@
   font:
     700 3.4cqi / 1 var(--font-mono),
     monospace;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
 }
 
 .word {
@@ -116,7 +116,7 @@
   font:
     700 3.4cqi / 1.4 var(--font-mono),
     monospace;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
 .facts {
@@ -131,7 +131,7 @@
   font:
     3cqi / 1 var(--font-mono),
     monospace;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
 }
 
 .facts dd {
@@ -198,7 +198,7 @@
   font:
     700 3.2cqi / 1.2 var(--font-mono),
     monospace;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.06em;
   transition:
     translate 700ms var(--spring),
     rotate 700ms var(--spring),

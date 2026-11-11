@@ -111,7 +111,6 @@ export default async function TournamentCheckInPage({
       <main id="main" className={styles.main}>
         <section className={styles.masthead} aria-labelledby="check-in-title">
           <div>
-            <p className={styles.eyebrow}>FIELD OPS / CHECK-IN</p>
             <h1 id="check-in-title">现场签到</h1>
           </div>
           <div className={styles.event}>

@@ -71,8 +71,6 @@ export default async function AccountRegistrationPage({
       identity={context.account.displayName}
       masthead={
         <PageMasthead
-          code="ENTRY"
-          eyebrow="报名详情"
           title={registration.tournament.title}
           lede={`[${registration.team.tag}] ${registration.team.name}`}
           density="compact"

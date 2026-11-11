@@ -44,7 +44,6 @@ export default async function AdminTournamentsPage() {
   return (
     <>
       <AdminPageHeader
-        index="03"
         title={projectWorkspace ? `${projectName}项目工作台` : '赛事档案'}
         description={
           projectWorkspace

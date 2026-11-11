@@ -15,7 +15,6 @@ export function StardustWallet({ wallet }: { wallet: Wallet }) {
   return (
     <section id="stardust-wallet" className={styles.wallet} aria-labelledby="stardust-wallet-title">
       <header className={styles.head}>
-        <span className={styles.eyebrow}>STARDUST / 星尘</span>
         <h2 id="stardust-wallet-title">我的星尘</h2>
       </header>
       <div className={styles.summary}>

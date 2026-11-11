@@ -17,7 +17,7 @@ const output = 'output/playwright'
 await mkdir(output, { recursive: true })
 
 const cases = [
-  { name: 'footer-home', path: '/', trigger: '保存与分享官网', tips: true },
+  { name: 'footer-home', path: '/', trigger: '分享官网', tips: true },
   { name: 'directory', path: '/tournaments', trigger: '分享赛事大厅' },
   { name: 'tournament', path: '/tournaments/2026-nlc', trigger: '分享赛事' },
   {
@@ -29,7 +29,7 @@ const cases = [
   { name: 'team', path: '/tournaments/2026-nlc/teams/FLC', trigger: '分享战队' },
   { name: 'match', path: '/tournaments/2026-nlc/matches/1', trigger: '分享这场比赛' },
   { name: 'news', path: '/news/season-update', trigger: '分享这篇动态' },
-  { name: 'footer-news', path: '/news/season-update', trigger: '保存与分享官网', tips: true },
+  { name: 'footer-news', path: '/news/season-update', trigger: '分享官网', tips: true },
 ]
 
 async function openShare(testCase) {

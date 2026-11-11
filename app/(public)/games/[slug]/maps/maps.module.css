@@ -33,7 +33,7 @@
   color: var(--muted);
   font-family: var(--font-mono, monospace);
   font-size: 12px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 

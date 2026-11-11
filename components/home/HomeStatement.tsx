@@ -16,7 +16,6 @@ export function HomeStatement({ games, photo }: { games: Game[]; photo: Photo | 
       style={{ '--count': Math.max(1, games.length) } as CSSProperties}
     >
       <div className={styles.stage}>
-        <p className={styles.kicker}>NINGLI ESPORTS CLUB / EST. 2022</p>
         <h2 id="statement-title" className={styles.title}>
           <span className={styles.line}>
             为

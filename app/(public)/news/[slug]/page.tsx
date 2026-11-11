@@ -52,8 +52,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   return (
     <article>
       <PageMasthead
-        code="JOURNAL"
-        eyebrow={new Date(post.publishedAt).toLocaleDateString('zh-CN', {
+        meta={new Date(post.publishedAt).toLocaleDateString('zh-CN', {
           year: 'numeric',
           month: 'long',
           day: 'numeric',

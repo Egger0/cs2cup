@@ -48,7 +48,6 @@ export default async function AdminPage({
     return (
       <>
         <AdminPageHeader
-          index="01"
           title="现场控制"
           description="审核报名、完成签到，并在同一条工作流中维护赛果。"
         />
@@ -72,7 +71,6 @@ export default async function AdminPage({
   return (
     <>
       <AdminPageHeader
-        index="01"
         title="现场控制"
         description="审核报名、完成签到，并在同一条工作流中维护赛果。"
       />

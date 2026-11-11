@@ -44,8 +44,6 @@ export default async function SquadsPage() {
       identity={context.account.displayName}
       masthead={
         <PageMasthead
-          code="SQUADS"
-          eyebrow="组队"
           title="我的小队"
           lede="邀请队友组成小队，满员后由队长一键报名赛事，队员的参赛记录会自动归到各自账号。"
           density="compact"

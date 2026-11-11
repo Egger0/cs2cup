@@ -29,7 +29,6 @@ export function HomeWall({ photos, tournaments }: { photos: Photo[]; tournaments
   return (
     <section className={styles.wall} data-scene data-zone="wall" aria-labelledby="wall-title">
       <header className={styles.head}>
-        <p>ARCHIVE / 往届现场</p>
         <h2 id="wall-title">每一届，都有人记得。</h2>
         <Link href="/archive">
           走进往届档案 <Icon name="arrow" size={16} />
