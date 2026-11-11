@@ -118,6 +118,14 @@
   .theme {
     padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom, 0px));
   }
+
+  .theme:has(> footer) {
+    padding-bottom: 0;
+  }
+
+  .theme > footer {
+    padding-bottom: calc(20px + var(--tabbar-height) + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @media (max-width: 900px) {
