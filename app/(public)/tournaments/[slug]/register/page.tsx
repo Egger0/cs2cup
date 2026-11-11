@@ -7,10 +7,11 @@ import { getRegistrationStatus, getTournament, safely } from '@/lib/queries/publ
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { getAuthContext } from '@/lib/identity/kernel'
 import { getMembershipState } from '@/lib/identity/membership-service'
-import { getRegistrationDraft } from '@/lib/identity/registration-workflow'
-import { RegisterForm } from './RegisterForm'
-import { tournamentRosterSize } from '@/lib/queries/roster-size'
 import { registrationAccountHref, registrationAuthHref } from '@/lib/registration-navigation'
+import { squadTournaments } from '@/lib/squad-registration'
+import { accountSquads, listSquadGames } from '@/lib/squads'
+import { CreateSquadForm } from '@/app/squads/CreateSquadForm'
+import { SquadCard } from '@/app/squads/SquadCard'
 import styles from './register.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -33,14 +34,22 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
     redirect('/account/security?recovery=1')
   }
   const database = cloudflareBindings().db
-  const [membership, draft] =
-    context.kind === 'authenticated'
-      ? await Promise.all([
-          getMembershipState(database, context),
-          getRegistrationDraft(database, context, slug),
-        ])
-      : [null, null]
+  const signedIn = context.kind === 'authenticated'
+  const [membership, squads, games] = signedIn
+    ? await Promise.all([
+        getMembershipState(database, context),
+        accountSquads(database, context.account.id),
+        listSquadGames(database),
+      ])
+    : [null, [], []]
   const eligible = membership?.ok === true && membership.membership?.status === 'approved'
+  const squad = squads.find(candidate => candidate.game.id === tournament.gameId)
+  const game = games.find(candidate => candidate.id === tournament.gameId)
+  const entry = squad
+    ? (await squadTournaments(database, { id: squad.id, gameId: squad.game.id })).filter(
+        candidate => candidate.id === tournament.id,
+      )
+    : []
 
   return (
     <section className="section">
@@ -50,15 +59,11 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
             <SectionHead
               meta={accepting ? `还剩 ${seatsLeft} / ${status.cap} 个席位` : '报名已截止'}
               title="组队报名"
-              lede={
-                accepting
-                  ? '提交后由主办方审核。通过的战队会出现在参赛名单并进入对阵表。'
-                  : undefined
-              }
+              lede={accepting ? '用你的战队提交报名，主办方审核通过后进入参赛名单。' : undefined}
             />
           </div>
 
-          {accepting && context.kind === 'anonymous' ? (
+          {accepting && !signedIn ? (
             <Empty
               action={
                 <>
@@ -72,37 +77,22 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
                 </>
               }
             >
-              赛事报名归属于账号。创建账号后可申请成员资格；等待期间仍可登录和维护资料。
+              报名需要一个账号，战队和报名记录都会保存在里面。
             </Empty>
-          ) : accepting ? (
-            <>
+          ) : accepting && signedIn ? (
+            <div className={styles.flow} data-rise="2">
               {!eligible ? (
-                <Empty
-                  action={
-                    <ButtonLink
-                      href={`${registrationAccountHref(slug)}#membership`}
-                      variant="primary"
-                    >
-                      查看或提交资格申请
-                    </ButtonLink>
-                  }
-                >
-                  你可以先填写并保存草稿；通过成员资格审核后，再完成最终提交。
-                </Empty>
+                <p className={styles.notice}>
+                  提交报名前需要通过成员资格审核，通常 24 小时内完成。可以先组好战队。
+                  <Link href={`${registrationAccountHref(slug)}#membership`}>查看进度</Link>
+                </p>
               ) : null}
-              <p className={styles.squadHint}>
-                已经组好小队？在 <Link href="/squads">我的小队</Link>{' '}
-                满员后可由队长一键报名，队员的参赛记录会自动归到各自账号。
-              </p>
-              <div data-rise="2">
-                <RegisterForm
-                  slug={slug}
-                  canSubmit={eligible}
-                  starterCount={await tournamentRosterSize(database, { tournamentSlug: slug })}
-                  initialValues={draft?.values}
-                />
-              </div>
-            </>
+              {squad ? (
+                <SquadCard squad={squad} viewerAccountId={context.account.id} tournaments={entry} />
+              ) : game ? (
+                <CreateSquadForm games={[game]} fixed />
+              ) : null}
+            </div>
           ) : (
             <Empty
               action={

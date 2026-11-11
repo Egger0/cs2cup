@@ -7,9 +7,11 @@ import { formatSiteDateTime } from '@/lib/datetime'
 import type { SquadTournament } from '@/lib/squad-registration'
 import type { Squad } from '@/lib/squads'
 import {
+  addSquadGuestAction,
   disbandSquadAction,
   inviteToSquadAction,
   registerSquadAction,
+  removeSquadGuestAction,
   removeSquadMemberAction,
   revokeSquadInvitationAction,
 } from './actions'
@@ -30,15 +32,17 @@ export function SquadCard({
 }) {
   const { pending, feedback, run } = useSquadAction()
   const inviteForm = useRef<HTMLFormElement>(null)
+  const guestForm = useRef<HTMLFormElement>(null)
   const captain = squad.captainAccountId === viewerAccountId
-  const full = squad.members.length >= squad.rosterSize
+  const filled = squad.members.length + squad.guests.length
+  const full = filled >= squad.rosterSize
   const titleId = `squad-${squad.id}`
 
   return (
     <article className={styles.card} aria-labelledby={titleId} aria-busy={pending}>
       <header className={styles.cardHead}>
         <span className={styles.eyebrow}>
-          {squad.game.name} · {squad.members.length}/{squad.rosterSize}
+          {squad.game.name} · {filled}/{squad.rosterSize}
         </span>
         <h2 id={titleId}>
           <span className={styles.tag}>{squad.tag}</span> {squad.name}
@@ -67,22 +71,40 @@ export function SquadCard({
                 disabled={pending}
                 onClick={() => run(() => removeSquadMemberAction(squad.id, member.accountId))}
               >
-                {member.accountId === viewerAccountId ? '离开小队' : '移出'}
+                {member.accountId === viewerAccountId ? '离开战队' : '移出'}
               </button>
             ) : null}
           </li>
         ))}
-        {Array.from(
-          { length: Math.max(0, squad.rosterSize - squad.members.length) },
-          (_, index) => (
-            <li key={`empty-${index}`} className={`${styles.seat} ${styles.empty}`}>
-              <span className={styles.avatar} aria-hidden="true">
-                +
-              </span>
-              <span className={styles.seatName}>空位</span>
-            </li>
-          ),
-        )}
+        {squad.guests.map(guest => (
+          <li key={guest.id} className={styles.seat}>
+            <span className={styles.avatar} aria-hidden="true">
+              {[...guest.nickname][0]}
+            </span>
+            <span className={styles.seatName}>
+              {guest.nickname}
+              <small>未关联账号</small>
+            </span>
+            {captain ? (
+              <button
+                type="button"
+                className={styles.quietButton}
+                disabled={pending}
+                onClick={() => run(() => removeSquadGuestAction(squad.id, guest.id))}
+              >
+                移出
+              </button>
+            ) : null}
+          </li>
+        ))}
+        {Array.from({ length: Math.max(0, squad.rosterSize - filled) }, (_, index) => (
+          <li key={`empty-${index}`} className={`${styles.seat} ${styles.empty}`}>
+            <span className={styles.avatar} aria-hidden="true">
+              +
+            </span>
+            <span className={styles.seatName}>空位</span>
+          </li>
+        ))}
       </ol>
 
       {captain && !full ? (
@@ -109,6 +131,27 @@ export function SquadCard({
           </label>
           <button type="submit" className={styles.primaryButton} disabled={pending}>
             发出邀请
+          </button>
+        </form>
+      ) : null}
+
+      {captain && !full ? (
+        <form
+          ref={guestForm}
+          className={styles.invite}
+          action={data =>
+            run(
+              () => addSquadGuestAction(squad.id, data),
+              () => guestForm.current?.reset(),
+            )
+          }
+        >
+          <label>
+            <span>或先填游戏 ID</span>
+            <input name="nickname" required maxLength={20} placeholder="队友的游戏 ID" />
+          </label>
+          <button type="submit" className={styles.quietButton} disabled={pending}>
+            加入名单
           </button>
         </form>
       ) : null}
@@ -166,11 +209,11 @@ export function SquadCard({
                       placeholder="学院（选填）"
                     />
                     <button type="submit" className={styles.primaryButton} disabled={pending}>
-                      以小队报名
+                      提交报名
                     </button>
                   </form>
                 ) : (
-                  <small>{full ? '由队长提交报名' : '满员后可报名'}</small>
+                  <small>{full ? '由队长提交报名' : '名单填满后可报名'}</small>
                 )}
               </li>
             ))}
@@ -192,7 +235,7 @@ export function SquadCard({
             disabled={pending}
             onConfirm={() => run(() => disbandSquadAction(squad.id))}
           >
-            解散小队
+            解散战队
           </ConfirmButton>
         </footer>
       ) : null}

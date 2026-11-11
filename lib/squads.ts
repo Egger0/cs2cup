@@ -21,6 +21,7 @@ export interface Squad {
   readonly rosterSize: number
   readonly captainAccountId: string
   readonly members: SquadMember[]
+  readonly guests: { readonly id: number; readonly nickname: string }[]
   readonly invitations: { readonly id: string; readonly displayName: string }[]
 }
 
@@ -74,7 +75,10 @@ export async function accountSquads(
                FROM squad_invitation AS invitation
                JOIN identity_account AS invitee ON invitee.id = invitation.account_id
                WHERE invitation.squad_id = squad.id AND invitation.status = 'pending'
-                 AND squad.captain_account_id = ?) AS invitations
+                 AND squad.captain_account_id = ?) AS invitations,
+              (SELECT json_group_array(json_object('id', guest.id, 'nickname', guest.nickname))
+               FROM (SELECT id, nickname FROM squad_guest WHERE squad_id = squad.id
+                     ORDER BY created_at, id) AS guest) AS guests
        FROM squad_member AS mine
        JOIN squad ON squad.id = mine.squad_id
        JOIN game ON game.id = squad.game_id
@@ -98,6 +102,7 @@ export async function accountSquads(
       memberName: string
       memberHandle: string | null
       invitations: string | null
+      guests: string | null
     }>()
   const squads = new Map<string, Squad>()
   for (const row of results) {
@@ -110,6 +115,7 @@ export async function accountSquads(
       captainAccountId: row.captainAccountId,
       members: [],
       invitations: JSON.parse(row.invitations ?? '[]') as Squad['invitations'],
+      guests: JSON.parse(row.guests ?? '[]') as Squad['guests'],
     }
     squad.members.push({
       accountId: row.memberId,
@@ -131,6 +137,7 @@ export async function incomingSquadInvitations(
       `SELECT invitation.id, squad.name AS squadName, squad.tag AS squadTag,
               game.name AS gameName, inviter.display_name AS inviterName,
               game.roster_size - (SELECT COUNT(*) FROM squad_member WHERE squad_id = squad.id)
+                - (SELECT COUNT(*) FROM squad_guest WHERE squad_id = squad.id)
                 AS openSeats
        FROM squad_invitation AS invitation
        JOIN squad ON squad.id = invitation.squad_id
@@ -147,9 +154,11 @@ export async function incomingSquadInvitations(
 export async function createSquad(
   database: IdentityDatabase,
   accountId: string,
-  input: { gameId: number; name: string; tag: string },
+  input: { gameId: number; name: string; tag: string; guests?: readonly string[] },
   now: number,
-): Promise<{ ok: true; squadId: string } | Failure<'taken' | 'already_in_squad' | 'unavailable'>> {
+): Promise<
+  { ok: true; squadId: string } | Failure<'taken' | 'already_in_squad' | 'unavailable' | 'full'>
+> {
   const squadId = createOpaqueToken()
   try {
     await database.batch([
@@ -165,9 +174,15 @@ export async function createSquad(
            SELECT id, game_id, captain_account_id, created_at FROM squad WHERE id = ?`,
         )
         .bind(squadId),
+      ...(input.guests ?? []).map((nickname, index) =>
+        database
+          .prepare('INSERT INTO squad_guest (squad_id, nickname, created_at) VALUES (?, ?, ?)')
+          .bind(squadId, nickname, now + index + 1),
+      ),
     ])
   } catch (error) {
     const message = constraint(error)
+    if (/squad is full/.test(message)) return { ok: false, reason: 'full' }
     if (/squad_member\.game_id/.test(message)) return { ok: false, reason: 'already_in_squad' }
     if (/squad\.game_id/.test(message)) return { ok: false, reason: 'taken' }
     throw error
@@ -192,6 +207,7 @@ export async function inviteToSquad(
     .prepare(
       `SELECT squad.game_id AS gameId,
               game.roster_size - (SELECT COUNT(*) FROM squad_member WHERE squad_id = squad.id)
+                - (SELECT COUNT(*) FROM squad_guest WHERE squad_id = squad.id)
                 AS openSeats,
               (SELECT COUNT(*) FROM squad_invitation
                WHERE squad_id = squad.id AND status = 'pending') AS pending,

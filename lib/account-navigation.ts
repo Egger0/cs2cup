@@ -12,7 +12,7 @@ export interface AccountAccess {
 const SECTIONS: AccountNavLink[] = [
   { href: '/me', label: '我的赛事' },
   { href: '/notifications', label: '消息' },
-  { href: '/squads', label: '我的小队' },
+  { href: '/squads', label: '我的战队' },
   { href: '/account', label: '账号与安全' },
 ]
 

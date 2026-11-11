@@ -59,7 +59,7 @@ export default async function NotificationsPage() {
           ))}
         </ol>
       ) : (
-        <Empty>还没有消息。收到小队邀请或有人评论你的改枪码时会显示在这里。</Empty>
+        <Empty>还没有消息。收到战队邀请或有人评论你的改枪码时会显示在这里。</Empty>
       )}
     </AccountShell>
   )

@@ -125,3 +125,54 @@ export async function disbandSquad(
     .first<{ present: number }>()
   return row ? { ok: false, reason: 'not_captain' } : { ok: true }
 }
+
+export function parseGuestNickname(value: unknown) {
+  const nickname = typeof value === 'string' ? value.trim() : ''
+  return [...nickname].length >= 1 &&
+    [...nickname].length <= 20 &&
+    !/[\u0000-\u001f\u007f]/.test(nickname)
+    ? nickname
+    : null
+}
+
+async function captains(database: IdentityDatabase, squadId: string, accountId: string) {
+  const row = await database
+    .prepare('SELECT 1 AS present FROM squad WHERE id = ? AND captain_account_id = ?')
+    .bind(squadId, accountId)
+    .first<{ present: number }>()
+  return row !== null
+}
+
+export async function addSquadGuest(
+  database: IdentityDatabase,
+  input: { captainAccountId: string; squadId: string; nickname: string },
+  now: number,
+): Promise<Result<'not_captain' | 'full' | 'duplicate'>> {
+  if (!(await captains(database, input.squadId, input.captainAccountId)))
+    return { ok: false, reason: 'not_captain' }
+  try {
+    await database
+      .prepare('INSERT INTO squad_guest (squad_id, nickname, created_at) VALUES (?, ?, ?)')
+      .bind(input.squadId, input.nickname, now)
+      .run()
+    return { ok: true }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : ''
+    if (/squad is full/.test(message)) return { ok: false, reason: 'full' }
+    if (/UNIQUE constraint failed/.test(message)) return { ok: false, reason: 'duplicate' }
+    throw error
+  }
+}
+
+export async function removeSquadGuest(
+  database: IdentityDatabase,
+  input: { captainAccountId: string; squadId: string; guestId: number },
+): Promise<Result<'not_captain'>> {
+  if (!(await captains(database, input.squadId, input.captainAccountId)))
+    return { ok: false, reason: 'not_captain' }
+  await database
+    .prepare('DELETE FROM squad_guest WHERE id = ? AND squad_id = ?')
+    .bind(input.guestId, input.squadId)
+    .run()
+  return { ok: true }
+}

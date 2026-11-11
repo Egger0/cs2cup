@@ -97,6 +97,7 @@
     "test:graphics-presets": "node --experimental-strip-types scripts/graphics-preset-test.mjs",
     "test:sand-routes": "node --experimental-strip-types scripts/sand-route-test.mjs",
     "test:squads": "node --conditions=react-server --experimental-strip-types scripts/squad-test.mjs",
+    "test:squad-guests": "node --conditions=react-server --experimental-strip-types scripts/squad-guest-test.mjs",
     "test:delta-maps": "node scripts/delta-maps-test.mjs",
     "test:loadout-codes": "node --conditions=react-server --experimental-strip-types scripts/loadout-codes-test.mjs",
     "test:loadout-official": "node --conditions=react-server --experimental-strip-types scripts/loadout-official-test.mjs",
