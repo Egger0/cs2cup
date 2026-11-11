@@ -42,7 +42,7 @@
 .format p {
   margin-top: 12px;
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 0.9375rem;
 }
 
 @media (max-width: 560px) {

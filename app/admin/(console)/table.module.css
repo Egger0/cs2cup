@@ -27,7 +27,7 @@
   width: 100%;
   min-width: 1040px;
   border-collapse: collapse;
-  font-size: 0.88rem;
+  font-size: 0.875rem;
   white-space: nowrap;
 }
 
@@ -35,7 +35,7 @@
   text-align: left;
   color: var(--admin-muted, var(--muted));
   font-weight: 500;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   letter-spacing: 0.05em;
   padding: 11px 12px;
   border-bottom: 1px solid var(--admin-line-strong, var(--line-strong));
@@ -71,7 +71,7 @@
   border: 1px solid var(--admin-line-strong, var(--line-strong));
   border-radius: 8px;
   background: var(--admin-paper-deep, var(--bg-2));
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
 }
 
 .seedInput {
@@ -84,7 +84,7 @@
   color: var(--ink);
   font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
 }
 
 .seedInput:disabled {

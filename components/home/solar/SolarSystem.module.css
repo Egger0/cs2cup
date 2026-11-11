@@ -93,7 +93,7 @@
     color 180ms ease;
 }
 .anchor > span:first-child {
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   letter-spacing: 0.04em;
 }
@@ -116,7 +116,7 @@
   opacity: 1;
 }
 .anchor[data-satellite='true'] > span:first-child {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.04em;
 }
@@ -148,7 +148,7 @@
 }
 @media (max-width: 700px) {
   .anchor > span:first-child {
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
   }
   .anchor small {
     font-size: 0.75rem;

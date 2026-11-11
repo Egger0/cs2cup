@@ -15,7 +15,7 @@
 
 .question {
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   letter-spacing: 0.02em;
   white-space: nowrap;
 }
@@ -26,7 +26,7 @@
   color: var(--muted);
   background: none;
   border: 0;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;

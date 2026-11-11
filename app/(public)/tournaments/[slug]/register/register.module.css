@@ -6,7 +6,7 @@
   composes: callout from '@/components/ui/Surface.module.css';
   margin-bottom: 24px;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
   line-height: 1.7;
 }
 
@@ -42,7 +42,7 @@
 .error {
   composes: dangerCallout from '@/components/ui/Surface.module.css';
   color: var(--c4);
-  font-size: 0.88rem;
+  font-size: 0.875rem;
   outline: none;
 }
 
@@ -54,14 +54,14 @@
 .errorBlock a {
   width: fit-content;
   color: var(--ct);
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
 .draftSaved {
   composes: callout from '@/components/ui/Surface.module.css';
   color: var(--ink);
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
 }
 
 .formActions {
@@ -117,7 +117,7 @@
   color: var(--ink);
   font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
 }
 
 .receiptActions {

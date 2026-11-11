@@ -38,7 +38,7 @@
   color: var(--muted);
   font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.02em;
 }
 

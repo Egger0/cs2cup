@@ -41,7 +41,7 @@
 
 .message {
   color: var(--toast-ink, #c3ccd9);
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

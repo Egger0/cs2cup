@@ -67,7 +67,7 @@
 }
 .tagline {
   color: #c9d4d8;
-  font-size: 1.05rem;
+  font-size: 1.0625rem;
   letter-spacing: 0.06em;
 }
 .actions {
@@ -84,7 +84,7 @@
   border-radius: 999px;
   align-items: center;
   gap: 14px;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   letter-spacing: 0.05em;
   transition:
     color 180ms ease,
@@ -227,7 +227,7 @@
 }
 @media (max-width: 700px) {
   .tagline {
-    font-size: 0.95rem;
+    font-size: 0.9375rem;
     letter-spacing: 0.06em;
   }
   .actions {

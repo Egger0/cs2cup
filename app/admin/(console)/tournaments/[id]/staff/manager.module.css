@@ -83,7 +83,7 @@
 .grant h3,
 .ledgerHeading h3 {
   font-family: var(--font-display), sans-serif;
-  font-size: 1.03rem;
+  font-size: 1rem;
   font-weight: 650;
 }
 
@@ -189,7 +189,7 @@
 .person strong {
   display: block;
   overflow: hidden;
-  font-size: 0.84rem;
+  font-size: 0.875rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -289,7 +289,7 @@
 
 .emptyLedger strong {
   color: var(--ink);
-  font-size: 0.86rem;
+  font-size: 0.875rem;
 }
 
 .emptyLedger p {

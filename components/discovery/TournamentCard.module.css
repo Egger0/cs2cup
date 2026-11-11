@@ -65,7 +65,7 @@
   overflow: hidden;
   margin-top: 10px;
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: 0.875rem;
 }
 .details {
   display: flex;
@@ -93,7 +93,7 @@
   align-items: center;
   gap: 12px;
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
 }
 @media (hover: hover) {
   .footer > a:hover {

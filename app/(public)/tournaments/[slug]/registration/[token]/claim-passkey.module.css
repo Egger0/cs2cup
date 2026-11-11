@@ -102,7 +102,7 @@
 .facts dd {
   margin-top: 5px;
   overflow-wrap: anywhere;
-  font-size: 0.79rem;
+  font-size: 0.75rem;
   font-weight: 650;
   line-height: 1.35;
 }
@@ -154,7 +154,7 @@
   background: var(--pass-blue);
   color: #f7f5eb;
   cursor: pointer;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 720;
   text-align: left;
   transition:
@@ -251,7 +251,7 @@
 }
 
 .complete strong {
-  font-size: 0.91rem;
+  font-size: 0.9375rem;
 }
 
 .complete p {

@@ -33,7 +33,7 @@
   overflow-y: auto;
   scrollbar-width: none;
   color: var(--space-ink);
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
   line-height: 1.7;
   text-shadow: 0 1px 12px rgb(6 7 10 / 60%);
   pointer-events: auto;
@@ -66,7 +66,7 @@
   color: var(--space-muted);
   background: transparent;
   border: 0;
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.04em;
   cursor: pointer;
   transition: color 180ms ease;
@@ -111,7 +111,7 @@
 }
 .facts {
   color: var(--space-accent);
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   letter-spacing: 0.04em;
 }
 .facts span {
@@ -130,7 +130,7 @@
   background: transparent;
   border: 0;
   border-radius: 999px;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.06em;
   cursor: pointer;
   transition:
@@ -157,7 +157,7 @@
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--space-line);
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
   letter-spacing: 0.06em;
   transition:
     color 180ms ease,

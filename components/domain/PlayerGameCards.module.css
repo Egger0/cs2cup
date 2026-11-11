@@ -87,7 +87,7 @@
 .code {
   color: color-mix(in srgb, var(--tone) 70%, #f1efe8);
   font:
-    700 0.7rem var(--font-code),
+    700 0.75rem var(--font-code),
     monospace;
   letter-spacing: 0.06em;
   text-transform: uppercase;

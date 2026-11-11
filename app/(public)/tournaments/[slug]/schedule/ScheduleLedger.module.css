@@ -27,7 +27,7 @@
 
 .dayTitle {
   min-width: 0;
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   letter-spacing: 0.05em;
   color: var(--ink);
 }

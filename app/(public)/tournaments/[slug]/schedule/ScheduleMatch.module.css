@@ -143,7 +143,7 @@
 .score {
   min-width: 2ch;
   text-align: right;
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--ink);

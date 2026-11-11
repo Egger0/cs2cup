@@ -63,7 +63,7 @@
 
 .scheduleHint {
   color: var(--muted-2);
-  font-size: 0.78rem;
+  font-size: 0.75rem;
 }
 
 .scheduleRounds {
@@ -182,7 +182,7 @@
   color: var(--ink);
   font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
-  font-size: 0.76rem;
+  font-size: 0.75rem;
 }
 
 .timeInput:focus {
@@ -209,13 +209,13 @@
 }
 
 .schedulePublish strong {
-  font-size: 0.88rem;
+  font-size: 0.875rem;
 }
 
 .schedulePublish p {
   margin-top: 3px;
   color: var(--muted-2);
-  font-size: 0.76rem;
+  font-size: 0.75rem;
 }
 
 .schedulePublish p[data-tone='ok'] {

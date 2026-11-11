@@ -104,7 +104,7 @@
   padding: clamp(38px, 6vw, 64px) 0;
   color: var(--muted);
   border-bottom: 1px solid var(--line-strong);
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
   text-align: center;
 }
 
