@@ -77,7 +77,7 @@ try {
     true,
   )
   assert.deepEqual(
-    await decision(manager.context, 'registration.transfer', {
+    await decision(manager.context, 'registration.delete', {
       kind: 'registration',
       registrationId: 711,
     }),

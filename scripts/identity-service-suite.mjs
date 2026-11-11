@@ -37,7 +37,6 @@ const tests = [
   'identity-password-test.mjs',
   'identity-redirect-test.mjs',
   'identity-registration-management-test.mjs',
-  'identity-registration-invitation-acceptance-test.mjs',
   'identity-registration-recovery-boundary-test.mjs',
   'identity-registration-workflow-test.mjs',
   'identity-security-event-test.mjs',

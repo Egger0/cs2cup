@@ -201,24 +201,6 @@ export async function createApprovedTournamentRegistration(
       ),
     database
       .prepare(
-        `DELETE FROM identity_registration_draft
-         WHERE account_id = ? AND tournament_id = ? AND EXISTS (
-           SELECT 1 FROM identity_registration_membership
-           WHERE id = ? AND account_id = ? AND team_id IN (
-             SELECT id FROM team WHERE tournament_id = ? AND management_token_hash = ?
-           )
-         )`,
-      )
-      .bind(
-        context.account.id,
-        input.tournamentId,
-        relationshipId,
-        context.account.id,
-        input.tournamentId,
-        input.managementTokenHash,
-      ),
-    database
-      .prepare(
         `UPDATE team SET management_token_hash = NULL
          WHERE tournament_id = ? AND management_token_hash = ? AND EXISTS (
            SELECT 1 FROM identity_registration_membership

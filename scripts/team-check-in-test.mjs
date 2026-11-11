@@ -67,12 +67,6 @@ registerHooks({
         shortCircuit: true,
       }
     }
-    if (specifier === '@/lib/identity/roster-claim') {
-      return {
-        url: 'data:text/javascript,export async function claimRosterSeat(){return globalThis.__teamCheckInClaim ?? { ok: false, reason: "not_authorised" }}',
-        shortCircuit: true,
-      }
-    }
     try {
       return nextResolve(specifier, context)
     } catch (error) {

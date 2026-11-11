@@ -32,29 +32,15 @@ const expectedFailure = operation =>
     error =>
       error instanceof workflow.RegistrationWorkflowError && error.code === 'reauth_required',
   )
-const values = {
-  name: 'Restricted Draft',
-  tag: 'LOCK',
-  captain: 'Captain',
-  contact: 'private@example.test',
-  dept: '',
-  note: '',
-  players: ['One', 'Two', 'Three', 'Four', 'Five', ''],
-}
-
 try {
   const recovery = await fixture.session(accountIds.recovery, {
     method: 'oidc',
     recovery: { authIntentId: fixture.createRecoveryProof() },
   })
   const restrictedOperations = [
-    () => workflow.getRegistrationDraft(db, recovery.context, 'kernel-two', now),
-    () => workflow.listRegistrationDrafts(db, recovery.context, now),
     () => workflow.listAccountTournamentRegistrations(db, recovery.context, now),
-    () => workflow.listIncomingRegistrationInvitations(db, recovery.context, now),
     () => workflow.accountRegistrationRelationship(db, recovery.context, 711, now),
-    () => workflow.saveRegistrationDraft(db, recovery.context, { tournamentId: 72, values, now }),
-    () => workflow.acceptRegistrationInvitation(db, recovery.context, opaque('I'), now),
+    () => workflow.deleteOwnedRegistration(db, recovery.context, 711, now),
     () =>
       workflow.attachLegacyRegistration(db, recovery.context, {
         slug: 'kernel-two',
@@ -63,13 +49,6 @@ try {
       }),
   ]
   for (const operation of restrictedOperations) await expectedFailure(operation)
-  assert.equal(
-    database
-      .prepare('SELECT COUNT(*) AS count FROM identity_registration_draft WHERE account_id = ?')
-      .get(accountIds.recovery).count,
-    0,
-  )
-
   const revoked = await fixture.session(accountIds.owner, {
     method: 'passkey',
     authenticatorCredentialId: credentialIds.owner,
@@ -79,9 +58,7 @@ try {
        revision = revision + 1, write_nonce = ? WHERE id = ?`,
     [now, opaque('N'), revoked.context.session.id],
   )
-  await expectedFailure(() =>
-    workflow.saveRegistrationDraft(db, revoked.context, { tournamentId: 72, values, now }),
-  )
+  await expectedFailure(() => workflow.deleteOwnedRegistration(db, revoked.context, 711, now))
   console.log('identity registration recovery boundary tests passed')
 } finally {
   database.close()

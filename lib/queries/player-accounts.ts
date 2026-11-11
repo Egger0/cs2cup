@@ -2,16 +2,16 @@ import 'server-only'
 
 import type { IdentityDatabase } from '@/lib/identity/internal/contracts'
 
-export interface RosterClaim {
+export interface PlayerAccount {
   readonly playerId: number
   readonly accountId: string
   readonly displayName: string
 }
 
-export async function rosterClaims(
+export async function playerAccounts(
   database: IdentityDatabase,
   teamId: number,
-): Promise<Map<number, RosterClaim>> {
+): Promise<Map<number, PlayerAccount>> {
   if (!Number.isSafeInteger(teamId) || teamId <= 0) return new Map()
   const { results } = await database
     .prepare(

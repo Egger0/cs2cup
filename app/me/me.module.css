@@ -12,56 +12,6 @@
   font-size: 0.9375rem;
 }
 
-.drafts {
-  composes: sheet from '@/components/ui/Surface.module.css';
-  margin-bottom: clamp(20px, 3vw, 32px);
-  padding-top: clamp(20px, 3vw, 28px);
-}
-
-.drafts h2 {
-  color: var(--ink);
-  font-size: 1.25rem;
-  font-weight: 620;
-  letter-spacing: -0.02em;
-}
-
-.drafts > div {
-  margin-top: 18px;
-  border-top: 1px solid var(--line);
-}
-
-.drafts article {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto;
-  align-items: baseline;
-  gap: 6px 20px;
-  padding-block: 14px;
-  border-bottom: 1px solid var(--line);
-}
-
-.drafts article span {
-  color: var(--muted);
-  font-size: 0.875rem;
-}
-
-.drafts article strong {
-  overflow-wrap: anywhere;
-  color: var(--ink);
-  font-size: 0.9375rem;
-  font-weight: 580;
-}
-
-.drafts article a {
-  display: inline-flex;
-  min-height: 44px;
-  align-items: center;
-  color: var(--accent);
-  font-size: 0.9375rem;
-  font-weight: 580;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-
 .empty {
   composes: sheet from '@/components/ui/Surface.module.css';
   padding-block: clamp(24px, 4vw, 40px);
@@ -105,16 +55,6 @@
     border-color: var(--ink);
     background: var(--ink);
     color: var(--bg);
-  }
-}
-
-@media (max-width: 620px) {
-  .drafts article {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .drafts article a {
-    width: fit-content;
   }
 }
 

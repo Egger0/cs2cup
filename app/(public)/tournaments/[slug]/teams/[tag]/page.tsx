@@ -17,7 +17,7 @@ import {
   safely,
 } from '@/lib/queries/public'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
-import { rosterClaims } from '@/lib/queries/roster-claims'
+import { playerAccounts } from '@/lib/queries/player-accounts'
 import styles from '@/components/domain/TeamProfile.module.css'
 import { PublicActions } from '@/components/share/PublicActions'
 import { publicMetadata } from '@/lib/public-metadata'
@@ -71,7 +71,7 @@ export default async function TeamPage({
   )
   if (!team) notFound()
 
-  const claims = await safely(() => rosterClaims(cloudflareBindings().db, team.id), new Map())
+  const claims = await safely(() => playerAccounts(cloudflareBindings().db, team.id), new Map())
 
   const matchIndex = indexMatches(matches)
   const teamIndex = indexTeams(teams)

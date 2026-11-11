@@ -14,131 +14,10 @@
   letter-spacing: -0.02em;
 }
 
-.lede,
-.panel > p:last-child,
-.empty {
-  max-width: 62ch;
-  color: var(--muted);
-  font-size: 0.9375rem;
-  line-height: 1.75;
-}
-
-.columns {
-  display: grid;
-  gap: 28px;
-}
-
-.columns > div {
-  min-width: 0;
-}
-
-.columns h3 {
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--line);
-  color: var(--ink);
-  font-size: 1rem;
-  font-weight: 620;
-}
-
-.people {
-  list-style: none;
-}
-
-.people li {
-  display: flex;
-  min-height: 58px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  border-bottom: 1px solid var(--line);
-}
-
-.people li > button {
-  flex: none;
-}
-
-.people span {
-  display: grid;
-  min-width: 0;
-  gap: 3px;
-}
-
-.people strong {
-  overflow-wrap: anywhere;
-  color: var(--ink);
-  font-size: 0.9375rem;
-  font-weight: 580;
-}
-
-.people small {
-  overflow-wrap: anywhere;
-  color: var(--muted);
-  font-size: 0.8125rem;
-}
-
-.empty {
-  padding-block: 18px;
-}
-
-.inviteForm {
-  display: grid;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.inviteForm label {
-  color: var(--muted);
-  font-family: var(--font-body);
-  font-variant-numeric: tabular-nums;
-  font-size: 0.875rem;
-}
-
-.inviteForm div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.inviteForm input {
-  min-width: min(100%, 220px);
-  min-height: 44px;
-  flex: 1;
-  padding: 10px 12px;
-  border: 1px solid var(--line-strong);
-  border-radius: 10px;
-  outline: none;
-  background: color-mix(in srgb, var(--surface) 68%, transparent);
-  font: inherit;
-  font-size: 1rem;
-}
-
-.inviteForm input:focus {
-  border-color: var(--accent);
-  outline: 1px solid var(--accent);
-}
-
-.success,
-.error {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 11px 13px;
-  border-left: 3px solid var(--accent);
-  background: var(--accent-dim);
-  color: var(--ink);
-  font-size: 0.875rem;
-}
-
 .error {
   border-left-color: var(--c4);
   background: var(--danger-dim);
   color: var(--c4);
-}
-
-.success a,
-.error a {
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 .danger {
@@ -163,12 +42,6 @@
   color: var(--muted);
   font-size: 0.875rem;
   line-height: 1.7;
-}
-
-@media (min-width: 820px) {
-  .columns {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 560px) {

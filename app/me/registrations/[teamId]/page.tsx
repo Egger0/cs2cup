@@ -8,14 +8,11 @@ import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { formatSiteDateTime } from '@/lib/datetime'
 import { getAuthContext } from '@/lib/identity/kernel'
 import { accountHasWorkAccess } from '@/lib/identity/account-security-state'
-import { registrationAccessOverview } from '@/lib/identity/registration-workflow'
 import {
   getAccountManagedRegistration,
   RegistrationManagementError,
 } from '@/lib/queries/registration-management'
-import { RegistrationAccessPanel } from '../RegistrationAccessPanel'
-import { RosterSeatPanel } from '../RosterSeatPanel'
-import { rosterClaims } from '@/lib/queries/roster-claims'
+import { CancelRegistration } from '../CancelRegistration'
 import styles from './registration.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -53,11 +50,6 @@ export default async function AccountRegistrationPage({
     }
     notFound()
   }
-  const access =
-    registration.relationship === 'owner'
-      ? await registrationAccessOverview(database, context, teamId)
-      : { managers: [], invitations: [] }
-  const claims = await rosterClaims(database, teamId)
   const deadline = registration.tournament.regDeadline
     ? formatSiteDateTime(registration.tournament.regDeadline)
     : null
@@ -72,10 +64,6 @@ export default async function AccountRegistrationPage({
       lede={`[${registration.team.tag}] ${registration.team.name}`}
     >
       <dl className={styles.status}>
-        <div>
-          <dt>你的权限</dt>
-          <dd>{registration.relationship === 'owner' ? '所有者' : '协作者'}</dd>
-        </div>
         <div>
           <dt>审核状态</dt>
           <dd>{STATUS_LABEL[registration.team.status]}</dd>
@@ -118,23 +106,9 @@ export default async function AccountRegistrationPage({
         )}
       </section>
 
-      <RosterSeatPanel
-        teamId={teamId}
-        seats={registration.team.players.map(player => ({
-          playerId: player.id,
-          nickname: player.nickname,
-          isSubstitute: player.isSubstitute,
-          holder: claims.get(player.id)?.displayName ?? null,
-        }))}
-      />
-
-      <RegistrationAccessPanel
-        teamId={teamId}
-        relationship={registration.relationship}
-        managers={access.managers}
-        invitations={access.invitations}
-        deletable={registration.team.status === 'pending'}
-      />
+      {registration.relationship === 'owner' ? (
+        <CancelRegistration teamId={teamId} deletable={registration.team.status === 'pending'} />
+      ) : null}
     </AccountShell>
   )
 }
