@@ -15,60 +15,6 @@ import { RegistrationWorkflowError } from './types.ts'
 
 const TOKEN_REPLAY_WINDOW_MS = 15 * 60 * 1000
 
-export async function revokeRegistrationInvitation(
-  database: IdentityDatabase,
-  context: AuthenticatedAuthContext,
-  input: { teamId: number; invitationId: string; now?: number },
-) {
-  const now = input.now ?? Date.now()
-  await requireRegistrationCapability(database, context, input.teamId, 'registration.invite', now)
-  const nonce = createOpaqueToken()
-  await database
-    .prepare(
-      `UPDATE identity_registration_invitation
-       SET revoked_at = ?, revoked_by_account_id = ?, revoke_reason = 'Cancelled by owner',
-           revision = revision + 1, write_nonce = ?
-       WHERE id = ? AND team_id = ? AND accepted_at IS NULL AND revoked_at IS NULL`,
-    )
-    .bind(now, context.account.id, nonce, input.invitationId, input.teamId)
-    .run()
-  const revoked = await database
-    .prepare(
-      `SELECT 1 AS present FROM identity_registration_invitation
-       WHERE id = ? AND revoked_at = ? AND write_nonce = ?`,
-    )
-    .bind(input.invitationId, now, nonce)
-    .first<{ present: number }>()
-  if (!revoked) throw new RegistrationWorkflowError('not_found')
-}
-
-export async function removeRegistrationManager(
-  database: IdentityDatabase,
-  context: AuthenticatedAuthContext,
-  input: { teamId: number; membershipId: string; now?: number },
-) {
-  const now = input.now ?? Date.now()
-  await requireRegistrationCapability(database, context, input.teamId, 'registration.invite', now)
-  const nonce = createOpaqueToken()
-  await database
-    .prepare(
-      `UPDATE identity_registration_membership
-       SET revoked_at = ?, revoked_by_account_id = ?, revoke_reason = 'Removed by owner',
-           revision = revision + 1, write_nonce = ?
-       WHERE id = ? AND team_id = ? AND relationship = 'manager' AND revoked_at IS NULL`,
-    )
-    .bind(now, context.account.id, nonce, input.membershipId, input.teamId)
-    .run()
-  const revoked = await database
-    .prepare(
-      `SELECT 1 AS present FROM identity_registration_membership
-       WHERE id = ? AND revoked_at = ? AND write_nonce = ?`,
-    )
-    .bind(input.membershipId, now, nonce)
-    .first<{ present: number }>()
-  if (!revoked) throw new RegistrationWorkflowError('not_found')
-}
-
 export async function attachLegacyRegistration(
   database: IdentityDatabase,
   context: AuthenticatedAuthContext,

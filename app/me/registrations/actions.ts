@@ -5,18 +5,13 @@ import { updateTag } from 'next/cache'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { getAuthContext } from '@/lib/identity/kernel'
 import {
-  acceptRegistrationInvitation,
-  createRegistrationInvitation,
   deleteOwnedRegistration,
   RegistrationWorkflowError,
-  removeRegistrationManager,
-  revokeRegistrationInvitation,
 } from '@/lib/identity/registration-workflow'
 import {
   RegistrationManagementError,
   saveAccountManagedRegistration,
 } from '@/lib/queries/registration-management'
-import { acceptRosterClaimRequest, claimRosterSeat } from '@/lib/identity/roster-claim'
 import { parseRegistrationForm } from '@/lib/registration-form'
 import { tournamentRosterSize } from '@/lib/queries/roster-size'
 
@@ -40,16 +35,10 @@ function workflowFailure(error: unknown): RegistrationActionResult {
       error: '这项操作需要最近 15 分钟内完成登录，请重新登录后再试。',
     }
   }
-  if (code === 'account_not_found') {
-    return { ok: false, error: '没有找到这个用户名对应的有效账号。' }
-  }
-  if (code === 'already_has_access') {
-    return { ok: false, error: '该账号已经拥有权限，或已有一份待处理邀请。' }
-  }
   if (code === 'locked') return { ok: false, error: '报名已经锁定，当前操作不可用。' }
   if (code === 'duplicate') return { ok: false, error: '战队名称或 TAG 已被占用。' }
   if (code === 'conflict') return { ok: false, error: '状态刚刚发生变化，请刷新后重试。' }
-  if (code === 'not_found') return { ok: false, error: '邀请不存在、已过期或已经处理。' }
+  if (code === 'not_found') return { ok: false, error: '报名不存在或已经处理。' }
   if (code === 'forbidden') return { ok: false, error: '当前账号没有执行这项操作的权限。' }
   console.error('[registration] account operation unavailable', error)
   return { ok: false, error: '操作暂时不可用，请稍后重试。' }
@@ -93,148 +82,12 @@ export async function updateAccountRegistration(
   }
 }
 
-export async function inviteRegistrationAccount(
-  teamId: number,
-  relationship: 'owner' | 'manager',
-  form: FormData,
-): Promise<RegistrationActionResult> {
-  const session = await authenticated()
-  if (!session) return { ok: false, error: '登录已失效，请重新登录。' }
-  try {
-    const created = await createRegistrationInvitation(session.database, session.context, {
-      teamId,
-      relationship,
-      username: form.get('username'),
-    })
-    return { ok: true, teamId: created.teamId }
-  } catch (error) {
-    return workflowFailure(error)
-  }
-}
-
-export async function acceptRegistrationAccessInvitation(
-  invitationId: string,
-): Promise<RegistrationActionResult> {
-  const session = await authenticated()
-  if (!session) return { ok: false, error: '登录已失效，请重新登录。' }
-  try {
-    const accepted = await acceptRegistrationInvitation(
-      session.database,
-      session.context,
-      invitationId,
-    )
-    return { ok: true, teamId: accepted.teamId }
-  } catch (error) {
-    return workflowFailure(error)
-  }
-}
-
-export async function removeRegistrationCollaborator(
-  teamId: number,
-  membershipId: string,
-): Promise<RegistrationActionResult> {
-  const session = await authenticated()
-  if (!session) return { ok: false, error: '登录已失效，请重新登录。' }
-  try {
-    await removeRegistrationManager(session.database, session.context, {
-      teamId,
-      membershipId,
-    })
-    return { ok: true, teamId }
-  } catch (error) {
-    return workflowFailure(error)
-  }
-}
-
-export async function cancelRegistrationInvitation(
-  teamId: number,
-  invitationId: string,
-): Promise<RegistrationActionResult> {
-  const session = await authenticated()
-  if (!session) return { ok: false, error: '登录已失效，请重新登录。' }
-  try {
-    await revokeRegistrationInvitation(session.database, session.context, {
-      teamId,
-      invitationId,
-    })
-    return { ok: true, teamId }
-  } catch (error) {
-    return workflowFailure(error)
-  }
-}
-
 export async function deleteAccountRegistration(teamId: number): Promise<RegistrationActionResult> {
   const session = await authenticated()
   if (!session) return { ok: false, error: '登录已失效，请重新登录。' }
   try {
     await deleteOwnedRegistration(session.database, session.context, teamId)
     return { ok: true, teamId }
-  } catch (error) {
-    return workflowFailure(error)
-  }
-}
-
-export async function assignRosterSeat(
-  teamId: number,
-  playerId: number,
-  username: string,
-): Promise<RegistrationActionResult> {
-  const context = await getAuthContext()
-  if (context.kind !== 'authenticated') {
-    return { ok: false, reauthenticate: true, error: '请先登录后再指派席位。' }
-  }
-  const database = cloudflareBindings().db
-  const target = await database
-    .prepare(
-      `SELECT account.id AS id FROM identity_account AS account
-       JOIN identity_password_credential AS credential ON credential.account_id = account.id
-       WHERE credential.username = ? AND account.status = 'active'`,
-    )
-    .bind(username.trim())
-    .first<{ id: string }>()
-  if (!target) return { ok: false, error: '找不到这个用户名对应的账号。' }
-
-  const claim = await claimRosterSeat(database, {
-    playerId,
-    accountId: target.id,
-    authorisedByAccountId: context.account.id,
-    reason: 'Captain assigned the roster seat',
-    now: Date.now(),
-  })
-  if (!claim.ok) {
-    const message = {
-      not_authorised: '只有本队报名的持有者可以指派席位。',
-      seat_taken: '这个席位已经由其他账号认领。',
-      seat_pending: '这个席位已经在等待其他账号确认。',
-      seat_missing: '找不到这个席位。',
-      self_authorised: '不能把席位指派给自己。',
-    }[claim.reason]
-    return { ok: false, error: message }
-  }
-  updateTag(`registration-${teamId}`)
-  return { ok: true, teamId }
-}
-
-export async function acceptRosterSeatInvitation(
-  requestId: string,
-): Promise<RegistrationActionResult> {
-  const session = await authenticated()
-  if (!session) return { ok: false, reauthenticate: true, error: '请重新登录后再试。' }
-  try {
-    const accepted = await acceptRosterClaimRequest(session.database, session.context, requestId)
-    if (!accepted.ok) {
-      return {
-        ok: false,
-        error: {
-          not_authorised: '当前账号不能接受这个席位邀请。',
-          seat_taken: '这个席位已经由其他账号认领。',
-          seat_pending: '这个席位正在等待确认。',
-          seat_missing: '这个席位邀请不存在、已过期或已经处理。',
-          self_authorised: '当前账号不能接受这个席位邀请。',
-        }[accepted.reason],
-      }
-    }
-    return { ok: true }
   } catch (error) {
     return workflowFailure(error)
   }

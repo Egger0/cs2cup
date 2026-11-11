@@ -169,29 +169,8 @@ try {
   assert.match(managePath ?? '', /^\/me\/registrations\/[1-9][0-9]*$/)
   await applicant.page.goto(BASE + managePath)
   await assertAccessible(applicant.page, 'registration manager')
-  await applicant.page.getByLabel('邀请协作者').fill(BROWSER_USERS.reviewer.username)
-  await applicant.page.getByRole('button', { name: '发送邀请' }).click()
-  await applicant.page.getByText('协作者邀请已发出。').waitFor()
-
-  await reviewer.page.goto(`${BASE}/me`)
-  await reviewer.page.getByRole('heading', { name: '报名协作邀请', exact: true }).waitFor()
-  await reviewer.page.getByRole('button', { name: '接受邀请' }).click()
-  await reviewer.page.locator('#registration-invitations').waitFor({ state: 'hidden' })
-
-  await applicant.page.reload()
-  await applicant.page.getByText(BROWSER_USERS.reviewer.displayName).waitFor()
-  await applicant.page.getByLabel('转让所有权').fill(BROWSER_USERS.owner.username)
-  applicant.page.once('dialog', dialog => dialog.accept())
-  await applicant.page.getByRole('button', { name: '发起转让' }).click()
-  await applicant.page.getByText('所有权转让邀请已发出。').waitFor()
-
-  await owner.page.goto(`${BASE}/me`)
-  owner.page.once('dialog', dialog => dialog.accept())
-  await owner.page.getByRole('button', { name: '接受邀请' }).click()
-  await owner.page.locator('#registration-invitations').waitFor({ state: 'hidden' })
-  await applicant.page.reload()
-  await applicant.page.getByRole('heading', { name: '你是协作者', exact: true }).waitFor()
-  console.log('PASS  account-owned registration, collaboration and ownership transfer')
+  await applicant.page.getByRole('button', { name: '取消报名' }).waitFor()
+  console.log('PASS  account-owned team registration and management page')
 
   await owner.page.goto(`${BASE}/admin/identity`)
   const roster = owner.page

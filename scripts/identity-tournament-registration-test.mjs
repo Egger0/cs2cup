@@ -21,7 +21,6 @@ registerHooks({
 
 const { createApprovedTournamentRegistration } =
   await import('../lib/identity/tournament-registration.ts')
-const { saveRegistrationDraft } = await import('../lib/identity/registration-workflow.ts')
 const { createMembershipDraft } = await import('../lib/identity/membership.ts')
 const { submitMembershipApplication } = await import('../lib/identity/membership-application.ts')
 const { claimMembershipApplication, reviewMembershipApplication } =
@@ -123,19 +122,6 @@ try {
   )
 
   await approveMembership(applicant.context, reviewer.context)
-  await saveRegistrationDraft(db, applicant.context, {
-    tournamentId: 72,
-    values: {
-      name: 'Team GAT2',
-      tag: 'GAT2',
-      captain: 'Captain',
-      contact: 'owner@example.test',
-      dept: '',
-      note: '',
-      players: ['One', 'Two', 'Three', 'Four', 'Five', ''],
-    },
-    now: now + 5,
-  })
   const approvedResult = await createApprovedTournamentRegistration(
     db,
     applicant.context,
@@ -156,15 +142,6 @@ try {
     { accountId: accountIds.owner, relationship: 'owner', players: 5 },
   )
   assert.equal(created.management_token_hash, null)
-  assert.equal(
-    database
-      .prepare(
-        'SELECT COUNT(*) AS count FROM identity_registration_draft WHERE account_id = ? AND tournament_id = 72',
-      )
-      .get(accountIds.owner).count,
-    0,
-  )
-
   const membership = database
     .prepare('SELECT id, revision FROM identity_membership WHERE account_id = ?')
     .get(accountIds.owner)

@@ -20,8 +20,6 @@ export const IDENTITY_CAPABILITIES = [
   'tournament.audit.view',
   'registration.view',
   'registration.edit',
-  'registration.invite',
-  'registration.transfer',
   'registration.delete',
 ] as const
 
@@ -93,13 +91,7 @@ const ROLE_CAPABILITIES: Record<IdentityRole, readonly IdentityCapability[]> = {
 }
 
 const RELATIONSHIP_CAPABILITIES: Record<RegistrationRelationship, readonly IdentityCapability[]> = {
-  owner: [
-    'registration.view',
-    'registration.edit',
-    'registration.invite',
-    'registration.transfer',
-    'registration.delete',
-  ],
+  owner: ['registration.view', 'registration.edit', 'registration.delete'],
   manager: ['registration.view', 'registration.edit'],
 }
 
@@ -107,8 +99,6 @@ const SENSITIVE_CAPABILITIES = new Set<IdentityCapability>([
   'platform.access.manage',
   'platform.identity.review',
   'tournament.access.manage',
-  'registration.invite',
-  'registration.transfer',
   'registration.delete',
 ])
 

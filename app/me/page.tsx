@@ -7,12 +7,7 @@ import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { currentTimeMillis } from '@/lib/current-time'
 import { accountHasWorkAccess } from '@/lib/identity/account-security-state'
 import { getAuthContext, type AuthenticatedAuthContext } from '@/lib/identity/kernel'
-import {
-  listAccountTournamentRegistrations,
-  listIncomingRegistrationInvitations,
-  listRegistrationDrafts,
-} from '@/lib/identity/registration-workflow'
-import { listIncomingRosterClaimRequests } from '@/lib/identity/roster-claim'
+import { listAccountTournamentRegistrations } from '@/lib/identity/registration-workflow'
 import { participantSessionRemainingMs, requireParticipant } from '@/lib/participant-auth'
 import { parsePageNumber } from '@/lib/pagination'
 import { participantEntryAddedId } from '@/lib/participant-return'
@@ -44,8 +39,6 @@ import { StardustWallet } from './stardust/StardustWallet'
 import { PassReference } from './PassReference'
 import { PassShelf } from './PassShelf'
 import { ParticipantSessionBoundary, ParticipantSignOut } from './ParticipantSessionBoundary'
-import { RegistrationInvitations } from './RegistrationInvitations'
-import { RosterClaimRequests } from './RosterClaimRequests'
 import { StaffWorkspaces } from './StaffWorkspaces'
 
 export const dynamic = 'force-dynamic'
@@ -93,9 +86,6 @@ async function UnifiedAccountEvents({
   const now = currentTimeMillis()
   const [
     entries,
-    invitations,
-    rosterClaimRequests,
-    drafts,
     workspacePage,
     nextMatch,
     workAccess,
@@ -106,9 +96,6 @@ async function UnifiedAccountEvents({
     teams,
   ] = await Promise.all([
     listAccountTournamentRegistrations(database, context, now),
-    optional('invitations', listIncomingRegistrationInvitations(database, context, now), []),
-    optional('roster claims', listIncomingRosterClaimRequests(database, context, now), []),
-    optional('drafts', listRegistrationDrafts(database, context, now), []),
     optional(
       'staff workspaces',
       listCurrentUnifiedTournamentWorkspaces({
@@ -141,8 +128,6 @@ async function UnifiedAccountEvents({
       identity={context.account.displayName}
       title="我的赛事"
     >
-      <RegistrationInvitations items={invitations} />
-      <RosterClaimRequests items={rosterClaimRequests} />
       <SquadInvitationInbox items={squadInvitations} />
       {wallet ? <StardustWallet wallet={wallet} /> : null}
 
@@ -159,23 +144,6 @@ async function UnifiedAccountEvents({
           emptyReason={hasApprovedEntry ? 'standby' : 'review'}
           initialNow={now}
         />
-      ) : null}
-
-      {drafts.length ? (
-        <section className={styles.drafts} aria-labelledby="drafts-title">
-          <h2 id="drafts-title">待完成的报名</h2>
-          <div>
-            {drafts.map(draft => (
-              <article key={draft.tournament.id}>
-                <span>{draft.tournament.title}</span>
-                <strong>{draft.values.name || '尚未填写战队名称'}</strong>
-                <Link href={`/tournaments/${encodeURIComponent(draft.tournament.slug)}/register`}>
-                  继续填写
-                </Link>
-              </article>
-            ))}
-          </div>
-        </section>
       ) : null}
 
       <MyLoadouts codes={loadouts} />
@@ -195,7 +163,7 @@ async function UnifiedAccountEvents({
           ))}
         </section>
       ) : (
-        <EmptyEntries hint="从开放报名的赛事开始组队；保存过的草稿也会显示在这里。" />
+        <EmptyEntries hint="组一支战队，就能报名开放中的赛事。" />
       )}
     </AccountShell>
   )
