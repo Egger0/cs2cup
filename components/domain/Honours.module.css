@@ -84,7 +84,7 @@
 .note {
   margin-top: 14px;
   color: var(--muted);
-  font-size: 0.84rem;
+  font-size: 0.875rem;
 }
 
 @media (max-width: 640px) {

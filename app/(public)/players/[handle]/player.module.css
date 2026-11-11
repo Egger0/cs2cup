@@ -81,7 +81,7 @@
 }
 
 .tournament {
-  font-size: 1.02rem;
+  font-size: 1rem;
   border-bottom: 1px solid transparent;
 }
 
@@ -96,7 +96,7 @@
   align-items: baseline;
   gap: var(--space-1);
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
 }
 
 @media (hover: hover) {
@@ -117,7 +117,7 @@
   color: var(--ink);
   font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
-  font-size: 0.86rem;
+  font-size: 0.875rem;
   justify-self: end;
 }
 

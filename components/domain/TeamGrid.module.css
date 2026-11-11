@@ -71,7 +71,7 @@
 .name {
   margin-top: 18px;
   color: var(--ink);
-  font-size: 1.15rem;
+  font-size: 1.125rem;
   font-weight: 650;
   letter-spacing: -0.035em;
 }
@@ -79,7 +79,7 @@
 .meta {
   margin-top: 7px;
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   line-height: 1.55;
 }
 

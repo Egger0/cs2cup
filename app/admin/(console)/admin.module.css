@@ -14,7 +14,7 @@
   display: grid;
   gap: 8px;
   color: var(--admin-muted, var(--muted));
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
 }
 
 .checkLabel {
@@ -28,7 +28,7 @@
   background: var(--admin-paper-deep, var(--bg-2));
   color: var(--ink);
   cursor: pointer;
-  font-size: 0.84rem;
+  font-size: 0.875rem;
 }
 
 .checkLabel input {
@@ -48,7 +48,7 @@
   background: color-mix(in srgb, var(--surface) 68%, transparent);
   color: var(--ink);
   font-family: var(--font-body), sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.9375rem;
 }
 
 .select:focus-visible,
@@ -88,13 +88,13 @@
   padding: 8px 12px;
   border: 1px solid var(--admin-line-strong, var(--line-strong));
   color: var(--admin-blue-strong, var(--ink));
-  font-size: 0.78rem;
+  font-size: 0.75rem;
 }
 
 .fileName {
   overflow: hidden;
   color: var(--admin-muted, var(--muted));
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -129,7 +129,7 @@
 .messageBody {
   margin-top: 9px;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
   line-height: 1.7;
   white-space: pre-wrap;
 }
@@ -155,7 +155,7 @@
 .ok,
 .warning,
 .error {
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
 }
 
 .warning {
@@ -192,7 +192,7 @@
 .panelHead {
   margin-bottom: 20px;
   font-family: var(--font-display), sans-serif;
-  font-size: 1.08rem;
+  font-size: 1.0625rem;
   font-weight: 660;
   letter-spacing: -0.01em;
 }
@@ -221,7 +221,7 @@
 .panelActions > a {
   min-height: 44px;
   padding: 8px 13px;
-  font-size: 0.76rem;
+  font-size: 0.75rem;
 }
 
 .panelAction {
@@ -233,7 +233,7 @@
   border: 1px solid var(--admin-line-strong, var(--line-strong));
   border-radius: 999px;
   color: var(--admin-blue-strong, var(--ink));
-  font-size: 0.76rem;
+  font-size: 0.75rem;
 }
 
 @media (hover: hover) {

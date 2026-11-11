@@ -54,7 +54,7 @@
   color: var(--t);
   font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -87,7 +87,7 @@
 
 .hint {
   margin-top: 5px;
-  font-size: 0.86rem;
+  font-size: 0.875rem;
 }
 
 .series {
@@ -176,7 +176,7 @@
 .success,
 .failure {
   flex: 1 1 260px;
-  font-size: 0.84rem;
+  font-size: 0.875rem;
 }
 
 .success {

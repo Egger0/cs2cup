@@ -94,7 +94,7 @@
 }
 
 .name {
-  font-size: 0.86rem;
+  font-size: 0.875rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -120,7 +120,7 @@
 
 .score {
   font-family: var(--font-body);
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
   color: var(--muted);
   min-width: 1.2em;

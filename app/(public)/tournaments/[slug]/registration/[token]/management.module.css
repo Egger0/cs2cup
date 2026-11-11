@@ -31,7 +31,7 @@
   display: grid;
   gap: 6px;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
   text-align: right;
 }
 
@@ -50,7 +50,7 @@
 
 .checkIn > strong {
   color: var(--ink);
-  font-size: 0.88rem;
+  font-size: 0.875rem;
 }
 
 .checkIn[data-state='checked-in'] > strong {
@@ -231,7 +231,7 @@
 }
 
 .accountHandoff strong {
-  font-size: 0.86rem;
+  font-size: 0.875rem;
 }
 
 .accountHandoff p {

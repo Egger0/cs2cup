@@ -89,7 +89,7 @@
   border-left: 3px solid var(--ops-blue);
   background: rgba(102, 181, 223, 0.08);
   color: var(--ops-blue-bright);
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
 }
 
 .error {
@@ -187,7 +187,7 @@
   margin-top: 3px;
   overflow-wrap: anywhere;
   color: #c8d0d1;
-  font-size: 0.76rem;
+  font-size: 0.75rem;
 }
 
 .team button {
@@ -340,7 +340,7 @@
 }
 
 .seatsList strong {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
 }
 
 .seatsList small {

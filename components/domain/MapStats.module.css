@@ -49,7 +49,7 @@
 .num {
   font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
-  font-size: 0.86rem;
+  font-size: 0.875rem;
   text-align: right;
   position: relative;
 }

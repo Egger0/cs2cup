@@ -96,7 +96,7 @@
   color: var(--ink);
   font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
-  font-size: 0.98rem;
+  font-size: 1rem;
   margin-top: 10px;
 }
 

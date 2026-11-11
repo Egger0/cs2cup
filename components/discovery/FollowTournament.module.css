@@ -12,7 +12,7 @@
   border-radius: 999px;
   background: transparent;
   color: var(--ink);
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   cursor: pointer;
   transition:
     background 160ms ease,

@@ -194,7 +194,7 @@
   justify-content: space-between;
   gap: 36px;
   border-bottom: 1px solid rgb(241 239 232 / 34%);
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.05em;
   transition: border-color 200ms ease;
 }

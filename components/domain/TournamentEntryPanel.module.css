@@ -24,7 +24,7 @@
 }
 .capacity p > span {
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
 }
 .capacity progress {
   display: block;
@@ -112,13 +112,13 @@
   top: 3px;
   left: 0;
   color: var(--ct);
-  font: 0.6875rem var(--font-body);
+  font: 0.75rem var(--font-body);
 }
 .steps a {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  font-size: 0.83rem;
+  font-size: 0.8125rem;
   margin-top: -10px;
 }
 @media (hover: hover) {

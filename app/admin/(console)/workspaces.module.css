@@ -41,7 +41,7 @@
 
 .grid article > p {
   color: var(--admin-blue);
-  font: 0.6875rem var(--font-body);
+  font: 0.75rem var(--font-body);
   letter-spacing: 0.05em;
 }
 

@@ -48,7 +48,7 @@
 
 .name {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
   margin-top: 6px;
   white-space: nowrap;
   overflow: hidden;
@@ -116,7 +116,7 @@
   }
 
   .name {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
   }
 }
 

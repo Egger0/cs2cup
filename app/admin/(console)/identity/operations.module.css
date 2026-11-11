@@ -114,14 +114,14 @@
 
 .sectionHeading p {
   color: var(--admin-blue);
-  font: 0.6875rem var(--font-body);
+  font: 0.75rem var(--font-body);
   letter-spacing: 0.06em;
 }
 
 .sectionHeading h2 {
   margin-top: 4px;
   font-family: var(--font-display), sans-serif;
-  font-size: 1.08rem;
+  font-size: 1.0625rem;
 }
 
 .sectionHeading > span,

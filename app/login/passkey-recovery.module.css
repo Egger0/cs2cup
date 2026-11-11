@@ -44,7 +44,7 @@
 .recovery > strong {
   color: var(--paper-ink);
   font-family: 'NLC Role Sans', var(--font-body);
-  font-size: 0.86rem;
+  font-size: 0.875rem;
   line-height: 1.25;
 }
 

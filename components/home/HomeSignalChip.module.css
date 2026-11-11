@@ -98,7 +98,7 @@
   padding: 0 16px;
   color: var(--space);
   background: var(--space-accent);
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 650;
   letter-spacing: 0.04em;
   transition: background-color 180ms ease;

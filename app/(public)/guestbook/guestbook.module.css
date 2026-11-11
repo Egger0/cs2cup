@@ -57,13 +57,13 @@
 
 .hint {
   color: var(--muted-2);
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   line-height: 1.6;
 }
 
 .error {
   color: var(--c4);
-  font-size: 0.86rem;
+  font-size: 0.875rem;
 }
 
 .list {
@@ -148,7 +148,7 @@
   width: fit-content;
   cursor: pointer;
   color: var(--accent);
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
 }
 
 .replyComposer[open] summary {
