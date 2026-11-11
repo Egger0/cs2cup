@@ -42,23 +42,12 @@ async function signOut(page) {
   ])
 }
 
-async function fillRegistration(page) {
-  const values = {
-    name: TEAM.name,
-    tag: TEAM.tag,
-    captain: '浏览器队长',
-    contact: 'browser-captain@example.test',
-    dept: '计算机与数据工程学院',
-    player1: 'Browser-01',
-    player2: 'Browser-02',
-    player3: 'Browser-03',
-    player4: 'Browser-04',
-    player5: 'Browser-05',
-    player6: 'Browser-06',
-    note: '自动化浏览器验收',
-  }
-  for (const [name, value] of Object.entries(values))
-    await page.locator(`[name="${name}"]`).fill(value)
+async function createTeam(page) {
+  await page.getByLabel('战队名称').fill(TEAM.name)
+  await page.getByLabel('TAG').fill(TEAM.tag)
+  for (const index of [1, 2, 3, 4]) await page.getByLabel(`队友 ${index}`).fill(`Browser-0${index}`)
+  await page.getByRole('button', { name: '创建战队' }).click()
+  await page.getByRole('heading', { name: new RegExp(TEAM.name) }).waitFor()
 }
 
 function reviewCard(page, displayName) {
@@ -108,19 +97,17 @@ try {
   await assertAccessible(applicant.page, 'pending account')
 
   await applicant.page.goto(`${BASE}/tournaments/2026-nlc/register`)
-  await fillRegistration(applicant.page)
+  await applicant.page.getByText('提交报名前需要通过成员资格审核').waitFor()
+  await createTeam(applicant.page)
   await captureResponsiveScreens(applicant.page, 'entry-form')
-  assert.ok(await applicant.page.getByRole('button', { name: '通过资格审核后提交' }).isDisabled())
-  await applicant.page.getByRole('button', { name: '保存草稿' }).click()
-  await applicant.page.getByText('草稿已保存，可从“我的赛事”继续填写。').waitFor()
   await applicant.page.reload()
-  assert.equal(await applicant.page.locator('[name="name"]').inputValue(), TEAM.name)
+  await applicant.page.getByText('Browser-04').waitFor()
 
   await applicant.page.goto(`${BASE}/account`)
   await applicant.page.getByRole('button', { name: '提醒审核员' }).click()
   await applicant.page.getByText(/已发送提醒，下次可在/).waitFor()
   await signOut(applicant.page)
-  console.log('PASS  applicant draft, pending state, reminder cooldown and sign-out')
+  console.log('PASS  applicant team, pending state, reminder cooldown and sign-out')
 
   await passwordLogin(reviewer.page, BROWSER_USERS.reviewer, 'workspaces')
   await reviewer.page.waitForURL(url => url.pathname === '/admin/identity')
@@ -174,12 +161,11 @@ try {
   console.log('PASS  reviewer decisions, history, resubmission and accepted transfer')
 
   await applicant.page.goto(`${BASE}/tournaments/2026-nlc/register`)
-  assert.equal(await applicant.page.locator('[name="name"]').inputValue(), TEAM.name)
+  await applicant.page.getByLabel('队长联系方式').fill('browser-captain@example.test')
+  await applicant.page.getByLabel('学院').fill('计算机与数据工程学院')
   await applicant.page.getByRole('button', { name: '提交报名', exact: true }).click()
-  await applicant.page.getByRole('heading', { name: '报名已提交', exact: true }).waitFor()
-  const managePath = await applicant.page
-    .getByRole('link', { name: /管理这份报名/ })
-    .getAttribute('href')
+  await applicant.page.getByText('报名已提交，等待主办方审核。').waitFor()
+  const managePath = await applicant.page.getByRole('link', { name: /审核中/ }).getAttribute('href')
   assert.match(managePath ?? '', /^\/me\/registrations\/[1-9][0-9]*$/)
   await applicant.page.goto(BASE + managePath)
   await assertAccessible(applicant.page, 'registration manager')

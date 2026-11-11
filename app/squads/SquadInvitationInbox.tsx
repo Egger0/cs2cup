@@ -35,7 +35,7 @@ export function SquadInvitationInbox({ items }: { items: SquadInvitation[] }) {
                 disabled={pending || item.openSeats < 1}
                 onClick={() => run(() => respondToSquadInvitationAction(item.id, true))}
               >
-                加入小队
+                加入战队
               </button>
               <button
                 type="button"

@@ -239,6 +239,20 @@
   font-size: 0.8125rem;
 }
 
+.guests {
+  display: grid;
+  flex: 1 1 100%;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  border: 0;
+}
+
+.guests legend {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
 .invite input,
 .createForm input,
 .createForm select,

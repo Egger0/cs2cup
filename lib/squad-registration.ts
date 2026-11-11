@@ -99,7 +99,12 @@ export async function registerSquad(
     }>()
   const [captain] = members
   if (!captain) return { ok: false, reason: 'not_captain' }
-  if (members.length !== captain.rosterSize) return { ok: false, reason: 'not_full' }
+  const { results: guests } = await database
+    .prepare('SELECT nickname FROM squad_guest WHERE squad_id = ? ORDER BY created_at, id')
+    .bind(input.squadId)
+    .all<{ nickname: string }>()
+  if (members.length + guests.length !== captain.rosterSize)
+    return { ok: false, reason: 'not_full' }
 
   const tournament = await database
     .prepare(
@@ -127,10 +132,10 @@ export async function registerSquad(
   if (tournament.duplicate) return { ok: false, reason: 'taken' }
 
   const roster = validateRegistrationRoster(
-    members.map(member => ({
-      nickname: [...member.displayName].slice(0, 20).join(''),
-      substitute: false,
-    })),
+    [
+      ...members.map(member => [...member.displayName].slice(0, 20).join('')),
+      ...guests.map(guest => guest.nickname),
+    ].map(nickname => ({ nickname, substitute: false })),
     captain.rosterSize,
   )
   if (!roster.ok) return { ok: false, reason: 'duplicate_nicknames' }

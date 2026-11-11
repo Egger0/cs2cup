@@ -15,7 +15,7 @@ import styles from './squads.module.css'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: '我的小队',
+  title: '我的战队',
   robots: { index: false, follow: false, nocache: true },
   referrer: 'no-referrer',
 }
@@ -41,7 +41,7 @@ export default async function SquadsPage() {
     <AccountShell
       access={{ hasWorkAccess: workAccess, recoveryRestricted: false }}
       identity={context.account.displayName}
-      title="我的小队"
+      title="我的战队"
     >
       <SquadInvitationInbox items={invitations} />
       <div className={styles.cards}>

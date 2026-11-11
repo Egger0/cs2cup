@@ -51,9 +51,9 @@ same bundle as Workers Builds and enforces its size budget without deploying or 
 data. Use `npm run cf:build:local` to validate the local-only bindings.
 
 Workers Builds reads its commands from the dashboard (Workers **Settings > Build**), not from this
-repository. Both triggers build with `npm run cf:release`; `main` deploys with
-`npx @opennextjs/cloudflare deploy`, every other branch uploads a preview version with
-`npx wrangler versions upload`. Pending D1 migrations are applied by `build.command` in
+repository. It builds only `main`, with `npm run cf:release`, and deploys with
+`npx @opennextjs/cloudflare deploy`; builds for other branches are off so pull requests carry no
+Cloudflare check or bot comment. Pending D1 migrations are applied by `build.command` in
 `wrangler.jsonc`, which Wrangler runs before every deploy and which only acts inside a Workers
 Builds `deploy` of `main`, so production cannot publish a Worker whose migrations failed. The
 Workers Builds API token needs D1 Edit plus Worker publication permissions. Contributors must not
