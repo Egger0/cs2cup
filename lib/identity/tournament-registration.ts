@@ -24,12 +24,10 @@ const TEAM_LOOKUP = `SELECT candidate.id FROM team AS candidate
   WHERE candidate.tournament_id = ? AND candidate.tag = ?
     AND candidate.management_token_hash = ?`
 
-const CURRENT_MEMBER_SESSION = `
+const CURRENT_ENTRANT_SESSION = `
   SELECT 1 FROM identity_account AS account
   JOIN identity_session AS session
     ON session.id = ? AND session.account_id = account.id
-  JOIN identity_membership AS membership
-    ON membership.account_id = account.id
   WHERE account.id = ? AND account.status = 'active'
     AND account.security_version = session.security_version
     AND session.revoked_at IS NULL AND session.recovery_restricted = 0
@@ -56,21 +54,30 @@ const CURRENT_MEMBER_SESSION = `
         AND intent.completion_result_ref = credential.credential_id
         AND session.phishing_resistant_at = intent.consumed_at
     ))
-    AND membership.status = 'approved' AND membership.revoked_at IS NULL
-    AND membership.approved_at <= ?`
+    AND (
+      EXISTS (
+        SELECT 1 FROM identity_membership AS membership
+        WHERE membership.account_id = account.id AND membership.status = 'approved'
+          AND membership.revoked_at IS NULL AND membership.approved_at <= ?
+      )
+      OR EXISTS (
+        SELECT 1 FROM identity_membership_application AS application
+        WHERE application.account_id = account.id AND application.status IN ('pending', 'in_review')
+      )
+    )`
 
-function memberSessionBindings(context: AuthenticatedAuthContext, now: number) {
+function entrantSessionBindings(context: AuthenticatedAuthContext, now: number) {
   return [context.session.id, context.account.id, now, now, now, now, now, now, now, now]
 }
 
-async function currentMemberSession(
+async function currentEntrantSession(
   database: IdentityDatabase,
   context: AuthenticatedAuthContext,
   now: number,
 ) {
   const result = await database
-    .prepare(`${CURRENT_MEMBER_SESSION} LIMIT 1`)
-    .bind(...memberSessionBindings(context, now))
+    .prepare(`${CURRENT_ENTRANT_SESSION} LIMIT 1`)
+    .bind(...entrantSessionBindings(context, now))
     .first<{ 1: number }>()
   return result !== null
 }
@@ -146,7 +153,7 @@ export async function createApprovedTournamentRegistration(
          WHERE tournament.id = ? AND tournament.status IN ('registration','postponed')
            AND (tournament.reg_deadline IS NULL
              OR unixepoch(tournament.reg_deadline) > unixepoch('now'))
-           AND EXISTS (${CURRENT_MEMBER_SESSION})`,
+           AND EXISTS (${CURRENT_ENTRANT_SESSION})`,
       )
       .bind(
         team.name,
@@ -157,7 +164,7 @@ export async function createApprovedTournamentRegistration(
         team.note || null,
         input.managementTokenHash,
         input.tournamentId,
-        ...memberSessionBindings(context, now),
+        ...entrantSessionBindings(context, now),
       ),
     ...team.players.map((player, index) =>
       database
@@ -181,13 +188,13 @@ export async function createApprovedTournamentRegistration(
           (id, team_id, account_id, relationship, granted_by_account_id,
            grant_reason, granted_at)
          VALUES (?, (
-           ${TEAM_LOOKUP} AND EXISTS (${CURRENT_MEMBER_SESSION})
+           ${TEAM_LOOKUP} AND EXISTS (${CURRENT_ENTRANT_SESSION})
          ), ?, 'owner', ?, 'Self-created tournament registration', ?)`,
       )
       .bind(
         relationshipId,
         ...locator,
-        ...memberSessionBindings(context, now),
+        ...entrantSessionBindings(context, now),
         context.account.id,
         context.account.id,
         now,
@@ -226,7 +233,7 @@ export async function createApprovedTournamentRegistration(
   try {
     await database.batch(statements)
   } catch (error) {
-    if (!(await currentMemberSession(database, context, now))) {
+    if (!(await currentEntrantSession(database, context, now))) {
       return { ok: false, reason: 'authorization_changed' }
     }
     if (

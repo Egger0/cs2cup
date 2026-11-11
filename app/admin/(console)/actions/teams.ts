@@ -10,7 +10,13 @@ import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { isIsoInstant } from '@/lib/datetime'
 import { getAuthContext } from '@/lib/identity/kernel'
 import { claimRosterSeat } from '@/lib/identity/roster-claim'
-import { assignTeamSeed, removeTeam, setTeamCheckedIn, setTeamStatus } from '@/lib/queries/admin'
+import {
+  assignTeamSeed,
+  removeTeam,
+  setTeamCheckedIn,
+  setTeamStatus,
+  teamCaptainApplying,
+} from '@/lib/queries/admin'
 import type { TeamStatus } from '@/lib/types'
 import { writeError } from './_errors'
 
@@ -30,6 +36,13 @@ export async function updateTeamStatus(id: number, status: TeamStatus, tournamen
 
   const access = await getCurrentTournamentStaffAccess(tournamentId, 'tournament.entries.review')
   if (!access.ok) return { ok: false as const, error: '没有本赛事的报名审核权限。' }
+
+  if (status === 'approved' && (await teamCaptainApplying(id, tournamentId))) {
+    return {
+      ok: false as const,
+      error: '队长的成员资格还在审核中，请先在「资格审核」通过后再批准这份报名。',
+    }
+  }
 
   try {
     const rows = await setTeamStatus(id, tournamentId, status)

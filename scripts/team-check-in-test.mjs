@@ -32,6 +32,7 @@ const actionsQueryModule = `data:text/javascript,${encodeURIComponent(`
   export async function removeTeam(...args) { return call('removeTeam', args) }
   export async function setTeamCheckedIn(...args) { return call('setTeamCheckedIn', args) }
   export async function setTeamStatus(...args) { return call('setTeamStatus', args) }
+  export async function teamCaptainApplying() { return Boolean(globalThis.__teamCaptainApplying) }
 `)}`
 const cacheModule =
   'data:text/javascript,export function updateTag(tag){globalThis.__teamActionTags.push(tag)}'
@@ -247,6 +248,14 @@ globalThis.__teamActionError = null
 const conflict = await updateTeamCheckIn(1, true, null, 7)
 assert.equal(conflict.ok, false)
 assert.match(conflict.error, /同步/)
+
+globalThis.__teamCaptainApplying = true
+const callsBeforeApproval = globalThis.__teamActionCalls.length
+const awaitingMembership = await updateTeamStatus(1, 'approved', 7)
+assert.equal(awaitingMembership.ok, false)
+assert.match(awaitingMembership.error, /成员资格/)
+assert.equal(globalThis.__teamActionCalls.length, callsBeforeApproval)
+globalThis.__teamCaptainApplying = false
 
 const checkInInstant = '2026-09-03T04:00:00.000Z'
 globalThis.__teamActionRows.setTeamCheckedIn = [{ id: 1, checked_in_at: checkInInstant }]
