@@ -63,7 +63,8 @@
 .session small {
   margin-top: 2px;
   color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.06em;
@@ -136,7 +137,8 @@
 
 .event > span,
 .footer {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   letter-spacing: 0.06em;
 }
 

@@ -87,9 +87,7 @@
   border-radius: 10px;
   background: var(--surface);
   color: var(--ink);
-  font:
-    0.8125rem var(--font-mono),
-    monospace;
+  font: 0.8125rem var(--font-body);
 }
 
 .feedback {

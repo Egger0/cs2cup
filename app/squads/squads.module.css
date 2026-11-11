@@ -5,9 +5,7 @@
 
 .eyebrow {
   color: var(--accent);
-  font:
-    600 0.6875rem var(--font-mono),
-    monospace;
+  font: 600 0.6875rem var(--font-body);
   letter-spacing: 0.06em;
 }
 
@@ -160,9 +158,7 @@
   padding: 4px 10px;
   border: 1px solid var(--ct);
   color: var(--ct);
-  font:
-    700 0.75rem var(--font-mono),
-    monospace;
+  font: 700 0.75rem var(--font-body);
 }
 
 .seats {

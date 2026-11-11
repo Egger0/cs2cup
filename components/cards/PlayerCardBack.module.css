@@ -50,9 +50,7 @@
 
 .seal text {
   fill: currentcolor;
-  font:
-    700 9px var(--font-mono),
-    monospace;
+  font: 700 9px var(--font-body);
   letter-spacing: 1.4px;
 }
 
@@ -72,9 +70,7 @@
 }
 
 .back dt {
-  font:
-    3.4cqi / 1 var(--font-mono),
-    monospace;
+  font: 3.4cqi / 1 var(--font-body);
   letter-spacing: 0.06em;
   opacity: 0.65;
 }

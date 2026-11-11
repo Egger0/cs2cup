@@ -15,9 +15,9 @@ export const mono = localFont({
   src: '../node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2',
   weight: '100 800',
   style: 'normal',
-  variable: '--font-mono',
+  variable: '--font-code',
   display: 'swap',
   fallback: ['ui-monospace', 'SFMono-Regular', 'Consolas', 'monospace'],
   adjustFontFallback: false,
-  preload: true,
+  preload: false,
 })

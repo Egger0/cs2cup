@@ -32,7 +32,8 @@
 }
 
 .roundLabel {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -118,7 +119,7 @@
 }
 
 .score {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
   font-size: 0.82rem;
   font-variant-numeric: tabular-nums;
   color: var(--muted);
@@ -137,7 +138,8 @@
   gap: 8px;
   padding: 5px 12px;
   border-top: 1px solid var(--line);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
   color: var(--muted-2);
@@ -174,7 +176,8 @@
     gap: 10px;
     margin-bottom: 14px;
     color: var(--muted-2);
-    font-family: var(--font-mono), monospace;
+    font-family: var(--font-body);
+    font-variant-numeric: tabular-nums;
     font-size: 0.75rem;
     letter-spacing: 0.05em;
   }

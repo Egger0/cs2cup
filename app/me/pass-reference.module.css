@@ -28,7 +28,7 @@
   border: 1px solid var(--line-strong);
   background: color-mix(in srgb, var(--surface) 68%, transparent);
   color: var(--ink);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-code), monospace;
   font-size: 0.875rem;
   text-overflow: ellipsis;
   white-space: nowrap;

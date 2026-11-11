@@ -58,7 +58,7 @@
 }
 
 .mono {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-code), monospace;
 }
 
 .security .rows dd {
@@ -122,7 +122,8 @@
   display: grid;
   gap: 8px;
   color: var(--muted);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
 }
 

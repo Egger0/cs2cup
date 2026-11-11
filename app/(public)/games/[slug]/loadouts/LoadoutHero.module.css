@@ -29,9 +29,7 @@
   right: clamp(24px, 6vw, 110px);
   bottom: 24%;
   color: #9fb3bb;
-  font:
-    0.75rem var(--font-mono),
-    monospace;
+  font: 0.75rem var(--font-body);
   letter-spacing: 0.06em;
 }
 
@@ -130,7 +128,8 @@
   display: grid;
   gap: 6px;
   color: var(--muted);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.04em;
 }

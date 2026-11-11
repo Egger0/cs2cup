@@ -72,7 +72,8 @@
   padding: 28px 14px 12px;
   color: #d6e1e6;
   background: linear-gradient(rgb(6 7 10 / 0%), rgb(6 7 10 / 72%));
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
 }

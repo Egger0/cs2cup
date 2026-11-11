@@ -134,9 +134,7 @@
   inset: 5cqi 6cqi auto;
   display: flex;
   justify-content: space-between;
-  font:
-    4.2cqi / 1 var(--font-mono),
-    monospace;
+  font: 4.2cqi / 1 var(--font-body);
   letter-spacing: 0.06em;
   opacity: 0.85;
 }

@@ -30,7 +30,8 @@
 
 .card header p {
   color: var(--admin-blue);
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
 }
@@ -61,7 +62,8 @@
 
 .heading dd {
   color: var(--admin-blue-strong);
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 1.5rem;
 }
 
@@ -114,7 +116,8 @@
   padding: 5px 8px;
   border: 1px solid var(--admin-line-strong);
   color: var(--admin-blue-strong);
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
 }
 

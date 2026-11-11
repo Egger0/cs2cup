@@ -37,7 +37,8 @@
   align-items: center;
   gap: 10px;
   color: var(--space-muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
 }
@@ -121,7 +122,8 @@
 }
 .latest small {
   color: var(--space-accent);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
 }

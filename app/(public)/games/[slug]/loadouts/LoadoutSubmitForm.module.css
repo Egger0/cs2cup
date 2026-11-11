@@ -39,9 +39,7 @@
 .detected {
   margin-top: -8px;
   color: var(--muted);
-  font:
-    0.8125rem / 1.6 var(--font-mono),
-    monospace;
+  font: 0.8125rem / 1.6 var(--font-body);
   overflow-wrap: anywhere;
 }
 
@@ -159,9 +157,7 @@
 
 .previewLabel {
   color: var(--muted);
-  font:
-    0.75rem var(--font-mono),
-    monospace;
+  font: 0.75rem var(--font-body);
   letter-spacing: 0.04em;
 }
 

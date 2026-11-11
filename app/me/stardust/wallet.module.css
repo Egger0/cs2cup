@@ -43,9 +43,7 @@
 
 .balance span {
   color: var(--honour);
-  font:
-    600 1rem var(--font-mono),
-    monospace;
+  font: 600 1rem var(--font-body);
 }
 
 .earn {
@@ -120,9 +118,7 @@
 
 .status {
   color: var(--muted);
-  font:
-    600 0.75rem var(--font-mono),
-    monospace;
+  font: 600 0.75rem var(--font-body);
 }
 
 .status[data-status='won'] {
@@ -134,9 +130,7 @@
 }
 
 .delta {
-  font:
-    600 0.9375rem var(--font-mono),
-    monospace;
+  font: 600 0.9375rem var(--font-body);
   text-align: end;
   font-variant-numeric: tabular-nums;
 }

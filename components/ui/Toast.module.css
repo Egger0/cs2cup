@@ -31,7 +31,8 @@
 }
 
 .title {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   font-weight: 650;
   letter-spacing: 0.04em;

@@ -26,7 +26,8 @@
   align-items: center;
   gap: 8px;
   color: var(--muted);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
 }
 
@@ -55,7 +56,8 @@
 .team > span,
 .clock > small {
   color: var(--muted);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
 }
 
@@ -92,7 +94,8 @@
 
 .clock > time small {
   color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
 }
 
@@ -110,7 +113,8 @@
 
 .fixture > b {
   color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
 }
@@ -144,7 +148,8 @@
 .team strong small {
   flex: none;
   color: var(--accent);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
 }
 

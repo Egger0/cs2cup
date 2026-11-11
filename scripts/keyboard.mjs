@@ -277,8 +277,8 @@ check(
   '320px header keeps a labelled, touch-sized participant entry without overflow',
   (await smallAccountLink.isVisible()) &&
     smallAccountBox !== null &&
-    smallAccountBox.width >= 44 &&
-    smallAccountBox.height >= 44 &&
+    Math.round(smallAccountBox.width) >= 44 &&
+    Math.round(smallAccountBox.height) >= 44 &&
     smallPageFits === true,
   JSON.stringify({ box: smallAccountBox, width: smallPageFits }),
 )

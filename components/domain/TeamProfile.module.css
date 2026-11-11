@@ -35,7 +35,8 @@
 }
 
 .meta {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
   letter-spacing: 0.02em;
   color: var(--muted-2);
@@ -61,7 +62,8 @@
 }
 
 .recordKey {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -82,7 +84,8 @@
 }
 
 .playerRole {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -91,7 +94,8 @@
 
 .playerName {
   color: var(--ink);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.98rem;
   margin-top: 10px;
 }
@@ -130,7 +134,8 @@
 }
 
 .round {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   letter-spacing: 0.05em;
   color: var(--muted-2);
@@ -144,7 +149,7 @@
 }
 
 .score {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   white-space: nowrap;
@@ -160,7 +165,8 @@
 
 .pending {
   color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
 }
 
@@ -178,7 +184,8 @@
   min-height: 44px;
   padding-inline: 8px;
   color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
   letter-spacing: 0.06em;
 }
@@ -215,7 +222,8 @@
 
 .playerAccount {
   color: var(--muted-2);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   margin-top: 4px;

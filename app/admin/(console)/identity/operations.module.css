@@ -114,10 +114,7 @@
 
 .sectionHeading p {
   color: var(--admin-blue);
-  font:
-    0.6875rem var(--font-mono),
-    ui-monospace,
-    monospace;
+  font: 0.6875rem var(--font-body);
   letter-spacing: 0.06em;
 }
 
@@ -158,7 +155,7 @@
 
 .recoveryLink input {
   flex: 1;
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-code), ui-monospace, monospace;
 }
 
 .accessPanel button,

@@ -26,7 +26,8 @@
   max-width: 36ch;
   overflow: hidden;
   color: var(--admin-muted);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-overflow: ellipsis;

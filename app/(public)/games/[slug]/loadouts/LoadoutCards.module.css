@@ -51,9 +51,7 @@
   bottom: 10px;
   left: 12px;
   color: var(--space-muted);
-  font:
-    0.75rem var(--font-mono),
-    monospace;
+  font: 0.75rem var(--font-body);
   letter-spacing: 0.06em;
   text-align: center;
 }
@@ -162,9 +160,7 @@
   align-items: baseline;
   gap: 4px 10px;
   color: var(--accent);
-  font:
-    700 0.875rem var(--font-mono),
-    monospace;
+  font: 700 0.875rem var(--font-body);
   letter-spacing: 0.06em;
 }
 
@@ -296,7 +292,7 @@
   overflow: hidden;
   color: var(--ink);
   font:
-    0.8125rem / 1.6 var(--font-mono),
+    0.8125rem / 1.6 var(--font-code),
     monospace;
   white-space: nowrap;
   text-overflow: ellipsis;

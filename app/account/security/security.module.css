@@ -26,7 +26,8 @@
 .section header > span {
   flex: none;
   color: var(--muted);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.8rem;
   letter-spacing: 0.02em;
 }
@@ -134,7 +135,8 @@
   display: grid;
   gap: 8px;
   color: var(--muted);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
 }
 
@@ -180,7 +182,8 @@
 
 .currentBadge {
   color: var(--accent) !important;
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
 }
 
 .codeReceipt {
@@ -202,7 +205,7 @@
   margin: 16px 0 18px;
   padding-left: 26px;
   color: var(--ink);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-code), monospace;
   font-size: 0.875rem;
   letter-spacing: 0.06em;
 }
@@ -236,7 +239,8 @@
   min-width: 0;
   gap: 8px;
   color: var(--muted);
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
 }
 

@@ -16,7 +16,8 @@
 
 .contextNav span,
 .boundary header p {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }

@@ -120,7 +120,8 @@
   margin-top: 6px;
   overflow-wrap: anywhere;
   color: var(--admin-muted, var(--muted-2));
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.07em;
 }
@@ -254,7 +255,8 @@
 .formSection legend {
   padding-inline: 8px;
   color: var(--admin-blue, var(--t));
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
 }

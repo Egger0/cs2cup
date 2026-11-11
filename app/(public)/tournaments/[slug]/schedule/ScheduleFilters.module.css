@@ -15,7 +15,8 @@
 }
 
 .fieldLabel {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -45,7 +46,8 @@
   align-items: center;
   justify-content: center;
   padding-inline: 18px;
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
   letter-spacing: 0.04em;
   white-space: nowrap;

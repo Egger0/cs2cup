@@ -74,9 +74,7 @@
 .top {
   display: flex;
   justify-content: space-between;
-  font:
-    700 3.4cqi / 1 var(--font-mono),
-    monospace;
+  font: 700 3.4cqi / 1 var(--font-body);
   letter-spacing: 0.06em;
 }
 
@@ -113,9 +111,7 @@
   border-radius: 99px;
   color: #fff;
   background: var(--pass-ink);
-  font:
-    700 3.4cqi / 1.4 var(--font-mono),
-    monospace;
+  font: 700 3.4cqi / 1.4 var(--font-body);
   letter-spacing: 0.05em;
 }
 
@@ -128,9 +124,7 @@
 
 .facts dt {
   color: rgb(0 0 0 / 50%);
-  font:
-    3cqi / 1 var(--font-mono),
-    monospace;
+  font: 3cqi / 1 var(--font-body);
   letter-spacing: 0.06em;
 }
 
@@ -195,9 +189,7 @@
   padding: 5cqi 8cqi;
   border-top: 0.5cqi dashed rgb(0 0 0 / 22%);
   border-radius: 0 0 6cqi 6cqi;
-  font:
-    700 3.2cqi / 1.2 var(--font-mono),
-    monospace;
+  font: 700 3.2cqi / 1.2 var(--font-body);
   letter-spacing: 0.06em;
   transition:
     translate 700ms var(--spring),

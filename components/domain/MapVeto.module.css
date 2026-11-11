@@ -48,7 +48,7 @@
 }
 
 .order {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
   font-size: 0.75rem;
   color: var(--muted-2);
   font-variant-numeric: tabular-nums;
@@ -71,7 +71,8 @@
 }
 
 .actor {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -120,7 +121,7 @@
 }
 
 .score {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
   font-size: 0.86rem;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
@@ -137,7 +138,8 @@
 }
 
 .unplayed {
-  font-family: var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
   color: var(--muted-2);
