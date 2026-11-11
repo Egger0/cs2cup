@@ -1,4 +1,5 @@
 import type { Viewport } from 'next'
+import { preload } from 'react-dom'
 import { HomeBackdrop } from '@/components/home/HomeBackdrop'
 import { HomeEvidence } from '@/components/home/HomeEvidence'
 import { HomeHero } from '@/components/home/HomeHero'
@@ -51,6 +52,11 @@ async function upcomingMatches(tournament: Tournament | null): Promise<UpcomingM
 }
 
 export default async function HomePage() {
+  preload('/fonts/noto-serif-sc-display.woff2', {
+    as: 'font',
+    type: 'font/woff2',
+    crossOrigin: 'anonymous',
+  })
   const [tournament, posts, games, tournaments, photos] = await Promise.all([
     safely(getCurrentTournament, null),
     safely(() => listPosts(3, 'latest'), []),
