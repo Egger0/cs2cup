@@ -61,14 +61,14 @@ export function SectionTabs({
 
   return (
     <div className={styles.tabsWrap}>
-      {scrollable ? (
-        <span className={styles.scrollHint} aria-hidden="true">
-          左右滑动查看更多 <span>↔</span>
-        </span>
-      ) : null}
       <div className={styles.row}>
-        <nav ref={tabsRef} className={styles.tabs} aria-label={label}>
-          {tabs.map((tab, index) => {
+        <nav
+          ref={tabsRef}
+          className={styles.tabs}
+          aria-label={label}
+          data-scrollable={scrollable || undefined}
+        >
+          {tabs.map(tab => {
             const target = tab.href.split('#', 1)[0]
             const active = tab.exact
               ? pathname === target
@@ -81,9 +81,6 @@ export function SectionTabs({
                 className={active ? `${styles.tab} ${styles.active}` : styles.tab}
                 aria-current={active ? 'page' : undefined}
               >
-                <span className={styles.index} aria-hidden="true">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
                 {tab.label}
                 {tab.count !== undefined ? <span className={styles.count}>{tab.count}</span> : null}
               </Link>

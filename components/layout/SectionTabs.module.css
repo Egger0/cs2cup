@@ -8,10 +8,6 @@
   backdrop-filter: blur(20px) saturate(1.6);
 }
 
-.scrollHint {
-  display: none;
-}
-
 .row {
   display: flex;
   max-width: var(--wrap);
@@ -86,7 +82,6 @@
   transform: scaleX(1);
 }
 
-.index,
 .count {
   color: var(--muted-2);
   font-family: var(--font-body);
@@ -100,35 +95,13 @@
   color: var(--ct);
 }
 
-.index {
-  display: none;
-}
-
 @media (max-width: 640px) {
-  .scrollHint {
-    display: flex;
-    justify-content: flex-end;
-    padding-block: 6px 0;
-    padding-inline: var(--pad);
-    align-items: center;
-    gap: 8px;
-    color: var(--muted-2);
-    font-family: var(--font-body);
-    font-variant-numeric: tabular-nums;
-    font-size: 0.75rem;
-    letter-spacing: 0.02em;
-    line-height: 1.4;
-    pointer-events: none;
-    white-space: nowrap;
-  }
-
-  .scrollHint span {
-    color: var(--ct);
-  }
-
   .tabs {
     margin-inline-start: calc(-1 * var(--pad));
     padding-inline: var(--pad) 28px;
+  }
+
+  .tabs[data-scrollable] {
     -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
     mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
   }

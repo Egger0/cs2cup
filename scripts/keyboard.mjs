@@ -247,8 +247,8 @@ const mobileTabState = await mobileTabs.evaluate(rail => {
   }
 })
 check(
-  'Mobile tournament navigation exposes a scroll hint',
-  await mobile.getByText('左右滑动查看更多').isVisible(),
+  'Mobile tournament navigation fades its overflowing edge',
+  (await mobileTabs.getAttribute('data-scrollable')) !== null,
 )
 check('Mobile tournament navigation remains horizontally scrollable', mobileTabState.overflow)
 check(
