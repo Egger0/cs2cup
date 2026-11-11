@@ -1,5 +1,5 @@
 const CACHEABLE_PATH =
-  /^\/(?:|news(?:\/[^/]+)?|tournaments(?:\/[^/]+(?:\/(?:bracket|results|rules|teams|schedule)|\/teams\/[^/]+|\/matches\/\d+)?)?|archive(?:\/merit)?|games(?:\/[^/]+)?|about|leaderboard|handbook|players\/[^/]+)$/
+  /^\/(?:|news(?:\/[^/]+)?|tournaments(?:\/[^/]+(?:\/(?:bracket|results|rules|teams|schedule)|\/teams\/[^/]+|\/matches\/\d+)?)?|archive|games(?:\/[^/]+)?|about|handbook|players\/[^/]+)$/
 const ACTION_HEADERS = ['next-action']
 const SESSION_COOKIE = /cs2cup|session/i
 

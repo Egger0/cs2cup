@@ -2,7 +2,7 @@ import { PageMasthead } from '@/components/domain/Sections'
 import { ButtonLink, Empty } from '@/components/ui'
 import { PosterWall, type Edition } from '@/components/domain/PosterWall'
 import { getPhotos, listTournaments, safely } from '@/lib/queries/public'
-import { ArchiveSheet } from './tabs'
+import { Merit } from './Merit'
 
 export const revalidate = 300
 
@@ -45,25 +45,24 @@ export default async function ArchivePage() {
         }
         density="compact"
       />
-      <ArchiveSheet>
-        <section className="section">
-          <div className="wrap">
-            {editions.length || activities.length ? (
-              <PosterWall editions={[...activities, ...editions]} />
-            ) : (
-              <Empty
-                action={
-                  <ButtonLink href="/tournaments" variant="primary">
-                    看看正在发生的赛事
-                  </ButtonLink>
-                }
-              >
-                档案整理中，第一批影像将在核对后公开。
-              </Empty>
-            )}
-          </div>
-        </section>
-      </ArchiveSheet>
+      <section className="section">
+        <div className="wrap">
+          {editions.length || activities.length ? (
+            <PosterWall editions={[...activities, ...editions]} />
+          ) : (
+            <Empty
+              action={
+                <ButtonLink href="/tournaments" variant="primary">
+                  看看正在发生的赛事
+                </ButtonLink>
+              }
+            >
+              档案整理中，第一批影像将在核对后公开。
+            </Empty>
+          )}
+        </div>
+      </section>
+      <Merit />
     </>
   )
 }

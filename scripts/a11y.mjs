@@ -17,7 +17,6 @@ const PAGES = [
   '/tournaments/2026-nlc/rules',
   '/tournaments/2026-nlc/register',
   '/archive',
-  '/archive/merit',
   '/news',
   '/about',
   '/search',

@@ -26,7 +26,7 @@ export async function SiteFooter({ setting }: { setting: SiteSetting }) {
             <Link href="/about">关于社团</Link>
             <Link href="/about#join">加入我们</Link>
             <Link href="/archive">往届档案</Link>
-            <Link href="/handbook">办赛文档</Link>
+            <Link href="/guestbook">留言板</Link>
             <a href="/feed.xml">RSS</a>
             <a href="https://nbtca.space" target="_blank" rel="noreferrer">
               计算机协会 ↗

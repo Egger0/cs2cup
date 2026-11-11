@@ -4,13 +4,8 @@ import { SectionTabs } from '@/components/layout/SectionTabs'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SiteHeaderEntry } from '@/components/layout/SiteHeaderEntry'
 import { SiteIdentity } from '@/components/layout/SiteIdentity'
-import {
-  accountHeaderLinks,
-  accountSections,
-  type AccountAccess,
-  type AccountNavLink,
-} from '@/lib/account-navigation'
-import { PUBLIC_LINKS } from '@/lib/site-navigation'
+import { accountSections, type AccountAccess, type AccountNavLink } from '@/lib/account-navigation'
+import { siteMenuLinks } from '@/lib/site-menu'
 import { FALLBACK_SITE_SETTING, getSiteSetting, safely } from '@/lib/queries/public'
 import { AccountSignOut } from './AccountSignOut'
 import styles from './AccountShell.module.css'
@@ -38,7 +33,7 @@ export async function AccountShell({
       <SiteIdentity />
       <SiteHeaderEntry
         setting={site}
-        links={[...PUBLIC_LINKS, ...accountHeaderLinks(access)]}
+        links={await siteMenuLinks(access)}
         accountLink={{ href: '/me', label: '我的赛事' }}
       />
       {masthead}

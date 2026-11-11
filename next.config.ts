@@ -59,6 +59,12 @@ const config: NextConfig = {
       },
     ]
   },
+  async redirects() {
+    return [
+      { source: '/leaderboard', destination: '/games#leaderboard', permanent: true },
+      { source: '/archive/merit', destination: '/archive#merit', permanent: true },
+    ]
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: '12mb',

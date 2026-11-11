@@ -16,7 +16,6 @@ for (const path of [
   '/tournaments/2026-nlc/matches/7',
   '/archive',
   '/players/aster',
-  '/leaderboard',
 ]) {
   assert.equal(isEdgeCacheable(get(path)), true, `${path} is cacheable`)
 }
