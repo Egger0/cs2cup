@@ -42,7 +42,11 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
         listSquadGames(database),
       ])
     : [null, [], []]
-  const eligible = membership?.ok === true && membership.membership?.status === 'approved'
+  const member = membership?.ok === true && membership.membership?.status === 'approved'
+  const applying =
+    membership?.ok === true &&
+    !member &&
+    ['pending', 'in_review'].includes(membership.application?.status ?? '')
   const squad = squads.find(candidate => candidate.game.id === tournament.gameId)
   const game = games.find(candidate => candidate.id === tournament.gameId)
   const entry = squad
@@ -81,10 +85,14 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
             </Empty>
           ) : accepting && signedIn ? (
             <div className={styles.flow} data-rise="2">
-              {!eligible ? (
+              {applying ? (
                 <p className={styles.notice}>
-                  提交报名前需要通过成员资格审核，通常 24 小时内完成。可以先组好战队。
-                  <Link href={`${registrationAccountHref(slug)}#membership`}>查看进度</Link>
+                  你的成员资格还在审核中，可以直接提交报名，主办方会一并审核。
+                </p>
+              ) : !member ? (
+                <p className={styles.notice}>
+                  报名前请先提交成员资格申请，提交后就能报名，主办方会一并审核。
+                  <Link href={`${registrationAccountHref(slug)}#membership`}>去申请</Link>
                 </p>
               ) : null}
               {squad ? (

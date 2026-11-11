@@ -28,9 +28,23 @@ interface TeamPlayerRow extends TeamRow {
   player_id: number | null
   player_nickname: string | null
   player_role: string | null
+  captain_applying: number
   player_is_substitute: number | null
   player_sort_order: number | null
 }
+
+const CAPTAIN_APPLYING = `(SELECT 1 FROM identity_registration_membership AS owner
+           WHERE owner.team_id = t.id AND owner.relationship = 'owner' AND owner.revoked_at IS NULL
+             AND NOT EXISTS (
+               SELECT 1 FROM identity_membership AS membership
+               WHERE membership.account_id = owner.account_id AND membership.status = 'approved'
+                 AND membership.revoked_at IS NULL
+             )
+             AND EXISTS (
+               SELECT 1 FROM identity_membership_application AS application
+               WHERE application.account_id = owner.account_id
+                 AND application.status IN ('pending', 'in_review')
+             ))`
 
 export async function listTeamsWithContact(tournamentId: number): Promise<Team[]> {
   await requireTournamentStaffCapability(tournamentId, 'tournament.entries.review')
@@ -51,6 +65,7 @@ export async function listTeamsWithContact(tournamentId: number): Promise<Team[]
           t.seed,
           t.checked_in_at,
           t.created_at,
+          EXISTS ${CAPTAIN_APPLYING} AS captain_applying,
           p.id AS player_id,
           p.nickname AS player_nickname,
           p.role AS player_role,
@@ -82,6 +97,7 @@ export async function listTeamsWithContact(tournamentId: number): Promise<Team[]
         seed: row.seed,
         checkedInAt: row.checked_in_at,
         createdAt: row.created_at,
+        captainApplying: Boolean(row.captain_applying),
         players: [],
       }
       teams.set(row.id, team)
@@ -159,4 +175,14 @@ export function removeTeam(id: number, tournamentId: number) {
           .all<{ id: number }>()
       ).results,
   )
+}
+
+export async function teamCaptainApplying(id: number, tournamentId: number) {
+  const row = await cloudflareBindings()
+    .db.prepare(
+      `SELECT EXISTS ${CAPTAIN_APPLYING} AS applying FROM team AS t WHERE t.id = ? AND t.tournament_id = ?`,
+    )
+    .bind(id, tournamentId)
+    .first<{ applying: number }>()
+  return Boolean(row?.applying)
 }

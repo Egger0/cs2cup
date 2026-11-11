@@ -90,6 +90,7 @@ export interface Team extends PublicTeam {
   status: TeamStatus
   checkedInAt: string | null
   createdAt: string
+  captainApplying?: boolean
 }
 
 export interface Match {

@@ -3,6 +3,27 @@ const { submitMembershipApplication } = await import('../lib/identity/membership
 const { claimMembershipApplication, reviewMembershipApplication } =
   await import('../lib/identity/membership-review.ts')
 
+export async function submitMembership(db, context, at) {
+  const draft = await createMembershipDraft(
+    db,
+    context,
+    {
+      identityClaim: `Applicant ${context.account.displayName}`,
+      contact: `${context.account.displayName}@example.test`,
+      applicationReason: 'Fixture application',
+    },
+    { now: at },
+  )
+  if (!draft.ok) throw new Error(`Could not create membership draft: ${draft.reason}`)
+  const submitted = await submitMembershipApplication(
+    db,
+    context,
+    { applicationId: draft.application.id, revision: draft.application.revision },
+    { now: at + 1 },
+  )
+  if (!submitted.ok) throw new Error(`Could not submit membership: ${submitted.reason}`)
+}
+
 export async function approveMembership(db, context, reviewer, at) {
   const draft = await createMembershipDraft(
     db,

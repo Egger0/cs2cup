@@ -58,6 +58,17 @@
   color: var(--admin-blue-strong, var(--t));
 }
 
+.pendingMember {
+  display: inline-flex;
+  margin-left: 8px;
+  padding: 2px 8px;
+  color: var(--t);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
 .roster {
   color: var(--muted);
   max-width: 260px;

@@ -35,7 +35,7 @@ const COPY = {
   not_full: '名单填满后才能报名。',
   closed: '这场赛事当前不接受报名。',
   duplicate_nicknames: '名单里有重复的名字，请修改显示名称或游戏 ID 后再报名。',
-  authorization_changed: '提交报名需要先通过成员资格审核，请到账号与安全查看进度。',
+  authorization_changed: '提交报名前请先提交成员资格申请，或重新登录后再试。',
   invalid_details: '请填写 1–40 个字符的联系方式，学院与备注不要超长。',
 } as const
 

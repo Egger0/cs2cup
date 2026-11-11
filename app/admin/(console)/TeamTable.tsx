@@ -226,7 +226,14 @@ export function TeamTable({
                   <Badge tone={STATUS_TONE[team.status]}>{team.tag}</Badge>
                 </td>
                 <td>{team.name}</td>
-                <td>{team.captain}</td>
+                <td>
+                  {team.captain}
+                  {team.captainApplying ? (
+                    <a className={styles.pendingMember} href="/admin/identity">
+                      资格待审
+                    </a>
+                  ) : null}
+                </td>
                 <td className={styles.sensitive}>{team.contact}</td>
                 <td>{team.dept ?? '—'}</td>
                 <td className={styles.roster}>

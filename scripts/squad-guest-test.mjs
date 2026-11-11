@@ -29,9 +29,9 @@ registerHooks({
 const { accountSquads, createSquad, inviteToSquad } = await import('../lib/squads.ts')
 const { addSquadGuest, removeSquadGuest } = await import('../lib/squad-roster.ts')
 const { registerSquad } = await import('../lib/squad-registration.ts')
-const { accountIds, createIdentityKernelFixture, credentialIds, hex, passwordCredentialIds } =
+const { accountIds, createIdentityKernelFixture, credentialIds, hex } =
   await import('./identity-kernel-test-fixture.mjs')
-const { approveMembership } = await import('./membership-approval-fixture.mjs')
+const { submitMembership } = await import('./membership-approval-fixture.mjs')
 
 const fixture = await createIdentityKernelFixture()
 const { database, db, now } = fixture
@@ -42,12 +42,8 @@ try {
     method: 'passkey',
     authenticatorCredentialId: credentialIds.owner,
   })
-  const reviewer = await fixture.session(accountIds.reviewer, {
-    method: 'password',
-    passwordCredentialId: passwordCredentialIds.reviewer,
-  })
   database.exec('UPDATE game SET roster_size = 3 WHERE id = 71')
-  await approveMembership(db, owner.context, reviewer.context, now + 3)
+  await submitMembership(db, owner.context, now + 3)
   const details = { contact: 'captain@example.test', dept: '', note: '' }
 
   const withGuests = await createSquad(
@@ -96,7 +92,7 @@ try {
     managementTokenHash: hex('9'),
     now: now + 33,
   })
-  assert.equal(guestRegistration.ok, true)
+  assert.equal(guestRegistration.ok, true, 'a pending applicant can submit a registration')
   assert.deepEqual(
     database
       .prepare('SELECT nickname FROM player WHERE team_id = ? ORDER BY sort_order')

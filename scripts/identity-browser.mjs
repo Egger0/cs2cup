@@ -97,7 +97,7 @@ try {
   await assertAccessible(applicant.page, 'pending account')
 
   await applicant.page.goto(`${BASE}/tournaments/2026-nlc/register`)
-  await applicant.page.getByText('提交报名前需要通过成员资格审核').waitFor()
+  await applicant.page.getByText('你的成员资格还在审核中，可以直接提交报名').waitFor()
   await createTeam(applicant.page)
   await captureResponsiveScreens(applicant.page, 'entry-form')
   await applicant.page.reload()
