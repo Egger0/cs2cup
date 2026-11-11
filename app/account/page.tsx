@@ -4,7 +4,6 @@ import { redirect } from 'next/navigation'
 
 import { AccountShell } from '@/components/account/AccountShell'
 import { RegistrationJourney } from '@/components/domain/RegistrationJourney'
-import { PageMasthead } from '@/components/domain/Sections'
 import { CommunityChannels } from '@/components/layout/CommunityChannels'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { currentTimeMillis } from '@/lib/current-time'
@@ -54,13 +53,7 @@ export default async function AccountPage({
     <AccountShell
       access={{ hasWorkAccess: overview.hasWorkAccess, recoveryRestricted: false }}
       identity={overview.account.displayName}
-      masthead={
-        <PageMasthead
-          title="我的账号"
-          lede="显示名称、公开主页和成员资格都保存在这个账号下。"
-          density="compact"
-        />
-      }
+      title="我的账号"
     >
       {entrySlug ? (
         <RegistrationJourney

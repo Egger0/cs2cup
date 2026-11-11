@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { AccountShell } from '@/components/account/AccountShell'
-import { PageMasthead } from '@/components/domain/Sections'
 import { Button, Empty } from '@/components/ui'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { currentTimeMillis } from '@/lib/current-time'
@@ -36,13 +35,7 @@ export default async function NotificationsPage() {
     <AccountShell
       access={{ hasWorkAccess: workAccess, recoveryRestricted: false }}
       identity={context.account.displayName}
-      masthead={
-        <PageMasthead
-          title="与我有关"
-          lede="小队邀请、改枪码审核结果和留言都会出现在这里。"
-          density="compact"
-        />
-      }
+      title="与我有关"
     >
       {unread ? (
         <form action={markAllNotificationsReadAction} className={styles.bar}>

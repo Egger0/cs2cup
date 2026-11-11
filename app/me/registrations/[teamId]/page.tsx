@@ -4,7 +4,6 @@ import { notFound, redirect } from 'next/navigation'
 
 import { RegistrationManager } from '@/app/(public)/tournaments/[slug]/registration/[token]/RegistrationManager'
 import { AccountShell } from '@/components/account/AccountShell'
-import { PageMasthead } from '@/components/domain/Sections'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { formatSiteDateTime } from '@/lib/datetime'
 import { getAuthContext } from '@/lib/identity/kernel'
@@ -69,13 +68,8 @@ export default async function AccountRegistrationPage({
     <AccountShell
       access={{ hasWorkAccess, recoveryRestricted: false }}
       identity={context.account.displayName}
-      masthead={
-        <PageMasthead
-          title={registration.tournament.title}
-          lede={`[${registration.team.tag}] ${registration.team.name}`}
-          density="compact"
-        />
-      }
+      title={registration.tournament.title}
+      lede={`[${registration.team.tag}] ${registration.team.name}`}
     >
       <dl className={styles.status}>
         <div>
