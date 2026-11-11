@@ -263,16 +263,24 @@ await mobile.goto(BASE, { waitUntil: 'domcontentloaded' })
 await mobile.waitForLoadState('networkidle')
 const smallAccountLink = mobile.getByRole('link', { name: '登录', exact: true }).first()
 const smallAccountBox = await smallAccountLink.boundingBox()
-const smallPageFits = await mobile.evaluate(
-  () => document.documentElement.scrollWidth === document.documentElement.clientWidth,
-)
+const smallPageFits = await mobile.evaluate(() => {
+  const { scrollWidth, clientWidth } = document.documentElement
+  if (scrollWidth === clientWidth) return true
+  const wide = [...document.querySelectorAll('body *')].find(
+    element =>
+      element.getBoundingClientRect().right > clientWidth + 1 &&
+      !element.closest('[aria-hidden="true"], [hidden]'),
+  )
+  return `${scrollWidth}/${clientWidth} ${wide?.getAttribute('class') ?? wide?.tagName ?? ''}`
+})
 check(
   '320px header keeps a labelled, touch-sized participant entry without overflow',
   (await smallAccountLink.isVisible()) &&
     smallAccountBox !== null &&
     smallAccountBox.width >= 44 &&
     smallAccountBox.height >= 44 &&
-    smallPageFits,
+    smallPageFits === true,
+  JSON.stringify({ box: smallAccountBox, width: smallPageFits }),
 )
 await Promise.all([
   mobile.waitForURL(url => url.pathname === '/login' && url.search === ''),
