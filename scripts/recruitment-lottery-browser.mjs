@@ -56,6 +56,13 @@ const browser = await chromium.launch()
 const sessions = []
 
 try {
+  const owner = await open(browser, { width: 1280, height: 900 })
+  sessions.push(owner)
+  await login(owner.page, BROWSER_USERS.owner)
+  await owner.page.goto(`${BASE}/admin/lottery`)
+  await owner.page.getByRole('button', { name: '立即开启' }).click()
+  await owner.page.getByText('当前：已开启', { exact: false }).waitFor()
+
   const anonymous = await open(browser, PHONE)
   sessions.push(anonymous)
   await anonymous.page.goto(`${BASE}/lottery`)
