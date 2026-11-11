@@ -21,7 +21,6 @@ export function HomeEvidence({ slug }: { slug?: string }) {
     >
       <div className={styles.stage}>
         <header className={styles.head}>
-          <p>NINGLI CUP / 08—01</p>
           <h2 id="route-title">
             从 <strong>08</strong>，到 <strong>01</strong>。
           </h2>

@@ -142,8 +142,6 @@ async function UnifiedAccountEvents({
       identity={context.account.displayName}
       masthead={
         <PageMasthead
-          code="MY EVENTS"
-          eyebrow="参赛记录"
           title="我的赛事"
           lede="报名、审核状态和协作权限都保存在这个账号下，不需要另外保管管理链接。"
           density="compact"
@@ -264,8 +262,6 @@ export default async function ParticipantAccountPage({
         signOut={<ParticipantSignOut />}
         masthead={
           <PageMasthead
-            code="MY EVENTS"
-            eyebrow="参赛记录"
             title="我的赛事"
             lede="这里显示通过旧登录方式关联的报名。修改仍请使用报名回执中的报名管理链接；本页不会显示链接中的私密凭据。"
             density="compact"

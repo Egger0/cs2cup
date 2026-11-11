@@ -139,7 +139,7 @@ export default async function TeamPage({
         />
 
         <div className={styles.block}>
-          <SectionHead eyebrow="阵容" title="首发与替补" />
+          <SectionHead title="首发与替补" />
           {team.players.length > 0 ? (
             <div className={styles.roster}>
               {team.players.map(player => (
@@ -166,7 +166,7 @@ export default async function TeamPage({
         </div>
 
         <div className={styles.block}>
-          <SectionHead eyebrow="赛程" title="赛程与战绩" />
+          <SectionHead title="赛程与战绩" />
           <div className={styles.timeline}>
             {played.length === 0 ? <Empty>这支战队的赛程还没有公布</Empty> : null}
             {played.map(entry => {
@@ -222,7 +222,7 @@ export default async function TeamPage({
 
         {stats.length > 0 ? (
           <div className={styles.block}>
-            <SectionHead eyebrow="地图" title="这支队的 Ban/Pick 倾向" />
+            <SectionHead title="这支队的 Ban/Pick 倾向" />
             <MapStats stats={stats} />
           </div>
         ) : null}

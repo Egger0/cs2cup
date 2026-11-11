@@ -52,24 +52,16 @@ export default async function RegisterPage({
         <header className={loginStyles.brandline}>
           <Image src="/brand/club-mark.svg" alt="" width={38} height={38} loading="eager" />
           <strong>宁波理工电竞社</strong>
-          <span>IDENTITY / CREATE—01</span>
         </header>
         <div className={loginStyles.hero}>
-          <p className={loginStyles.eyebrow}>
-            <span>YOUR ACCOUNT</span> / 你的账号
-          </p>
           <h1 id="registration-title">加入宁理电竞。</h1>
           <p className={loginStyles.lede}>保存报名资料，找到并肩的队友，一起参加校园赛事。</p>
         </div>
-        <p className={loginStyles.assurances}>
-          <span>01 / ACCOUNT FIRST</span>
-          一次注册，成员申请同步提交
-        </p>
+        <p className={loginStyles.assurances}>一次注册，成员申请同步提交</p>
       </section>
 
       <section className={bandStyles.passBand} aria-labelledby="create-account-title">
         <header className={bandStyles.passHeader}>
-          <p className={bandStyles.serial}>SELF REGISTRATION / NLC—01</p>
           <h2 id="create-account-title">注册账号与成员申请</h2>
           <p>填写一次，创建账号并提交成员资格审核。</p>
         </header>

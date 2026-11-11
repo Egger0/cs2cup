@@ -49,11 +49,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
           <div className={styles.main}>
             {recent.length ? (
               <section>
-                <SectionHead
-                  eyebrow="MATCH REPORTS"
-                  title="最近战报"
-                  lede="比分、选图与晋级结果，在这里跟进。"
-                />
+                <SectionHead title="最近战报" lede="比分、选图与晋级结果，在这里跟进。" />
                 <ResultsTable
                   matches={matches}
                   teams={teams}
@@ -104,7 +100,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ slug:
             </section>
             {posts.length ? (
               <section className={styles.block}>
-                <SectionHead eyebrow="CLUB JOURNAL" title="社团动态" />
+                <SectionHead title="社团动态" />
                 <PostList posts={posts} />
               </section>
             ) : null}

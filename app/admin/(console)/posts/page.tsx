@@ -17,7 +17,6 @@ export default async function AdminPostsPage() {
   return (
     <>
       <AdminPageHeader
-        index="05"
         title="内容台"
         description="发布社团动态，并维护动态页与项目页需要展示的内容。"
       />

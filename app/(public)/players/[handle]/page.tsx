@@ -47,8 +47,6 @@ export default async function PlayerPage({ params }: { params: Promise<{ handle:
   return (
     <>
       <PageMasthead
-        code="PLAYER"
-        eyebrow={`PLAYER / ${profile.handle.toUpperCase()}`}
         title={profile.displayName}
         lede={profile.bio ?? '参加过哪些赛事、代表哪支战队、拿过哪些勋章，不包含个人表现数据。'}
       >
@@ -61,13 +59,13 @@ export default async function PlayerPage({ params }: { params: Promise<{ handle:
             <p className={styles.cardHint}>移动鼠标或倾斜手机看看，点一下翻面。</p>
           </div>
           <div className={styles.showcase}>
-            <SectionHead eyebrow="名片" title="项目名片" lede="参赛次数越多，名片越亮。" />
+            <SectionHead title="项目名片" lede="参赛次数越多，名片越亮。" />
             {profile.badges.length ? <PlayerBadges badges={profile.badges} /> : null}
             {profile.games.length ? <PlayerGameCards cards={profile.games} /> : null}
           </div>
         </section>
         <section className={styles.section}>
-          <SectionHead eyebrow="履历" title="参赛记录" />
+          <SectionHead title="参赛记录" />
           {profile.entries.length > 0 ? (
             <ul className={styles.entries}>
               {profile.entries.map(entry => (
@@ -99,7 +97,7 @@ export default async function PlayerPage({ params }: { params: Promise<{ handle:
         </section>
         {loadouts.length ? (
           <section className={styles.section}>
-            <SectionHead eyebrow="改枪码" title="TA 分享的改装方案" />
+            <SectionHead title="TA 分享的改装方案" />
             <LoadoutCards codes={loadouts} />
           </section>
         ) : null}

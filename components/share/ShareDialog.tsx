@@ -95,7 +95,6 @@ export function ShareDialog({
       <div>
         <div className={styles.heading}>
           <div>
-            <span className={styles.eyebrow}>PASS THE PASSION</span>
             <h2 id={heading}>{accessTips ? '下一次，轻松找到我们。' : '好比赛，叫上队友。'}</h2>
           </div>
           <button
@@ -162,7 +161,6 @@ export function ShareDialog({
               />
             ) : (
               <div className={styles.placeholder} role="status">
-                <span>NINGLI / ESPORTS</span>
                 <strong>{share.title}</strong>
                 <p>{imageError ? '图片暂时无法生成，仍可分享链接。' : '正在制作分享卡…'}</p>
               </div>

@@ -23,9 +23,7 @@ export default async function GuestbookPage() {
   return (
     <>
       <PageMasthead
-        code="GUESTBOOK"
         tone="#7fc4b8"
-        eyebrow="留言板"
         title="留下你的声音"
         lede="对赛事、社团或网站有什么想说的，都可以留在这里。"
         density="compact"

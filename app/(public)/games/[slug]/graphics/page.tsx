@@ -32,9 +32,7 @@ export default async function GraphicsPage({ params }: { params: Promise<{ slug:
   return (
     <>
       <PageMasthead
-        code="GRAPHICS"
         tone={PLANET_COLORS.get(game.slug)}
-        eyebrow={`${game.name} / 画质方案`}
         title="画质方案"
         lede="社员调校好的画质设置。按自己的配置挑一套，进游戏照着逐项改。"
         density="compact"

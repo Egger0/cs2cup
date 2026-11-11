@@ -189,7 +189,7 @@ export function SolarSystem({ data }: { data: SolarData }) {
       <div ref={frontHost} className={styles.front} aria-hidden="true" />
       <div
         ref={overlay}
-        className={`${styles.overlay} ${focusStyles.fallback}`}
+        className={styles.overlay}
         data-solar-overlay
         data-solar-focus={selected ?? 'overview'}
         data-solar-fallback={fallback}
@@ -225,8 +225,8 @@ export function SolarSystem({ data }: { data: SolarData }) {
         </nav>
         <div key={`${selected}:${level}`} className={focusStyles.transition} aria-hidden="true" />
         <SolarPanel data={data} selected={selected} level={level} onZoom={zoom} onBack={back} />
-        <p className={styles.hint} data-visible={fallback || Boolean(selected)} data-solar-reserve>
-          {fallback ? '星系静帧 · 所有入口均可使用' : '拖拽旋转 · 双指缩放 · Esc 返回'}
+        <p className={styles.hint} data-visible={Boolean(selected)} data-solar-reserve>
+          拖拽旋转 · 双指缩放 · Esc 返回
         </p>
       </div>
     </>

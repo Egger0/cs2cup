@@ -26,13 +26,6 @@
   }
 }
 
-.overviewLabel {
-  color: var(--accent);
-  font-family: var(--font-mono), monospace;
-  font-size: 0.8125rem;
-  letter-spacing: 0.04em;
-}
-
 .description {
   font-size: clamp(1rem, 1.5vw, 1.14rem);
   line-height: 1.9;

@@ -10,13 +10,6 @@
   gap: 24px;
   margin-bottom: 32px;
 }
-.heading > div > span {
-  color: var(--space-accent);
-  font:
-    0.6875rem var(--font-mono),
-    monospace;
-  letter-spacing: 0.2em;
-}
 .heading h2 {
   margin-top: 14px;
   font-size: clamp(1.7rem, 2.8vw, 2.4rem);

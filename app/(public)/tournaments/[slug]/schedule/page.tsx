@@ -69,7 +69,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
     <section className="section">
       <div className="wrap">
         <SectionHead
-          eyebrow={`${entries.length} 场有效对局`}
+          meta={`${entries.length} 场有效对局`}
           title="比赛日程"
           lede="按开赛时间排列。已过时间但尚未录入赛果的比赛会标为“待更新”，不代表正在直播。"
         />

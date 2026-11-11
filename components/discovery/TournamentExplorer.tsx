@@ -56,12 +56,6 @@ export function TournamentExplorer({
 
   return (
     <div className={styles.explorer} id="all-tournaments">
-      <div className={styles.heading}>
-        <div>
-          <h2>查找赛事</h2>
-        </div>
-        <p>按项目、赛季或进度筛选</p>
-      </div>
       <form
         action="/tournaments"
         method="get"
@@ -151,12 +145,9 @@ export function TournamentExplorer({
           我的关注<span>{tournaments.filter(t => ids.includes(t.id)).length}</span>
         </button>
       </div>
-      <div className={styles.resultLine}>
-        <p role="status" aria-live="polite">
-          找到 <strong>{visible.length}</strong> 场赛事{filters.q ? ` · “${filters.q}”` : ''}
-        </p>
-        <span>登录后，关注会同步到账号</span>
-      </div>
+      <p className={styles.resultLine} role="status" aria-live="polite">
+        找到 <strong>{visible.length}</strong> 场赛事{filters.q ? ` · “${filters.q}”` : ''}
+      </p>
       {visible.length ? (
         <div className={styles.grid}>
           {visible.map(tournament => (

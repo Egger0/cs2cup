@@ -32,10 +32,7 @@ export function SiteHeaderEntry(props: SiteHeaderProps) {
                   priority
                 />
               </span>
-              <span className={styles.names}>
-                <span>{brandName}</span>
-                <small className={styles.school}>{setting.clubNameEn ?? 'ESPORTS CLUB'}</small>
-              </span>
+              <span className={styles.names}>{brandName}</span>
             </a>
             <div className={styles.actions}>
               <a href="/search" aria-label="搜索赛事、战队和动态" className={searchStyles.search}>

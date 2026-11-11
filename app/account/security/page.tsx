@@ -37,8 +37,6 @@ export default async function AccountSecurityPage() {
       identity={account.displayName}
       masthead={
         <PageMasthead
-          code="SECURITY"
-          eyebrow="账号安全"
           title="登录与安全"
           lede={
             recovery

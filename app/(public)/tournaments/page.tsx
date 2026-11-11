@@ -31,8 +31,6 @@ export default async function TournamentsPage({
   return (
     <>
       <PageMasthead
-        code="TOURNAMENTS"
-        eyebrow="NINGLI ESPORTS / TOURNAMENTS"
         title={
           <>
             赛事大厅<span className={styles.stop}>。</span>
@@ -41,8 +39,6 @@ export default async function TournamentsPage({
         lede="找到下一场比赛，和队友一起为热爱上场。"
         density="compact"
       >
-        <span className={styles.number}>{String(tournaments.length).padStart(2, '0')}</span>
-        <span className={styles.caption}>场赛事 · 每一场都算数</span>
         <ShareButton
           share={{
             title: '和我一起，为宁理上场',
@@ -65,7 +61,6 @@ export default async function TournamentsPage({
           {honours.length > 0 ? (
             <div data-rise="2" style={{ marginTop: 72 }}>
               <SectionHead
-                eyebrow="荣誉墙"
                 title="历届冠军"
                 lede="记住每一支走到最后的战队，也记住一起上场的日子。"
               />

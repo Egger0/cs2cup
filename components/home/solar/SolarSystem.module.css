@@ -142,6 +142,9 @@
 :global(html[data-solar-chapter='far']) .hint {
   opacity: 0;
 }
+.overlay[data-solar-fallback='true'] .anchors {
+  display: none;
+}
 @media (max-width: 700px) {
   .anchor > span:first-child {
     font-size: 0.8rem;
@@ -153,8 +156,7 @@
     bottom: 10px;
     font-size: 0.75rem;
   }
-  .overlay:not([data-solar-focus='overview']) .hint,
-  .overlay[data-solar-fallback='true'] :is(.anchors, .hint) {
+  .overlay:not([data-solar-focus='overview']) .hint {
     display: none;
   }
 }

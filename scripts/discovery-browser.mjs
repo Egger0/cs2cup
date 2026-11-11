@@ -134,7 +134,7 @@ try {
       ['tournament', '/tournaments/2026-nlc'],
     ]) {
       await visit(path)
-      await page.getByRole('button', { name: '保存与分享官网' }).waitFor()
+      await page.getByRole('button', { name: '分享官网' }).waitFor()
       const overflows = await page.evaluate(
         () => document.documentElement.scrollWidth > window.innerWidth,
       )

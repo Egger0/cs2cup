@@ -172,9 +172,7 @@ export default async function LoadoutsPage({
   return (
     <>
       <PageMasthead
-        code="LOADOUT"
         tone={PLANET_COLORS.get(game.slug)}
-        eyebrow={`${game.name} / 改枪码`}
         title="改枪码"
         lede="社员压箱底的方案，加上每天同步的官方精选。复制完整改枪码，到改枪台「方案 → 方案共享」一贴即用。"
         density="compact"
@@ -206,7 +204,6 @@ export default async function LoadoutsPage({
           {featured.codes.length && state.page === 1 && !filtered ? (
             <div className={styles.featured}>
               <SectionHead
-                eyebrow="CLUB PICKS · 社团精选"
                 title="管理员挑过的方案"
                 lede="社团内战、日常开黑里反复验证过的配置，先从这几套开始。"
               />
@@ -262,7 +259,6 @@ export default async function LoadoutsPage({
       <section className="section" id="loadout-submit">
         <div className={`wrap ${styles.submit}`}>
           <SectionHead
-            eyebrow="投稿"
             title="分享你的改枪码"
             lede="在改枪台「方案 → 方案共享」复制改枪码，粘贴到下面会自动认出武器和模式。每条投稿都会先经过社团审核，同一时间最多 5 条待审核。"
           />

@@ -42,12 +42,6 @@
     opacity 120ms linear,
     visibility 0s;
 }
-.eyebrow {
-  color: #9bcaeb;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.26em;
-}
 .copy h1 {
   font-family: 'NLC Serif', 'Songti SC', serif;
   font-size: clamp(3.6rem, 8.2vw, 7.4rem);
@@ -138,6 +132,15 @@
   transform: translateX(-50%);
   transition: opacity 120ms linear;
 }
+.motion {
+  position: absolute;
+  bottom: 14px;
+  left: var(--pad);
+  --header-ink: rgb(241 239 232 / 72%);
+  --header-accent: #9bcaeb;
+  opacity: calc(1 - var(--solar-progress, 0) * 3);
+  pointer-events: auto;
+}
 .flow i {
   width: 1px;
   height: 36px;
@@ -151,7 +154,8 @@
 .stop {
   height: 35svh;
 }
-:global(body:has([data-solar-overlay]:not([data-solar-focus='overview']))) :is(.copy, .flow) {
+:global(body:has([data-solar-overlay]:not([data-solar-focus='overview'])))
+  :is(.copy, .flow, .motion) {
   opacity: 0;
   visibility: hidden;
   transition:
@@ -228,12 +232,8 @@
   .actions {
     gap: 8px 22px;
   }
-  .flow span {
-    display: none;
-  }
 }
 @media (max-width: 700px) and (max-height: 700px) {
-  .eyebrow,
   .tagline {
     display: none;
   }
@@ -245,9 +245,9 @@
     padding-block: 12px 18px;
     gap: 18px;
   }
-  .eyebrow,
   .tagline,
-  .flow {
+  .flow,
+  .motion {
     display: none;
   }
   .copy h1 {

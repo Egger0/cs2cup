@@ -18,7 +18,6 @@ export default async function AdminHandbookPage() {
   return (
     <>
       <AdminPageHeader
-        index="12"
         title="办赛文档"
         description="上传赛事手册和办赛模板，或者登记一个外部文档链接。保存后立即公开。"
       />

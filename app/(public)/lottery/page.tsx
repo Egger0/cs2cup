@@ -34,9 +34,8 @@ export default async function RecruitmentLotteryPage() {
   return (
     <>
       <PageMasthead
-        code="RECRUIT"
         tone="#f0757b"
-        eyebrow="2026 招新 / 9 月 20 日"
+        meta="2026 招新 / 9 月 20 日"
         title="百团大战抽奖"
         lede="仅限已审核通过的宁理电竞社成员，每人一次；奖券抽出后不再放回。"
         density="compact"

@@ -10,10 +10,10 @@
   position: relative;
   isolation: isolate;
   display: flex;
-  min-height: clamp(560px, 86svh, 940px);
+  min-height: clamp(360px, 46svh, 500px);
   align-items: flex-end;
   overflow: clip;
-  padding-block: calc(var(--header-height) + clamp(40px, 8vh, 96px)) clamp(104px, 15vh, 168px);
+  padding-block: calc(var(--header-height) + clamp(32px, 6vh, 72px)) clamp(64px, 9vh, 96px);
   color: #f1efe8;
   background: #06070a;
   view-timeline-name: --arrival;
@@ -21,7 +21,7 @@
 }
 
 .arrival[data-density='compact'] {
-  min-height: clamp(460px, 64svh, 680px);
+  min-height: clamp(300px, 38svh, 400px);
 }
 
 .sky,
@@ -89,57 +89,27 @@
   object-position: 34% 50%;
 }
 
-.code {
-  position: absolute;
-  z-index: -1;
-  right: 0;
-  bottom: clamp(70px, 11vh, 128px);
-  left: 0;
-  overflow: hidden;
-  padding-inline: var(--pad);
-  color: transparent;
-  font-family: var(--font-display), sans-serif;
-  font-size: clamp(5rem, 19vw, 21rem);
-  font-weight: 800;
-  line-height: 0.8;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-  -webkit-text-stroke: 1px color-mix(in srgb, var(--tone) 26%, transparent);
-  transform: translateX(calc(var(--arrival-p) * -24%));
-  pointer-events: none;
-  user-select: none;
-}
-
 .copy {
   width: 100%;
   opacity: calc(1 - var(--arrival-p) * 0.7);
   transform: translateY(calc(var(--arrival-p) * 38%));
 }
 
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  color: color-mix(in srgb, var(--tone) 50%, #fff);
-  font-family: var(--font-mono), monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+.meta + .title {
+  margin-top: 12px;
 }
 
-.eyebrow::before {
-  width: 28px;
-  height: 1px;
-  background: currentColor;
-  content: '';
+.meta {
+  color: color-mix(in srgb, var(--tone) 40%, #fff);
+  font-size: 0.875rem;
+  font-weight: 560;
 }
 
 .title {
-  max-width: 15ch;
-  margin-top: 18px;
+  max-width: 18ch;
   font-family:
     'NLC Serif', 'Songti SC', 'STSong', 'Noto Serif CJK SC', 'Source Han Serif SC', serif;
-  font-size: clamp(3rem, 8.2vw, 8rem);
+  font-size: clamp(2.6rem, 5.2vw, 4.75rem);
   font-weight: 800;
   letter-spacing: -0.045em;
   line-height: 1.04;
@@ -152,12 +122,12 @@
 }
 
 .arrival[data-density='compact'] .title {
-  font-size: clamp(2.6rem, 6.2vw, 6rem);
+  font-size: clamp(2.4rem, 4.2vw, 3.75rem);
 }
 
 .lede {
   max-width: 46ch;
-  margin-top: 22px;
+  margin-top: 14px;
   color: #c3cbcf;
   font-size: clamp(1rem, 1.25vw, 1.125rem);
   line-height: 1.8;
@@ -168,7 +138,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 12px 20px;
-  margin-top: 28px;
+  margin-top: 22px;
 }
 
 .horizon {
@@ -177,7 +147,7 @@
   right: -30%;
   bottom: -1px;
   left: -30%;
-  height: clamp(56px, 8vw, 128px);
+  height: clamp(36px, 4vw, 64px);
   background: var(--paper, var(--bg));
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
   box-shadow:
@@ -193,7 +163,7 @@
     animation: lift 1100ms var(--glide) both;
   }
 
-  .eyebrow,
+  .meta,
   .lede,
   .aside {
     animation: surface 900ms var(--glide) both;
@@ -207,10 +177,6 @@
   .limb,
   .art {
     animation: approach 1800ms var(--glide) both;
-  }
-
-  .code {
-    animation: slide 1600ms var(--glide) both;
   }
 
   .horizon {
@@ -254,12 +220,6 @@
   }
 }
 
-@keyframes slide {
-  from {
-    translate: 10% 0;
-  }
-}
-
 @keyframes rise {
   from {
     translate: 0 100%;
@@ -268,12 +228,12 @@
 
 @media (max-width: 720px) {
   .arrival {
-    min-height: clamp(520px, 80svh, 760px);
-    padding-bottom: 96px;
+    min-height: clamp(360px, 56svh, 520px);
+    padding-bottom: 64px;
   }
 
   .arrival[data-density='compact'] {
-    min-height: clamp(420px, 60svh, 560px);
+    min-height: clamp(260px, 36svh, 340px);
   }
 
   .limb {
@@ -291,23 +251,17 @@
     object-position: 38% 30%;
   }
 
-  .code {
-    bottom: 60px;
-    font-size: 22vw;
-    -webkit-text-stroke-color: color-mix(in srgb, var(--tone) 18%, transparent);
-  }
-
   .title {
-    font-size: clamp(2.5rem, 11vw, 3.75rem);
+    font-size: clamp(2.25rem, 10vw, 3.25rem);
   }
 
   .arrival[data-density='compact'] .title {
-    font-size: clamp(2.25rem, 10vw, 3.25rem);
+    font-size: clamp(2rem, 9vw, 2.75rem);
   }
 
   .horizon {
     right: -50%;
     left: -50%;
-    height: 48px;
+    height: 32px;
   }
 }

@@ -19,26 +19,12 @@
   margin-bottom: 24px;
 }
 
-.eyebrow {
-  display: inline-flex;
+.meta {
   grid-column: 1;
-  align-items: center;
-  align-self: start;
-  gap: 10px;
-  color: var(--accent);
-  font-family: var(--font-mono), monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 560;
   line-height: 1.4;
-  text-transform: uppercase;
-}
-
-.eyebrow::before {
-  width: 6px;
-  height: 6px;
-  flex: none;
-  background: currentColor;
-  content: '';
 }
 
 .pageTitle:first-child,
@@ -275,7 +261,7 @@
     margin-bottom: 20px;
   }
 
-  .eyebrow,
+  .meta,
   .pageTitle,
   .title,
   .pageLede,

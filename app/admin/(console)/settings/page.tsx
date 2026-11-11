@@ -14,11 +14,7 @@ export default async function AdminSettingsPage() {
 
   return (
     <>
-      <AdminPageHeader
-        index="09"
-        title="站点设置"
-        description="维护社团身份、联系方式与页脚信息。"
-      />
+      <AdminPageHeader title="站点设置" description="维护社团身份、联系方式与页脚信息。" />
       <section className={styles.panel}>
         <h2 className={styles.panelHead}>基本信息</h2>
         {setting ? <SettingsForm setting={setting} /> : <Empty>还没有站点配置行</Empty>}

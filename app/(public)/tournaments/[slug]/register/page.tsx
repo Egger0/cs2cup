@@ -48,7 +48,7 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
         <div className={styles.column}>
           <div data-rise>
             <SectionHead
-              eyebrow={accepting ? `还剩 ${seatsLeft} / ${status.cap} 个席位` : '报名已截止'}
+              meta={accepting ? `还剩 ${seatsLeft} / ${status.cap} 个席位` : '报名已截止'}
               title="组队报名"
               lede={
                 accepting

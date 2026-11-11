@@ -40,11 +40,7 @@ export default async function ClubPage() {
 
   return (
     <>
-      <PageMasthead
-        code="ABOUT"
-        eyebrow="关于我们"
-        title={<span className={styles.clubTitle}>{setting.clubName}</span>}
-      />
+      <PageMasthead title={<span className={styles.clubTitle}>{setting.clubName}</span>} />
       <section className="section">
         <div className="wrap">
           <div data-rise="2">
@@ -135,11 +131,7 @@ export default async function ClubPage() {
         <section className="section">
           <div className="wrap">
             <div data-rise>
-              <SectionHead
-                eyebrow="核心团队"
-                title="谁在把比赛跑起来"
-                lede="名单会随赛季更新，分工则一直清楚。"
-              />
+              <SectionHead title="谁在把比赛跑起来" lede="名单会随赛季更新，分工则一直清楚。" />
             </div>
             <div data-rise="2">
               <div className={styles.roles}>
@@ -161,7 +153,7 @@ export default async function ClubPage() {
       <section className="section">
         <div className="wrap">
           <div data-rise>
-            <SectionHead eyebrow="社团公告" title="最近发生了什么" />
+            <SectionHead title="最近发生了什么" />
           </div>
           <div data-rise="2">
             <PostList posts={posts} />

@@ -95,7 +95,7 @@ export default async function RegistrationStatusPage({
   return (
     <section className="section">
       <div className="wrap">
-        <SectionHead eyebrow={registration.tournament.title} title="报名状态与阵容" />
+        <SectionHead meta={registration.tournament.title} title="报名状态与阵容" />
         <section className={styles.statusPanel} aria-label="报名与签到状态">
           <div>
             <span className={styles.status}>{STATUS_LABEL[registration.team.status]}</span>

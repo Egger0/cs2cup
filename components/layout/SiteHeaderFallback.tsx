@@ -10,10 +10,7 @@ export function SiteHeaderFallback({ links }: { links: SiteNavLink[] }) {
   return (
     <details className={styles.fallback} data-site-header-fallback>
       <summary className={headerStyles.toggle} aria-label="基础站点目录">
-        <span className={headerStyles.orbitIcon} aria-hidden="true">
-          <i />
-        </span>
-        <span className={headerStyles.toggleLabel}>星图</span>
+        <span className={headerStyles.menuIcon} aria-hidden="true" />
       </summary>
 
       <nav className={styles.panel} aria-label="基础站点目录链接">

@@ -85,9 +85,8 @@ export default async function LoadoutDetailPage({ params }: { params: Params }) 
   return (
     <>
       <PageMasthead
-        code={(weapon?.short ?? 'LOADOUT').toUpperCase()}
         tone={PLANET_COLORS.get(game.slug)}
-        eyebrow={`${game.name} / 改枪码 / ${LOADOUT_MODES[code.mode]}`}
+        meta={`${game.name} / 改枪码 / ${LOADOUT_MODES[code.mode]}`}
         title={code.title}
         lede={
           code.source === 'official'
@@ -151,7 +150,7 @@ export default async function LoadoutDetailPage({ params }: { params: Params }) 
           </div>
           <div className={styles.discussion} id="comments">
             <SectionHead
-              eyebrow={`${comments.filter(comment => !comment.hidden).length} 条留言`}
+              meta={`${comments.filter(comment => !comment.hidden).length} 条留言`}
               title="交流"
               lede="用下来手感怎么样、换了哪个配件、适合哪张图，都可以聊。"
             />
@@ -172,7 +171,7 @@ export default async function LoadoutDetailPage({ params }: { params: Params }) 
           <div className="divider" />
           <section className="section">
             <div className="wrap">
-              <SectionHead eyebrow={weapon?.short ?? code.weapon} title="同一把枪的其他方案" />
+              <SectionHead meta={weapon?.short ?? code.weapon} title="同一把枪的其他方案" />
               <LoadoutCards codes={related} marks={marks} />
             </div>
           </section>

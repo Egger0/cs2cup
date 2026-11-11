@@ -32,9 +32,7 @@ export default async function SearchPage({
   return (
     <>
       <PageMasthead
-        code="INDEX"
         tone="#8fc8ef"
-        eyebrow="NINGLI INDEX / 全站检索"
         title="找点什么"
         lede="从赛事、战队、项目、社团动态和改枪码里，调取你要找的那一条记录。"
         density="compact"

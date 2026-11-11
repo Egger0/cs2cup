@@ -1,7 +1,7 @@
 .portal {
   display: inline-grid;
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   flex: none;
   place-items: center;
   border-radius: 50%;
@@ -12,22 +12,17 @@
     transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.portal svg {
-  width: 23px;
-  height: 23px;
-}
-
 .portal:focus-visible {
   color: var(--header-accent);
   background: rgb(155 202 235 / 14%);
-  transform: translateY(-1px) scale(1.04);
+  transform: scale(1.04);
 }
 
 @media (hover: hover) {
   .portal:hover {
     color: var(--header-accent);
     background: rgb(155 202 235 / 14%);
-    transform: translateY(-1px) scale(1.04);
+    transform: scale(1.04);
   }
 }
 

@@ -31,7 +31,6 @@ export function TournamentEntryPanel({
   return (
     <div className={styles.panel}>
       <div className={styles.heading}>
-        <span>ENTRY / 参赛入口</span>
         <h2>{heading}</h2>
       </div>
       {registration ? (

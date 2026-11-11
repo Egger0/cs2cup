@@ -4,24 +4,6 @@ import { readFile } from 'node:fs/promises'
 const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8')
 
 const nav = await read('app/admin/(console)/AdminNav.tsx')
-const numberedPages = [
-  ['03', 'app/admin/(console)/tournaments/page.tsx'],
-  ['03.A', 'app/admin/(console)/tournaments/[id]/page.tsx'],
-  ['03.B', 'app/admin/(console)/tournaments/[id]/staff/page.tsx'],
-  ['04', 'app/admin/(console)/games/page.tsx'],
-  ['05', 'app/admin/(console)/posts/page.tsx'],
-  ['06', 'app/admin/(console)/photos/page.tsx'],
-  ['07', 'app/admin/(console)/members/page.tsx'],
-  ['08', 'app/admin/(console)/guestbook/page.tsx'],
-  ['09', 'app/admin/(console)/settings/page.tsx'],
-  ['10', 'app/admin/(console)/lottery/page.tsx'],
-  ['11', 'app/admin/(console)/loadouts/page.tsx'],
-]
-
-for (const [index, path] of numberedPages) {
-  const page = await read(path)
-  assert.match(page, new RegExp(`index=["']${index.replace('.', '\\.')}["']`), `${path} index`)
-}
 for (const [index, route] of [
   ['01', '/admin'],
   ['02', '/admin/identity'],

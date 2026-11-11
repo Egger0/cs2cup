@@ -16,12 +16,6 @@
   overflow: hidden;
   padding-inline: var(--pad);
 }
-.kicker {
-  color: #9bcaeb;
-  font-family: var(--font-mono), monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.3em;
-}
 .title {
   display: grid;
   justify-items: center;

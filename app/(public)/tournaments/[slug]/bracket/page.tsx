@@ -56,7 +56,7 @@ export default async function BracketPage({ params }: { params: Promise<{ slug: 
         <div className="wrap">
           <div data-rise>
             <SectionHead
-              eyebrow="小组积分赛"
+              meta="小组积分赛"
               title="对阵表"
               lede="八支战队分为两组，每组四支。按队伍积分排名，每组前三名晋级决赛。"
             />
@@ -106,7 +106,7 @@ export default async function BracketPage({ params }: { params: Promise<{ slug: 
       <div className="wrap">
         <div data-rise>
           <SectionHead
-            eyebrow="单败淘汰"
+            meta="单败淘汰"
             title="对阵表"
             lede={
               matches.length

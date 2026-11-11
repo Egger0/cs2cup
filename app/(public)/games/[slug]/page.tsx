@@ -51,9 +51,8 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
   return (
     <>
       <PageMasthead
-        code={game.slug.toUpperCase()}
         tone={PLANET_COLORS.get(game.slug)}
-        eyebrow={game.nameEn ?? game.slug}
+        meta={game.nameEn ?? game.slug}
         title={<span className={styles.name}>{game.name}</span>}
         lede={game.tagline ?? undefined}
         art={
@@ -94,7 +93,6 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
           <div className="wrap">
             <div className={styles.about}>
               <div className={styles.descriptionBlock}>
-                <div className={styles.overviewLabel}>PROJECT NOTE · 项目说明</div>
                 <p className={styles.description}>{game.description}</p>
               </div>
               {game.formatNote ? (
@@ -113,10 +111,7 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
       <section className="section" id="game-tournaments">
         <div className="wrap">
           <div data-rise>
-            <SectionHead
-              eyebrow="赛事"
-              title={`${game.name}${/[\x20-\x7e]$/.test(game.name) ? ' ' : ''}的比赛`}
-            />
+            <SectionHead title={`${game.name}${/[\x20-\x7e]$/.test(game.name) ? ' ' : ''}的比赛`} />
           </div>
           {mine.length > 0 ? (
             <TournamentList tournaments={mine} />
@@ -140,7 +135,7 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
           <section className="section" id="game-honours">
             <div className="wrap">
               <div data-rise>
-                <SectionHead eyebrow="赛事档案" title="历届冠军" />
+                <SectionHead title="历届冠军" />
               </div>
               <Honours honours={champions} />
             </div>
@@ -155,7 +150,6 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
             <div className="wrap">
               <div data-rise className={styles.sectionBar}>
                 <SectionHead
-                  eyebrow="改枪码"
                   title="社员最常复制的方案"
                   lede="复制完整改枪码，到改枪台「方案 → 方案共享」粘贴导入。"
                 />
@@ -190,7 +184,7 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
           <section className="section">
             <div className="wrap">
               <div data-rise>
-                <SectionHead eyebrow="动态" title={`${game.name} 相关`} />
+                <SectionHead title={`${game.name} 相关`} />
               </div>
               <PostList posts={news} />
             </div>

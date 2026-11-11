@@ -19,7 +19,6 @@ export default async function AdminRoutesPage() {
   return (
     <>
       <AdminPageHeader
-        index="14"
         title="沙盘路线审核"
         description="先在沙盘里把路线走一遍，确认每站思路靠谱再通过。通过后署名出现在对应地图的社员路线里。"
       />

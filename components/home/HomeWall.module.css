@@ -14,12 +14,6 @@
   margin: 0 auto clamp(56px, 10vh, 112px);
   padding-inline: var(--pad);
 }
-.head p {
-  color: #9bcaeb;
-  font-family: var(--font-mono), monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.22em;
-}
 .head h2 {
   font-size: clamp(2.2rem, 4.6vw, 4rem);
   font-weight: 700;

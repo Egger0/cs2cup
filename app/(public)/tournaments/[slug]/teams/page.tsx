@@ -19,7 +19,7 @@ export default async function TeamsPage({ params }: { params: Promise<{ slug: st
       <div className="wrap">
         <div data-rise>
           <SectionHead
-            eyebrow={`${teams.length} / ${tournament.teamCap} 支`}
+            meta={`${teams.length} / ${tournament.teamCap} 支`}
             title="参赛战队"
             lede={
               tournament.status === 'finished'

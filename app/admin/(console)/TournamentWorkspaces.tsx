@@ -26,7 +26,6 @@ export function TournamentWorkspaces({
   return (
     <>
       <AdminPageHeader
-        index="01"
         title="我的工作区"
         description="这里只显示当前账号被授予的赛事与首批可用操作入口。"
       />

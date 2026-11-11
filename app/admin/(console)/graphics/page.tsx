@@ -16,7 +16,6 @@ export default async function AdminGraphicsPage() {
   return (
     <>
       <AdminPageHeader
-        index="13"
         title="画质方案"
         description="录入各项目调校好的画质设置，保存后出现在对应项目的画质方案页。"
       />

@@ -17,7 +17,6 @@ export function CreateSquadForm({
   return (
     <section className={styles.create} aria-labelledby="create-squad-title">
       <header>
-        <span className={styles.eyebrow}>NEW SQUAD / 新建小队</span>
         <h2 id="create-squad-title">组一支小队</h2>
         <p>创建后你就是队长。邀请队友加入，满员后可以直接报名这个项目的赛事。</p>
       </header>
