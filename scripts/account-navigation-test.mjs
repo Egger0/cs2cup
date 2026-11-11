@@ -8,19 +8,12 @@ const recovering = { hasWorkAccess: true, recoveryRestricted: true }
 
 const hrefs = links => links.map(link => link.href)
 
-assert.deepEqual(hrefs(accountSections(member)), [
-  '/me',
-  '/notifications',
-  '/squads',
-  '/account',
-  '/account/security',
-])
+assert.deepEqual(hrefs(accountSections(member)), ['/me', '/notifications', '/squads', '/account'])
 assert.deepEqual(hrefs(accountHeaderLinks(member)), [
   '/me',
   '/notifications',
   '/squads',
   '/account',
-  '/account/security',
 ])
 
 assert.deepEqual(hrefs(accountSections(staff)), [
@@ -28,12 +21,11 @@ assert.deepEqual(hrefs(accountSections(staff)), [
   '/notifications',
   '/squads',
   '/account',
-  '/account/security',
   '/admin',
 ])
 assert.deepEqual(
   hrefs(accountHeaderLinks(staff)),
-  ['/me', '/notifications', '/squads', '/account', '/account/security', '/admin'],
+  ['/me', '/notifications', '/squads', '/account', '/admin'],
   'the account tabs and the star map must offer the same workbench entry',
 )
 assert.equal(accountSections(staff).at(-1)?.label, '工作台')

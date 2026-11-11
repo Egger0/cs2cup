@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { AccountShell } from '@/components/account/AccountShell'
-import { PageMasthead } from '@/components/domain/Sections'
 import { cloudflareBindings } from '@/lib/cloudflare-bindings'
 import { currentTimeMillis } from '@/lib/current-time'
 import { accountHasWorkAccess } from '@/lib/identity/account-security-state'
@@ -42,13 +41,7 @@ export default async function SquadsPage() {
     <AccountShell
       access={{ hasWorkAccess: workAccess, recoveryRestricted: false }}
       identity={context.account.displayName}
-      masthead={
-        <PageMasthead
-          title="我的小队"
-          lede="邀请队友组成小队，满员后由队长一键报名赛事，队员的参赛记录会自动归到各自账号。"
-          density="compact"
-        />
-      }
+      title="我的小队"
     >
       <SquadInvitationInbox items={invitations} />
       <div className={styles.cards}>

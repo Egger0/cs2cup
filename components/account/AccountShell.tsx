@@ -15,14 +15,16 @@ export async function AccountShell({
   identity,
   sections,
   signOut,
-  masthead,
+  title,
+  lede,
   children,
 }: {
   access: AccountAccess | null
   identity: string
   sections?: AccountNavLink[]
   signOut?: ReactNode
-  masthead?: ReactNode
+  title: string
+  lede?: string
   children: ReactNode
 }) {
   const setting = await safely(getSiteSetting, FALLBACK_SITE_SETTING)
@@ -36,18 +38,20 @@ export async function AccountShell({
         links={await siteMenuLinks(access)}
         accountLink={{ href: '/me', label: '我的赛事' }}
       />
-      {masthead}
+      <header className={`${themeStyles.dark} ${styles.band}`}>
+        <div className={styles.bandInner}>
+          <span className={styles.avatar} aria-hidden="true">
+            {[...identity][0]}
+          </span>
+          <div className={styles.heading}>
+            <h1>{title}</h1>
+            <p>{lede ?? identity}</p>
+          </div>
+          <div className={styles.signOut}>{signOut ?? <AccountSignOut />}</div>
+        </div>
+      </header>
       <div className={styles.sheet}>
-        <SectionTabs
-          tabs={sections ?? (access ? accountSections(access) : [])}
-          label="账号导航"
-          trailing={
-            <>
-              <span className={styles.identity}>{identity}</span>
-              {signOut ?? <AccountSignOut />}
-            </>
-          }
-        />
+        <SectionTabs tabs={sections ?? (access ? accountSections(access) : [])} label="账号导航" />
         <main id="main" className={styles.main}>
           {children}
         </main>

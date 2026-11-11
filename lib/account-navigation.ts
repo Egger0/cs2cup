@@ -13,8 +13,7 @@ const SECTIONS: AccountNavLink[] = [
   { href: '/me', label: '我的赛事' },
   { href: '/notifications', label: '消息' },
   { href: '/squads', label: '我的小队' },
-  { href: '/account', label: '我的账号', exact: true },
-  { href: '/account/security', label: '登录与安全' },
+  { href: '/account', label: '账号与安全' },
 ]
 
 const RECOVERY: AccountNavLink[] = [{ href: '/account/security', label: '完成账号恢复' }]
