@@ -6,7 +6,7 @@
 
 .header {
   display: flex;
-  min-height: 56px;
+  min-height: 52px;
   align-items: center;
   justify-content: space-between;
   gap: 18px;

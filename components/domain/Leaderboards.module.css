@@ -18,7 +18,7 @@
 .board li {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) auto;
-  min-height: 56px;
+  min-height: 52px;
   align-items: center;
   gap: 12px;
   border-bottom: 1px solid var(--line);

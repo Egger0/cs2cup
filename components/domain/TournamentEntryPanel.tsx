@@ -82,7 +82,7 @@ export function TournamentEntryPanel({
         已经报名？管理我的赛事 <Icon name="diagonal" size={14} />
       </Link>
       {open ? (
-        <details className={styles.steps}>
+        <details className={`disclosure ${styles.steps}`}>
           <summary>报名流程与资格说明</summary>
           <ol>
             <li>

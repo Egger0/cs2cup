@@ -1,7 +1,5 @@
 import Link from 'next/link'
-import { ButtonLink } from '@/components/ui'
-import { BracketGhost } from './BracketGhost'
-import { GhostStage } from './GhostStage'
+import { ButtonLink, Empty } from '@/components/ui'
 import { groupByRound, indexMatches, indexTeams, isByeMatch, resolveMatch } from '@/lib/bracket'
 import { formatSiteCompactDateTime } from '@/lib/datetime'
 import type { Match, PublicTeam } from '@/lib/types'
@@ -11,15 +9,13 @@ interface BracketProps {
   matches: Match[]
   teams: PublicTeam[]
   slug: string
-  cap: number
   finished?: boolean
 }
 
-export function Bracket({ matches, teams, slug, cap, finished }: BracketProps) {
+export function Bracket({ matches, teams, slug, finished }: BracketProps) {
   if (matches.length === 0) {
     return (
-      <GhostStage
-        figure={<BracketGhost cap={cap} />}
+      <Empty
         action={
           <ButtonLink href={`/tournaments/${slug}/teams`} size="mini">
             看参赛战队
@@ -27,7 +23,7 @@ export function Bracket({ matches, teams, slug, cap, finished }: BracketProps) {
         }
       >
         {finished ? '这一届没有留下对阵记录。' : '报名满员后统一抽签，这张对阵表会在这里展开。'}
-      </GhostStage>
+      </Empty>
     )
   }
 

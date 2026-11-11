@@ -106,12 +106,9 @@ try {
   if (inShard(0)) {
     await page.setViewportSize({ width: 390, height: 844 })
     await visit('/tournaments/2026-nlc/register')
-    const moreTools = page.getByText('更多赛事工具', { exact: true })
-    await moreTools.click()
     await page.getByRole('button', { name: '分享赛事', exact: true }).click()
     await page.getByRole('dialog').waitFor()
     await page.keyboard.press('Escape')
-    await moreTools.click()
     await page.getByRole('link', { name: '登录后报名', exact: true }).click()
     await page.getByRole('link', { name: '还没有账号？创建账号 →' }).click()
     await page.waitForURL(url => url.pathname === '/register')

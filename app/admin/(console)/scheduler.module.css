@@ -13,7 +13,7 @@
 
 .scoreCard {
   border: 1px solid var(--admin-line, var(--line));
-  border-radius: 3px;
+  border-radius: 8px;
   padding: 14px;
   background: var(--admin-paper-deep, var(--bg-2));
 }
@@ -177,7 +177,7 @@
   min-width: 0;
   padding: 0 10px;
   border: 1px solid var(--admin-line-strong, var(--line-strong));
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--admin-paper-deep, var(--void));
   color: var(--ink);
   font-family: var(--font-body);

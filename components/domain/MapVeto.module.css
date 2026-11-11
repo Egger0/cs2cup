@@ -77,8 +77,9 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 2px 6px;
-  border: 1px solid currentColor;
+  background: color-mix(in srgb, currentColor 12%, transparent);
   flex: none;
+  border-radius: 999px;
 }
 
 .banned .mapName {

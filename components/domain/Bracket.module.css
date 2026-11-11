@@ -48,14 +48,14 @@
   display: block;
   overflow: hidden;
   color: var(--ink);
-  border: 1px solid var(--line-strong);
   background: var(--surface);
-  transition: border-color 180ms ease;
+  border-radius: 12px;
+  transition: background-color 160ms ease;
 }
 
 @media (hover: hover) {
   .match:hover {
-    border-color: var(--ink);
+    background: color-mix(in srgb, var(--ink) 4%, var(--surface));
   }
 }
 

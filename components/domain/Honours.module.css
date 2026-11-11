@@ -1,8 +1,7 @@
 .wall {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--ink);
+  gap: 12px;
 }
 
 .entry {
@@ -10,12 +9,9 @@
   padding: 22px clamp(20px, 3vw, 36px) 26px;
   overflow: hidden;
   color: inherit;
-  border-right: 1px solid var(--line);
-  transition: background-color 180ms ease;
-}
-
-.entry:last-child {
-  border-right: 0;
+  background: var(--surface);
+  border-radius: 20px;
+  transition: background-color 160ms ease;
 }
 
 .entry:focus-visible {
@@ -26,16 +22,6 @@
   .entry:hover {
     background: var(--ct-dim);
   }
-}
-
-.entry::before {
-  position: absolute;
-  top: -3px;
-  left: -3px;
-  width: 7px;
-  height: 7px;
-  background: var(--honour, var(--accent));
-  content: '';
 }
 
 .year {
@@ -90,10 +76,5 @@
 @media (max-width: 640px) {
   .wall {
     grid-template-columns: 1fr;
-  }
-
-  .entry {
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
   }
 }

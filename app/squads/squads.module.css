@@ -87,7 +87,7 @@
 .quietButton {
   min-height: 44px;
   padding: 9px 18px;
-  border: 1px solid var(--ink);
+  border: 0;
   border-radius: 999px;
   font-size: 0.9375rem;
   font-weight: 600;
@@ -95,31 +95,22 @@
 }
 
 .primaryButton {
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--accent);
+  color: var(--button-ink);
+}
+
+.quietButton {
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  color: var(--ink);
 }
 
 @media (hover: hover) {
   .primaryButton:hover:not(:disabled) {
-    border-color: var(--accent);
-    background: var(--accent);
-    color: var(--button-ink);
+    filter: brightness(1.1);
   }
-}
 
-.quietButton {
-  border-color: var(--line-strong);
-  background: transparent;
-  color: var(--ink);
-}
-
-.quietButton:focus-visible {
-  border-color: var(--ink);
-}
-
-@media (hover: hover) {
-  .quietButton:hover {
-    border-color: var(--ink);
+  .quietButton:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--ink) 12%, transparent);
   }
 }
 
@@ -261,7 +252,7 @@
   min-height: 44px;
   padding: 8px 12px;
   border: 1px solid var(--line-strong);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--surface);
   color: var(--ink);
   font-size: 1rem;

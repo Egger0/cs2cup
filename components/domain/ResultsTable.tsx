@@ -1,7 +1,5 @@
 import Link from 'next/link'
-import { ButtonLink } from '@/components/ui'
-import { GhostStage } from './GhostStage'
-import { ScoreGhost } from './ScoreGhost'
+import { ButtonLink, Empty } from '@/components/ui'
 import { indexMatches, indexTeams, isCompletedMatch, resolveMatch } from '@/lib/bracket'
 import type { Match, MatchMap, PublicTeam } from '@/lib/types'
 import styles from './ResultsTable.module.css'
@@ -20,8 +18,7 @@ export function ResultsTable({ matches, teams, maps, slug, limit, finished }: Re
   const decided = limit === undefined ? all : all.slice(-limit)
   if (decided.length === 0) {
     return (
-      <GhostStage
-        figure={<ScoreGhost />}
+      <Empty
         action={
           <ButtonLink href={`/tournaments/${slug}/bracket`} size="mini">
             看对阵表
@@ -31,7 +28,7 @@ export function ResultsTable({ matches, teams, maps, slug, limit, finished }: Re
         {finished
           ? '这一届没有留下比分记录。'
           : '还没有打完的比赛。每场结束后，比分和 Ban/Pick 会记在这里。'}
-      </GhostStage>
+      </Empty>
     )
   }
 

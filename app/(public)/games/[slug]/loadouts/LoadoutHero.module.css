@@ -41,7 +41,7 @@
   aspect-ratio: 16 / 9;
   overflow: hidden;
   border: 1px solid rgb(155 202 235 / 24%);
-  border-radius: 6px;
+  border-radius: 8px;
   box-shadow:
     0 40px 90px rgb(0 0 0 / 70%),
     0 0 80px color-mix(in srgb, var(--tone) 28%, transparent);

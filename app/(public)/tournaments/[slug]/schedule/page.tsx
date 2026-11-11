@@ -1,13 +1,13 @@
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
-import { SectionHead } from '@/components/domain/Sections'
+import { Empty } from '@/components/ui'
 import { SITE_TIME_ZONE } from '@/lib/datetime'
 import { playsHeadToHead } from '@/lib/tournament-format'
 import { getMatches, getPublicTeams, getTournament } from '@/lib/queries/public'
 import { buildScheduleEntries, groupScheduleEntries, selectNextScheduleEntry } from '@/lib/schedule'
 import { ScheduleFilters } from './ScheduleFilters'
 import { ScheduleLedger } from './ScheduleLedger'
-import { belongsToTeam, firstValue, matchesState, readState, STATE_LABEL } from './schedule-view'
+import { belongsToTeam, firstValue, matchesState, readState } from './schedule-view'
 import styles from './schedule.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -65,29 +65,26 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
       : undefined
   const timeZoneLabel = SITE_TIME_ZONE === 'Asia/Shanghai' ? '北京时间' : SITE_TIME_ZONE
 
+  if (entries.length === 0) {
+    return (
+      <section className="section">
+        <div className="wrap">
+          <Empty>赛程公布后会显示在这里。</Empty>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="section">
       <div className="wrap">
-        <SectionHead
-          meta={`${entries.length} 场有效对局`}
-          title="比赛日程"
-          lede="按开赛时间排列。已过时间但尚未录入赛果的比赛会标为“待更新”，不代表正在直播。"
-        />
         <ScheduleFilters base={base} state={state} teams={teams} selectedTeam={selectedTeam} />
-
-        <div className={styles.summary}>
-          <p>
-            <strong>{visibleEntries.length}</strong> 场 · {selectedTeam?.name ?? '全部战队'} ·{' '}
-            {STATE_LABEL[state]}
-          </p>
-          <p title={SITE_TIME_ZONE}>
-            {timeZoneLabel} ·{' '}
-            <a className={styles.calendarLink} href={calendarHref} download>
-              下载{selectedTeam ? '本队' : '赛事'}日历 (.ics)
-            </a>
-          </p>
-        </div>
-
+        <p className={styles.meta} title={SITE_TIME_ZONE}>
+          {timeZoneLabel}
+          <a className={styles.calendarLink} href={calendarHref} download>
+            订阅{selectedTeam ? '本队' : ''}日历
+          </a>
+        </p>
         <ScheduleLedger
           slug={slug}
           groups={groups}

@@ -54,6 +54,11 @@ export function TournamentExplorer({
     window.history.replaceState(null, '', tournamentFilterHref(next))
   }
 
+  const followedCount = tournaments.filter(t => ids.includes(t.id)).length
+  const filtered =
+    Boolean(filters.q || filters.game || filters.season || filters.followed) ||
+    filters.status !== 'all'
+
   return (
     <div className={styles.explorer} id="all-tournaments">
       <form
@@ -115,7 +120,12 @@ export function TournamentExplorer({
       </form>
       <div className={styles.filterRow}>
         <nav className={styles.tabs} aria-label="按赛事进度筛选">
-          {STATES.map(([state, label]) => (
+          {STATES.filter(
+            ([state]) =>
+              state === 'all' ||
+              state === filters.status ||
+              tournaments.some(tournament => tournament.status === state),
+          ).map(([state, label]) => (
             <a
               key={state}
               href={tournamentFilterHref({ ...filters, status: state })}
@@ -127,11 +137,6 @@ export function TournamentExplorer({
               }}
             >
               {label}
-              <span>
-                {state === 'all'
-                  ? tournaments.length
-                  : tournaments.filter(t => t.status === state).length}
-              </span>
             </a>
           ))}
         </nav>
@@ -142,11 +147,12 @@ export function TournamentExplorer({
           onClick={() => update({ followed: !filters.followed })}
         >
           <Icon name="bookmark" size={16} />
-          我的关注<span>{tournaments.filter(t => ids.includes(t.id)).length}</span>
+          我的关注
+          {followedCount ? <span>{followedCount}</span> : null}
         </button>
       </div>
       <p className={styles.resultLine} role="status" aria-live="polite">
-        找到 <strong>{visible.length}</strong> 场赛事{filters.q ? ` · “${filters.q}”` : ''}
+        {filtered ? `找到 ${visible.length} 场赛事${filters.q ? ` · “${filters.q}”` : ''}` : null}
       </p>
       {visible.length ? (
         <div className={styles.grid}>

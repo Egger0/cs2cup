@@ -34,7 +34,7 @@
 .brand {
   display: inline-flex;
   width: fit-content;
-  min-height: 48px;
+  min-height: 44px;
   align-items: center;
   gap: 12px;
   font-family: 'NLC Role Sans', var(--font-body);

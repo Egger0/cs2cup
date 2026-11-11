@@ -89,9 +89,9 @@
 .codeReceipt button {
   min-height: 44px;
   padding: 9px 18px;
-  border: 1px solid var(--line-strong);
+  border: 0;
   border-radius: 999px;
-  background: transparent;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
   color: var(--ink);
   cursor: pointer;
   font-size: 0.875rem;
@@ -143,10 +143,10 @@
 .securityForm input,
 .enroll input {
   width: 100%;
-  min-height: 48px;
+  min-height: 44px;
   padding: 11px 13px;
   border: 1px solid var(--line-strong);
-  border-radius: 10px;
+  border-radius: 12px;
   outline: none;
   background: color-mix(in srgb, var(--surface) 68%, transparent);
   font-size: 1rem;
@@ -245,7 +245,7 @@
 }
 
 .enroll button {
-  min-height: 48px;
+  min-height: 44px;
 }
 
 .passkeyList button:disabled,

@@ -49,7 +49,7 @@
 .teamList {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 var(--space-4);
+  gap: 12px;
 }
 .team {
   composes: linkSheet from '@/components/ui/Surface.module.css';
@@ -97,9 +97,10 @@
   gap: 8px;
 }
 .poolList li {
+  padding: 4px 10px;
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  border-radius: 8px;
   font-size: 0.875rem;
-  padding: 4px 8px;
-  border: 1px solid var(--line);
 }
 @media (max-width: 940px) {
   .overview {

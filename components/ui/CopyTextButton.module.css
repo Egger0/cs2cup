@@ -37,7 +37,7 @@
 .control input {
   width: 100%;
   min-height: 44px;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 8px;
   border: 1px solid currentColor;
   color: inherit;

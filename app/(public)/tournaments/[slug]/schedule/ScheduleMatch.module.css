@@ -28,15 +28,7 @@
 
 .nextMatch {
   background: var(--ct-dim);
-}
-
-.nextMatch::before {
-  content: '';
-  position: absolute;
-  inset-block: 0;
-  left: 0;
-  width: 3px;
-  background: var(--ct);
+  border-radius: 12px;
 }
 
 .when,
@@ -101,10 +93,10 @@
   display: inline-flex;
   align-items: center;
   min-height: 22px;
-  padding-inline: 7px;
-  border: 1px solid color-mix(in srgb, var(--ct) 48%, transparent);
-  color: var(--ct);
-  letter-spacing: 0.04em;
+  padding-inline: 8px;
+  color: var(--button-ink);
+  background: var(--ct);
+  border-radius: 999px;
 }
 
 .teams {
@@ -168,10 +160,11 @@
   justify-content: center;
   min-height: 28px;
   padding-inline: 8px;
-  border: 1px solid currentColor;
+  background: color-mix(in srgb, currentColor 12%, transparent);
   font-size: 0.75rem;
   letter-spacing: 0.04em;
   white-space: nowrap;
+  border-radius: 999px;
 }
 
 .status[data-status='completed'] {

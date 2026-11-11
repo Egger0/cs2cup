@@ -1,9 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { FaqList, RuleGrid, SectionHead } from '@/components/domain/Sections'
-import { GhostStage } from '@/components/domain/GhostStage'
-import { RuleGhost } from '@/components/domain/RuleGhost'
-import { ButtonLink } from '@/components/ui'
+import { ButtonLink, Empty } from '@/components/ui'
 import { getTournament } from '@/lib/queries/public'
 import { fixturesEntry } from '@/lib/tournament-format'
 
@@ -53,8 +51,7 @@ export default async function RulesPage({ params }: { params: Promise<{ slug: st
               <SectionHead title="开赛之前先读这些" />
             </div>
             <div data-rise="2">
-              <GhostStage
-                figure={<RuleGhost />}
+              <Empty
                 action={
                   <ButtonLink href={`/tournaments/${slug}${fixtures.path}`} size="mini">
                     看{fixtures.label}
@@ -62,7 +59,7 @@ export default async function RulesPage({ params }: { params: Promise<{ slug: st
                 }
               >
                 赛制与须知会在开赛前公布，公布后写在这里。
-              </GhostStage>
+              </Empty>
             </div>
           </div>
         </section>

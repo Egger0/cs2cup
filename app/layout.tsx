@@ -5,6 +5,7 @@ import { resolveSiteOrigin } from '@/lib/site-config'
 import { AppShell } from '@/components/layout/AppShell'
 import styles from './noscript.module.css'
 import './globals.css'
+import './disclosure.css'
 import './layout-tokens.css'
 
 const SITE = resolveSiteOrigin()

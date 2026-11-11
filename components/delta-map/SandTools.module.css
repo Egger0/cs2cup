@@ -48,7 +48,7 @@
 
 .search {
   width: 100%;
-  min-height: 42px;
+  min-height: 44px;
   padding: 0 14px;
   border: 1px solid rgb(255 255 255 / 16%);
   border-radius: 8px;
@@ -235,7 +235,7 @@
 
 .chips li {
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 12px;
   background: rgb(255 255 255 / 8%);
 }

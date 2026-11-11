@@ -13,12 +13,13 @@
   width: fit-content;
   margin-bottom: 10px;
   padding: 5px 9px;
-  border: 1px solid currentColor;
+  background: color-mix(in srgb, currentColor 12%, transparent);
   color: var(--ct);
   font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.04em;
+  border-radius: 999px;
 }
 
 .statusPanel h2 {

@@ -84,7 +84,7 @@
   min-height: 44px;
   padding: 8px 10px;
   border: 1px solid var(--line-strong);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--surface);
   color: var(--ink);
   font: 0.8125rem var(--font-body);
@@ -103,9 +103,9 @@
   gap: 6px;
   min-height: 44px;
   padding: 8px 14px;
-  border: 1px solid var(--line-strong);
+  border: 0;
   border-radius: 999px;
-  background: transparent;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
   color: var(--ink);
   font-size: 0.875rem;
   cursor: pointer;
@@ -178,9 +178,9 @@
   place-items: center;
   width: 44px;
   height: 44px;
-  border: 1px solid var(--line-strong);
+  border: 0;
   border-radius: 999px;
-  background: transparent;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
   color: var(--muted);
   cursor: pointer;
   transition:

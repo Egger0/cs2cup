@@ -54,13 +54,14 @@
   align-items: center;
   min-height: 44px;
   padding-inline: 12px;
-  border: 1px solid var(--line-strong);
+  border: 0;
   border-radius: 999px;
   font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   color: var(--ct);
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
 }
 
 @media (max-width: 420px) {

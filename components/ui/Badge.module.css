@@ -3,13 +3,14 @@
   align-items: center;
   gap: 6px;
   padding: 4px 8px;
-  border: 1px solid currentColor;
+  background: color-mix(in srgb, currentColor 12%, transparent);
   font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  border-radius: 999px;
 }
 
 .neutral {

@@ -120,7 +120,6 @@ export default async function BracketPage({ params }: { params: Promise<{ slug: 
             matches={matches}
             teams={teams}
             slug={slug}
-            cap={tournament.teamCap}
             finished={tournament.status === 'finished'}
           />
         </div>

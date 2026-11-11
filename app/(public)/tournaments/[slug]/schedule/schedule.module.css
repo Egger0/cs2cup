@@ -1,48 +1,20 @@
-.summary {
+.meta {
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 28px;
-  font-family: var(--font-body);
-  font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  color: var(--muted-2);
-}
-
-.summary strong {
-  color: var(--ink);
+  justify-content: flex-end;
+  gap: 12px;
+  margin-block: 16px 8px;
+  color: var(--muted);
   font-size: 0.8125rem;
 }
 
 .calendarLink {
-  position: relative;
   color: var(--ct);
-}
-
-.calendarLink::after {
-  position: absolute;
-  inset: -15px -10px;
-  content: '';
+  font-weight: 600;
 }
 
 @media (hover: hover) {
   .calendarLink:hover {
     text-decoration: underline;
     text-underline-offset: 3px;
-  }
-}
-
-@media (max-width: 720px) {
-  .summary {
-    align-items: flex-end;
-  }
-}
-
-@media (max-width: 420px) {
-  .summary {
-    display: grid;
-    gap: 2px;
-    margin-top: 22px;
   }
 }

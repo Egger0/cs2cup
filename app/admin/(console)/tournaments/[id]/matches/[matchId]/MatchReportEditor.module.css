@@ -23,7 +23,7 @@
 .header {
   padding: clamp(22px, 4vw, 38px);
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 8px;
   background:
     linear-gradient(90deg, var(--ct-dim), transparent 46%), var(--admin-paper, var(--surface));
   margin-bottom: 20px;
@@ -72,7 +72,7 @@
 .editor,
 .unavailable {
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--admin-paper, var(--surface));
 }
 

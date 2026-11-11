@@ -65,7 +65,7 @@
   left: 50%;
   width: 20cqi;
   height: 3.6cqi;
-  border-radius: 99px;
+  border-radius: 999px;
   background: rgb(0 0 0 / 14%);
   box-shadow: inset 0 0.6cqi 1cqi rgb(0 0 0 / 25%);
   translate: -50% 0;
@@ -108,7 +108,7 @@
 .tag {
   justify-self: start;
   padding: 0.8cqi 2.6cqi;
-  border-radius: 99px;
+  border-radius: 999px;
   color: #fff;
   background: var(--pass-ink);
   font: 700 3.4cqi / 1.4 var(--font-body);

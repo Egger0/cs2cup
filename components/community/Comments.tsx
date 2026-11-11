@@ -76,8 +76,12 @@ export function Comments({
       aria-labelledby={`comments-${kind}-${id}`}
       aria-busy={pending}
     >
-      <Reactions kind={kind} id={id} initial={data.reactions} signedIn={Boolean(data.viewerId)} />
-      <h2 id={`comments-${kind}-${id}`}>讨论 · {comments.length}</h2>
+      <header className={styles.head}>
+        <h2 id={`comments-${kind}-${id}`}>
+          讨论{comments.length ? <span>{comments.length}</span> : null}
+        </h2>
+        <Reactions kind={kind} id={id} initial={data.reactions} signedIn={Boolean(data.viewerId)} />
+      </header>
       {comments.length ? (
         <ol className={styles.thread}>
           {comments.map(comment => (

@@ -1,17 +1,21 @@
 .list {
-  border-top: 1px solid var(--ink);
+  overflow: hidden;
+  background: var(--surface);
+  border-radius: 20px;
 }
 
 .item {
   display: grid;
-  grid-template-columns: clamp(112px, 14vw, 190px) minmax(0, 1fr) 32px;
-  gap: clamp(22px, 5vw, 72px);
-  min-height: 164px;
+  grid-template-columns: clamp(96px, 12vw, 140px) minmax(0, 1fr) 24px;
+  gap: clamp(16px, 3vw, 32px);
   align-items: center;
-  padding: clamp(24px, 3vw, 38px) 0;
+  padding: 20px clamp(18px, 2.4vw, 28px);
   color: inherit;
-  border-bottom: 1px solid var(--line-strong);
-  transition: background-color 180ms ease;
+  transition: background-color 160ms ease;
+}
+
+.item + .item {
+  border-top: 1px solid var(--line);
 }
 
 .item:focus-visible {
@@ -27,12 +31,10 @@
 .stamp {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  color: var(--muted-2);
-  font-family: var(--font-body);
+  gap: 8px;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
+  font-size: 0.8125rem;
 }
 
 .content {
@@ -43,41 +45,42 @@
   width: fit-content;
   padding: 2px 7px;
   color: var(--accent);
-  border: 1px solid currentColor;
+  background: color-mix(in srgb, currentColor 12%, transparent);
   font-size: 0.75rem;
   letter-spacing: 0.06em;
+  border-radius: 999px;
 }
 
 .title {
   color: var(--ink);
-  font-size: clamp(1.3rem, 2.2vw, 1.8rem);
-  font-weight: 640;
-  letter-spacing: -0.04em;
+  font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 
 .summary {
   max-width: 62ch;
-  margin-top: 12px;
+  margin-top: 6px;
   color: var(--muted);
-  font-size: 0.9375rem;
-  line-height: 1.75;
+  font-size: 0.875rem;
+  line-height: 1.6;
 }
 
 .arrow {
   justify-self: end;
-  color: var(--accent);
-  font-size: 1.375rem;
+  color: var(--muted-2);
+  font-size: 1.125rem;
   line-height: 1;
   transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .item:focus-visible .arrow {
-  transform: translateX(6px);
+  transform: translateX(3px);
 }
 
 @media (hover: hover) {
   .item:hover .arrow {
-    transform: translateX(6px);
+    transform: translateX(3px);
   }
 }
 

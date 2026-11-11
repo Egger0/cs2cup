@@ -188,7 +188,7 @@
 }
 
 .actionStatus {
-  min-height: 42px;
+  min-height: 44px;
   margin-top: 11px;
   color: var(--pass-muted);
   font-size: 0.75rem;

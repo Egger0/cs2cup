@@ -3,8 +3,6 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   width: 100%;
-  padding-top: 16px;
-  border-top: 1px solid var(--line-strong);
 }
 
 .pageHead {
@@ -82,8 +80,8 @@
 .stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--ink);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 .stat {
@@ -138,8 +136,8 @@
 .rules {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--ink);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 .rule {
@@ -184,7 +182,7 @@
 }
 
 .faq {
-  border-top: 1px solid var(--ink);
+  border-top: 1px solid var(--line);
 }
 
 .faqItem {
